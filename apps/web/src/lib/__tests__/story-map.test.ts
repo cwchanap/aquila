@@ -24,10 +24,6 @@ const t = {
     },
 } as unknown as Translations;
 
-// Small fork topology: two nested real decisions. c1 has three options so a
-// passed decision can show several side branches; c2 is deeper so the layout
-// can prove deepest-first side rows. One terminal sits behind a non-terminal
-// scene so an uncompleted ending stays a `?`.
 const forkFlow = {
     start: 'act1',
     nodes: [
@@ -81,7 +77,6 @@ const forkFlow = {
         },
         { kind: 'scene', id: 'b1b_act3', sceneId: 'b1b_act3', next: null },
         { kind: 'scene', id: 'b1c_act3', sceneId: 'b1c_act3', next: null },
-        // Unreachable from start; must never appear in the map.
         {
             kind: 'scene',
             id: 'zz_act9',
@@ -168,7 +163,6 @@ function firstDecision(node: StoryMapNode): StoryMapDecision | null {
     return node.next && node.next.kind === 'decision' ? node.next : null;
 }
 
-/** Every node in the built tree, depth-first, for assertions that scan all. */
 function flatten(root: StoryMapRun | null): StoryMapNode[] {
     const out: StoryMapNode[] = [];
     const walk = (node: StoryMapNode | null) => {
@@ -257,8 +251,6 @@ describe('visibleSceneIds', () => {
     });
 
     it('closes over ancestors so a direct link shows a continuous path', () => {
-        // A bookmark straight to act5 must reveal its ancestor chain without
-        // claiming sibling branches were read.
         const set = visibleSceneIds(forkFlow, progress([]), 'b1a_b2a_act5');
         expect(set).toEqual(
             new Set(['act1', 'act2', 'b1a_act3', 'b1a_act4', 'b1a_b2a_act5'])
@@ -275,8 +267,6 @@ describe('visibleSceneIds', () => {
     });
 
     it('excludes scenes unreachable from the flow start', () => {
-        // zz_act9 is indexed but disconnected from the root: a bookmark to it
-        // must not resurrect it into the visible set.
         const set = visibleSceneIds(forkFlow, progress(['zz_act9']), 'act1');
         expect(set.has('act1')).toBe(true);
         expect(set.has('zz_act9')).toBe(false);
@@ -289,7 +279,6 @@ describe('buildStoryMap', () => {
         expect(view.root?.kind).toBe('run');
         expect(runSceneIds(view.root)).toEqual(['act1']);
         expect(view.root?.next?.kind).toBe('unknown');
-        // No decision marker is leaked ahead of the reader.
         expect(flatten(view.root).some(n => n.kind === 'decision')).toBe(false);
     });
 
@@ -314,7 +303,6 @@ describe('buildStoryMap', () => {
         expect(b1a.child.kind).toBe('run');
         expect(b1b.child.kind).toBe('unknown');
         expect(b1c.child.kind).toBe('unknown');
-        // Unread branch destinations must not leak.
         const unknownSceneIds = flatten(view.root)
             .filter(n => n.kind === 'unknown')
             .flatMap(n => Object.values(n))
@@ -365,7 +353,6 @@ describe('buildStoryMap', () => {
     });
 
     it('does not treat recorded endings as visited scenes', () => {
-        // Reaching an ending once must not resurrect the branch it ends.
         const view = mapAt([], 'act1', ['b1b_act3']);
         expect(runSceneIds(view.root)).toEqual(['act1']);
         expect(view.stats.endings).toBe(0);
@@ -402,7 +389,6 @@ describe('buildStoryMap', () => {
         expect(c2.kind).toBe('decision');
         const deep = c2.options[0].child as StoryMapRun;
         expect(runSceneIds(deep)).toEqual(['b1a_b2a_act5']);
-        // The unread Final and sibling branches stay collapsed as ?.
         expect(deep.next?.kind).toBe('unknown');
         expect(c2.options[1].child.kind).toBe('unknown');
         expect(
@@ -424,7 +410,33 @@ describe('buildStoryMap', () => {
         expect(partial.stats).toEqual({ acts: 3, decisions: 1, endings: 0 });
 
         const full = mapAt(ALL_FORK_SCENES, 'b1a_b2a_act5', ALL_FORK_ENDINGS);
-        expect(full.stats).toEqual({ acts: 6, decisions: 2, endings: 4 });
+        expect(full.stats).toEqual({ acts: 9, decisions: 2, endings: 4 });
+    });
+
+    it('counts sibling acts that share a displayed act number separately', () => {
+        const view = mapAt(
+            ['act1', 'act2', 'b1a_act3', 'b1b_act3', 'b1c_act3'],
+            'b1a_act3'
+        );
+        expect(view.stats.acts).toBe(5);
+        const branched = mapAt(
+            ['act1', 'act2', 'b1a_b2a_act5', 'b1a_b2b_act5'],
+            'b1a_b2a_act5'
+        );
+        expect(branched.stats.acts).toBe(6);
+    });
+
+    it('counts same-numbered acts on real sibling branches separately', () => {
+        const flow = storyFlow('train_adventure');
+        const { choices } = getStoryContent('train_adventure', 'en');
+        const view = buildStoryMap({
+            flow,
+            choices,
+            progress: progress(['b1a_b2a_act7', 'b1a_b2b_act7']),
+            currentSceneId: 'b1a_b2a_act7',
+            t,
+        });
+        expect(view.stats.acts).toBe(8);
     });
 
     it('ignores visited scenes that are unreachable from the flow start', () => {
@@ -437,14 +449,13 @@ describe('buildStoryMap', () => {
             .filter((n): n is StoryMapRun => n.kind === 'run')
             .flatMap(r => r.sceneIds);
         expect(shown).not.toContain('zz_act9');
-        expect(view.stats.acts).toBe(6);
+        expect(view.stats.acts).toBe(9);
     });
 
     it('exposes minimal scene ids for legal jumps only', () => {
         const view = mapAt(['act1', 'act2', 'b1b_act3'], 'b1b_act3');
         const run = view.root!;
         expect(run.entrySceneId).toBe('act1');
-        // Decision and unknown nodes carry no jump target.
         const decision = firstDecision(run)!;
         expect('entrySceneId' in decision).toBe(false);
         expect('sceneId' in decision.options[0].child).toBe(false);
@@ -470,10 +481,8 @@ describe('buildStoryMap on the real Platform flow', () => {
             (n): n is StoryMapRun => n.kind === 'run'
         );
         const shown = new Set(runs.flatMap(r => r.sceneIds));
-        // Every shown scene is legitimately visible, and vice versa.
         for (const id of shown) expect(visible.has(id), id).toBe(true);
         expect(shown.has(current)).toBe(true);
-        // Nothing from the unread b1b trunk may appear.
         expect([...shown].some(id => id.startsWith('b1b_'))).toBe(false);
 
         const decisions = flatten(view.root).filter(
@@ -484,7 +493,6 @@ describe('buildStoryMap on the real Platform flow', () => {
             'choice:choice_b1a_act6',
             'choice:choice_b1a_b2b_act7',
         ]);
-        // Option labels come from the localized choice map, not ids.
         const first = decisions[0];
         expect(first.options.map(o => o.id)).toEqual(
             choices.choice_act3.options.map(o => o.id)
@@ -492,7 +500,6 @@ describe('buildStoryMap on the real Platform flow', () => {
         expect(first.options[0].label).toBe(
             choices.choice_act3.options[0].label
         );
-        // Single-option links (e.g. choice_b1a_b2a_act8) are linear, never decisions.
         expect(decisions.some(d => d.id === 'choice:choice_b1a_b2a_act8')).toBe(
             false
         );
@@ -518,7 +525,6 @@ describe('story map over the full catalog', () => {
                 t,
             });
             expect(view.root, entry.id).not.toBeNull();
-            // Every reachable visible scene is shown exactly once.
             const shown = flatten(view.root)
                 .filter((n): n is StoryMapRun => n.kind === 'run')
                 .flatMap(r => r.sceneIds);
@@ -553,15 +559,12 @@ describe('layoutStoryMap', () => {
     it('allocates side rows deepest-first', () => {
         const layout = layoutStoryMap(fullView(), new Set(), metrics);
         const rows = new Map(layout.nodes.map(n => [n.id, n.row]));
-        // The deeper decision's side branch sits above the shallower one.
         expect(rows.get('b1a_b2b_act5')).toBe(1);
         expect(rows.get('b1b_act3')).toBe(2);
         expect(rows.get('b1c_act3')).toBe(3);
     });
 
     it('always unfolds the run containing the current scene', () => {
-        // The reader is inside a multi-scene run; even with nothing selected
-        // for expansion the map must show its scenes, not a collapsed block.
         const view = mapAt(
             ['act1', 'act2', 'b1a_act3', 'b1a_act4'],
             'b1a_act4'
@@ -579,8 +582,6 @@ describe('layoutStoryMap', () => {
     });
 
     it('colors only the root-to-current path as route', () => {
-        // Act 4 was read earlier, but after stepping back to Act 3 the
-        // route ends at Act 3 — nothing past it may keep route coloring.
         const view = mapAt(
             ['act1', 'act2', 'b1a_act3', 'b1a_act4'],
             'b1a_act3'
@@ -600,7 +601,6 @@ describe('layoutStoryMap', () => {
         const marker = after.nodes.find(
             n => n.id === 'ending:b1a_b2a_actFinal'
         )!;
-        // current is b1a_b2a_act5; its terminal is a descendant, not an ancestor.
         expect(marker.status).toBe('explored');
         const at = layoutStoryMap(
             mapAt(ALL_FORK_SCENES, 'b1a_b2a_actFinal', ALL_FORK_ENDINGS),
@@ -623,7 +623,6 @@ describe('layoutStoryMap', () => {
         );
         expect(trunks).toHaveLength(1);
         const nums = trunks[0].d.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
-        // M dx cyD L tx cyD L tx cyLast — a shared stub plus one vertical.
         const [x0, y0, tx1, y1, tx2, yLast] = nums;
         expect(x0).toBe(c1.x + c1.width);
         expect(y0).toBe(y1);
@@ -633,7 +632,6 @@ describe('layoutStoryMap', () => {
         expect(yLast).toBe(cyOf(deepest.row));
         expect(trunks[0].to).toBe(deepest.id);
 
-        // Each sibling departs the shared trunk x, never the decision itself.
         const branches = layout.edges.filter(
             e => e.kind === 'branch' && e.from === c1.id
         );
@@ -641,9 +639,18 @@ describe('layoutStoryMap', () => {
         const rowsById = new Map(layout.nodes.map(n => [n.id, n.row]));
         for (const branch of branches) {
             const childRow = rowsById.get(branch.to)!;
-            expect(branch.d.startsWith(`M ${tx1} ${cyOf(childRow)}`)).toBe(
-                true
-            );
+            const [sx, sy, c1x, c1y, c2x, c2y, ex, ey] = branch.d
+                .match(/-?\d+(?:\.\d+)?/g)!
+                .map(Number);
+            expect(sx).toBe(tx1);
+            expect(ex).toBe(layout.nodes.find(n => n.id === branch.to)!.x);
+            expect(ey).toBe(cyOf(childRow));
+            expect(sy).toBeLessThan(ey);
+            expect(sy).toBeGreaterThanOrEqual(cyOf(0));
+            expect(sy).toBeLessThanOrEqual(yLast);
+            expect(c1x).toBeGreaterThan(sx);
+            expect(c2x).toBeLessThan(ex);
+            expect(c1y).not.toBe(c2y);
         }
         expect(branches.map(e => e.label).sort()).toEqual([
             'Middle path',
@@ -665,14 +672,10 @@ describe('layoutStoryMap', () => {
                 expect(node.row, node.id).toBe(before);
             }
         }
-        // The expanded run now emits one node per scene (the current run is
-        // always unfolded too, so filter to the run under test).
         const scenes = expanded.nodes.filter(
             n => n.kind === 'scene' && n.sceneId?.startsWith('b1a_act')
         );
         expect(scenes.map(n => n.sceneId)).toEqual(['b1a_act3', 'b1a_act4']);
-        // Only its own horizontal footprint changed: the bounds shift by
-        // exactly the run's width delta and nothing moves vertically.
         const runDelta =
             2 * metrics.sceneWidth + metrics.sceneGap - metrics.runWidth;
         expect(expanded.bounds.height).toBe(collapsed.bounds.height);

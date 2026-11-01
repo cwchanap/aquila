@@ -23,8 +23,6 @@ export interface StoryProgress {
     finished: boolean;
     /** Ending scene ids reached at least once, in the order first reached. */
     endings: string[];
-    /** Scene ids recorded at least once, in the order first recorded.
-     *  Absent on records written before this field existed. */
     visited?: string[];
 }
 

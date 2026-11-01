@@ -181,6 +181,43 @@ describe('ReaderSettingsMenu', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('exposes Story map only when the active story is eligible', () => {
+        const view = renderSettings({ onOpenStoryMap: vi.fn() });
+        expect(
+            screen.queryByRole('button', { name: 'Story map' })
+        ).not.toBeInTheDocument();
+        view.unmount();
+
+        renderSettings({
+            storyMapAvailable: true,
+            onOpenStoryMap: vi.fn(),
+        });
+        expect(
+            screen.getByRole('button', { name: 'Story map' })
+        ).toBeInTheDocument();
+    });
+
+    it('closes the dialog before handing the story-map open to the parent', async () => {
+        const onOpenStoryMap = vi.fn(() => {
+            expect(
+                screen.queryByRole('dialog', { name: 'Reader settings' })
+            ).not.toBeInTheDocument();
+        });
+        renderSettings({ storyMapAvailable: true, onOpenStoryMap });
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Story map' })
+        );
+
+        expect(onOpenStoryMap).toHaveBeenCalledOnce();
+        expect(
+            screen.queryByRole('dialog', { name: 'Reader settings' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        ).toHaveFocus();
+    });
+
     it('shows and toggles Background Music independently in Visual mode', async () => {
         const onBgmEnabledChange = vi.fn();
         const onSfxEnabledChange = vi.fn();

@@ -352,13 +352,15 @@
     aria-label={sm.close}
     onclick={onClose}
   ></button>
-  <div class="fixed inset-0 z-50 flex items-center justify-center lg:p-8">
+  <div
+    class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center lg:p-8"
+  >
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="story-map-title"
       use:focusTrap={{ enabled: true, restoreFocus: restoreFocusTarget }}
-      class="flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-[#bae6fd] via-[#7dd3fc] to-[#60a5fa] lg:h-[85vh] lg:max-w-5xl lg:rounded-3xl lg:shadow-2xl lg:ring-1 lg:ring-white/50"
+      class="pointer-events-auto flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-[#bae6fd] via-[#7dd3fc] to-[#60a5fa] lg:h-[85vh] lg:max-w-5xl lg:rounded-3xl lg:shadow-2xl lg:ring-1 lg:ring-white/50"
     >
       <div class="flex items-start justify-between gap-3 px-4 pt-4 sm:px-6">
         <div class="min-w-0">

@@ -33,6 +33,8 @@
     backUrl,
     bookmarkDisabled,
     triggerUnavailable,
+    storyMapAvailable = false,
+    onOpenStoryMap = () => {},
   }: {
     open?: boolean;
     locale: Locale;
@@ -57,6 +59,8 @@
     backUrl: string;
     bookmarkDisabled: boolean;
     triggerUnavailable: boolean;
+    storyMapAvailable?: boolean;
+    onOpenStoryMap?: () => void;
   } = $props();
 
   let trigger: HTMLElement | null = $state(null);
@@ -83,6 +87,12 @@
     open = false;
     await tick();
     onBookmark();
+  }
+
+  async function openStoryMap(): Promise<void> {
+    open = false;
+    await tick();
+    onOpenStoryMap();
   }
 </script>
 
@@ -209,6 +219,16 @@
 
       {#if furiganaAvailable}
         <FuriganaToggle {locale} on={furigana} onChange={onFuriganaChange} />
+      {/if}
+
+      {#if storyMapAvailable}
+        <button
+          type="button"
+          class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+          onclick={() => void openStoryMap()}
+        >
+          {t.reader.storyMap.title}
+        </button>
       {/if}
 
       {#if showBookmarkButton}

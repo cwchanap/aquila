@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "modelId": "eleven_v4",
+  "language": "ja",
+  "roles": {
+    "xiao_man": {
+      "voiceId": "S6gGWCDqT9PkVLNRMtGK",
+      "voiceName": "Api",
+      "innerDirection": "[softly]",
+      "notes": "Hapadona's pick from Suzu, Kagura and Api. Inner monologue is spoken softer. Narration stays silent."
+    },
+    "wen_bo": {
+      "voiceId": "eRD4wLHoHH7P30TZIexm",
+      "voiceName": "Akio",
+      "notes": "Hapadona's pick from Makoto, Akio and JUN."
+    },
+    "shen_yan": {
+      "voiceId": "ScPQKLRUjviCkw0qP47u",
+      "voiceName": "Takayuki Ito",
+      "notes": "Hapadona's pick from Takayuki Ito, Shizuma and Kei."
+    },
+    "lu_chi": {
+      "voiceId": "DOL4zlUH4vnnX1hByxsw",
+      "voiceName": "Akira",
+      "notes": "Hapadona's pick from Akira, Minto and Asa."
+    }
+  }
+}

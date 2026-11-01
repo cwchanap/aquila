@@ -13,7 +13,7 @@ export const REGISTERED_STORY_IDS = [
 
 export type RegisteredStoryId = (typeof REGISTERED_STORY_IDS)[number];
 
-/** Complete visual releases read from the production R2 namespace in every
+/** Production visual releases, read from the production R2 namespace in every
  *  environment, previews included (unlike The Seventh Mirror, which follows
  *  the per-environment preview pointers). */
 export const PRODUCTION_VISUAL_STORY_IDS: readonly RegisteredStoryId[] = [
@@ -26,7 +26,9 @@ export const PRODUCTION_VISUAL_STORY_IDS: readonly RegisteredStoryId[] = [
 ];
 
 /** Stories awaiting their first visual release. */
-export const TEXT_ONLY_STORY_IDS: readonly RegisteredStoryId[] = [];
+export const TEXT_ONLY_STORY_IDS: readonly RegisteredStoryId[] = [
+    'dont_save_me_before_midnight',
+];
 
 /** The source language every story is written in. */
 export const SOURCE_LOCALE: Locale = 'zh';

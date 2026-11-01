@@ -116,6 +116,7 @@ const DIAGNOSTIC_CODES = new Set([
     'coverage/activation-not-allowed',
     'coverage/story-mismatch',
     'coverage/validation-failed',
+    'coverage/no-artwork',
     'pointer-invalid',
     'audio/plan-unused',
     'audio/selected-unused',
@@ -214,6 +215,9 @@ function safeDiagnosticMessage(
     }
     if (code === 'source/minimum-dimension' && assetType !== undefined) {
         return `Source dimensions are below the ${assetType} minimum`;
+    }
+    if (code === 'coverage/no-artwork' && assetType !== undefined) {
+        return `Referenced ${assetType} has no artwork and is omitted`;
     }
     if (code === 'pointer-invalid') {
         return 'Current active-release pointer is invalid; every release is reported as inactive';

@@ -626,10 +626,10 @@ function baseCommand(
     // loaders resolve them against process.cwd(); running the CLI outside the
     // repository root would then validate one location and read another,
     // bypassing the source/destination overlap guard. Absolute paths pass
-    // through `resolve` unchanged. The default fallbacks
-    // (packages/assets/media and packages/stories/release-plans/<story>.json)
-    // are already resolved against repositoryRoot by the loaders, so they are
-    // left undefined here and handled by each loader.
+    // through `resolve` unchanged. The default source root
+    // (packages/assets/media) is already resolved against repositoryRoot by
+    // its loader, so it is left undefined here. Without --plan the release
+    // plan is derived from the art in the source root.
     const explicitPlanPath =
         values.plan === undefined ? undefined : String(values.plan);
     const explicitSourceRoot =
@@ -1281,17 +1281,15 @@ export async function runAssetsCli(
         // fallback resolved against repositoryRoot (see baseCommand). Only the
         // default source root remains relative; assertDestinationPathSafety
         // resolves it against repositoryRoot, matching resolveSourceRoot's
-        // default. parsed.releasePlanPath is canonical when explicit; the
-        // default plan path is resolved against repositoryRoot by both the
-        // safety check and resolveReleasePlanPath.
+        // default. parsed.releasePlanPath is canonical when explicit; without
+        // it the plan is derived and there is no plan file to protect.
         const sourceRootForSafety =
             hasPublicationInputs && media === 'visual'
                 ? (parsedWithOmissions.sourceRoot ?? 'packages/assets/media')
                 : undefined;
         const planPathForSafety =
             hasPublicationInputs && media === 'visual'
-                ? (parsedWithOmissions.releasePlanPath ??
-                  `packages/stories/release-plans/${storyId}.json`)
+                ? parsedWithOmissions.releasePlanPath
                 : undefined;
         const additionalInputPaths =
             media === 'audio' &&

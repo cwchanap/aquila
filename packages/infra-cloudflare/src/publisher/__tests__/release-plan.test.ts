@@ -1,171 +1,74 @@
-import { mkdtemp, mkdir, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PublisherError } from '../errors';
-import { loadReleasePlan, resolveReleasePlanPath } from '../release-plan';
+import { deriveReleasePlan, loadReleasePlan } from '../release-plan';
 
-describe('publisher release-plan input', () => {
-    it('prefers explicit, then preview companion, then production plan', async () => {
-        const root = await mkdtemp(join(tmpdir(), 'plans-'));
-        const plans = join(root, 'packages/stories/release-plans');
-        const explicitPath = join(root, 'explicit.json');
-        await mkdir(plans, { recursive: true });
-        await writeFile(
-            join(plans, 'example_story.json'),
-            JSON.stringify({ schemaVersion: 1 })
-        );
-        await writeFile(
-            join(plans, 'example_story.preview.json'),
-            JSON.stringify({ schemaVersion: 1 })
-        );
-        await writeFile(explicitPath, JSON.stringify({ schemaVersion: 1 }));
+const catalog = {
+    storyId: 'example_story',
+    assets: [
+        {
+            identity: { type: 'background' as const, key: 'act1/s0' },
+            sourcePath: 'example_story/backgrounds/act1/s0.png',
+        },
+        {
+            identity: { type: 'portrait' as const, key: 'hero/base' },
+            sourcePath: 'example_story/characters/hero/base.png',
+        },
+    ],
+};
 
-        await expect(
-            resolveReleasePlanPath({
-                repositoryRoot: root,
-                storyId: 'example_story',
-                target: { kind: 'preview', previewId: 'test' },
-                explicitPath,
-            })
-        ).resolves.toBe(explicitPath);
+async function sourceRootWith(paths: readonly string[]): Promise<string> {
+    const root = await mkdtemp(join(tmpdir(), 'aquila-derive-plan-'));
+    for (const path of paths) {
+        await mkdir(join(root, path, '..'), { recursive: true });
+        await writeFile(join(root, path), 'png');
+    }
+    return root;
+}
 
-        await expect(
-            resolveReleasePlanPath({
-                repositoryRoot: root,
-                storyId: 'example_story',
-                target: { kind: 'preview', previewId: 'test' },
-            })
-        ).resolves.toBe(join(plans, 'example_story.preview.json'));
-    });
+describe('deriveReleasePlan', () => {
+    it('includes the art that exists and omits the rest', async () => {
+        const root = await sourceRootWith([
+            'example_story/backgrounds/act1/s0.png',
+        ]);
 
-    it('parses a release plan through the shared contract', async () => {
-        const root = await mkdtemp(join(tmpdir(), 'plan-'));
-        const path = join(root, 'example_story.json');
-        await writeFile(
-            path,
-            JSON.stringify({
-                schemaVersion: 1,
-                storyId: 'example_story',
-                channel: 'preview',
-                entries: [],
-            })
-        );
-
-        await expect(loadReleasePlan(path)).resolves.toMatchObject({
+        await expect(deriveReleasePlan(catalog, root)).resolves.toEqual({
+            schemaVersion: 1,
             storyId: 'example_story',
-            channel: 'preview',
+            channel: 'production',
+            entries: [
+                {
+                    identity: { type: 'background', key: 'act1/s0' },
+                    disposition: 'included',
+                    sourcePath: 'example_story/backgrounds/act1/s0.png',
+                },
+                {
+                    identity: { type: 'portrait', key: 'hero/base' },
+                    disposition: 'omitted',
+                    reason: 'No artwork in the source root yet',
+                },
+            ],
         });
     });
 
-    it('rejects unsafe story ids before resolving fallback paths', async () => {
-        await expect(
-            resolveReleasePlanPath({
-                repositoryRoot: '/repository',
-                storyId: '../private',
-                target: { kind: 'production' },
-            })
-        ).rejects.toThrow(/story id is unsafe/i);
+    it('refuses to publish a story with no art at all', async () => {
+        const root = await sourceRootWith([]);
+
+        await expect(deriveReleasePlan(catalog, root)).rejects.toMatchObject({
+            code: 'input',
+            message: 'Story has no artwork to publish',
+        });
     });
+});
 
-    it('does not expose an absolute release-plan path in errors', async () => {
-        const privatePath = join(tmpdir(), 'private-release-plan.json');
-
-        await expect(loadReleasePlan(privatePath)).rejects.toSatisfy(
-            (error: unknown) => {
-                expect(error).toBeInstanceOf(PublisherError);
-                expect(
-                    JSON.stringify((error as PublisherError).context)
-                ).not.toContain(privatePath);
-                return true;
-            }
-        );
-    });
-
-    it('falls back to the production plan only when the preview companion is absent (ENOENT)', async () => {
-        const root = await mkdtemp(join(tmpdir(), 'plans-'));
-        const plans = join(root, 'packages/stories/release-plans');
-        await mkdir(plans, { recursive: true });
-        await writeFile(
-            join(plans, 'example_story.json'),
-            JSON.stringify({ schemaVersion: 1 })
-        );
-        // No .preview.json present -> ENOENT -> production fallback.
+describe('loadReleasePlan', () => {
+    it('reports an unreadable fixture plan as an input error', async () => {
+        const root = await sourceRootWith([]);
 
         await expect(
-            resolveReleasePlanPath({
-                repositoryRoot: root,
-                storyId: 'example_story',
-                target: { kind: 'preview', previewId: 'test' },
-            })
-        ).resolves.toBe(join(plans, 'example_story.json'));
-    });
-
-    it('surfaces a broken preview-plan symlink as a load error instead of silently falling back', async () => {
-        // A self-referential symlink makes readFile fail with ELOOP. lstat
-        // succeeds (the directory entry exists), so resolveReleasePlanPath
-        // returns the preview path; loadReleasePlan then reports the
-        // unreadable target. The resolver must NOT silently switch to the
-        // production plan, which would publish under a different
-        // classification than the operator intended.
-        const root = await mkdtemp(join(tmpdir(), 'plans-'));
-        const plans = join(root, 'packages/stories/release-plans');
-        await mkdir(plans, { recursive: true });
-        await writeFile(
-            join(plans, 'example_story.json'),
-            JSON.stringify({ schemaVersion: 1 })
-        );
-        const previewPath = join(plans, 'example_story.preview.json');
-        await symlink('example_story.preview.json', previewPath);
-
-        const resolved = await resolveReleasePlanPath({
-            repositoryRoot: root,
-            storyId: 'example_story',
-            target: { kind: 'preview', previewId: 'test' },
-        });
-        expect(resolved).toBe(previewPath);
-        await expect(loadReleasePlan(resolved)).rejects.toSatisfy(
-            (error: unknown) => {
-                expect(error).toBeInstanceOf(PublisherError);
-                expect((error as PublisherError).code).toBe('input');
-                // The failing path must not leak into the sanitized context.
-                expect(
-                    JSON.stringify((error as PublisherError).context)
-                ).not.toContain(previewPath);
-                return true;
-            }
-        );
-    });
-
-    it('surfaces a dangling preview-plan symlink as a load error instead of falling back', async () => {
-        // A symlink to a missing target: lstat succeeds (entry exists), but
-        // readFile follows the symlink and gets ENOENT. The resolver returns
-        // the preview path; loadReleasePlan reports the unreadable target.
-        const root = await mkdtemp(join(tmpdir(), 'plans-dangling-'));
-        const plans = join(root, 'packages/stories/release-plans');
-        await mkdir(plans, { recursive: true });
-        await writeFile(
-            join(plans, 'example_story.json'),
-            JSON.stringify({ schemaVersion: 1 })
-        );
-        const previewPath = join(plans, 'example_story.preview.json');
-        await symlink('does-not-exist.json', previewPath);
-
-        const resolved = await resolveReleasePlanPath({
-            repositoryRoot: root,
-            storyId: 'example_story',
-            target: { kind: 'preview', previewId: 'test' },
-        });
-        expect(resolved).toBe(previewPath);
-        await expect(loadReleasePlan(resolved)).rejects.toSatisfy(
-            (error: unknown) => {
-                expect(error).toBeInstanceOf(PublisherError);
-                expect((error as PublisherError).code).toBe('input');
-                expect(
-                    JSON.stringify((error as PublisherError).context)
-                ).not.toContain(previewPath);
-                return true;
-            }
-        );
+            loadReleasePlan(join(root, 'missing.json'))
+        ).rejects.toBeInstanceOf(PublisherError);
     });
 });

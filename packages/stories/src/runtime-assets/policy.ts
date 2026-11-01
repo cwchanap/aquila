@@ -8,7 +8,9 @@ export const RUNTIME_ASSET_CACHE_POLICY = {
         responseCacheControl: 'public, max-age=31536000, immutable',
     },
     clientBounds: {
-        maxValidatedReleases: 2,
+        // One stale-fallback slot per registered story (records are ~5–185 KB
+        // of manifest text each), so reading one story never evicts another's.
+        maxValidatedReleases: 8,
         maxDecodedAssets: 48,
         maxDecodedBytes: 96 * 1024 * 1024,
     },

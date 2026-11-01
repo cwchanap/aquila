@@ -21,8 +21,7 @@ that can move the production pointer — never run in it.
 
 Prerequisites: the shared R2 release secrets
 (`R2_RELEASE_ACCESS_KEY_ID`, `R2_RELEASE_SECRET_ACCESS_KEY`) configured on the
-repository, and a production candidate published with `--no-activate` (the
-HPA-231 production release plan for the story must exist). The publisher
+repository, and a production candidate published with `--no-activate`. The publisher
 runbook — `docs/infrastructure/visual-asset-publisher.md` — owns candidate
 creation details.
 
@@ -37,7 +36,6 @@ REPOSITORY_ROOT=$(pwd)
 bun --filter @aquila/infra-cloudflare assets -- publish \
   --story the_seventh_mirror \
   --environment production \
-  --plan "$REPOSITORY_ROOT/packages/stories/release-plans/the_seventh_mirror.json" \
   --source-root "$REPOSITORY_ROOT/packages/assets/media" \
   --destination r2 \
   --no-activate \

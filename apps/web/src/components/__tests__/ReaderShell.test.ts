@@ -408,7 +408,10 @@ describe('ReaderShell', () => {
         readerState.hasActivePayload = true;
         readerState.loadStatus = 'ready';
     });
-    afterEach(() => vi.clearAllMocks());
+    afterEach(() => {
+        vi.clearAllMocks();
+        vi.unstubAllEnvs();
+    });
 
     it.each([
         'elevator_game',
@@ -1831,6 +1834,8 @@ describe('ReaderShell', () => {
 
     it('marks keyed source-less visuals unavailable and keeps omitted lines neutral without requests', async () => {
         stubMatchMedia(false);
+        // No asset host, so even an allowlisted story has no visual source.
+        vi.stubEnv('PUBLIC_ASSET_BASE_URL', '');
         readerState.storyId = 'train_adventure';
         readerState.dialogue = [
             {
@@ -2430,7 +2435,10 @@ describe('ReaderShell second language', () => {
         readerState.loadStatus = 'ready';
     });
 
-    afterEach(() => vi.clearAllMocks());
+    afterEach(() => {
+        vi.clearAllMocks();
+        vi.unstubAllEnvs();
+    });
 
     async function openSettings(): Promise<void> {
         await fireEvent.click(
@@ -2596,7 +2604,10 @@ describe('ReaderShell furigana', () => {
         readerState.loadStatus = 'ready';
     });
 
-    afterEach(() => vi.clearAllMocks());
+    afterEach(() => {
+        vi.clearAllMocks();
+        vi.unstubAllEnvs();
+    });
 
     it('shows furigana over Japanese text and turns it off from settings', async () => {
         localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');

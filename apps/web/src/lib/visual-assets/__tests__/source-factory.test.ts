@@ -1,4 +1,5 @@
 import type { StoryFlowConfig } from '@aquila/stories';
+import { PRODUCTION_VISUAL_STORY_IDS } from '@aquila/stories/async';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createVisualRuntime, getAssetResolverSource } from '../source-factory';
 import type { VisualSnapshot } from '../types';
@@ -46,14 +47,7 @@ describe('getAssetResolverSource', () => {
         });
     });
 
-    it.each([
-        'train_adventure',
-        'elevator_game',
-        'demon_lord_is_hiring',
-        'three_am_laundromat',
-        'day_4012',
-        'one_pot_before_dawn',
-    ])(
+    it.each(PRODUCTION_VISUAL_STORY_IDS)(
         'reads %s from the production namespace in every environment',
         storyId => {
             const expected = {
@@ -96,7 +90,7 @@ describe('getAssetResolverSource', () => {
     it('returns null for stories without a visual source', () => {
         expect(
             getAssetResolverSource(
-                'dont_save_me_before_midnight',
+                'unreleased_story',
                 'http://localhost:5090',
                 {}
             )
@@ -127,7 +121,7 @@ describe('createVisualRuntime', () => {
         const getSceneDialogue = () => null;
 
         const runtime = createVisualRuntime(
-            'dont_save_me_before_midnight',
+            'unreleased_story',
             'http://localhost:5090',
             getSceneDialogue
         );

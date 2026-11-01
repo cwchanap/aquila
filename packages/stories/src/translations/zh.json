@@ -279,6 +279,8 @@
       "decision": "抉擇",
       "options": "{n} 個選項",
       "unreadLabel": "尚未閱讀",
+      "endingLabel": "結局 {label}",
+      "withBranch": "{label} — {branch}",
       "jumpTo": "跳至 {label}"
     }
   },

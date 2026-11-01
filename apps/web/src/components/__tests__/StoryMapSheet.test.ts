@@ -27,6 +27,8 @@ const t = {
             decision: 'Decision',
             options: '{n} options',
             unreadLabel: 'Not read yet',
+            endingLabel: 'Ending {label}',
+            withBranch: '{label} — {branch}',
             jumpTo: 'Jump to {label}',
         },
     },
@@ -178,7 +180,7 @@ describe('StoryMapSheet', () => {
     it('marks the current node and moves focus inside the dialog', () => {
         render(StoryMapSheet, { props: baseProps() });
         const current = screen.getByRole('button', {
-            name: 'Current position: Act 3',
+            name: 'Current position: Act 3 — Left path',
         });
         expect(current.getAttribute('aria-current')).toBe('location');
         const dialog = screen.getByRole('dialog');
@@ -189,7 +191,9 @@ describe('StoryMapSheet', () => {
         const onJump = vi.fn();
         render(StoryMapSheet, { props: baseProps({ onJump }) });
         await fireEvent.click(
-            screen.getByRole('button', { name: 'Current position: Act 3' })
+            screen.getByRole('button', {
+                name: 'Current position: Act 3 — Left path',
+            })
         );
         await fireEvent.click(
             within(details()).getByRole('button', { name: 'Jump to Act 3' })
@@ -249,7 +253,7 @@ describe('StoryMapSheet', () => {
     it('marks the selected node with aria-pressed', async () => {
         render(StoryMapSheet, { props: baseProps() });
         const current = screen.getByRole('button', {
-            name: 'Current position: Act 3',
+            name: 'Current position: Act 3 — Left path',
         });
         await fireEvent.click(current);
         expect(current.getAttribute('aria-pressed')).toBe('true');
@@ -301,7 +305,7 @@ describe('StoryMapSheet', () => {
     it('shows Not read yet for unread markers and offers no jump', async () => {
         render(StoryMapSheet, { props: baseProps() });
         const unknown = within(surface()).getAllByRole('button', {
-            name: 'Not read yet',
+            name: /^Not read yet/,
         })[0];
         await fireEvent.click(unknown);
         expect(within(details()).getByText('Not read yet')).toBeTruthy();
@@ -324,7 +328,11 @@ describe('StoryMapSheet', () => {
         });
         const ending = container.querySelector('[data-kind="ending"]');
         expect(ending).not.toBeNull();
+        expect(
+            screen.getByRole('button', { name: 'Ending Act 3 — Middle path' })
+        ).toBeTruthy();
         await fireEvent.click(ending as HTMLElement);
+        expect(within(details()).getByText('Ending Act 3')).toBeTruthy();
         await fireEvent.click(
             within(details()).getByRole('button', { name: 'Jump to Act 3' })
         );
@@ -340,6 +348,80 @@ describe('StoryMapSheet', () => {
         });
         expect(container.querySelector('[data-kind="ending"]')).toBeNull();
         expect(container.innerHTML).not.toContain('data-kind="ending"');
+    });
+
+    it('names nodes with type and revealed branch context', () => {
+        render(StoryMapSheet, {
+            props: baseProps({
+                progress: progress([
+                    'act1',
+                    'act2',
+                    'b1a_act3',
+                    'b1a_act4',
+                    'b1a_b2a_act5',
+                ]),
+                currentSceneId: 'b1a_b2a_act5',
+            }),
+        });
+        expect(
+            screen.getByRole('button', {
+                name: 'Current position: Act 5 — Climb',
+            })
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Expand Acts 3–4 — Left path' })
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', {
+                name: 'Decision · 2 options — Left path',
+            })
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Not read yet — Descend' })
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Not read yet — Climb' })
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Expand Acts 1–2' })
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Decision · 3 options' })
+        ).toBeTruthy();
+    });
+
+    it('paints route strokes with a map-space gradient', () => {
+        const { container } = render(StoryMapSheet, { props: baseProps() });
+        const gradient = container.querySelector('linearGradient');
+        expect(gradient?.getAttribute('gradientUnits')).toBe('userSpaceOnUse');
+        const x1 = Number(gradient?.getAttribute('x1'));
+        const x2 = Number(gradient?.getAttribute('x2'));
+        expect(x2).toBeGreaterThan(x1);
+        expect(
+            container.querySelectorAll('path[stroke="url(#story-map-route)"]')
+                .length
+        ).toBeGreaterThan(0);
+    });
+
+    it('styles the shared trunk from the side branches it serves', () => {
+        const { container } = render(StoryMapSheet, { props: baseProps() });
+        const stub = container.querySelector('path[data-edge-kind="stub"]');
+        const trunk = container.querySelector('path[data-edge-kind="trunk"]');
+        expect(stub?.getAttribute('data-edge-status')).toBe('unread');
+        expect(trunk?.getAttribute('data-edge-status')).toBe('unread');
+    });
+
+    it('marks the shared trunk explored once a side branch was read', () => {
+        const { container } = render(StoryMapSheet, {
+            props: baseProps({
+                progress: progress(['act1', 'act2', 'b1a_act3', 'b1b_act3']),
+                currentSceneId: 'b1b_act3',
+            }),
+        });
+        const stub = container.querySelector('path[data-edge-kind="stub"]');
+        const trunk = container.querySelector('path[data-edge-kind="trunk"]');
+        expect(stub?.getAttribute('data-edge-status')).toBe('explored');
+        expect(trunk?.getAttribute('data-edge-status')).toBe('explored');
     });
 
     it('scrolls the current node into view on open and on locate', async () => {
@@ -433,6 +515,8 @@ describe('StoryMapSheet', () => {
                     decision: '抉擇',
                     options: '{n} 個選項',
                     unreadLabel: '尚未閱讀',
+                    endingLabel: '結局 {label}',
+                    withBranch: '{label} — {branch}',
                     jumpTo: '跳至 {label}',
                 },
             },
@@ -445,7 +529,7 @@ describe('StoryMapSheet', () => {
         expect(within(details()).getByText('3 章')).toBeTruthy();
         expect(within(details()).getByText('第 3 / 5 行')).toBeTruthy();
         expect(
-            within(surface()).getAllByRole('button', { name: '尚未閱讀' })
+            within(surface()).getAllByRole('button', { name: /^尚未閱讀/ })
                 .length
         ).toBeGreaterThan(0);
     });

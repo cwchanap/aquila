@@ -279,6 +279,8 @@
       "decision": "分岐",
       "options": "{n} つの選択肢",
       "unreadLabel": "未読",
+      "endingLabel": "エンディング {label}",
+      "withBranch": "{label} — {branch}",
       "jumpTo": "{label}へジャンプ"
     }
   },

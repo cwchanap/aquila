@@ -84,6 +84,7 @@
     >;
     endings: Map<string, StoryMapEnding>;
     unknowns: Set<string>;
+    context: Map<string, string>;
   }
 
   function indexView(root: StoryMapRun | null): ViewIndex {
@@ -95,9 +96,14 @@
     >();
     const endings = new SvelteMap<string, StoryMapEnding>();
     const unknowns = new SvelteSet<string>();
-    const walkRun = (run: StoryMapRun): void => {
+    const context = new SvelteMap<string, string>();
+    const walkRun = (run: StoryMapRun, branch?: string): void => {
       runs.set(run.id, run);
-      for (const id of run.sceneIds) scenes.set(id, run);
+      if (branch) context.set(run.id, branch);
+      for (const id of run.sceneIds) {
+        scenes.set(id, run);
+        if (branch) context.set(id, branch);
+      }
       const next = run.next;
       if (!next) return;
       if (next.kind === 'decision') {
@@ -105,17 +111,22 @@
           decision: next,
           precedingSceneId: run.sceneIds[run.sceneIds.length - 1] ?? null,
         });
+        if (branch) context.set(next.id, branch);
         for (const o of next.options) {
-          if (o.child.kind === 'run') walkRun(o.child);
-          else unknowns.add(o.child.id);
+          if (o.child.kind === 'run') walkRun(o.child, o.label);
+          else {
+            unknowns.add(o.child.id);
+            context.set(o.child.id, o.label);
+          }
         }
         return;
       }
       if (next.kind === 'ending') endings.set(next.id, next);
       else unknowns.add(next.id);
+      if (branch) context.set(next.id, branch);
     };
     if (root) walkRun(root);
-    return { runs, scenes, decisions, endings, unknowns };
+    return { runs, scenes, decisions, endings, unknowns, context };
   }
 
   let index = $derived(indexView(view.root));
@@ -214,27 +225,45 @@
     activateNode(node);
   }
 
+  function contextual(id: string, base: string): string {
+    const branch = index.context.get(id);
+    if (!branch) return base;
+    return sm.withBranch
+      .replace('{label}', base)
+      .replace('{branch}', branch);
+  }
+
   function nodeLabel(node: StoryMapLayoutNode): string {
     if (node.kind === 'run') {
       const run = index.runs.get(node.id);
-      if (run && run.sceneIds.length > 1) {
-        return sm.expandRun.replace('{label}', node.label ?? '');
-      }
-      return node.label ?? '';
+      const base =
+        run && run.sceneIds.length > 1
+          ? sm.expandRun.replace('{label}', node.label ?? '')
+          : (node.label ?? '');
+      return contextual(node.id, base);
     }
     if (node.kind === 'scene') {
       const base = sceneLabel(node.id, index.scenes.get(node.id));
-      return node.current ? `${sm.currentPosition}: ${base}` : base;
+      return contextual(
+        node.id,
+        node.current ? `${sm.currentPosition}: ${base}` : base
+      );
     }
     if (node.kind === 'decision') {
       const n =
         index.decisions.get(node.id)?.decision.options.length ?? 0;
-      return `${sm.decision} · ${statText(sm.options, n)}`;
+      return contextual(
+        node.id,
+        `${sm.decision} · ${statText(sm.options, n)}`
+      );
     }
     if (node.kind === 'ending') {
-      return node.label ?? '';
+      return contextual(
+        node.id,
+        sm.endingLabel.replace('{label}', node.label ?? '')
+      );
     }
-    return sm.unreadLabel;
+    return contextual(node.id, sm.unreadLabel);
   }
 
   function nodeClasses(node: StoryMapLayoutNode): string {
@@ -254,10 +283,16 @@
   function edgeStatus(
     edge: StoryMapLayoutEdge
   ): 'route' | 'explored' | 'unread' {
-    if (edge.kind === 'trunk') {
-      return nodesById.get(edge.from)?.status === 'route'
-        ? 'route'
-        : 'explored';
+    if (edge.kind === 'trunk' || edge.kind === 'stub') {
+      const served = layout.edges.filter(
+        e => e.kind === 'branch' && e.from === edge.from
+      );
+      return served.some(e => {
+        const s = nodesById.get(e.to)?.status;
+        return s === 'route' || s === 'explored';
+      })
+        ? 'explored'
+        : 'unread';
     }
     const a = nodesById.get(edge.from);
     const b = nodesById.get(edge.to);
@@ -376,7 +411,14 @@
               aria-hidden="true"
             >
               <defs>
-                <linearGradient id="story-map-route" x1="0" y1="0" x2="1" y2="0">
+                <linearGradient
+                  id="story-map-route"
+                  gradientUnits="userSpaceOnUse"
+                  x1={0}
+                  y1={0}
+                  x2={layout.bounds.width}
+                  y2={0}
+                >
                   <stop offset="0" stop-color="#2563eb" />
                   <stop offset="1" stop-color="#22d3ee" />
                 </linearGradient>
@@ -386,6 +428,8 @@
                 <path
                   d={edge.d}
                   fill="none"
+                  data-edge-kind={edge.kind}
+                  data-edge-status={status}
                   stroke={status === 'route'
                     ? 'url(#story-map-route)'
                     : status === 'explored'
@@ -598,7 +642,9 @@
               </div>
             {/if}
           {:else if selection.kind === 'ending'}
-            <h3 class="text-lg font-bold">{selection.ending.label}</h3>
+            <h3 class="text-lg font-bold">
+              {sm.endingLabel.replace('{label}', selection.ending.label)}
+            </h3>
             <div class="mt-3">
               <button
                 type="button"

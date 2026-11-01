@@ -279,6 +279,8 @@
       "decision": "Decision",
       "options": "{n} options",
       "unreadLabel": "Not read yet",
+      "endingLabel": "Ending {label}",
+      "withBranch": "{label} — {branch}",
       "jumpTo": "Jump to {label}"
     }
   },

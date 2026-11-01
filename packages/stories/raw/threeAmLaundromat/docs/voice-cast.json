@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 2,
+  "modelId": "eleven_v4",
+  "language": "ja",
+  "roles": {
+    "zhou_yining": {
+      "voiceId": "pdJqk51tDVoes2IzwOyU",
+      "voiceName": "Kiyomi",
+      "innerDirection": "[softly]",
+      "notes": "27, a night-shift nurse: tired but not cold, dry humor, few words. Hapadona's pick from Kiyomi, Shino and kaori. Inner monologue is the larger share of her lines and is spoken softer. Narration stays silent."
+    },
+    "red_pen": {
+      "voiceId": "vUdsavKyEWxNGah0w2uh",
+      "voiceName": "Kemmei",
+      "notes": "Jiang Yuan, the regular who leaves her the dryer: quiet, steady, a little shy. Hapadona's pick from Kenji and Kemmei."
+    }
+  }
+}

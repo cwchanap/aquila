@@ -73,7 +73,8 @@ bun --filter @aquila/infra-cloudflare assets -- plan \
   --json > .tmp/plan-report.json
 ```
 
-An explicit production plan is required for production candidate creation:
+Production planning derives the plan from the art on disk, so the production
+command omits `--plan` (the preview smoke check above uses a fixture plan):
 
 ```bash
 bun --filter @aquila/infra-cloudflare assets -- plan \

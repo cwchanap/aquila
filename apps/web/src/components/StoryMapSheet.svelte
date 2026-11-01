@@ -284,13 +284,7 @@
     edge: StoryMapLayoutEdge
   ): 'route' | 'explored' | 'unread' {
     if (edge.kind === 'trunk' || edge.kind === 'stub') {
-      const served = layout.edges.filter(
-        e => e.kind === 'branch' && e.from === edge.from
-      );
-      return served.some(e => {
-        const s = nodesById.get(e.to)?.status;
-        return s === 'route' || s === 'explored';
-      })
+      return (edge.serves ?? []).some(id => index.runs.has(id))
         ? 'explored'
         : 'unread';
     }

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ReaderManager } from '../reader-manager';
 import { readerState } from '../reader-state.svelte';
+import type { StoryProgress } from '../story-progress-store';
 import {
     StoryLoadError,
     type AsyncStoryLoaderResult,
@@ -1574,6 +1575,133 @@ describe('ReaderManager', () => {
         });
     });
 
+    describe('story map wiring', () => {
+        it('exposes the loaded story localized ChoiceMap as readerState.activeChoices', async () => {
+            const choices = {
+                choice_act1: {
+                    prompt: 'Pick one',
+                    options: [
+                        { id: 'a', label: 'A', nextScene: 'act1' },
+                        { id: 'b', label: 'B', nextScene: 'act2' },
+                    ],
+                },
+            };
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [{ dialogue: 'a' }] },
+                choices,
+            });
+
+            manager = new ReaderManager('en');
+            await manager.initialize();
+
+            expect(readerState.activeChoices).toEqual(choices);
+        });
+
+        it('clears activeChoices in reset() and in a fresh manager constructor', async () => {
+            const choices = {
+                choice_act1: {
+                    prompt: 'Pick',
+                    options: [{ id: 'a', label: 'A', nextScene: 'act1' }],
+                },
+            };
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [{ dialogue: 'a' }] },
+                choices,
+            });
+
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            expect(readerState.activeChoices).toEqual(choices);
+
+            readerState.reset(); // story unload path
+            expect(readerState.activeChoices).toBeNull();
+
+            // The constructor's explicit initialization also clears a
+            // leftover payload.
+            readerState.activeChoices = choices;
+            manager.destroy(); // release the initialized manager's listeners
+            manager = new ReaderManager('en');
+            expect(readerState.activeChoices).toBeNull();
+        });
+
+        it('replaces activeChoices when navigation unloads one story for another', async () => {
+            const choicesA = {
+                choice_a: {
+                    prompt: 'Story A choice',
+                    options: [{ id: 'a', label: 'A', nextScene: 'act1' }],
+                },
+            };
+            const choicesB = {
+                choice_b: {
+                    prompt: 'Story B choice',
+                    options: [
+                        { id: 'b', label: 'B', nextScene: 'midnight_act' },
+                    ],
+                },
+            };
+            mockLoadStoryContent.mockImplementation(
+                async (storyId: string, locale: 'en' | 'zh') =>
+                    storyId === 'train_adventure'
+                        ? {
+                              dialogue: { act1: [{ dialogue: 'a' }] },
+                              choices: choicesA,
+                              flow: {
+                                  start: 'act1',
+                                  nodes: [
+                                      {
+                                          kind: 'scene',
+                                          id: 'act1',
+                                          sceneId: 'act1',
+                                          next: null,
+                                      },
+                                  ],
+                              },
+                              locale,
+                          }
+                        : {
+                              dialogue: {
+                                  midnight_act: [{ dialogue: 'm' }],
+                              },
+                              choices: choicesB,
+                              flow: {
+                                  start: 'midnight_act',
+                                  nodes: [
+                                      {
+                                          kind: 'scene',
+                                          id: 'midnight_act',
+                                          sceneId: 'midnight_act',
+                                          next: null,
+                                      },
+                                  ],
+                              },
+                              locale,
+                          }
+            );
+            setLocation('?story=train_adventure&scene=act1');
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() =>
+                expect(readerState.loadStatus).toBe('ready')
+            );
+            expect(readerState.activeChoices).toEqual(choicesA);
+
+            // Navigating to a different story unloads story A's choices.
+            setLocation(
+                '?story=dont_save_me_before_midnight&scene=midnight_act'
+            );
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.storyId).toBe('dont_save_me_before_midnight')
+            );
+            expect(readerState.activeChoices).toEqual(choicesB);
+        });
+
+        it('getCurrentStoryProgressSnapshot returns null before any story records progress', () => {
+            manager = new ReaderManager('en');
+            expect(manager.getCurrentStoryProgressSnapshot()).toBeNull();
+        });
+    });
+
     describe('handleBookmark', () => {
         it('does nothing when user cancels the prompt (null)', async () => {
             mockShowPrompt.mockResolvedValueOnce(null);
@@ -2163,6 +2291,256 @@ describe('ReaderManager', () => {
             expect(raf.pending()).toBe(false); // flushed
             expect(replaceState).toHaveBeenCalled(); // the line write happened
             expect(pushState).toHaveBeenCalled(); // then the scene entry
+        });
+
+        it('goToScene(scene, "end") lands on the last line and pushes one history entry', async () => {
+            const raf = stubRaf();
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                    act2: [
+                        { dialogue: 'x' },
+                        { dialogue: 'y' },
+                        { dialogue: 'z' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            // onNavigate is the manager -> shell boundary the story map
+            // jump callbacks travel over; it must carry the optional
+            // end-of-scene argument through to goToScene.
+            const onNavigate = mockMount.mock.calls.at(-1)![1].props
+                .onNavigate as (sceneId: string, at?: 'start' | 'end') => void;
+            onIndexChange(1); // queue a throttled line write on act1
+            expect(raf.pending()).toBe(true);
+            pushState.mockClear();
+            onNavigate('act2', 'end');
+            expect(raf.pending()).toBe(false); // line write flushed first
+            expect(readerState.currentSceneId).toBe('act2');
+            expect(readerState.dialogueIndex).toBe(2); // last of 3 lines
+            expect(pushState).toHaveBeenCalledTimes(1); // one entry per jump
+            const url = pushState.mock.calls[0][2] as URL;
+            expect(url.searchParams.get('scene')).toBe('act2');
+            expect(url.searchParams.get('dialogue')).toBe('3'); // 1-based
+        });
+
+        it('goToScene(scene, "start") is the default and an end jump clamps an empty scene to index 0', async () => {
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }],
+                    act2: [],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            // An end jump onto an empty scene still lands on index 0 —
+            // clampIndex keeps the invariant that the index is always valid.
+            manager.goToScene('act2', 'end');
+            expect(readerState.currentSceneId).toBe('act2');
+            expect(readerState.dialogueIndex).toBe(0);
+            manager.goToScene('act1', 'start');
+            expect(readerState.dialogueIndex).toBe(0);
+        });
+
+        it('Back restores the prior scene and line after an end jump', async () => {
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }, { dialogue: 'b' }],
+                    act2: [
+                        { dialogue: 'x' },
+                        { dialogue: 'y' },
+                        { dialogue: 'z' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            setLocation('?story=the_seventh_mirror&scene=act1&dialogue=2');
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            expect(readerState.dialogueIndex).toBe(1);
+            manager.goToScene('act2', 'end');
+            expect(readerState.currentSceneId).toBe('act2');
+            expect(readerState.dialogueIndex).toBe(2);
+            // The browser restores the previous history entry's URL.
+            setLocation('?story=the_seventh_mirror&scene=act1&dialogue=2');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.currentSceneId).toBe('act1')
+            );
+            expect(readerState.dialogueIndex).toBe(1);
+        });
+
+        it('a jump changes Continue to the destination without erasing visited scenes or endings', async () => {
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            // Progress is read back from storage, so the mock needs a real
+            // backing map (the default setItem only records calls).
+            const saved = new Map<string, string>();
+            mockStorage.getItem.mockImplementation(
+                (key: string) => saved.get(key) ?? null
+            );
+            mockStorage.setItem.mockImplementation(
+                (key: string, value: string) => void saved.set(key, value)
+            );
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }],
+                    act2: [
+                        { dialogue: 'x' },
+                        { dialogue: 'y' },
+                        { dialogue: 'z' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            manager.goToScene('act2', 'end'); // parks on the terminal line
+            manager.goToScene('act1'); // jump back to an earlier act
+            const record = manager.getCurrentStoryProgressSnapshot();
+            expect(record).toMatchObject({
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                finished: false,
+                endings: ['act2'], // reached ending is retained
+            });
+            expect(record?.visited).toEqual(
+                expect.arrayContaining(['act1', 'act2'])
+            );
+        });
+
+        it('getCurrentStoryProgressSnapshot flushes the pending line replace and debounced persist', async () => {
+            const raf = stubRaf();
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            const saved = new Map<string, string>();
+            mockStorage.getItem.mockImplementation(
+                (key: string) => saved.get(key) ?? null
+            );
+            mockStorage.setItem.mockImplementation(
+                (key: string, value: string) => void saved.set(key, value)
+            );
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act1: [{ dialogue: 'a' }],
+                    act2: [
+                        { dialogue: 'x' },
+                        { dialogue: 'y' },
+                        { dialogue: 'z' },
+                    ],
+                },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const snapshot = mockMount.mock.calls.at(-1)![1].props
+                .getCurrentStoryProgressSnapshot as () => StoryProgress | null;
+            manager.goToScene('act2');
+            const onIndexChange = mockMount.mock.calls.at(-1)![1].props
+                .onIndexChange as (i: number) => void;
+            onIndexChange(2); // final line of the terminal scene
+            expect(raf.pending()).toBe(true);
+            replaceState.mockClear();
+            pushState.mockClear();
+            const record = snapshot();
+            // The queued line write flushes into the current entry — no
+            // new history entry is pushed by the snapshot.
+            expect(raf.pending()).toBe(false);
+            expect(replaceState).toHaveBeenCalledTimes(1);
+            expect(pushState).not.toHaveBeenCalled();
+            // The pending 500 ms persist ran once, recording the ending.
+            expect(record).toMatchObject({
+                sceneId: 'act2',
+                dialogueIndex: 2,
+                finished: true,
+                endings: ['act2'],
+            });
+            expect(record?.visited).toEqual(
+                expect.arrayContaining(['act1', 'act2'])
+            );
+            // Later timers must not rewrite the same position or add history.
+            mockStorage.setItem.mockClear();
+            vi.advanceTimersByTime(600);
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
+            expect(pushState).not.toHaveBeenCalled();
+        });
+
+        it('getCurrentStoryProgressSnapshot reads the stored record without writing when no save is pending', async () => {
+            const pushState = vi.fn(),
+                replaceState = vi.fn();
+            Object.defineProperty(window, 'history', {
+                value: { pushState, replaceState },
+                writable: true,
+            });
+            const saved = new Map<string, string>();
+            mockStorage.getItem.mockImplementation(
+                (key: string) => saved.get(key) ?? null
+            );
+            mockStorage.setItem.mockImplementation(
+                (key: string, value: string) => void saved.set(key, value)
+            );
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act1: [{ dialogue: 'a' }] },
+                choices: {},
+            });
+            setupContainer();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            await vi.waitFor(() => expect(mockMount).toHaveBeenCalled());
+            const snapshot = mockMount.mock.calls.at(-1)![1].props
+                .getCurrentStoryProgressSnapshot as () => StoryProgress | null;
+            mockStorage.setItem.mockClear();
+            replaceState.mockClear();
+            const record = snapshot();
+            expect(record).toMatchObject({
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                finished: false,
+            });
+            expect(mockStorage.setItem).not.toHaveBeenCalled();
+            expect(replaceState).not.toHaveBeenCalled();
+            expect(pushState).not.toHaveBeenCalled();
         });
 
         it('popstate restores validated state and cancels pending replaceState', async () => {

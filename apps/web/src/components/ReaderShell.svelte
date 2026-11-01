@@ -14,6 +14,7 @@
   } from '@aquila/stories/async';
   import { readerState } from '@/lib/reader-state.svelte';
   import { logger } from '@/lib/logger';
+  import type { StoryProgress } from '@/lib/story-progress-store';
   import {
     readReaderMode,
     writeReaderMode,
@@ -92,12 +93,13 @@
     onChoice?: (nextScene: string) => void;
     onBookmark?: (dialogueNumber: number) => void;
     onNext?: () => void;
-    onNavigate?: (sceneId: string) => void;
+    onNavigate?: (sceneId: string, at?: 'start' | 'end') => void;
     onIndexChange?: (index: number) => void;
     getSceneDialogue?: (
       storyId: string,
       sceneId: string
     ) => readonly DialogueEntry[] | null;
+    getCurrentStoryProgressSnapshot?: () => StoryProgress | null;
     createVisualRuntime?: typeof createDefaultVisualRuntime;
     createSfxPlayer?: typeof createDefaultSfxPlayer;
     createBgmPlayer?: typeof createDefaultBgmPlayer;

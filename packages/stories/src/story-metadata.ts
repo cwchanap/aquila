@@ -17,6 +17,7 @@ export type RegisteredStoryId = (typeof REGISTERED_STORY_IDS)[number];
  *  environment, previews included (unlike The Seventh Mirror, which follows
  *  the per-environment preview pointers). */
 export const PRODUCTION_VISUAL_STORY_IDS: readonly RegisteredStoryId[] = [
+    'train_adventure',
     'elevator_game',
     'demon_lord_is_hiring',
     'three_am_laundromat',

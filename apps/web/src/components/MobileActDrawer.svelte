@@ -19,6 +19,7 @@
     open = false,
     locale = 'en',
     restoreFocusTarget = null,
+    visibleSceneIds,
   }: {
     flow: StoryFlowConfig;
     storyId: string;
@@ -28,10 +29,13 @@
     open?: boolean;
     locale?: Locale;
     restoreFocusTarget?: HTMLElement | null;
+    visibleSceneIds?: ReadonlySet<string>;
   } = $props();
 
   let t = $derived(getTranslations(locale));
-  let chapterData = $derived(buildChapterData(flow, currentSceneId, t));
+  let chapterData = $derived(
+    buildChapterData(flow, currentSceneId, t, visibleSceneIds)
+  );
   let currentAct = $derived(extractActName(currentSceneId));
   let currentChapterKey = $derived(extractChapterKey(currentSceneId));
 

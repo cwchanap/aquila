@@ -15,6 +15,35 @@ const branchFlow = {
     ],
 };
 
+// Fork topology for the visibility filter: act2 exists on two sibling
+// branches and a Final act sits behind both, so a partial allowlist has
+// something to hide both from grouping and from branch matching.
+const forkFlow = {
+    start: 'b1a_act1',
+    nodes: [
+        {
+            kind: 'scene',
+            id: 'b1a_act1',
+            sceneId: 'b1a_act1',
+            next: 'choice:ch1',
+        },
+        {
+            kind: 'choice',
+            id: 'choice:ch1',
+            choiceId: 'ch1',
+            nextByOption: { a: 'b1a_act2', b: 'b1b_act2' },
+        },
+        {
+            kind: 'scene',
+            id: 'b1a_act2',
+            sceneId: 'b1a_act2',
+            next: 'actFinal',
+        },
+        { kind: 'scene', id: 'b1b_act2', sceneId: 'b1b_act2', next: null },
+        { kind: 'scene', id: 'actFinal', sceneId: 'actFinal', next: null },
+    ],
+};
+
 vi.mock('@aquila/stories/translations', async importOriginal => ({
     ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
     getTranslations: vi.fn(() => ({
@@ -183,6 +212,70 @@ describe('MobileActDrawer', () => {
             expect(inertAncestor).not.toBeNull();
             expect(inertAncestor?.getAttribute('aria-hidden')).toBe('true');
         }
+    });
+
+    it('hides unvisited acts when a visible-scene allowlist is provided', () => {
+        render(MobileActDrawer, {
+            props: {
+                flow: forkFlow,
+                storyId: 's',
+                currentSceneId: 'b1a_act2',
+                onNavigate,
+                onClose,
+                open: true,
+                locale: 'en',
+                visibleSceneIds: new Set(['b1a_act1', 'b1a_act2']),
+            },
+        });
+        // The unread sibling act and the unread Final never render: no labels
+        // and no jump targets are offered for scenes outside the allowlist.
+        expect(getActButtons().map(b => b.textContent?.trim())).toEqual([
+            'Act 1',
+            'Act 2',
+        ]);
+    });
+
+    it('navigates only to a visible scene when an act is selected', async () => {
+        const visible = new Set(['b1a_act1', 'b1a_act2']);
+        render(MobileActDrawer, {
+            props: {
+                flow: forkFlow,
+                storyId: 's',
+                currentSceneId: 'b1a_act2',
+                onNavigate,
+                onClose,
+                open: true,
+                locale: 'en',
+                visibleSceneIds: visible,
+            },
+        });
+        const act2 = getActButtons().find(
+            b => b.textContent?.trim() === 'Act 2'
+        )!;
+        await fireEvent.click(act2);
+        expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
+        for (const call of onNavigate.mock.calls) {
+            expect(visible.has(call[0] as string)).toBe(true);
+        }
+    });
+
+    it('keeps the unrestricted act list when no allowlist is provided', () => {
+        render(MobileActDrawer, {
+            props: {
+                flow: forkFlow,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onClose,
+                open: true,
+                locale: 'en',
+            },
+        });
+        expect(getActButtons().map(b => b.textContent?.trim())).toEqual([
+            'Act 1',
+            'Act 2',
+            'Final',
+        ]);
     });
 
     it('moves focus into the panel and traps Tab while open', async () => {

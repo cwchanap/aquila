@@ -885,6 +885,44 @@ describe('MobileNovelReader', () => {
             await fireEvent.click(act2);
             expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
         });
+
+        it('forwards the visible-scene allowlist to the acts drawer', async () => {
+            renderReader({
+                dialogueIndex: 0,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                visibleSceneIds: new Set(['b1a_act1']),
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open acts panel'));
+            const dialog = screen.getByRole('dialog');
+            const actButtons = within(dialog)
+                .getAllByRole('button')
+                .filter(b => !b.getAttribute('aria-label'));
+            expect(actButtons.map(b => b.textContent?.trim())).toEqual([
+                'Act 1',
+            ]);
+        });
+
+        it('keeps the acts drawer unrestricted when no allowlist is provided', async () => {
+            renderReader({
+                dialogueIndex: 0,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open acts panel'));
+            const dialog = screen.getByRole('dialog');
+            const actButtons = within(dialog)
+                .getAllByRole('button')
+                .filter(b => !b.getAttribute('aria-label'));
+            expect(actButtons.map(b => b.textContent?.trim())).toEqual([
+                'Act 1',
+                'Act 2',
+            ]);
+        });
     });
 });
 

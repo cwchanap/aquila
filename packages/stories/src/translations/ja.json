@@ -252,6 +252,7 @@
     "actLabel": "第 {n} 幕",
     "actFinal": "最終幕",
     "actEpilogue": "エピローグ",
+    "actRangeLabel": "第 {first}–{last} 幕",
     "chapterLabel": "第 {n} 章",
     "openActsPanel": "章パネルを開く",
     "closeActsPanel": "章パネルを閉じる",
@@ -263,7 +264,23 @@
     "closeMenu": "メニューを閉じる",
     "tapToContinue": "タップして続ける",
     "lineProgress": "{current} / {total} 行",
-    "previousLine": "前の行"
+    "previousLine": "前の行",
+    "storyMap": {
+      "title": "ストーリーマップ",
+      "open": "ストーリーマップを開く",
+      "close": "ストーリーマップを閉じる",
+      "locateCurrent": "現在位置を表示",
+      "currentPosition": "現在位置",
+      "statsActs": "{n} 幕",
+      "statsDecisions": "{n} つの分岐",
+      "statsEndings": "{n} つの結末",
+      "expandRun": "{label}を展開",
+      "collapseRun": "{label}を折りたたむ",
+      "decision": "分岐",
+      "options": "{n} つの選択肢",
+      "unreadLabel": "未読",
+      "jumpTo": "{label}へジャンプ"
+    }
   },
   "storyWriter": {
     "title": "ストーリーエディター",

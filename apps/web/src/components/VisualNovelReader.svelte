@@ -48,6 +48,7 @@
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
     furigana?: boolean;
+    visibleSceneIds?: ReadonlySet<string>;
   };
 
   const emptyLayer = {
@@ -91,6 +92,7 @@
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
+    visibleSceneIds,
   }: Props = $props();
 
   let snapshot = $state<VisualSnapshot>(emptySnapshot);
@@ -437,6 +439,7 @@
         {flow}
         {storyId}
         {currentSceneId}
+        {visibleSceneIds}
         open={actPanelOpen}
         {locale}
         onToggle={() => (actPanelOpen = !actPanelOpen)}

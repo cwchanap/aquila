@@ -472,6 +472,92 @@ describe('ActPanel', () => {
     });
 });
 
+describe('ActPanel — visible-scene filter', () => {
+    const onNavigate = vi.fn();
+    const onToggle = vi.fn();
+    const visible = new Set([
+        'b1a_act1',
+        'b1a_act2',
+        'b1a_act3',
+        'b1a_b2a_act4',
+    ]);
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('hides acts whose scenes are all outside the allowlist', () => {
+        render(ActPanel, {
+            props: {
+                flow: mockFlow,
+                storyId: 'test_story',
+                currentSceneId: 'b1a_b2a_act4',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+                visibleSceneIds: visible,
+            },
+        });
+
+        // Final Act and Epilogue are never rendered for a filtered branching
+        // flow: their labels and jump targets stay hidden until read.
+        const labels = getActButtons().map(b => b.textContent);
+        expect(labels).toEqual(['Act 1', 'Act 2', 'Act 3', 'Act 4']);
+    });
+
+    it('offers no jump to an act outside the allowlist', async () => {
+        render(ActPanel, {
+            props: {
+                flow: mockFlow,
+                storyId: 'test_story',
+                currentSceneId: 'b1a_b2a_act4',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+                visibleSceneIds: visible,
+            },
+        });
+
+        // The unread b2b act4 candidate was filtered before branch matching,
+        // so Act 4 can only navigate to the visible b2a scene.
+        const act4Button = screen
+            .getAllByRole('button')
+            .find(b => b.textContent === 'Act 4');
+        expect(act4Button).toBeDefined();
+        await fireEvent.click(act4Button!);
+        expect(onNavigate).toHaveBeenCalledWith('b1a_b2a_act4');
+        for (const call of onNavigate.mock.calls) {
+            expect(visible.has(call[0] as string)).toBe(true);
+        }
+    });
+
+    it('keeps the full unrestricted act list when no allowlist is provided', () => {
+        render(ActPanel, {
+            props: {
+                flow: mockFlow,
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+            },
+        });
+
+        const labels = getActButtons().map(b => b.textContent);
+        expect(labels).toEqual([
+            'Act 1',
+            'Act 2',
+            'Act 3',
+            'Act 4',
+            'Final Act',
+            'Epilogue',
+        ]);
+    });
+});
+
 describe('ActPanel — chapter mode', () => {
     const onNavigate = vi.fn();
     const onToggle = vi.fn();
@@ -681,5 +767,26 @@ describe('ActPanel — chapter mode', () => {
         // Verify the controlled element exists and has the matching id
         const actsContainer = document.getElementById('chapter-2-acts');
         expect(actsContainer).not.toBeNull();
+    });
+
+    it('hides chapters with no visible acts when a visible-scene allowlist is provided', () => {
+        render(ActPanel, {
+            props: {
+                flow: chapterFlow,
+                storyId: 'chapter_story',
+                currentSceneId: 'ch1_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+                visibleSceneIds: new Set(['ch1_act1', 'ch1_act2']),
+            },
+        });
+
+        // Filtering happens before grouping: unread chapters leave no empty
+        // header that would reveal how many chapters remain.
+        expect(screen.getByText('Chapter 1')).toBeInTheDocument();
+        expect(screen.queryByText('Chapter 2')).not.toBeInTheDocument();
+        expect(screen.queryByText('Chapter 3')).not.toBeInTheDocument();
     });
 });

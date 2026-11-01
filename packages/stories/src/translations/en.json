@@ -252,6 +252,7 @@
     "actLabel": "Act {n}",
     "actFinal": "Final",
     "actEpilogue": "Epilogue",
+    "actRangeLabel": "Acts {first}–{last}",
     "chapterLabel": "Chapter {n}",
     "openActsPanel": "Open acts panel",
     "closeActsPanel": "Close acts panel",
@@ -263,7 +264,23 @@
     "closeMenu": "Close menu",
     "tapToContinue": "Tap to continue",
     "lineProgress": "Line {current} of {total}",
-    "previousLine": "Previous line"
+    "previousLine": "Previous line",
+    "storyMap": {
+      "title": "Story map",
+      "open": "Open story map",
+      "close": "Close story map",
+      "locateCurrent": "Locate current position",
+      "currentPosition": "Current position",
+      "statsActs": "{n} acts",
+      "statsDecisions": "{n} decisions",
+      "statsEndings": "{n} endings",
+      "expandRun": "Expand {label}",
+      "collapseRun": "Collapse {label}",
+      "decision": "Decision",
+      "options": "{n} options",
+      "unreadLabel": "Not read yet",
+      "jumpTo": "Jump to {label}"
+    }
   },
   "storyWriter": {
     "title": "Story Writer",

@@ -6,7 +6,12 @@ import type {
     Translations,
 } from '@aquila/stories';
 import type { StoryProgress } from './story-progress-store';
-import { actLabel, actSortKey, extractActName } from './act-navigation';
+import {
+    actLabel,
+    actRangeLabel,
+    actSortKey,
+    extractActName,
+} from './act-navigation';
 
 type Flow = Pick<StoryFlowConfig, 'start' | 'nodes'>;
 
@@ -270,7 +275,7 @@ export function buildStoryMap({
         if (!first && !last) return '';
         if (first === last || !last) return actLabel(first, t);
         if (!first) return actLabel(last, t);
-        return `${actLabel(first, t)}–${actLabel(last, t)}`;
+        return actRangeLabel(first, last, t);
     };
 
     function buildDecision(node: ChoiceNodeDefinition): StoryMapDecision {

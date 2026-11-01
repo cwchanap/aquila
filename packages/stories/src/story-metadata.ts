@@ -30,6 +30,18 @@ export const TEXT_ONLY_STORY_IDS: readonly RegisteredStoryId[] = [
     'dont_save_me_before_midnight',
 ];
 
+/** Stories whose authored backgrounds already contain the cast in frame (see
+ *  e.g. `raw/trainAdventure/docs/art-bible.md`). The visual reader skips the
+ *  separate portrait overlay stage for them — a portrait cutout would draw a
+ *  second copy of characters already painted into the background. */
+export const CAST_INCLUSIVE_BACKGROUND_STORY_IDS: readonly RegisteredStoryId[] =
+    ['train_adventure'];
+
+export const hasCastInclusiveBackgrounds = (storyId: string): boolean =>
+    (CAST_INCLUSIVE_BACKGROUND_STORY_IDS as readonly string[]).includes(
+        storyId
+    );
+
 /** The source language every story is written in. */
 export const SOURCE_LOCALE: Locale = 'zh';
 

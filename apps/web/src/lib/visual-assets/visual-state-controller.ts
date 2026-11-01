@@ -28,6 +28,12 @@ const SOFT_REVALIDATE_AGE_MS = 60_000;
 
 const PORTRAIT_SLOTS = ['left', 'right'] as const;
 
+const EMPTY_PORTRAIT_STAGE: PortraitStage = Object.freeze({
+    left: null,
+    right: null,
+    activeSlot: null,
+});
+
 type PortraitFailureMemo = {
     releaseGeneration: number;
     portraitKey: string;
@@ -53,6 +59,13 @@ export type VisualControllerInput = {
 
 export type VisualStateControllerOptions = {
     resolver: AssetResolver | null;
+    /**
+     * When true, the controller never stages, loads, or prefetches portrait
+     * layers. For stories whose backgrounds already contain the cast in
+     * frame, the portrait cutout would draw a second copy of painted
+     * characters over the background.
+     */
+    suppressPortraits?: boolean;
     /**
      * The validated asset source that produced the resolver. Threaded from
      * `source-factory.ts` so the controller never rereads `import.meta.env`
@@ -124,21 +137,26 @@ function identityFor(
 }
 
 function identitiesForLine(
-    entry: DialogueEntry | undefined
+    entry: DialogueEntry | undefined,
+    includePortraits = true
 ): LogicalAssetIdentity[] {
     if (!entry) return [];
     const identities: LogicalAssetIdentity[] = [];
     if (entry.background) {
         identities.push({ type: 'background', key: entry.background });
     }
-    if (entry.portrait) {
+    if (includePortraits && entry.portrait) {
         identities.push({ type: 'portrait', key: entry.portrait });
     }
     return identities;
 }
 
-function visualSignature(entry: DialogueEntry | undefined): string {
-    return `${entry?.background ?? ''}\u0000${entry?.portrait ?? ''}`;
+function visualSignature(
+    entry: DialogueEntry | undefined,
+    includePortraits = true
+): string {
+    const portrait = includePortraits ? (entry?.portrait ?? '') : '';
+    return `${entry?.background ?? ''}\u0000${portrait}`;
 }
 
 function releaseStateForError(error: unknown): VisualReleaseState {
@@ -156,6 +174,7 @@ function releaseStateForError(error: unknown): VisualReleaseState {
 
 export class VisualStateController {
     private readonly resolver: AssetResolver | null;
+    private readonly suppressPortraits: boolean;
     private readonly source: AssetResolverSource | null;
     private readonly cache: VisualAssetCache;
     private readonly getSceneDialogue: GetSceneDialogue;
@@ -205,6 +224,7 @@ export class VisualStateController {
 
     constructor(options: VisualStateControllerOptions) {
         this.resolver = options.resolver;
+        this.suppressPortraits = options.suppressPortraits ?? false;
         this.source = options.source;
         this.cache = options.cache;
         this.getSceneDialogue = options.getSceneDialogue;
@@ -353,6 +373,15 @@ export class VisualStateController {
         this.listeners.clear();
     }
 
+    // When the story's backgrounds already contain the cast, the portrait
+    // stage is always empty — no slot ever stages, loads, or prefetches a
+    // portrait layer.
+    private stageFor(input: VisualControllerInput): PortraitStage {
+        return this.suppressPortraits
+            ? EMPTY_PORTRAIT_STAGE
+            : projectPortraitStage(input.dialogue, input.dialogueIndex);
+    }
+
     // A ready layer is only current when its identity matches AND it was
     // loaded under the active release. A soft revalidation that activated
     // a new release makes every previously ready layer stale, even when
@@ -372,7 +401,7 @@ export class VisualStateController {
                 this.activeBackgroundReleaseId
             );
 
-        const stage = projectPortraitStage(input.dialogue, input.dialogueIndex);
+        const stage = this.stageFor(input);
         const portraits = {
             left: this.snapshot.portraits.left,
             right: this.snapshot.portraits.right,
@@ -469,12 +498,9 @@ export class VisualStateController {
             if (!this.isInputCurrent(input, generation)) return;
             // A narrator line can retain both stage slots; the keyed-visual
             // check must consider the projected stage, not just this line.
-            const stage = projectPortraitStage(
-                input.dialogue,
-                input.dialogueIndex
-            );
+            const stage = this.stageFor(input);
             const hasKeyedVisual =
-                identitiesForLine(entry).length > 0 ||
+                identitiesForLine(entry, !this.suppressPortraits).length > 0 ||
                 stage.left !== null ||
                 stage.right !== null;
             this.publish({ release: hasKeyedVisual ? 'unavailable' : 'idle' });
@@ -503,7 +529,7 @@ export class VisualStateController {
                 })
             );
         }
-        const stage = projectPortraitStage(input.dialogue, input.dialogueIndex);
+        const stage = this.stageFor(input);
         for (const slot of PORTRAIT_SLOTS) {
             const desired = stage[slot];
             if (!desired) continue;
@@ -801,7 +827,7 @@ export class VisualStateController {
                 })
             );
         }
-        const stage = projectPortraitStage(input.dialogue, input.dialogueIndex);
+        const stage = this.stageFor(input);
         const portraits = {
             left: this.snapshot.portraits.left,
             right: this.snapshot.portraits.right,
@@ -828,13 +854,21 @@ export class VisualStateController {
         const resolver = this.resolver;
         if (resolver === null) return;
         const currentSignature = visualSignature(
-            input.dialogue[input.dialogueIndex]
+            input.dialogue[input.dialogueIndex],
+            !this.suppressPortraits
         );
         const next = input.dialogue
             .slice(input.dialogueIndex + 1)
-            .find(entry => visualSignature(entry) !== currentSignature);
+            .find(
+                entry =>
+                    visualSignature(entry, !this.suppressPortraits) !==
+                    currentSignature
+            );
         if (!next) return;
-        for (const identity of identitiesForLine(next)) {
+        for (const identity of identitiesForLine(
+            next,
+            !this.suppressPortraits
+        )) {
             if (!this.isInputCurrent(input, generation)) return;
             // Skip warm prefetch for a portrait whose key matches a current
             // slot failure memo. DecodedAssetCache.prefetch retries failed
@@ -908,9 +942,13 @@ export class VisualStateController {
             }
             const dialogue = this.getSceneDialogue(input.storyId, toSceneId);
             const firstVisualLine = dialogue?.find(
-                entry => identitiesForLine(entry).length > 0
+                entry =>
+                    identitiesForLine(entry, !this.suppressPortraits).length > 0
             );
-            const assets = identitiesForLine(firstVisualLine);
+            const assets = identitiesForLine(
+                firstVisualLine,
+                !this.suppressPortraits
+            );
             if (assets.length === 0) continue;
             this.prefetchedEdges.set(edgeKey, {
                 generation,
@@ -1001,12 +1039,17 @@ export class VisualStateController {
     ): boolean {
         if (!this.isInputCurrent(input, generation)) return false;
         const currentSignature = visualSignature(
-            input.dialogue[input.dialogueIndex]
+            input.dialogue[input.dialogueIndex],
+            !this.suppressPortraits
         );
         const next = input.dialogue
             .slice(input.dialogueIndex + 1)
-            .find(entry => visualSignature(entry) !== currentSignature);
-        return identitiesForLine(next).some(
+            .find(
+                entry =>
+                    visualSignature(entry, !this.suppressPortraits) !==
+                    currentSignature
+            );
+        return identitiesForLine(next, !this.suppressPortraits).some(
             candidate =>
                 candidate.type === identity.type &&
                 candidate.key === identity.key
@@ -1022,9 +1065,13 @@ export class VisualStateController {
         if (!this.isInputCurrent(input, generation)) return false;
         const dialogue = this.getSceneDialogue(input.storyId, toSceneId);
         const firstVisualLine = dialogue?.find(
-            entry => identitiesForLine(entry).length > 0
+            entry =>
+                identitiesForLine(entry, !this.suppressPortraits).length > 0
         );
-        const currentAssets = identitiesForLine(firstVisualLine);
+        const currentAssets = identitiesForLine(
+            firstVisualLine,
+            !this.suppressPortraits
+        );
         return (
             currentAssets.length === assets.length &&
             currentAssets.every(
@@ -1071,10 +1118,7 @@ export class VisualStateController {
     ): boolean {
         if (!this.isInputCurrent(input, generation)) return false;
         if (releaseGeneration !== this.releaseGeneration) return false;
-        return (
-            projectPortraitStage(input.dialogue, input.dialogueIndex)[slot]
-                ?.portrait === key
-        );
+        return this.stageFor(input)[slot]?.portrait === key;
     }
 
     private isLayerCurrentForRelease(

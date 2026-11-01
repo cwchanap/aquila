@@ -9,6 +9,7 @@ import {
     type ValidatedAssetRelease,
 } from '@aquila/stories/runtime-assets';
 import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
+import { loadStoryContent } from '@aquila/stories/async';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DecodedAsset, VisualSnapshot } from '../types';
 import {
@@ -133,6 +134,7 @@ function createHarness(options?: {
     now?: () => number;
     sceneDialogue?: Record<string, readonly DialogueEntry[] | null>;
     source?: AssetResolverSource | null;
+    suppressPortraits?: boolean;
 }) {
     const resolveAsset =
         options?.resolveAsset ??
@@ -169,6 +171,7 @@ function createHarness(options?: {
     );
     const controller = new VisualStateController({
         resolver,
+        suppressPortraits: options?.suppressPortraits,
         source,
         cache,
         getSceneDialogue,
@@ -2285,5 +2288,68 @@ describe('VisualStateController', () => {
             (resolver.prefetchNextEdge as ReturnType<typeof vi.fn>).mock.calls
                 .length
         ).toBeGreaterThan(callsAfterFirst);
+    });
+
+    it('suppresses portrait staging, loading, and prefetching for cast-inclusive act1 visuals', async () => {
+        const { dialogue, flow } = await loadStoryContent(
+            'train_adventure',
+            'zh'
+        );
+        const act1 = dialogue['act1'];
+        const act2 = dialogue['act2'];
+        const { cache, controller, latest, resolver } = createHarness({
+            sceneDialogue: { act2 },
+            suppressPortraits: true,
+        });
+        const trainInput = (dialogueIndex: number) =>
+            input(act1, {
+                storyId: 'train_adventure',
+                sceneId: 'act1',
+                dialogueIndex,
+                flow,
+            });
+
+        const speakerIndex = act1.findIndex(entry => entry.portrait);
+        expect(speakerIndex).toBeGreaterThan(-1);
+        controller.update(trainInput(speakerIndex));
+        await flushAsyncWork();
+
+        // The cast-inclusive background still loads; the portrait stage
+        // stays empty and no portrait identity is ever resolved or decoded.
+        expect(latest().activeBackground.state).toBe('ready');
+        expect(latest().activeBackground.identity).toBe(
+            'background:_root/act1_s0'
+        );
+        expect(latest().portraits.left.state).toBe('omitted');
+        expect(latest().portraits.right.state).toBe('omitted');
+        expect(latest().activePortraitSlot).toBeNull();
+        expect(
+            vi
+                .mocked(resolver.resolve)
+                .mock.calls.filter(([identity]) => identity.type === 'portrait')
+        ).toHaveLength(0);
+        expect(
+            vi
+                .mocked(cache.load)
+                .mock.calls.filter(
+                    ([asset]) => asset.asset.identity.type === 'portrait'
+                )
+        ).toHaveLength(0);
+
+        // At the act's end the edge prefetch requests act2's background
+        // only — its portrait keys are never resolved or prefetched.
+        controller.update(trainInput(act1.length - 1));
+        await flushAsyncWork();
+        expect(resolver.prefetchNextEdge).toHaveBeenCalledWith(
+            expect.objectContaining({
+                fromSceneId: 'act1',
+                toSceneId: 'act2',
+                assets: [{ type: 'background', key: '_root/act2_s0' }],
+            })
+        );
+        const prefetchedTypes = vi
+            .mocked(cache.prefetch)
+            .mock.calls.map(([asset]) => asset.asset.identity.type);
+        expect(prefetchedTypes).not.toContain('portrait');
     });
 });

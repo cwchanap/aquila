@@ -6,6 +6,8 @@ export {
     STORY_TEXT_LOCALES,
     PRODUCTION_VISUAL_STORY_IDS,
     TEXT_ONLY_STORY_IDS,
+    CAST_INCLUSIVE_BACKGROUND_STORY_IDS,
+    hasCastInclusiveBackgrounds,
     hasStoryText,
     isRegisteredStoryId,
     normalizeStoryLocale,

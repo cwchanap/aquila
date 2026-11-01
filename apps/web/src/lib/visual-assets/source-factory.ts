@@ -1,5 +1,8 @@
 import type { DialogueEntry } from '@aquila/stories';
-import { PRODUCTION_VISUAL_STORY_IDS } from '@aquila/stories/async';
+import {
+    hasCastInclusiveBackgrounds,
+    PRODUCTION_VISUAL_STORY_IDS,
+} from '@aquila/stories/async';
 import type { AssetResolverSource } from '@aquila/stories/runtime-assets';
 import { getBrowserStorage } from '@/lib/reader-mode';
 import {
@@ -92,6 +95,7 @@ export function createVisualRuntime(
     const cache = new DecodedAssetCache();
     const controller = new VisualStateController({
         resolver,
+        suppressPortraits: hasCastInclusiveBackgrounds(storyId),
         source,
         cache,
         getSceneDialogue,

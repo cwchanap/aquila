@@ -438,7 +438,7 @@ describe('StoryMapSheet', () => {
 
     it('scrolls the current node into view on open and on locate', async () => {
         const scrollSpy = vi
-            .spyOn(Element.prototype, 'scrollIntoView')
+            .spyOn(Element.prototype, 'scrollTo')
             .mockImplementation(() => {});
         render(StoryMapSheet, { props: baseProps() });
         await vi.waitFor(() => expect(scrollSpy).toHaveBeenCalled());
@@ -485,7 +485,7 @@ describe('StoryMapSheet', () => {
 
     it('scrolls instantly when reduced motion is preferred', async () => {
         const scrollSpy = vi
-            .spyOn(Element.prototype, 'scrollIntoView')
+            .spyOn(Element.prototype, 'scrollTo')
             .mockImplementation(() => {});
         const matchSpy = vi.spyOn(window, 'matchMedia').mockImplementation(
             query =>

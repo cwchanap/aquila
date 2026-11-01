@@ -3,6 +3,7 @@ import { elevatorGameFlow } from '../../stories/src/generated/elevatorGame/flow'
 import { scene as act3Dialogue } from '../../stories/src/generated/elevatorGame/scenes/en/act3';
 import { elevatorGameChoiceTextEn } from '../../stories/src/stories/elevatorGame/choices.en';
 import { buildChoiceMap } from '../../stories/src/stories/choice-utils';
+import { MobileReaderPage } from './utils';
 
 const STORY_ID = 'elevator_game';
 const CHOICE_SCENE_ID = 'act3';
@@ -37,6 +38,21 @@ const DECISION_NAME = `Decision · ${choice.options.length} options`;
 const JUMP_TO_ACT3 = 'Jump to Act 3';
 const MENU_TRIGGER = '#mobile-reader-menu-trigger';
 const SETTINGS_TRIGGER = '#reader-settings-trigger';
+const TRAIN_VISITED = [
+    'act1',
+    'act2',
+    'act3',
+    'b1a_act4',
+    'b1a_act5',
+    'b1a_act6',
+    'b1a_b2a_act7',
+    'b1a_b2a_act8',
+    'b1a_b2b_act7',
+    'b1b_act4',
+];
+const TRAIN_CURRENT = 'b1a_b2a_act8';
+const CURRENT_CAPTION = 'Current position';
+const LOCATE_CURRENT = 'Locate current position';
 
 const t = {
     openSettings: 'Open reader settings',
@@ -264,6 +280,51 @@ test.describe('Story map', () => {
         await page.mouse.click(point.x, point.y);
         await expect(sheet).not.toBeVisible();
         await expect(page.locator(SETTINGS_TRIGGER)).toBeFocused();
+    });
+
+    test('keeps the current-position caption inside the scrolled surface', async ({
+        page,
+    }, testInfo) => {
+        const reader = new MobileReaderPage(page);
+        await reader.seedVisitedScenes('train_adventure', TRAIN_VISITED);
+        await page.goto(
+            `/en/reader?story=train_adventure&scene=${TRAIN_CURRENT}&dialogue=1`
+        );
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const surface = page.getByTestId('story-map-surface');
+        const caption = surface.getByText(CURRENT_CAPTION, { exact: true });
+        await expect(caption).toBeVisible();
+
+        const captionInView = async () => {
+            const surfaceBox = await surface.boundingBox();
+            const captionBox = await caption.boundingBox();
+            if (!surfaceBox || !captionBox) return false;
+            return (
+                captionBox.x >= surfaceBox.x - 0.5 &&
+                captionBox.x + captionBox.width <=
+                    surfaceBox.x + surfaceBox.width + 0.5 &&
+                captionBox.y >= surfaceBox.y - 0.5 &&
+                captionBox.y + captionBox.height <=
+                    surfaceBox.y + surfaceBox.height + 0.5
+            );
+        };
+        await expect
+            .poll(captionInView, {
+                message:
+                    'caption fully inside the surface after opening auto-scroll',
+            })
+            .toBe(true);
+
+        await surface.evaluate(el => {
+            el.scrollTo({ left: 0 });
+        });
+        await sheet.getByRole('button', { name: LOCATE_CURRENT }).click();
+        await expect
+            .poll(captionInView, {
+                message:
+                    'caption fully inside the surface after Locate current',
+            })
+            .toBe(true);
     });
 
     test('moves focus into the sheet on a phone and restores it to the menu trigger', async ({

@@ -47,6 +47,7 @@ describe('getAssetResolverSource', () => {
     });
 
     it.each([
+        'train_adventure',
         'elevator_game',
         'demon_lord_is_hiring',
         'three_am_laundromat',
@@ -95,7 +96,7 @@ describe('getAssetResolverSource', () => {
     it('returns null for stories without a visual source', () => {
         expect(
             getAssetResolverSource(
-                'train_adventure',
+                'dont_save_me_before_midnight',
                 'http://localhost:5090',
                 {}
             )
@@ -126,7 +127,7 @@ describe('createVisualRuntime', () => {
         const getSceneDialogue = () => null;
 
         const runtime = createVisualRuntime(
-            'train_adventure',
+            'dont_save_me_before_midnight',
             'http://localhost:5090',
             getSceneDialogue
         );

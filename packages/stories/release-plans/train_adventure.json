@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "storyId": "train_adventure",
+  "channel": "production",
+  "entries": [
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act1_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act1_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act1_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act1_s1.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act2_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act2_s1.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s2"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act2_s2.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s3"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act2_s3.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s4"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act2_s4.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s5"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act2_s5.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act2_s6"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act2_s6.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act3_s0"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act3_s0.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act3_s1"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act3_s1.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act3_s2"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act3_s2.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act3_s3"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act3_s3.png"
+    },
+    {
+      "identity": {
+        "type": "background",
+        "key": "_root/act3_s4"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/backgrounds/_root/act3_s4.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "li_jie/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/li_jie/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "tanaka_kenta/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/tanaka_kenta/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "suzuki_asuka/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/suzuki_asuka/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "takahashi_misaki/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/takahashi_misaki/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "sato_takumi/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/sato_takumi/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "saito_ren/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/saito_ren/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "yamamoto_koji/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/yamamoto_koji/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "ito_nana/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/ito_nana/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "ito_makoto/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/ito_makoto/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "kobayashi_shota/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/kobayashi_shota/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "kobayashi_tomoko/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/kobayashi_tomoko/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "nakamura_hayato/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/nakamura_hayato/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "shimizu_emi/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/shimizu_emi/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "ling_mo/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/ling_mo/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "kobayashi_hina/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/kobayashi_hina/base.png"
+    },
+    {
+      "identity": {
+        "type": "portrait",
+        "key": "kobayashi_yudai/base"
+      },
+      "disposition": "included",
+      "sourcePath": "train_adventure/characters/kobayashi_yudai/base.png"
+    }
+  ]
+}

@@ -18,6 +18,7 @@ export const STORY_VOICE_LANGUAGE: Readonly<Record<string, string>> = {
     demon_lord_is_hiring: 'ja',
     elevator_game: 'ja',
     three_am_laundromat: 'ja',
+    day_4012: 'ja',
 };
 
 export function hasStoryVoice(storyId: string): boolean {

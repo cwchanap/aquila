@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "modelId": "eleven_v4",
+  "language": "ja",
+  "roles": {
+    "cheng_yining": {
+      "voiceId": "5I5dvUIAoHkJi5p41hL1",
+      "voiceName": "Honoka",
+      "innerDirection": "[softly]",
+      "notes": "Hapadona's pick from Honoka, Mio Calm Elegant and Ruru. Inner monologue is spoken softer. Narration stays silent."
+    },
+    "vigil": {
+      "voiceId": "C8e2F6Cm3l58PjXaVpUW",
+      "voiceName": "Aida",
+      "notes": "The ship AI, Vigil. Hapadona's pick from Aida, Ena and Suyasu."
+    },
+    "captain_chou": {
+      "voiceId": "XTgQjnpd8XhnncDb2jzd",
+      "voiceName": "Joh",
+      "notes": "Speaks once. Library pick offered for swap; Hapadona did not object."
+    }
+  }
+}

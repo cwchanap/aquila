@@ -114,6 +114,7 @@ export interface StoryMapLayoutEdge {
     to: string;
     d: string;
     label?: string;
+    serves?: readonly string[];
 }
 
 export interface StoryMapLayout {
@@ -441,18 +442,21 @@ export function layoutStoryMap(
         from: string,
         to: string,
         d: string,
-        label?: string
+        label?: string,
+        serves?: readonly string[],
+        idSuffix?: string
     ): void => {
         edges.push({
             id:
                 kind === 'trunk' || kind === 'stub'
-                    ? `${kind}:${from}`
+                    ? `${kind}:${from}${idSuffix ?? ''}`
                     : `${from}->${to}`,
             kind,
             from,
             to,
             d,
             ...(label ? { label } : {}),
+            ...(serves ? { serves } : {}),
         });
     };
 
@@ -471,20 +475,46 @@ export function layoutStoryMap(
 
     const trunkEdge = (
         from: string,
-        to: string,
         trunkX: number,
-        lastRow: number
+        sides: readonly { id: string; bandTop: number }[]
     ): void => {
         const a = byId.get(from);
-        if (!a) return;
+        if (!a || sides.length === 0) return;
         const x0 = a.x + a.width;
-        const y = cyOf(a.row);
-        edge('stub', from, to, `M ${x0} ${y} L ${trunkX} ${y}`);
+        const top = cyOf(a.row);
+        const last = sides[sides.length - 1];
+        const bottom = cyOf(last.bandTop);
+        const all = sides.map(s => s.id);
+        edge(
+            'stub',
+            from,
+            last.id,
+            `M ${x0} ${top} L ${trunkX} ${top}`,
+            undefined,
+            all
+        );
+        let y0 = top;
+        sides.forEach((s, i) => {
+            const y1 = m.paddingY + s.bandTop * m.rowHeight;
+            edge(
+                'trunk',
+                from,
+                s.id,
+                `M ${trunkX} ${y0} L ${trunkX} ${y1}`,
+                undefined,
+                sides.slice(i).map(x => x.id),
+                `:${i}`
+            );
+            y0 = y1;
+        });
         edge(
             'trunk',
             from,
-            to,
-            `M ${trunkX} ${y} L ${trunkX} ${cyOf(lastRow)}`
+            last.id,
+            `M ${trunkX} ${y0} L ${trunkX} ${bottom}`,
+            undefined,
+            [last.id],
+            `:${sides.length}`
         );
     };
 
@@ -579,14 +609,13 @@ export function layoutStoryMap(
             }
             const childRows = order.map(i => rowsOf(node.options[i].child));
             if (order.length > 1) {
-                const lastSideBandTop =
-                    row + childRows.slice(0, -1).reduce((s, n) => s + n, 0);
-                trunkEdge(
-                    node.id,
-                    node.options[order[order.length - 1]].child.id,
-                    trunkX,
-                    lastSideBandTop
-                );
+                let sideTop = row + childRows[0];
+                const sides = order.slice(1).map((optionIndex, i) => {
+                    const bandTop = sideTop;
+                    sideTop += childRows[i + 1];
+                    return { id: node.options[optionIndex].child.id, bandTop };
+                });
+                trunkEdge(node.id, trunkX, sides);
             }
             let bandTop = row;
             order.forEach((optionIndex, placed) => {

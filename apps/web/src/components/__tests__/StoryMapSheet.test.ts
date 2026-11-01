@@ -406,12 +406,17 @@ describe('StoryMapSheet', () => {
     it('styles the shared trunk from the side branches it serves', () => {
         const { container } = render(StoryMapSheet, { props: baseProps() });
         const stub = container.querySelector('path[data-edge-kind="stub"]');
-        const trunk = container.querySelector('path[data-edge-kind="trunk"]');
+        const trunks = container.querySelectorAll(
+            'path[data-edge-kind="trunk"]'
+        );
         expect(stub?.getAttribute('data-edge-status')).toBe('unread');
-        expect(trunk?.getAttribute('data-edge-status')).toBe('unread');
+        expect(trunks.length).toBeGreaterThan(0);
+        for (const t of trunks) {
+            expect(t.getAttribute('data-edge-status')).toBe('unread');
+        }
     });
 
-    it('marks the shared trunk explored once a side branch was read', () => {
+    it('splits the trunk at offshoots so unread-only sections stay unread', () => {
         const { container } = render(StoryMapSheet, {
             props: baseProps({
                 progress: progress(['act1', 'act2', 'b1a_act3', 'b1b_act3']),
@@ -419,9 +424,16 @@ describe('StoryMapSheet', () => {
             }),
         });
         const stub = container.querySelector('path[data-edge-kind="stub"]');
-        const trunk = container.querySelector('path[data-edge-kind="trunk"]');
+        const trunks = [
+            ...container.querySelectorAll('path[data-edge-kind="trunk"]'),
+        ];
         expect(stub?.getAttribute('data-edge-status')).toBe('explored');
-        expect(trunk?.getAttribute('data-edge-status')).toBe('explored');
+        expect(trunks.length).toBe(3);
+        expect(trunks.map(t => t.getAttribute('data-edge-status'))).toEqual([
+            'explored',
+            'unread',
+            'unread',
+        ]);
     });
 
     it('scrolls the current node into view on open and on locate', async () => {

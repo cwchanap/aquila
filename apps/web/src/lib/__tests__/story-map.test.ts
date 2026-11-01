@@ -625,23 +625,30 @@ describe('layoutStoryMap', () => {
             e => e.kind === 'trunk' && e.from === c1.id
         );
         expect(stubs).toHaveLength(1);
-        expect(trunks).toHaveLength(1);
+        expect(trunks).toHaveLength(3);
         const [sx, sy, tx1, ty] = stubs[0].d
             .match(/-?\d+(?:\.\d+)?/g)!
             .map(Number);
         expect(sx).toBe(c1.x + c1.width);
         expect(sy).toBe(ty);
         expect(sy).toBe(cyOf(c1.row));
-        const [vx1, vy1, vx2, yLast] = trunks[0].d
-            .match(/-?\d+(?:\.\d+)?/g)!
-            .map(Number);
-        expect(vx1).toBe(tx1);
-        expect(vx1).toBe(vx2);
-        expect(vy1).toBe(sy);
-        expect(vx1).toBeGreaterThan(sx);
         const deepest = layout.nodes.find(n => n.id === 'b1c_act3')!;
-        expect(yLast).toBe(cyOf(deepest.row));
-        expect(trunks[0].to).toBe(deepest.id);
+        let segTop = sy;
+        const segNums = trunks.map(t =>
+            t.d.match(/-?\d+(?:\.\d+)?/g)!.map(Number)
+        );
+        for (const [vx1, vy1, vx2, vy2] of segNums) {
+            expect(vx1).toBe(tx1);
+            expect(vx2).toBe(tx1);
+            expect(vy1).toBe(segTop);
+            segTop = vy2;
+        }
+        expect(segTop).toBe(cyOf(deepest.row));
+        expect(tx1).toBeGreaterThan(sx);
+        expect(trunks[0].serves).toEqual(['b1b_act3', 'b1c_act3']);
+        expect(trunks[1].serves).toEqual(['b1c_act3']);
+        expect(trunks[2].serves).toEqual(['b1c_act3']);
+        expect(trunks[2].to).toBe(deepest.id);
 
         const branches = layout.edges.filter(
             e => e.kind === 'branch' && e.from === c1.id
@@ -658,7 +665,7 @@ describe('layoutStoryMap', () => {
             expect(ey).toBe(cyOf(childRow));
             expect(sy).toBeLessThan(ey);
             expect(sy).toBeGreaterThanOrEqual(cyOf(0));
-            expect(sy).toBeLessThanOrEqual(yLast);
+            expect(sy).toBeLessThanOrEqual(cyOf(deepest.row));
             expect(c1x).toBeGreaterThan(sx);
             expect(c2x).toBeLessThan(ex);
             expect(c1y).not.toBe(c2y);

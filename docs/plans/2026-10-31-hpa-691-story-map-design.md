@@ -27,9 +27,9 @@ Keep this implementation simple:
 | `packages/stories/src/flow-types.ts` | Scene nodes link by `next`; choice nodes expose `choiceId` / `nextByOption` | Read as-is |
 | `packages/stories/src/types.ts` | `ChoiceMap` provides prompts, labels, and destination scenes | Make active map available to the sheet |
 | `apps/web/src/lib/story-progress-store.ts` | Persists one position plus all reached ending IDs per story | Add optional visited-scene IDs |
-| `apps/web/src/lib/reader-manager.ts` | `goToScene(sceneId)` pushes one history entry; `applySession` loads active flow | Optional `at: 'start' | 'end'` jump and active choices |
+| `apps/web/src/lib/reader-manager.ts` | `goToScene(sceneId)` pushes one history entry; `applySession` loads active flow; line persistence is debounced by 500 ms | Optional `at: 'start' | 'end'` jump, active choices, and a synchronous current-progress snapshot callback that flushes pending position writes |
 | `apps/web/src/lib/reader-state.svelte.ts` | Canonical reactive progression and active flow | Add/reset `activeChoices` runtime payload only |
-| `apps/web/src/components/ReaderShell.svelte` | Chooses the text/mobile/visual leaf, owns settings overlay | Own map sheet, derive eligibility/visible acts once, disable leaf while open |
+| `apps/web/src/components/ReaderShell.svelte` | Chooses the text/mobile/visual leaf, owns settings overlay, and renders Settings *outside* the inert reader subtree | Own map sheet, derive eligibility/visible acts once, disable reader leaf **and Settings trigger** while open; restore focus after unlock |
 | `apps/web/src/lib/act-navigation.ts` | `buildChapterData` builds full Acts lists for desktop and mobile | Optional visible-scene filter **before** choosing/grouping act candidates |
 | `apps/web/src/components/ActPanel.svelte` / `MobileActDrawer.svelte` | Both call `buildChapterData` | Accept the same optional allowlist passed through the controlled reader leaves |
 | `apps/web/src/components/ReaderSettingsMenu.svelte` | Closes then awaits `tick()` before invoking bookmark/mode actions | Same close-then-open pattern |
@@ -68,7 +68,7 @@ The visible-set calculation, branch reveal rules and layout are unit-testable wi
 
 ## Sky Glass sheet and interaction
 
-Create `apps/web/src/components/StoryMapSheet.svelte`. `ReaderShell` passes the active flow, localized choices, story title, current scene/index, translations, latest per-story progress and `onJump(sceneId, at)`. `ReaderShell` reads progress on scene/story changes and refreshes it when opening the map; localStorage is not itself reactive. The sheet and Acts panels use the same saved-progress/visibility snapshot.
+Create `apps/web/src/components/StoryMapSheet.svelte`. `ReaderShell` passes the active flow, localized choices, story title, current scene/index, translations, latest per-story progress and `onJump(sceneId, at)`. The sheet and Acts panels use the **same** progress/visibility snapshot. **Do not read localStorage directly on open:** the reader's final-line progress may still be waiting for its 500 ms debounced write, so a completed ending can otherwise appear as `?` until the sheet is reopened. `ReaderShell` obtains the authoritative snapshot through `ReaderManager.getCurrentStoryProgressSnapshot()` **before** setting `storyMapOpen = true`. Refresh on story/scene changes too, but not every dialogue-index change; use `untrack` around manager reads in a Svelte effect to keep the debounce intact. No new reactive progress store is needed.
 
 - On phones: full-screen sheet; on desktop: large centered rounded sheet. Sky gradient `#bae6fd → #7dd3fc → #60a5fa`. Frosted scrollable map surface with `bg-white/55` and white ring.
 - Paths: route blue-to-cyan gradient (6px); explored teal (4.5px); unknown slate dotted (2.5px). Sibling options emerge from one trunk.
@@ -86,19 +86,20 @@ Translations: add the story-map labels together under `reader` in `en.json`, `zh
 - Ending: jump to the first line of its known ending act.
 - In `ReaderManager.goToScene`: flush any pending line URL replace, load the destination dialogue, set the index via `clampIndex` (0 for start, last line for end), then `syncUrl(false)` and `persist()` **once**. A jump produces one new browser history entry, not one per line skipped.
 - In `ReaderManager.applySession` set `readerState.activeChoices = payload.choices`; clear it in both `readerState.reset()` and the `ReaderManager` constructor's explicit initialization, and on story unload. Keep it runtime-only, outside the serialized reader session.
+- Expose `getCurrentStoryProgressSnapshot(): StoryProgress | null` as a synchronous `ReaderManager` → `ReaderShell` prop, next to existing `onNavigate` / `onIndexChange`. When the active payload is ready, use existing `flushPendingReplace()` to synchronize a queued line URL replacement. If a 500 ms `persistTimer` is pending, clear it and call existing `persist()` **once** to record the canonical scene/index and ending (no `pushState`); then return `storyProgress.get(readerState.storyId)`. If no save is pending, just return the existing record. Do not introduce a second writer, event bus or reactive progress store. `ReaderShell` calls this before opening the map and shares the resulting snapshot with the Acts filter.
 - `ReaderShell` derives `storyMapAvailable` **once** from the active flow using `hasRealDecision`. Pass a boolean and optional `onOpenStoryMap` callback to the controlled settings/mobile components instead of having either component inspect the flow.
 - `ReaderSettingsMenu` exposes “Story map” only when `storyMapAvailable`; close settings, await `tick()`, then call `onOpenStoryMap`.
 - Phone text mode gets a Map icon in its existing chrome when eligible. Close chrome before opening the parent-owned sheet.
 - `ReaderShell` also calculates `visibleSceneIds` for branching stories and passes an optional allowlist through `NovelReader`, `VisualNovelReader` and `MobileNovelReader` into `ActPanel` / `MobileActDrawer`. No storage reads inside the controlled leaves. For linear stories pass no filter.
-- `ReaderShell` owns `storyMapOpen`. Add it to `leafDisabled` and render the sheet outside the inert reader leaf. Closing/reopening returns focus to a stable opener. Do not introduce another dialog state owner.
+- `ReaderShell` owns `storyMapOpen`. Add it to `leafDisabled` and render the sheet outside the inert reader leaf. **Also** update the sibling `ReaderSettingsMenu` prop to `triggerUnavailable={storyMapOpen || (leafOverlayOpen && !isBlocking)}` (or equivalent), because Settings is rendered outside `readerReadyElement` and otherwise remains keyboard/assistive-tech activatable behind the modal. Keep the existing `disabled`/`tabindex={-1}` enforcement in `ReaderSettingsMenu` and prevent a second dialog. On close, clear `storyMapOpen`, await `tick()` so Settings is enabled again, then restore focus to the persistent desktop `reader-settings-trigger` or mobile `mobile-reader-menu-trigger` as appropriate. Reuse `focusTrap`; do not add an overlay manager.
 
 **Accepted trade-off:** jumping backward updates the saved Continue position, but previously visited acts remain in the map. No furthest-position banner or position snapshot in this ticket.
 
 ## Implementation order — one PR
 
 1. **Model and persistence:** introduce `story-map.ts` (`hasRealDecision`, `visibleSceneIds`, `buildStoryMap`, `layoutStoryMap`), add `visited?: string[]` to `StoryProgress` and append unique scene IDs in `record()`. Keep the field optional without migration/version bump; do not reconstruct historical visits. Unit-test a small fork plus the real Platform flow; smoke-test all existing catalog flows.
-2. **Reader wiring:** expose the localized active `ChoiceMap` and add the optional end-of-scene navigation argument. Test correct last-line selection, storage and history semantics.
-3. **Presentation and localization:** add the en/zh/ja translation keys **before** implementing `StoryMapSheet.svelte` (the `Translations` type derives from `en.json`); connect settings and mobile chrome to `ReaderShell`, pass the visibility filter to existing Acts panels, and wire jump callbacks and inert/focus behavior. Keep styling co-located in the component.
+2. **Reader wiring:** expose the localized active `ChoiceMap`, the optional end-of-scene navigation argument, and `getCurrentStoryProgressSnapshot()` across the existing manager → shell boundary. Test correct last-line selection, flushing the pending debounce, storage and history semantics.
+3. **Presentation and localization:** add the en/zh/ja translation keys **before** implementing `StoryMapSheet.svelte` (the `Translations` type derives from `en.json`); connect settings and mobile chrome to `ReaderShell`, pass the visibility filter to existing Acts panels, open from a flushed progress snapshot, and wire jump callbacks, both reader/Settings modal locks and focus restoration. Keep styling co-located in the component.
 4. **Proof:** component tests plus a focused Playwright smoke on **all three browser projects** and manual visuals/locale checks. Keep implementation commits on this draft PR; mark ready only after the acceptance checks pass.
 
 ## Test and acceptance checklist
@@ -117,11 +118,13 @@ Translations: add the story-map labels together under `reader` in `en.json`, `zh
 - [ ] `visited` records scenes only once, per story. No historical-visit reconstruction or old-record migration test.
 - [ ] `goToScene(id, 'end')` lands on the final line and pushes one history entry; Back restores the prior scene/line.
 - [ ] A jump changes Continue to the destination without erasing visited history.
+- [ ] **Immediate-ending regression:** with fake timers, change to the final line of a known terminal scene and open the map **before** the 500 ms save fires. The snapshot, ending marker and completed-ending count must already reflect completion; later timers must not add duplicate writes or browser-history entries.
 
 **UI / end-to-end**
 
 - [ ] Settings entry appears in desktop text/visual and phone visual modes only for branching stories.
 - [ ] Phone text chrome exposes the map; both entry points work with sheet close, focus, Escape and inert reader behavior.
+- [ ] **Sibling Settings lock:** while the map is open, the separate Settings trigger is disabled, non-tabbable and cannot open a second modal even through programmatic activation; after close/unlock, focus returns to the desktop Settings trigger or the stable mobile menu toggle.
 - [ ] Fold/unfold, selection, locate-current, and detail panel work with keyboard, reduced motion, zh/ja labels and small viewports.
 - [ ] Text, phone text and visual jumps to decisions expose the intended prompt.
 - [ ] For branching stories, both Acts panels expose **only** allowed/visited scenes (no future act labels and no skip-ahead navigation). Verify that linear stories retain their existing unrestricted Acts lists.

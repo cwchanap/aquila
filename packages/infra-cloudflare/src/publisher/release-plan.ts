@@ -1,4 +1,4 @@
-import { lstat, readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
     parseStoryAssetReleasePlan,
@@ -47,15 +47,16 @@ export async function deriveReleasePlan(
     });
 }
 
-// Only a genuinely absent file means "art not ready". Any other failure is
-// left for source resolution, which reports it as a sanitized source error.
+// Only a genuinely usable file counts as ready art — a missing path, a
+// directory, or a dangling symlink means "art not ready". Any other failure
+// is left for source resolution, which reports it as a sanitized source error.
 async function sourceExists(
     sourceRoot: string,
     sourcePath: string
 ): Promise<boolean> {
     try {
-        await lstat(join(sourceRoot, sourcePath));
-        return true;
+        const source = await stat(join(sourceRoot, sourcePath));
+        return source.isFile();
     } catch (error) {
         return !(
             typeof error === 'object' &&

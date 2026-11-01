@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -46,6 +46,48 @@ describe('deriveReleasePlan', () => {
                 },
                 {
                     identity: { type: 'portrait', key: 'hero/base' },
+                    disposition: 'omitted',
+                    reason: 'No artwork in the source root yet',
+                },
+            ],
+        });
+    });
+
+    it('omits a catalog path that is a directory', async () => {
+        const root = await sourceRootWith([
+            'example_story/backgrounds/act1/s0.png',
+        ]);
+        await mkdir(join(root, 'example_story/characters/hero/base.png'), {
+            recursive: true,
+        });
+
+        await expect(deriveReleasePlan(catalog, root)).resolves.toMatchObject({
+            entries: [
+                { disposition: 'included' },
+                {
+                    disposition: 'omitted',
+                    reason: 'No artwork in the source root yet',
+                },
+            ],
+        });
+    });
+
+    it('omits a catalog path that is a dangling symlink', async () => {
+        const root = await sourceRootWith([
+            'example_story/backgrounds/act1/s0.png',
+        ]);
+        await mkdir(join(root, 'example_story/characters/hero'), {
+            recursive: true,
+        });
+        await symlink(
+            'missing-target.png',
+            join(root, 'example_story/characters/hero/base.png')
+        );
+
+        await expect(deriveReleasePlan(catalog, root)).resolves.toMatchObject({
+            entries: [
+                { disposition: 'included' },
+                {
                     disposition: 'omitted',
                     reason: 'No artwork in the source root yet',
                 },

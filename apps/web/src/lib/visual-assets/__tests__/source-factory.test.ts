@@ -1,5 +1,8 @@
 import type { StoryFlowConfig } from '@aquila/stories';
-import { PRODUCTION_VISUAL_STORY_IDS } from '@aquila/stories/async';
+import {
+    loadStoryContent,
+    PRODUCTION_VISUAL_STORY_IDS,
+} from '@aquila/stories/async';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createVisualRuntime, getAssetResolverSource } from '../source-factory';
 import type { VisualSnapshot } from '../types';
@@ -189,5 +192,54 @@ describe('createVisualRuntime', () => {
         expect(snapshots.at(-1)!.stagingBackground.state).toBe('failed');
 
         await expect(runtime?.dispose()).resolves.toBeUndefined();
+    });
+
+    it('suppresses the portrait stage for cast-inclusive stories only', async () => {
+        const { dialogue } = await loadStoryContent('train_adventure', 'zh');
+        const portraitIndex = dialogue['act1'].findIndex(
+            entry => entry.portrait
+        );
+        expect(portraitIndex).toBeGreaterThan(-1);
+        const actInput = (storyId: string) => ({
+            storyId,
+            sceneId: 'act1',
+            dialogue: dialogue['act1'],
+            dialogueIndex: portraitIndex,
+            flow: linearFlow,
+        });
+        const snapshots: VisualSnapshot[] = [];
+
+        const trainRuntime = createVisualRuntime(
+            'train_adventure',
+            'http://localhost:5090',
+            () => null
+        );
+        trainRuntime!.controller.subscribe(snapshot =>
+            snapshots.push(snapshot)
+        );
+        trainRuntime!.controller.update(actInput('train_adventure'));
+        await flushAsyncWork();
+        // No resolver resolves these keys, so an unsuppressed portrait stage
+        // would fail its slots — a cast-inclusive story keeps them omitted.
+        expect(snapshots.at(-1)!.portraits.left.state).toBe('omitted');
+        expect(snapshots.at(-1)!.portraits.right.state).toBe('omitted');
+        expect(snapshots.at(-1)!.activePortraitSlot).toBeNull();
+        await trainRuntime!.dispose();
+
+        const unsuppressedRuntime = createVisualRuntime(
+            'unreleased_story',
+            'http://localhost:5090',
+            () => null
+        );
+        unsuppressedRuntime!.controller.subscribe(snapshot =>
+            snapshots.push(snapshot)
+        );
+        unsuppressedRuntime!.controller.update(actInput('unreleased_story'));
+        await flushAsyncWork();
+        expect(
+            snapshots.at(-1)!.portraits.left.state === 'failed' ||
+                snapshots.at(-1)!.portraits.right.state === 'failed'
+        ).toBe(true);
+        await unsuppressedRuntime!.dispose();
     });
 });

@@ -289,6 +289,206 @@ describe('buildStoryMap', () => {
         expect(flatten(view.root).some(n => n.kind === 'decision')).toBe(false);
     });
 
+    it('shows no map when neither visited progress nor a current scene is available', () => {
+        const view = buildStoryMap({
+            flow: forkFlow,
+            choices: forkChoices,
+            progress: null,
+            currentSceneId: null,
+            t,
+        });
+        expect(view.root).toBeNull();
+        expect(view.stats).toEqual({ acts: 0, decisions: 0, endings: 0 });
+    });
+
+    it('shows visited paths as explored when the current scene is unavailable', () => {
+        const view = buildStoryMap({
+            flow: forkFlow,
+            choices: forkChoices,
+            progress: progress(['act1', 'act2', 'b1a_act3', 'b1b_act3']),
+            currentSceneId: null,
+            t,
+        });
+        expect(view.root?.status).toBe('explored');
+        expect(view.root?.current).toBe(false);
+        const decision = firstDecision(view.root!)!;
+        expect(decision.status).toBe('explored');
+        expect(decision.options[0].child.status).toBe('explored');
+        expect(decision.options[1].child.status).toBe('explored');
+        expect(decision.options[2].child.kind).toBe('unknown');
+        const layout = layoutStoryMap(view, new Set(), metrics);
+        expect(layout.nodes.filter(n => n.current)).toHaveLength(0);
+        expect(layout.nodes.find(n => n.id === 'b1a_act3')?.row).toBe(0);
+        expect(layout.nodes.find(n => n.id === 'b1b_act3')?.row).toBe(1);
+    });
+
+    it('keeps all flow options when a choice definition omits some of them', () => {
+        const view = buildStoryMap({
+            flow: forkFlow,
+            choices: {
+                c1: {
+                    prompt: 'Which fork?',
+                    options: [
+                        {
+                            id: 'b1c',
+                            label: 'Third',
+                            nextScene: 'b1c_act3',
+                        },
+                        {
+                            id: 'unavailable',
+                            label: 'Invalid option',
+                            nextScene: 'not_in_flow',
+                        },
+                    ],
+                },
+            },
+            progress: progress(['act1', 'act2', 'b1a_act3']),
+            currentSceneId: 'b1a_act3',
+            t,
+        });
+        const options = firstDecision(view.root!)!.options;
+        expect(options.map(o => [o.id, o.label])).toEqual([
+            ['b1c', 'Third'],
+            ['b1a', 'b1a'],
+            ['b1b', 'b1b'],
+        ]);
+        expect(options.map(o => o.child.kind)).toEqual([
+            'unknown',
+            'run',
+            'unknown',
+        ]);
+    });
+
+    it('falls back to option IDs when a choice definition is missing', () => {
+        const view = buildStoryMap({
+            flow: forkFlow,
+            choices: {},
+            progress: progress(['act1', 'act2', 'b1a_act3']),
+            currentSceneId: 'b1a_act3',
+            t,
+        });
+        const options = firstDecision(view.root!)!.options;
+        expect(options.map(o => o.label)).toEqual(['b1a', 'b1b', 'b1c']);
+        expect(options.map(o => o.child.kind)).toEqual([
+            'run',
+            'unknown',
+            'unknown',
+        ]);
+    });
+
+    it('stops a cyclic flow at an unread marker instead of repeating scenes', () => {
+        const flow = {
+            start: 'act1',
+            nodes: [
+                { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+                { kind: 'scene', id: 'act2', sceneId: 'act2', next: 'act1' },
+            ],
+        } as unknown as StoryFlowConfig;
+        const view = buildStoryMap({
+            flow,
+            choices: {},
+            progress: progress(['act1', 'act2']),
+            currentSceneId: 'act2',
+            t,
+        });
+        expect(runSceneIds(view.root)).toEqual(['act1', 'act2']);
+        expect(view.root?.next).toEqual({
+            kind: 'unknown',
+            id: 'unknown:act1',
+            status: 'unread',
+        });
+        expect(view.stats.acts).toBe(2);
+    });
+
+    it('does not duplicate a visited scene shared by two choice options', () => {
+        const flow = {
+            start: 'act1',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'act1',
+                    sceneId: 'act1',
+                    next: 'choice:c',
+                },
+                {
+                    kind: 'choice',
+                    id: 'choice:c',
+                    choiceId: 'c',
+                    nextByOption: { left: 'act2', right: 'act2' },
+                },
+                { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+            ],
+        } as unknown as StoryFlowConfig;
+        const view = buildStoryMap({
+            flow,
+            choices: {},
+            progress: progress(['act1', 'act2']),
+            currentSceneId: 'act2',
+            t,
+        });
+        const options = firstDecision(view.root!)!.options;
+        expect(options.map(o => o.child.kind)).toEqual(['run', 'unknown']);
+        expect(runSceneIds(options[0].child)).toEqual(['act2']);
+        expect(view.stats).toEqual({ acts: 2, decisions: 1, endings: 0 });
+    });
+
+    it('hides a dangling scene link behind an unread marker', () => {
+        const flow = {
+            start: 'act1',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'act1',
+                    sceneId: 'act1',
+                    next: 'missing_scene',
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const view = buildStoryMap({
+            flow,
+            choices: {},
+            progress: progress(['act1']),
+            currentSceneId: 'act1',
+            t,
+        });
+        expect(runSceneIds(view.root)).toEqual(['act1']);
+        expect(view.root?.next?.kind).toBe('unknown');
+        expect(JSON.stringify(view.root?.next)).not.toContain('missing_scene');
+    });
+
+    it('hides an unread destination of a single-option link', () => {
+        const view = buildStoryMap({
+            flow: linkOnlyFlow,
+            choices: {},
+            progress: progress(['act1']),
+            currentSceneId: 'act1',
+            t,
+        });
+        expect(runSceneIds(view.root)).toEqual(['act1']);
+        expect(view.root?.next?.kind).toBe('unknown');
+        expect(flatten(view.root).some(n => n.kind === 'decision')).toBe(false);
+    });
+
+    it('labels runs containing non-act scene IDs without counting them as acts', () => {
+        const flow = {
+            start: 'intro',
+            nodes: [
+                { kind: 'scene', id: 'intro', sceneId: 'intro', next: 'act2' },
+                { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+            ],
+        } as unknown as StoryFlowConfig;
+        const view = buildStoryMap({
+            flow,
+            choices: {},
+            progress: progress(['intro', 'act2']),
+            currentSceneId: 'act2',
+            t,
+        });
+        expect(runSceneIds(view.root)).toEqual(['intro', 'act2']);
+        expect(view.root?.label).toBe('Act 2');
+        expect(view.stats.acts).toBe(1);
+    });
+
     it('reveals a passed decision with all option labels and ? for unread options', () => {
         const view = mapAt(['act1', 'act2', 'b1a_act3'], 'b1a_act3');
         const decision = firstDecision(view.root!);

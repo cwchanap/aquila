@@ -647,6 +647,22 @@ describe('MobileNovelReader', () => {
             ).not.toBeInTheDocument();
         });
 
+        it('shows the story-map tooltip on long-press without opening the map', async () => {
+            const onOpenStoryMap = vi.fn();
+            renderReader({ storyMapAvailable: true, onOpenStoryMap });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            const map = screen.getByLabelText('Open story map');
+            await fireEvent.pointerDown(map);
+            await vi.advanceTimersByTimeAsync(450);
+            expect(screen.getByText('Open story map')).toBeInTheDocument();
+            expect(onOpenStoryMap).not.toHaveBeenCalled();
+            await fireEvent.pointerUp(map);
+            expect(
+                screen.queryByText('Open story map')
+            ).not.toBeInTheDocument();
+        });
+
         it('anchors the tooltip next to the pressed control, not at a fixed screen position', async () => {
             renderReader({ dialogueIndex: 0 });
             await vi.runAllTimersAsync();

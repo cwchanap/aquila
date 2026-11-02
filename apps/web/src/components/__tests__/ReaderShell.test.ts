@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
+import {
+    render,
+    screen,
+    waitFor,
+    fireEvent,
+    within,
+} from '@testing-library/svelte';
 import { tick } from 'svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
@@ -40,6 +46,7 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             actLabel: 'Act {n}',
             actFinal: 'Final',
             actEpilogue: 'Epilogue',
+            actRangeLabel: 'Acts {first}–{last}',
             chapterLabel: 'Chapter {n}',
             openActsPanel: 'Open acts panel',
             closeActsPanel: 'Close acts panel',
@@ -82,7 +89,35 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             furigana: 'Furigana',
             furiganaOn: 'On',
             furiganaOff: 'Off',
+            storyMap: {
+                title: 'Story map',
+                open: 'Open story map',
+                close: 'Close story map',
+                locateCurrent: 'Locate current position',
+                currentPosition: 'Current position',
+                youAreHere: 'You are here',
+                legend: 'Story map legend',
+                yourRoute: 'Your route',
+                explored: 'Explored',
+                ending: 'Ending',
+                jumpToDecision: 'Jump to this decision',
+                jumpToEnding: 'Read this ending again',
+                statsActs: '{n} acts',
+                statsDecisions: '{n} decisions',
+                statsEndings: '{n} endings',
+                expandRun: 'Expand {label}',
+                collapseRun: 'Collapse {label}',
+                decision: 'Decision',
+                options: '{n} options',
+                unreadLabel: 'Not read yet',
+                endingLabel: 'Ending {label}',
+                withBranch: '{label} — {branch}',
+                currentNode: '{position}: {label}',
+                decisionNode: '{decision} · {options}',
+                jumpTo: 'Jump to {label}',
+            },
         },
+        stories: { elevatorGame: 'The Elevator Game' },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
         languages: { english: 'English', chinese: '中文', japanese: '日本語' },
@@ -160,6 +195,65 @@ const bgmFlow = {
         { kind: 'scene', id: 'act3', sceneId: 'act3', next: null },
     ],
 } as unknown as StoryFlowConfig;
+
+const branchFlow = {
+    start: 'act1',
+    nodes: [
+        { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+        { kind: 'scene', id: 'act2', sceneId: 'act2', next: 'choice:c1' },
+        {
+            kind: 'choice',
+            id: 'choice:c1',
+            choiceId: 'c1',
+            nextByOption: { b1a: 'b1a_act3', b1b: 'b1b_act3' },
+        },
+        { kind: 'scene', id: 'b1a_act3', sceneId: 'b1a_act3', next: null },
+        { kind: 'scene', id: 'b1b_act3', sceneId: 'b1b_act3', next: null },
+    ],
+} as unknown as StoryFlowConfig;
+
+const branchChoices = {
+    c1: {
+        prompt: 'Which fork?',
+        options: [
+            { id: 'b1a', nextScene: 'b1a_act3', label: 'Left path' },
+            { id: 'b1b', nextScene: 'b1b_act3', label: 'Right path' },
+        ],
+    },
+};
+
+const deepBranchFlow = {
+    start: 'act1',
+    nodes: [
+        { kind: 'scene', id: 'act1', sceneId: 'act1', next: 'act2' },
+        { kind: 'scene', id: 'act2', sceneId: 'act2', next: 'choice:c1' },
+        {
+            kind: 'choice',
+            id: 'choice:c1',
+            choiceId: 'c1',
+            nextByOption: { b1a: 'b1a_act3', b1b: 'b1b_act3' },
+        },
+        { kind: 'scene', id: 'b1a_act3', sceneId: 'b1a_act3', next: null },
+        {
+            kind: 'scene',
+            id: 'b1b_act3',
+            sceneId: 'b1b_act3',
+            next: 'b1b_act4',
+        },
+        { kind: 'scene', id: 'b1b_act4', sceneId: 'b1b_act4', next: null },
+    ],
+} as unknown as StoryFlowConfig;
+
+function mapProgress(visited: string[], endings: string[] = []) {
+    return {
+        sceneId: visited[visited.length - 1] ?? 'act1',
+        dialogueIndex: 0,
+        updatedAt: 0,
+        finished: false,
+        endings,
+        visited,
+    };
+}
 
 const FIXTURE_RELEASE_ID = 'sha256-fixed-release';
 const FIXTURE_MANIFEST_SHA256 =
@@ -2657,5 +2751,392 @@ describe('ReaderShell furigana', () => {
         expect(
             screen.queryByRole('button', { name: 'Furigana' })
         ).not.toBeInTheDocument();
+    });
+
+    describe('story map', () => {
+        beforeEach(() => {
+            readerState.activeFlow = branchFlow;
+            readerState.activeChoices = branchChoices;
+            readerState.currentSceneId = 'b1a_act3';
+            readerState.storyId = 'elevator_game';
+        });
+
+        async function openSheetFromSettings(): Promise<void> {
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open reader settings' })
+            );
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Story map' })
+            );
+        }
+
+        function details(): HTMLElement {
+            return screen.getByTestId('story-map-details');
+        }
+
+        it('offers Story map in Settings only for branching stories', async () => {
+            stubMatchMedia(false);
+            const first = render(ReaderShell);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open reader settings' })
+            );
+            expect(
+                screen.getByRole('button', { name: 'Story map' })
+            ).toBeInTheDocument();
+            first.unmount();
+
+            readerState.activeFlow = flow;
+            readerState.activeChoices = null;
+            readerState.currentSceneId = 'act1';
+            render(ReaderShell);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open reader settings' })
+            );
+            expect(
+                screen.queryByRole('button', { name: 'Story map' })
+            ).not.toBeInTheDocument();
+        });
+
+        it('opens the sheet from Settings, locks the reader, and blocks a second dialog', async () => {
+            stubMatchMedia(false);
+            const snapshot = vi.fn(() =>
+                mapProgress(['act1', 'act2', 'b1a_act3'])
+            );
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: snapshot },
+            });
+            const trigger = screen.getByRole('button', {
+                name: 'Open reader settings',
+            });
+            await fireEvent.click(trigger);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Story map' })
+            );
+
+            expect(
+                screen.getByRole('dialog', { name: 'Story map' })
+            ).toBeInTheDocument();
+            expect(screen.getByText('The Elevator Game')).toBeInTheDocument();
+            expect(
+                screen.queryByRole('dialog', { name: 'Reader settings' })
+            ).not.toBeInTheDocument();
+            expect(screen.getByTestId('reader-ready')).toHaveAttribute('inert');
+            expect(screen.getByTestId('reader-ready')).toHaveAttribute(
+                'aria-hidden',
+                'true'
+            );
+            expect(trigger).toBeDisabled();
+            expect(trigger).toHaveAttribute('tabindex', '-1');
+
+            trigger.click();
+            expect(
+                screen.queryByRole('dialog', { name: 'Reader settings' })
+            ).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('dialog', { name: 'Story map' })
+            ).toBeInTheDocument();
+        });
+
+        it.each([
+            [
+                'Escape',
+                async () => {
+                    await fireEvent.keyDown(window, { key: 'Escape' });
+                },
+            ],
+            [
+                'scrim',
+                async () => {
+                    await fireEvent.click(
+                        screen.getAllByRole('button', {
+                            name: 'Close story map',
+                        })[0]
+                    );
+                },
+            ],
+        ])(
+            'closes through %s and restores focus to the Settings trigger',
+            async (_label, closeSheet) => {
+                stubMatchMedia(false);
+                render(ReaderShell, {
+                    props: {
+                        getCurrentStoryProgressSnapshot: vi.fn(() =>
+                            mapProgress(['act1', 'act2', 'b1a_act3'])
+                        ),
+                    },
+                });
+                const trigger = screen.getByRole('button', {
+                    name: 'Open reader settings',
+                });
+                await fireEvent.click(trigger);
+                await fireEvent.click(
+                    screen.getByRole('button', { name: 'Story map' })
+                );
+
+                await closeSheet();
+
+                expect(
+                    screen.queryByRole('dialog', { name: 'Story map' })
+                ).not.toBeInTheDocument();
+                expect(screen.getByTestId('reader-ready')).not.toHaveAttribute(
+                    'inert'
+                );
+                await waitFor(() => expect(trigger).toHaveFocus());
+                expect(trigger).toBeEnabled();
+                expect(trigger).not.toHaveAttribute('tabindex', '-1');
+            }
+        );
+
+        it('opens from the phone text chrome and restores focus to the menu toggle', async () => {
+            stubMatchMedia(true);
+            render(ReaderShell, {
+                props: {
+                    getCurrentStoryProgressSnapshot: vi.fn(() =>
+                        mapProgress(['act1', 'act2', 'b1a_act3'])
+                    ),
+                },
+            });
+            const menuTrigger = screen.getByRole('button', {
+                name: 'Open menu',
+            });
+            await fireEvent.click(menuTrigger);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open story map' })
+            );
+
+            expect(
+                screen.getByRole('dialog', { name: 'Story map' })
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Open reader settings' })
+            ).not.toBeInTheDocument();
+
+            await fireEvent.keyDown(window, { key: 'Escape' });
+
+            expect(
+                screen.queryByRole('dialog', { name: 'Story map' })
+            ).not.toBeInTheDocument();
+            await waitFor(() => expect(menuTrigger).toHaveFocus());
+        });
+
+        it('opens the sheet from Settings in visual mode', async () => {
+            stubMatchMedia(false);
+            localStorage.setItem(READER_MODE_KEY, 'visual');
+            render(ReaderShell, {
+                props: {
+                    createVisualRuntime: () => createRuntimeHarness().runtime,
+                    getCurrentStoryProgressSnapshot: vi.fn(() =>
+                        mapProgress(['act1', 'act2', 'b1a_act3'])
+                    ),
+                },
+            });
+
+            await openSheetFromSettings();
+
+            expect(
+                screen.getByRole('dialog', { name: 'Story map' })
+            ).toBeInTheDocument();
+            expect(screen.getByTestId('reader-ready')).toHaveAttribute('inert');
+        });
+
+        it('shows a just-finished ending from the snapshot taken on open', async () => {
+            stubMatchMedia(false);
+            const snapshot = vi.fn(() =>
+                mapProgress(
+                    ['act1', 'act2', 'b1a_act3', 'b1b_act3'],
+                    ['b1b_act3']
+                )
+            );
+            readerState.currentSceneId = 'b1b_act3';
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: snapshot },
+            });
+            const callsBeforeOpen = snapshot.mock.calls.length;
+
+            await openSheetFromSettings();
+
+            expect(snapshot.mock.calls.length).toBeGreaterThan(callsBeforeOpen);
+            const dialog = screen.getByRole('dialog', { name: 'Story map' });
+            expect(dialog.querySelector('[data-kind="ending"]')).not.toBeNull();
+            expect(
+                within(details()).getByLabelText('1 endings')
+            ).toBeInTheDocument();
+        });
+
+        it('jumps to a decision prompt through onNavigate and closes the sheet', async () => {
+            stubMatchMedia(false);
+            const onNavigate = vi.fn();
+            render(ReaderShell, {
+                props: {
+                    onNavigate,
+                    getCurrentStoryProgressSnapshot: vi.fn(() =>
+                        mapProgress(['act1', 'act2', 'b1a_act3'])
+                    ),
+                },
+            });
+
+            await openSheetFromSettings();
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Decision · 2 options' })
+            );
+            await fireEvent.click(
+                within(details()).getByRole('button', {
+                    name: 'Jump to this decision',
+                })
+            );
+
+            expect(onNavigate).toHaveBeenCalledWith('act2', 'end');
+            expect(
+                screen.queryByRole('dialog', { name: 'Story map' })
+            ).not.toBeInTheDocument();
+        });
+
+        it('refreshes the snapshot on scene changes but not line changes', async () => {
+            stubMatchMedia(false);
+            const snapshot = vi.fn(() =>
+                mapProgress(['act1', 'act2', 'b1a_act3'])
+            );
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: snapshot },
+            });
+            const initial = snapshot.mock.calls.length;
+
+            readerState.currentSceneId = 'act2';
+            await tick();
+            expect(snapshot.mock.calls.length).toBe(initial + 1);
+
+            readerState.dialogueIndex = 1;
+            await tick();
+            expect(snapshot.mock.calls.length).toBe(initial + 1);
+        });
+
+        it('restricts the Acts panel to visited scenes for branching stories', async () => {
+            stubMatchMedia(false);
+            const snapshot = vi.fn(() => mapProgress(['act1']));
+            readerState.currentSceneId = 'act1';
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: snapshot },
+            });
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open acts panel' })
+            );
+
+            expect(
+                screen.getByRole('button', { name: 'Act 1' })
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Act 2' })
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Act 3' })
+            ).not.toBeInTheDocument();
+        });
+
+        it('keeps the Acts panel unrestricted for linear stories', async () => {
+            stubMatchMedia(false);
+            readerState.activeFlow = bgmFlow;
+            readerState.activeChoices = null;
+            readerState.currentSceneId = 'act1';
+            render(ReaderShell);
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open acts panel' })
+            );
+
+            for (const label of ['Act 1', 'Act 2', 'Act 3']) {
+                expect(
+                    screen.getByRole('button', { name: label })
+                ).toBeInTheDocument();
+            }
+        });
+
+        it('keeps ancestor acts visible to Acts and the sheet with a null snapshot', async () => {
+            stubMatchMedia(false);
+            readerState.activeFlow = deepBranchFlow;
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: () => null },
+            });
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open acts panel' })
+            );
+            for (const label of ['Act 1', 'Act 2', 'Act 3']) {
+                expect(
+                    screen.getByRole('button', { name: label })
+                ).toBeInTheDocument();
+            }
+            expect(
+                screen.queryByRole('button', { name: 'Act 4' })
+            ).not.toBeInTheDocument();
+
+            await openSheetFromSettings();
+            for (const label of [
+                'Expand Acts 1–2',
+                'Current position: Act 3 — Left path',
+            ]) {
+                expect(
+                    screen.getByRole('button', { name: label })
+                ).toBeInTheDocument();
+            }
+            expect(
+                screen.queryByRole('button', { name: 'Acts 3–4 — Right path' })
+            ).not.toBeInTheDocument();
+        });
+
+        it('keeps ancestor acts visible in the mobile drawer with a null snapshot', async () => {
+            stubMatchMedia(true);
+            readerState.activeFlow = deepBranchFlow;
+            render(ReaderShell, {
+                props: { getCurrentStoryProgressSnapshot: () => null },
+            });
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open menu' })
+            );
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open acts panel' })
+            );
+
+            for (const label of ['Act 1', 'Act 2', 'Act 3']) {
+                expect(
+                    screen.getByRole('button', { name: label })
+                ).toBeInTheDocument();
+            }
+            expect(
+                screen.queryByRole('button', { name: 'Act 4' })
+            ).not.toBeInTheDocument();
+        });
+
+        it('closes the sheet and unlocks Settings when the story becomes ineligible', async () => {
+            stubMatchMedia(false);
+            render(ReaderShell, {
+                props: {
+                    getCurrentStoryProgressSnapshot: vi.fn(() =>
+                        mapProgress(['act1', 'act2', 'b1a_act3'])
+                    ),
+                },
+            });
+            const trigger = screen.getByRole('button', {
+                name: 'Open reader settings',
+            });
+            await fireEvent.click(trigger);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Story map' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: 'Story map' })
+            ).toBeInTheDocument();
+
+            readerState.activeFlow = flow;
+            readerState.activeChoices = null;
+            readerState.currentSceneId = 'act1';
+            await tick();
+
+            expect(
+                screen.queryByRole('dialog', { name: 'Story map' })
+            ).not.toBeInTheDocument();
+            expect(trigger).toBeEnabled();
+        });
     });
 });

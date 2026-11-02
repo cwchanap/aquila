@@ -61,6 +61,7 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             secondLanguage: 'Second language',
             secondLanguageOff: 'Off',
             secondLanguageUnavailable: 'Not available for this story',
+            storyMap: { open: 'Open story map' },
         },
         characterNames: { narrator: 'Narrator' },
         common: { backToHome: 'Back to Home' },
@@ -146,6 +147,28 @@ describe('MobileNovelReader', () => {
         await fireEvent.click(screen.getByLabelText('Open menu'));
         expect(screen.getByLabelText('Bookmark')).toBeInTheDocument();
         expect(screen.queryByLabelText('Visual Novel')).not.toBeInTheDocument();
+    });
+
+    it('opens the story map from the chrome when the story is eligible', async () => {
+        const onOpenStoryMap = vi.fn();
+        renderReader({ storyMapAvailable: true, onOpenStoryMap });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(screen.getByLabelText('Open story map'));
+
+        expect(onOpenStoryMap).toHaveBeenCalledOnce();
+        expect(
+            screen.queryByLabelText('Open acts panel')
+        ).not.toBeInTheDocument();
+    });
+
+    it('hides the chrome story-map icon when the story is not eligible', async () => {
+        renderReader({ onOpenStoryMap: vi.fn() });
+
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        expect(
+            screen.queryByLabelText('Open story map')
+        ).not.toBeInTheDocument();
     });
 
     describe('controlled contract', () => {
@@ -624,6 +647,22 @@ describe('MobileNovelReader', () => {
             ).not.toBeInTheDocument();
         });
 
+        it('shows the story-map tooltip on long-press without opening the map', async () => {
+            const onOpenStoryMap = vi.fn();
+            renderReader({ storyMapAvailable: true, onOpenStoryMap });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            const map = screen.getByLabelText('Open story map');
+            await fireEvent.pointerDown(map);
+            await vi.advanceTimersByTimeAsync(450);
+            expect(screen.getByText('Open story map')).toBeInTheDocument();
+            expect(onOpenStoryMap).not.toHaveBeenCalled();
+            await fireEvent.pointerUp(map);
+            expect(
+                screen.queryByText('Open story map')
+            ).not.toBeInTheDocument();
+        });
+
         it('anchors the tooltip next to the pressed control, not at a fixed screen position', async () => {
             renderReader({ dialogueIndex: 0 });
             await vi.runAllTimersAsync();
@@ -884,6 +923,44 @@ describe('MobileNovelReader', () => {
             )!;
             await fireEvent.click(act2);
             expect(onNavigate).toHaveBeenCalledWith('b1a_act2');
+        });
+
+        it('forwards the visible-scene allowlist to the acts drawer', async () => {
+            renderReader({
+                dialogueIndex: 0,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+                visibleSceneIds: new Set(['b1a_act1']),
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open acts panel'));
+            const dialog = screen.getByRole('dialog');
+            const actButtons = within(dialog)
+                .getAllByRole('button')
+                .filter(b => !b.getAttribute('aria-label'));
+            expect(actButtons.map(b => b.textContent?.trim())).toEqual([
+                'Act 1',
+            ]);
+        });
+
+        it('keeps the acts drawer unrestricted when no allowlist is provided', async () => {
+            renderReader({
+                dialogueIndex: 0,
+                storyId: 's',
+                currentSceneId: 'b1a_act1',
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            await fireEvent.click(screen.getByLabelText('Open acts panel'));
+            const dialog = screen.getByRole('dialog');
+            const actButtons = within(dialog)
+                .getAllByRole('button')
+                .filter(b => !b.getAttribute('aria-label'));
+            expect(actButtons.map(b => b.textContent?.trim())).toEqual([
+                'Act 1',
+                'Act 2',
+            ]);
         });
     });
 });

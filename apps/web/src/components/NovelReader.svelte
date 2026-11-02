@@ -39,6 +39,7 @@
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
+    visibleSceneIds,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -61,6 +62,7 @@
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
     furigana?: boolean;
+    visibleSceneIds?: ReadonlySet<string>;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -268,6 +270,7 @@
         {flow}
         {storyId}
         {currentSceneId}
+        {visibleSceneIds}
         open={showActPanel}
         onToggle={() => (showActPanel = !showActPanel)}
         onNavigate={(sceneId: string) => {

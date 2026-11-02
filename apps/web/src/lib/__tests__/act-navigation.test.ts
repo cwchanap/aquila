@@ -132,6 +132,7 @@ import {
     extractChapterKey,
     actSortKey,
     branchMatchScore,
+    actRangeLabel,
 } from '@/lib/act-navigation';
 
 const t = {
@@ -298,5 +299,118 @@ describe('buildBranches disambiguation', () => {
         expect(chosen['act5']).toBe('b1a_act5');
         expect(chosen['actFinal']).toBe('actFinal');
         expect(chosen['actEpilogue']).toBe('actEpilogue');
+    });
+});
+
+describe('actRangeLabel', () => {
+    const rangeT = {
+        reader: {
+            actLabel: 'Act {n}',
+            actFinal: 'Final',
+            actEpilogue: 'Epilogue',
+            actRangeLabel: 'Acts {first}–{last}',
+        },
+    } as unknown as Translations;
+
+    it('renders the localized Acts N–M form for numeric act names', () => {
+        expect(actRangeLabel('act1', 'act3', rangeT)).toBe('Acts 1–3');
+        expect(actRangeLabel('act2', 'act20', rangeT)).toBe('Acts 2–20');
+    });
+
+    it('falls back to concatenated labels for non-numeric endpoints', () => {
+        expect(actRangeLabel('act3', 'actFinal', rangeT)).toBe('Act 3–Final');
+        expect(actRangeLabel('actFinal', 'actEpilogue', rangeT)).toBe(
+            'Final–Epilogue'
+        );
+    });
+});
+
+describe('buildChapterData visible-scene filter', () => {
+    function resolveFilteredFrom(
+        currentSceneId: string,
+        visible: ReadonlySet<string>
+    ): Record<string, string> {
+        const data = buildChapterData(
+            branchingFlow as unknown as StoryFlowConfig,
+            currentSceneId,
+            t,
+            visible
+        );
+        if (data.mode !== 'branches') throw new Error('expected branches');
+        return Object.fromEntries(data.acts.map(a => [a.rawName, a.sceneId]));
+    }
+
+    it('hides acts whose candidates are all outside the allowlist', () => {
+        const visible = new Set([
+            'b1a_act4',
+            'b1a_act5',
+            'b1a_b2a_act7',
+            'b1a_b2a_b3a_act8',
+        ]);
+        const chosen = resolveFilteredFrom('b1a_b2a_b3a_act8', visible);
+        // act20, actFinal and actEpilogue exist in the flow but every one of
+        // their candidate scenes was filtered out, so the labels never render.
+        expect(Object.keys(chosen)).toEqual(['act4', 'act5', 'act7', 'act8']);
+    });
+
+    it('filters candidates before branch matching so only visible ids are offered', () => {
+        const visible = new Set([
+            'b1a_act4',
+            'b1a_act5',
+            'b1a_b2a_act7',
+            'b1a_b2a_b3a_act8',
+            'b1a_act20',
+        ]);
+        const chosen = resolveFilteredFrom('b1a_b2a_b3a_act8', visible);
+        // act20 resolves to the visible shallow ancestor; the deeper
+        // same-lineage candidate was filtered out before the match scored.
+        expect(chosen['act20']).toBe('b1a_act20');
+        for (const sceneId of Object.values(chosen)) {
+            expect(visible.has(sceneId)).toBe(true);
+        }
+    });
+
+    it('drops an act entirely when its visible candidate is off-branch', () => {
+        // The reader visited act7 on the b2b sibling only; from a b2a scene
+        // the visible b2b candidate is off-branch, so act7 must not appear at
+        // all rather than leaking a jump to it.
+        const visible = new Set([
+            'b1a_act4',
+            'b1a_act5',
+            'b1a_b2b_act7',
+            'b1a_b2a_b3a_act8',
+        ]);
+        const chosen = resolveFilteredFrom('b1a_b2a_b3a_act8', visible);
+        expect(chosen['act7']).toBeUndefined();
+    });
+
+    it('filters scene candidates before grouping in chapters mode', () => {
+        const visible = new Set(['ch1_act1']);
+        const data = buildChapterData(
+            chapterFlow as unknown as StoryFlowConfig,
+            'ch1_act1',
+            t,
+            visible
+        );
+        if (data.mode !== 'chapters') throw new Error('expected chapters');
+        // Chapters with no visible acts are not even listed.
+        expect(data.chapters.map(c => c.chapterNum)).toEqual([1]);
+        expect(data.chapters[0].acts.map(a => a.sceneId)).toEqual(['ch1_act1']);
+    });
+
+    it('retains the unrestricted act list when the allowlist is omitted', () => {
+        const data = buildChapterData(
+            branchFlow as unknown as StoryFlowConfig,
+            'b1a_act1',
+            t
+        );
+        if (data.mode !== 'branches') throw new Error('expected branches');
+        // Linear stories keep skip-ahead: every act is listed unfiltered.
+        expect(data.acts.map(a => a.label)).toEqual([
+            'Act 1',
+            'Act 2',
+            'Final',
+            'Epilogue',
+        ]);
     });
 });

@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import type { DialogueEntry } from '@aquila/stories';
   import type { AudioAssetType } from '@aquila/stories/runtime-assets';
   import type { Locale } from '@aquila/stories';
   import { getTranslations, localeLangTag } from '@aquila/stories/translations';
+  import { getCatalogEntry } from '@aquila/stories/catalog';
   import {
     hasStoryText,
     isRegisteredStoryId,
@@ -14,6 +15,7 @@
   } from '@aquila/stories/async';
   import { readerState } from '@/lib/reader-state.svelte';
   import { logger } from '@/lib/logger';
+  import type { StoryProgress } from '@/lib/story-progress-store';
   import {
     readReaderMode,
     writeReaderMode,
@@ -67,9 +69,14 @@
     type VisualSnapshot,
     type VisualReaderRuntime,
   } from '@/lib/visual-assets';
+  import {
+    hasRealDecision,
+    visibleSceneIds,
+  } from '@/lib/story-map';
   import NovelReader from '@/components/NovelReader.svelte';
   import MobileNovelReader from '@/components/MobileNovelReader.svelte';
   import ReaderSettingsMenu from '@/components/ReaderSettingsMenu.svelte';
+  import StoryMapSheet from '@/components/StoryMapSheet.svelte';
   import VisualNovelReader from '@/components/VisualNovelReader.svelte';
 
   let {
@@ -79,6 +86,7 @@
     onNavigate = () => {},
     onIndexChange = () => {},
     getSceneDialogue = () => null,
+    getCurrentStoryProgressSnapshot = () => null,
     createVisualRuntime = createDefaultVisualRuntime,
     createSfxPlayer = createDefaultSfxPlayer,
     createBgmPlayer = createDefaultBgmPlayer,
@@ -92,12 +100,13 @@
     onChoice?: (nextScene: string) => void;
     onBookmark?: (dialogueNumber: number) => void;
     onNext?: () => void;
-    onNavigate?: (sceneId: string) => void;
+    onNavigate?: (sceneId: string, at?: 'start' | 'end') => void;
     onIndexChange?: (index: number) => void;
     getSceneDialogue?: (
       storyId: string,
       sceneId: string
     ) => readonly DialogueEntry[] | null;
+    getCurrentStoryProgressSnapshot?: () => StoryProgress | null;
     createVisualRuntime?: typeof createDefaultVisualRuntime;
     createSfxPlayer?: typeof createDefaultSfxPlayer;
     createBgmPlayer?: typeof createDefaultBgmPlayer;
@@ -647,11 +656,39 @@
   let isMobile = $state(readMatch());
   let settingsOpen = $state(false);
   let leafOverlayOpen = $state(false);
+  let storyMapOpen = $state(false);
+  let storyMapProgress = $state<StoryProgress | null>(null);
   let restoreMobileMenuFocus = $state(false);
   let settingsAvailable = $derived(
     readerMode === 'visual' || !isMobile || isBlocking
   );
-  let leafDisabled = $derived(isBlocking || settingsOpen);
+  let leafDisabled = $derived(isBlocking || settingsOpen || storyMapOpen);
+  let activeChoices = $derived(readerState.activeChoices);
+  let storyMapAvailable = $derived(
+    activeFlow !== null && hasRealDecision(activeFlow)
+  );
+  let storyTitle = $derived.by(() => {
+    const id = readerState.storyId;
+    if (id === null) return '';
+    const key = getCatalogEntry(id)?.translationKey;
+    return (
+      (t.stories as unknown as Record<string, string>)[key ?? ''] ?? id
+    );
+  });
+  let storyMapVisibleIds = $derived.by(
+    (): ReadonlySet<string> | undefined => {
+      if (!storyMapAvailable || !activeFlow) return undefined;
+      return visibleSceneIds(activeFlow, storyMapProgress, currentSceneId);
+    }
+  );
+  let storyMapFocusTarget = $derived.by((): HTMLElement | null => {
+    if (!storyMapOpen || typeof document === 'undefined') return null;
+    const id =
+      readerMode === 'text' && isMobile
+        ? 'mobile-reader-menu-trigger'
+        : 'reader-settings-trigger';
+    return document.getElementById(id);
+  });
 
   async function changeReaderMode(mode: ReaderMode): Promise<void> {
     leafOverlayOpen = false;
@@ -733,6 +770,38 @@
 
   function handleVisualOverlayChange(open: boolean): void {
     leafOverlayOpen = open;
+  }
+
+  $effect.pre(() => {
+    if (storyMapOpen && !(storyMapAvailable && activeChoices !== null)) {
+      storyMapOpen = false;
+    }
+  });
+
+  $effect(() => {
+    void readerState.storyId;
+    void readerState.currentSceneId;
+    untrack(() => {
+      storyMapProgress = getCurrentStoryProgressSnapshot();
+    });
+  });
+
+  function openStoryMap(): void {
+    if (!storyMapAvailable || storyMapOpen) return;
+    storyMapProgress = getCurrentStoryProgressSnapshot();
+    storyMapOpen = true;
+  }
+
+  async function closeStoryMap(): Promise<void> {
+    if (!storyMapOpen) return;
+    storyMapOpen = false;
+    await tick();
+  }
+
+  function handleStoryMapJump(sceneId: string, at?: 'start' | 'end'): void {
+    if (!hasActivePayload) return;
+    onNavigate(sceneId, at);
+    if (storyMapOpen) void closeStoryMap();
   }
 
   $effect.pre(() => {
@@ -899,7 +968,9 @@
     {showBookmarkButton}
     {backUrl}
     bookmarkDisabled={isBlocking}
-    triggerUnavailable={leafOverlayOpen && !isBlocking}
+    triggerUnavailable={storyMapOpen || (leafOverlayOpen && !isBlocking)}
+    {storyMapAvailable}
+    onOpenStoryMap={openStoryMap}
   />
 {/if}
 
@@ -957,6 +1028,7 @@
           onOverlayChange={handleVisualOverlayChange}
           {isInitialMount}
           interactionDisabled={leafDisabled}
+          visibleSceneIds={storyMapVisibleIds}
         />
       {:else if isMobile}
         <MobileNovelReader
@@ -989,6 +1061,9 @@
           onFuriganaChange={setFurigana}
           {isInitialMount}
           interactionDisabled={leafDisabled}
+          visibleSceneIds={storyMapVisibleIds}
+          {storyMapAvailable}
+          onOpenStoryMap={openStoryMap}
         />
       {:else}
         <NovelReader
@@ -1011,6 +1086,7 @@
           {onNavigate}
           {isInitialMount}
           interactionDisabled={leafDisabled}
+          visibleSceneIds={storyMapVisibleIds}
         />
       {/if}
     </div>
@@ -1025,4 +1101,21 @@
   <div class="flex min-h-screen items-center justify-center bg-slate-950 p-6">
     {@render loadSurface()}
   </div>
+{/if}
+
+{#if hasActivePayload && activeFlow && activeChoices}
+  <StoryMapSheet
+    open={storyMapOpen}
+    flow={activeFlow}
+    choices={activeChoices}
+    {storyTitle}
+    currentSceneId={currentSceneId ?? ''}
+    {dialogueIndex}
+    lineCount={dialogue.length}
+    progress={storyMapProgress}
+    {t}
+    onJump={handleStoryMapJump}
+    onClose={() => void closeStoryMap()}
+    restoreFocusTarget={storyMapFocusTarget}
+  />
 {/if}

@@ -11,6 +11,7 @@ import { LocalBookmarksStore } from './local-bookmarks-store';
 import {
     StoryProgressStore,
     importSavedSessions,
+    type StoryProgress,
 } from './story-progress-store';
 import { getBrowserStorage } from './reader-mode';
 import { readerState } from './reader-state.svelte';
@@ -111,6 +112,7 @@ export class ReaderManager {
         readerState.loadError = null;
         readerState.hasActivePayload = false;
         readerState.activeFlow = null;
+        readerState.activeChoices = null;
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
@@ -194,6 +196,7 @@ export class ReaderManager {
     ): void {
         this.activeStory = payload;
         readerState.activeFlow = payload.flow;
+        readerState.activeChoices = payload.choices;
         readerState.storyId = state.storyId;
         readerState.currentSceneId = state.sceneId;
         readerState.locale = state.locale;
@@ -481,20 +484,39 @@ export class ReaderManager {
     /** Shared scene-navigation method. Flushes any pending line replace so the
      *  Back button lands on an accurate line, then writes the new scene to the
      *  store and pushes a fresh history entry. */
-    goToScene = (sceneId: string): void => {
+    goToScene = (sceneId: string, at?: 'start' | 'end'): void => {
         if (!this.activeStory || readerState.loadStatus !== 'ready') return;
         this.flushPendingReplace(); // preserve accurate line for Back
         readerState.currentSceneId = sceneId;
-        readerState.dialogueIndex = 0;
         const { dialogue, choice } = this.getSceneData(
             readerState.storyId,
             sceneId
         );
         readerState.dialogue = dialogue;
         readerState.choice = choice;
+        readerState.dialogueIndex = clampIndex(
+            at === 'end' ? dialogue.length - 1 : 0,
+            dialogue.length
+        );
         readerState.canGoNext = this.hasNextScene(sceneId);
         this.syncUrl(false); // pushState (new history entry)
+        if (this.persistTimer !== null) {
+            clearTimeout(this.persistTimer);
+            this.persistTimer = null;
+        }
         this.persist();
+    };
+
+    getCurrentStoryProgressSnapshot = (): StoryProgress | null => {
+        if (readerState.hasActivePayload) {
+            this.flushPendingReplace();
+            if (this.persistTimer !== null) {
+                clearTimeout(this.persistTimer);
+                this.persistTimer = null;
+                this.persist();
+            }
+        }
+        return this.storyProgress.get(readerState.storyId);
     };
 
     handleChoice = (nextScene: string): void => {
@@ -609,6 +631,8 @@ export class ReaderManager {
                         onNavigate: this.goToScene,
                         onIndexChange: this.onIndexChange,
                         getSceneDialogue: this.getSceneDialogue,
+                        getCurrentStoryProgressSnapshot:
+                            this.getCurrentStoryProgressSnapshot,
                         onRetry: () => window.location.reload(),
                     },
                 });

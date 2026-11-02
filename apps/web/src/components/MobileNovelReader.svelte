@@ -32,6 +32,7 @@
     Bookmark,
     Film,
     Languages,
+    Map,
   } from 'lucide-svelte';
   import { longpress } from '@/lib/longpress';
 
@@ -67,6 +68,9 @@
     onSecondLanguageChange = () => {},
     furiganaAvailable = false,
     onFuriganaChange = () => {},
+    visibleSceneIds,
+    storyMapAvailable = false,
+    onOpenStoryMap = () => {},
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -99,6 +103,9 @@
     onSecondLanguageChange?: (value: SecondLanguage) => void;
     furiganaAvailable?: boolean;
     onFuriganaChange?: (on: boolean) => void;
+    visibleSceneIds?: ReadonlySet<string>;
+    storyMapAvailable?: boolean;
+    onOpenStoryMap?: () => void;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -282,6 +289,12 @@
     await onModeChange('visual');
   }
 
+  async function openStoryMap(): Promise<void> {
+    chromeVisible = false;
+    await tick();
+    onOpenStoryMap();
+  }
+
   function goBack(): void {
     if (interactionDisabled) return;
     // Overlays own their own taps; never step the scene from under them.
@@ -410,6 +423,21 @@
         >
           <Layers size={20} aria-hidden="true" />
         </button>
+        {#if storyMapAvailable}
+          <button
+            type="button"
+            class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+            aria-label={t.reader.storyMap.open}
+            onclick={() => void openStoryMap()}
+            use:longpress={{
+              onLongPress: (node) =>
+                showTooltip(node, t.reader.storyMap.open),
+              onRelease: hideTooltip,
+            }}
+          >
+            <Map size={20} aria-hidden="true" />
+          </button>
+        {/if}
         <button
           type="button"
           class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
@@ -638,6 +666,7 @@
       {flow}
       {storyId}
       {currentSceneId}
+      {visibleSceneIds}
       open={drawerOpen}
       {locale}
       restoreFocusTarget={menuToggleButton ?? null}

@@ -123,6 +123,8 @@ describe('translations', () => {
                     'decision',
                     'options',
                     'unreadLabel',
+                    'currentNode',
+                    'decisionNode',
                     'jumpTo',
                 ] as const) {
                     expect(storyMap[key], `${locale}.${key}`).toBeTruthy();
@@ -134,6 +136,10 @@ describe('translations', () => {
                 expect(storyMap.expandRun).toContain('{label}');
                 expect(storyMap.collapseRun).toContain('{label}');
                 expect(storyMap.jumpTo).toContain('{label}');
+                expect(storyMap.currentNode).toContain('{position}');
+                expect(storyMap.currentNode).toContain('{label}');
+                expect(storyMap.decisionNode).toContain('{decision}');
+                expect(storyMap.decisionNode).toContain('{options}');
                 expect(reader.actRangeLabel).toContain('{first}');
                 expect(reader.actRangeLabel).toContain('{last}');
             }

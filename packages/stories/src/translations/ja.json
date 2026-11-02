@@ -288,6 +288,8 @@
       "unreadLabel": "未読",
       "endingLabel": "エンディング {label}",
       "withBranch": "{label} — {branch}",
+      "currentNode": "{position}：{label}",
+      "decisionNode": "{decision} ・ {options}",
       "jumpTo": "{label}へジャンプ"
     }
   },

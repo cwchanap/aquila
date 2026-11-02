@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
-  import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+  import { SvelteSet } from 'svelte/reactivity';
   import { Crosshair, Star, X } from 'lucide-svelte';
   import type {
     ChoiceMap,
@@ -22,6 +22,8 @@
   import { focusTrap } from '@/lib/focus-trap';
   import { cn } from '@/lib/utils';
 
+  const EMPTY_VISIBLE: ReadonlySet<string> = new Set();
+
   let {
     open,
     flow,
@@ -35,6 +37,7 @@
     onJump,
     onClose,
     restoreFocusTarget = null,
+    visibleSceneIds = EMPTY_VISIBLE,
   }: {
     open: boolean;
     flow: StoryFlowConfig;
@@ -48,6 +51,7 @@
     onJump: (sceneId: string, at?: 'start' | 'end') => void;
     onClose: () => void;
     restoreFocusTarget?: HTMLElement | null;
+    visibleSceneIds?: ReadonlySet<string>;
   } = $props();
 
   const MAP_METRICS: StoryMapMetrics = {
@@ -71,15 +75,30 @@
   let mapEl = $state<HTMLElement | null>(null);
 
   let view = $derived(
-    buildStoryMap({ flow, choices, progress, currentSceneId, t })
+    buildStoryMap({
+      flow,
+      choices,
+      visible: visibleSceneIds,
+      progress,
+      currentSceneId,
+      t,
+    })
   );
   let layout = $derived(layoutStoryMap(view, expandedRunIds, MAP_METRICS));
-  let nodesById = $derived(new SvelteMap(layout.nodes.map(n => [n.id, n])));
+  let nodesById = $derived(new Map(layout.nodes.map(n => [n.id, n])));
   let sm = $derived(t.reader.storyMap);
   let stats = $derived([
-    { label: sm.statsActs, count: view.stats.acts },
-    { label: sm.statsDecisions, count: view.stats.decisions },
-    { label: sm.statsEndings, count: view.stats.endings },
+    { caption: sm.statsActsLabel, label: sm.statsActs, count: view.stats.acts },
+    {
+      caption: sm.statsDecisionsLabel,
+      label: sm.statsDecisions,
+      count: view.stats.decisions,
+    },
+    {
+      caption: sm.statsEndingsLabel,
+      label: sm.statsEndings,
+      count: view.stats.endings,
+    },
   ]);
 
   interface ViewIndex {
@@ -94,16 +113,18 @@
     context: Map<string, string>;
   }
 
+  /* eslint-disable svelte/prefer-svelte-reactivity -- plain Map/Set;
+     reactivity is handled by the enclosing $derived */
   function indexView(root: StoryMapRun | null): ViewIndex {
-    const runs = new SvelteMap<string, StoryMapRun>();
-    const scenes = new SvelteMap<string, StoryMapRun>();
-    const decisions = new SvelteMap<
+    const runs = new Map<string, StoryMapRun>();
+    const scenes = new Map<string, StoryMapRun>();
+    const decisions = new Map<
       string,
       { decision: StoryMapDecision; precedingSceneId: string | null }
     >();
-    const endings = new SvelteMap<string, StoryMapEnding>();
-    const unknowns = new SvelteSet<string>();
-    const context = new SvelteMap<string, string>();
+    const endings = new Map<string, StoryMapEnding>();
+    const unknowns = new Set<string>();
+    const context = new Map<string, string>();
     const walkRun = (run: StoryMapRun, branch?: string): void => {
       runs.set(run.id, run);
       if (branch) context.set(run.id, branch);
@@ -135,6 +156,7 @@
     if (root) walkRun(root);
     return { runs, scenes, decisions, endings, unknowns, context };
   }
+  /* eslint-enable svelte/prefer-svelte-reactivity */
 
   let index = $derived(indexView(view.root));
 
@@ -199,8 +221,10 @@
       .replace('{total}', String(lineCount))
   );
 
-  function statText(template: string, n: number): string {
-    return template.replace('{n}', String(n));
+  let pluralRules = $derived(new Intl.PluralRules(t.locale));
+  function statText(template: { one: string; other: string }, n: number): string {
+    const text = pluralRules.select(n) === 'one' ? template.one : template.other;
+    return text.replace('{n}', String(n));
   }
 
   function isExpanded(run: StoryMapRun): boolean {
@@ -217,6 +241,20 @@
     else expandedRunIds.add(run.id);
   }
 
+  // The on-map collapse button unmounts itself on click, so focus moves to
+  // the folded run pill that replaces it rather than dropping to <body>.
+  async function collapseRun(run: StoryMapRun): Promise<void> {
+    selectedId = run.id;
+    selectedKind = 'run';
+    toggleFold(run);
+    await tick();
+    mapEl
+      ?.querySelector<HTMLElement>(
+        `[data-node-id="${run.id.replace(/["\\]/g, '\\$&')}"]`
+      )
+      ?.focus();
+  }
+
   function activateNode(node: StoryMapLayoutNode): void {
     selectedId = node.id;
     selectedKind = node.kind;
@@ -224,15 +262,6 @@
       const run = index.runs.get(node.id);
       if (run && run.sceneIds.length > 1) expandedRunIds.add(node.id);
     }
-  }
-
-  function handleNodeKeydown(
-    event: KeyboardEvent,
-    node: StoryMapLayoutNode
-  ): void {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    event.preventDefault();
-    activateNode(node);
   }
 
   function contextual(id: string, base: string): string {
@@ -362,7 +391,12 @@
   }
 
   function handleEscape(e: KeyboardEvent): void {
-    if (e.key === 'Escape' && open) onClose();
+    if (e.key !== 'Escape' || !open || e.defaultPrevented) return;
+    // The sheet is the topmost overlay: capture phase + stopPropagation keeps
+    // window bubble handlers below it (e.g. ActPanel's Escape) from firing.
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
   }
 
   let wasOpen = false;
@@ -378,17 +412,19 @@
   });
 </script>
 
-<svelte:window onkeydown={handleEscape} />
+<svelte:window onkeydowncapture={handleEscape} />
 
 {#if open}
   <button
     type="button"
-    class="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-[2px]"
-    aria-label={sm.close}
+    data-testid="story-map-scrim"
+    class="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-[2px]"
+    aria-hidden="true"
+    tabindex="-1"
     onclick={onClose}
   ></button>
   <div
-    class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center lg:p-8"
+    class="pointer-events-none fixed inset-0 z-[96] flex items-center justify-center lg:p-8"
   >
     <div
       role="dialog"
@@ -509,6 +545,7 @@
                 )}
                 style={`left:${node.x}px;top:${node.y}px;width:${node.width}px;height:${node.height}px`}
                 data-kind={node.kind}
+                data-node-id={node.id}
                 data-status={node.status}
                 data-selected={selectedId === node.id && selectedKind === node.kind ? 'true' : undefined}
                 data-current={node.current ? 'true' : undefined}
@@ -517,7 +554,6 @@
                 aria-expanded={expandable ? 'false' : undefined}
                 aria-current={node.current ? 'location' : undefined}
                 onclick={() => activateNode(node)}
-                onkeydown={e => handleNodeKeydown(e, node)}
               >
                 {#if node.kind === 'run'}
                   <span
@@ -599,11 +635,7 @@
                     aria-expanded="true"
                     class="absolute flex h-11 items-center justify-center rounded text-xs font-semibold text-slate-500 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
                     style={`left:${first.x}px;top:${first.y - 44}px;width:${last.x + last.width - first.x}px`}
-                    onclick={() => {
-                      selectedId = run.id;
-                      selectedKind = 'run';
-                      toggleFold(run);
-                    }}
+                    onclick={() => void collapseRun(run)}
                   >
                     {run.label}
                   </button>
@@ -662,10 +694,10 @@
               <p class="mt-1 text-sm text-slate-600">{lineProgressText}</p>
             {/if}
             <ul class="mt-4 grid grid-cols-3 gap-2 text-slate-600">
-              {#each stats as stat (stat.label)}
+              {#each stats as stat (stat.caption)}
                 <li aria-label={statText(stat.label, stat.count)} class="border-t border-slate-200 pt-2">
                   <strong aria-hidden="true" class="block text-2xl font-bold text-slate-800">{stat.count}</strong>
-                  <span aria-hidden="true" class="text-xs">{stat.label.replace('{n}', '').trim()}</span>
+                  <span aria-hidden="true" class="text-xs">{stat.caption}</span>
                 </li>
               {/each}
             </ul>

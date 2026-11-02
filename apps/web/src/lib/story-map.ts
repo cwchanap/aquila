@@ -9,10 +9,10 @@ import type { StoryProgress } from './story-progress-store';
 import {
     actLabel,
     actRangeLabel,
-    actSortKey,
     extractActName,
     extractBranchPrefix,
 } from './act-navigation';
+import { logger } from './logger';
 
 type Flow = Pick<StoryFlowConfig, 'start' | 'nodes'>;
 
@@ -38,7 +38,6 @@ export interface StoryMapRun {
     sceneIds: readonly string[];
     entrySceneId: string;
     label: string;
-    sortKey: number;
     status: 'route' | 'explored';
     routeCount: number;
     current: boolean;
@@ -130,22 +129,39 @@ interface FlowIndex {
     reachable: Set<string>;
 }
 
+// Merged flows (two different parents pointing at one node) are unsupported:
+// the map keeps only the first parent link for ancestor closures and the
+// route path. Warn once per flow object instead of silently producing wrong
+// spoiler/route results when a merge is ever added.
+const mergeWarnedFlows = new WeakSet<object>();
+
 function indexFlow(flow: Pick<StoryFlowConfig, 'start' | 'nodes'>): FlowIndex {
     const byId = new Map<string, FlowNodeDefinition>();
     const parent = new Map<string, string>();
     for (const node of flow.nodes) {
         byId.set(node.id, node);
     }
+    let merges = 0;
+    const setParent = (target: string, source: string): void => {
+        const existing = parent.get(target);
+        if (existing === undefined) parent.set(target, source);
+        else if (existing !== source) merges++;
+    };
     for (const node of flow.nodes) {
         if (node.kind === 'scene') {
-            if (node.next && !parent.has(node.next)) {
-                parent.set(node.next, node.id);
-            }
+            if (node.next) setParent(node.next, node.id);
         } else {
             for (const target of Object.values(node.nextByOption)) {
-                if (!parent.has(target)) parent.set(target, node.id);
+                setParent(target, node.id);
             }
         }
+    }
+    if (merges > 0 && !mergeWarnedFlows.has(flow)) {
+        mergeWarnedFlows.add(flow);
+        logger.warn(
+            'Story map assumes a tree; merged paths keep only the first parent link',
+            { merges }
+        );
     }
     const reachable = new Set<string>();
     const stack: string[] = [flow.start];
@@ -211,18 +227,21 @@ export function visibleSceneIds(
 export function buildStoryMap({
     flow,
     choices,
+    visible,
     progress,
     currentSceneId,
     t,
 }: {
     flow: Flow;
     choices: ChoiceMap;
-    progress: StoryProgress | null | undefined;
+    /** The shared ancestor-closed scene set from `visibleSceneIds`, so the
+     *  sheet and the Acts panels reveal exactly the same scenes. */
+    visible: ReadonlySet<string>;
+    progress: Pick<StoryProgress, 'endings'> | null | undefined;
     currentSceneId: string | null | undefined;
     t: Translations;
 }): StoryMapView {
     const index = indexFlow(flow);
-    const visible = collectVisible(index, progress?.visited, currentSceneId);
 
     const endings = new Set(progress?.endings ?? []);
     const acts = new Set<string>();
@@ -377,10 +396,6 @@ export function buildStoryMap({
             sceneIds,
             entrySceneId: sceneIds[0] ?? '',
             label: runLabel(sceneIds),
-            sortKey: actSortKey(
-                extractActName(sceneIds[0] ?? '') ||
-                    extractActName(sceneIds[sceneIds.length - 1] ?? '')
-            ),
             status,
             routeCount,
             current,

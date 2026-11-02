@@ -99,8 +99,21 @@ describe('translations', () => {
                 const storyMap = reader.storyMap;
                 expect(storyMap).toBeDefined();
                 for (const [key, value] of Object.entries(storyMap)) {
-                    expect(typeof value, `${locale}.${key}`).toBe('string');
-                    expect(value.length, `${locale}.${key}`).toBeGreaterThan(0);
+                    if (typeof value === 'string') {
+                        expect(
+                            value.length,
+                            `${locale}.${key}`
+                        ).toBeGreaterThan(0);
+                    } else {
+                        expect(
+                            value.one.length,
+                            `${locale}.${key}.one`
+                        ).toBeGreaterThan(0);
+                        expect(
+                            value.other.length,
+                            `${locale}.${key}.other`
+                        ).toBeGreaterThan(0);
+                    }
                 }
                 for (const key of [
                     'title',
@@ -118,6 +131,9 @@ describe('translations', () => {
                     'statsActs',
                     'statsDecisions',
                     'statsEndings',
+                    'statsActsLabel',
+                    'statsDecisionsLabel',
+                    'statsEndingsLabel',
                     'expandRun',
                     'collapseRun',
                     'decision',
@@ -129,10 +145,14 @@ describe('translations', () => {
                 ] as const) {
                     expect(storyMap[key], `${locale}.${key}`).toBeTruthy();
                 }
-                expect(storyMap.statsActs).toContain('{n}');
-                expect(storyMap.statsDecisions).toContain('{n}');
-                expect(storyMap.statsEndings).toContain('{n}');
-                expect(storyMap.options).toContain('{n}');
+                expect(storyMap.statsActs.one).toContain('{n}');
+                expect(storyMap.statsActs.other).toContain('{n}');
+                expect(storyMap.statsDecisions.one).toContain('{n}');
+                expect(storyMap.statsDecisions.other).toContain('{n}');
+                expect(storyMap.statsEndings.one).toContain('{n}');
+                expect(storyMap.statsEndings.other).toContain('{n}');
+                expect(storyMap.options.one).toContain('{n}');
+                expect(storyMap.options.other).toContain('{n}');
                 expect(storyMap.expandRun).toContain('{label}');
                 expect(storyMap.collapseRun).toContain('{label}');
                 expect(storyMap.jumpTo).toContain('{label}');

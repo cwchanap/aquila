@@ -102,13 +102,19 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
                 ending: 'Ending',
                 jumpToDecision: 'Jump to this decision',
                 jumpToEnding: 'Read this ending again',
-                statsActs: '{n} acts',
-                statsDecisions: '{n} decisions',
-                statsEndings: '{n} endings',
+                statsActs: { one: '{n} act', other: '{n} acts' },
+                statsDecisions: {
+                    one: '{n} decision',
+                    other: '{n} decisions',
+                },
+                statsEndings: { one: '{n} ending', other: '{n} endings' },
+                statsActsLabel: 'Acts',
+                statsDecisionsLabel: 'Decisions',
+                statsEndingsLabel: 'Endings',
                 expandRun: 'Expand {label}',
                 collapseRun: 'Collapse {label}',
                 decision: 'Decision',
-                options: '{n} options',
+                options: { one: '{n} option', other: '{n} options' },
                 unreadLabel: 'Not read yet',
                 endingLabel: 'Ending {label}',
                 withBranch: '{label} — {branch}',
@@ -2837,9 +2843,7 @@ describe('ReaderShell furigana', () => {
                 'scrim',
                 async () => {
                     await fireEvent.click(
-                        screen.getAllByRole('button', {
-                            name: 'Close story map',
-                        })[0]
+                        screen.getByTestId('story-map-scrim')
                     );
                 },
             ],
@@ -2948,7 +2952,7 @@ describe('ReaderShell furigana', () => {
             const dialog = screen.getByRole('dialog', { name: 'Story map' });
             expect(dialog.querySelector('[data-kind="ending"]')).not.toBeNull();
             expect(
-                within(details()).getByLabelText('1 endings')
+                within(details()).getByLabelText('1 ending')
             ).toBeInTheDocument();
         });
 

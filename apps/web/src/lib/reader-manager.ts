@@ -426,6 +426,16 @@ export class ReaderManager {
         }, 500);
     }
 
+    /** Drop a pending debounced persist. Callers either persist immediately
+     *  after (navigation, pagehide, snapshot flush) or discard the write
+     *  entirely (destroy). */
+    private cancelPersistTimer(): void {
+        if (this.persistTimer !== null) {
+            clearTimeout(this.persistTimer);
+            this.persistTimer = null;
+        }
+    }
+
     getSceneDialogue = (
         storyId: string,
         sceneId: string
@@ -500,10 +510,7 @@ export class ReaderManager {
         );
         readerState.canGoNext = this.hasNextScene(sceneId);
         this.syncUrl(false); // pushState (new history entry)
-        if (this.persistTimer !== null) {
-            clearTimeout(this.persistTimer);
-            this.persistTimer = null;
-        }
+        this.cancelPersistTimer();
         this.persist();
     };
 
@@ -511,8 +518,7 @@ export class ReaderManager {
         if (readerState.hasActivePayload) {
             this.flushPendingReplace();
             if (this.persistTimer !== null) {
-                clearTimeout(this.persistTimer);
-                this.persistTimer = null;
+                this.cancelPersistTimer();
                 this.persist();
             }
         }
@@ -710,10 +716,7 @@ export class ReaderManager {
     private onPageHide = (): void => {
         if (!readerState.hasActivePayload) return;
         this.flushPendingReplace();
-        if (this.persistTimer !== null) {
-            clearTimeout(this.persistTimer);
-            this.persistTimer = null;
-        }
+        this.cancelPersistTimer();
         this.persist();
     };
 
@@ -764,10 +767,7 @@ export class ReaderManager {
             this.onVisibilityChange
         );
         this.cancelPendingReplace();
-        if (this.persistTimer !== null) {
-            clearTimeout(this.persistTimer);
-            this.persistTimer = null;
-        }
+        this.cancelPersistTimer();
         this.unmountReader();
         void this.readerMountPromise?.then(() => this.unmountReader());
     }

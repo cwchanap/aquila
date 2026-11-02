@@ -4,9 +4,11 @@ import '@testing-library/jest-dom';
 import { getTranslations } from '@aquila/stories/translations';
 import type { ChoiceMap, StoryFlowConfig, Translations } from '@aquila/stories';
 import type { StoryProgress } from '@/lib/story-progress-store';
+import { visibleSceneIds } from '@/lib/story-map';
 import StoryMapSheet from '@/components/StoryMapSheet.svelte';
 
 const t = {
+    locale: 'en',
     reader: {
         actLabel: 'Act {n}',
         actFinal: 'Final',
@@ -27,13 +29,16 @@ const t = {
             ending: 'Ending',
             jumpToDecision: 'Jump to this decision',
             jumpToEnding: 'Read this ending again',
-            statsActs: '{n} acts',
-            statsDecisions: '{n} decisions',
-            statsEndings: '{n} endings',
+            statsActs: { one: '{n} act', other: '{n} acts' },
+            statsDecisions: { one: '{n} decision', other: '{n} decisions' },
+            statsEndings: { one: '{n} ending', other: '{n} endings' },
+            statsActsLabel: 'Acts',
+            statsDecisionsLabel: 'Decisions',
+            statsEndingsLabel: 'Endings',
             expandRun: 'Expand {label}',
             collapseRun: 'Collapse {label}',
             decision: 'Decision',
-            options: '{n} options',
+            options: { one: '{n} option', other: '{n} options' },
             unreadLabel: 'Not read yet',
             endingLabel: 'Ending {label}',
             withBranch: '{label} — {branch}',
@@ -130,15 +135,22 @@ function progress(visited: string[], endings: string[] = []): StoryProgress {
 }
 
 function baseProps(overrides: Record<string, unknown> = {}) {
+    const p = (
+        'progress' in overrides
+            ? overrides.progress
+            : progress(['act1', 'act2', 'b1a_act3'])
+    ) as StoryProgress | null;
+    const current = (overrides.currentSceneId ?? 'b1a_act3') as string;
     return {
         open: true,
         flow: forkFlow,
         choices,
         storyTitle: 'The Fork',
-        currentSceneId: 'b1a_act3',
+        currentSceneId: current,
         dialogueIndex: 2,
         lineCount: 5,
-        progress: progress(['act1', 'act2', 'b1a_act3']),
+        progress: p,
+        visibleSceneIds: visibleSceneIds(forkFlow, p, current),
         t,
         onJump: vi.fn(),
         onClose: vi.fn(),
@@ -170,8 +182,8 @@ describe('StoryMapSheet', () => {
         expect(dialog.getAttribute('aria-modal')).toBe('true');
         expect(screen.getByText('The Fork')).toBeTruthy();
         expect(
-            screen.getAllByRole('button', { name: 'Close story map' }).length
-        ).toBeGreaterThanOrEqual(2);
+            screen.getByRole('button', { name: 'Close story map' })
+        ).toBeTruthy();
         expect(
             screen.getByRole('button', { name: 'Locate current position' })
         ).toBeTruthy();
@@ -183,8 +195,11 @@ describe('StoryMapSheet', () => {
         expect(within(details()).getByText('Act 3')).toBeTruthy();
         expect(within(details()).getByText('Line 3 of 5')).toBeTruthy();
         expect(within(details()).getByLabelText('3 acts')).toBeTruthy();
-        expect(within(details()).getByLabelText('1 decisions')).toBeTruthy();
+        expect(within(details()).getByLabelText('1 decision')).toBeTruthy();
         expect(within(details()).getByLabelText('0 endings')).toBeTruthy();
+        expect(within(details()).getByText('Acts')).toBeTruthy();
+        expect(within(details()).getByText('Decisions')).toBeTruthy();
+        expect(within(details()).getByText('Endings')).toBeTruthy();
     });
 
     it('marks the current node and moves focus inside the dialog', () => {
@@ -284,7 +299,7 @@ describe('StoryMapSheet', () => {
         ).toBeVisible();
     });
 
-    it('folds an expanded run from its visible map label', async () => {
+    it('folds an expanded run from its visible map label and keeps focus on the run', async () => {
         render(StoryMapSheet, { props: baseProps() });
         await fireEvent.click(
             within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
@@ -294,9 +309,11 @@ describe('StoryMapSheet', () => {
         });
         expect(within(label).getByText('Acts 1–2')).toBeVisible();
         await fireEvent.click(label);
-        expect(
-            within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
-        ).toBeVisible();
+        const folded = within(surface()).getByRole('button', {
+            name: 'Expand Acts 1–2',
+        });
+        expect(folded).toBeVisible();
+        expect(document.activeElement).toBe(folded);
     });
 
     it('selects the first act of an unfolded run rather than the run itself', async () => {
@@ -314,7 +331,9 @@ describe('StoryMapSheet', () => {
         expect(onJump).toHaveBeenCalledWith('act1', 'start');
     });
 
-    it('activates focused nodes with Enter and Space', async () => {
+    it('activates map nodes with a click and ignores other keys', async () => {
+        // Enter/Space activation is native <button> behavior — jsdom only
+        // proves the component does not re-implement (or swallow) key presses.
         render(StoryMapSheet, { props: baseProps() });
         const pill = within(surface()).getByRole('button', {
             name: 'Expand Acts 1–2',
@@ -325,18 +344,7 @@ describe('StoryMapSheet', () => {
         expect(
             within(surface()).queryByRole('button', { name: 'Act 1' })
         ).toBeNull();
-        await fireEvent.keyDown(pill, { key: 'Enter' });
-        expect(screen.getByRole('button', { name: 'Act 1' })).toBeTruthy();
-        await fireEvent.click(
-            within(details()).getByRole('button', {
-                name: 'Collapse Acts 1–2',
-            })
-        );
-        const folded = within(surface()).getByRole('button', {
-            name: 'Expand Acts 1–2',
-        });
-        folded.focus();
-        await fireEvent.keyDown(folded, { key: ' ' });
+        await fireEvent.click(pill);
         expect(screen.getByRole('button', { name: 'Act 1' })).toBeTruthy();
     });
 
@@ -676,9 +684,9 @@ describe('StoryMapSheet', () => {
         render(StoryMapSheet, { props: baseProps({ onClose }) });
         await fireEvent.keyDown(window, { key: 'Escape' });
         expect(onClose).toHaveBeenCalledTimes(1);
-        const scrim = screen.getAllByRole('button', {
-            name: 'Close story map',
-        })[0];
+        const scrim = screen.getByTestId('story-map-scrim');
+        expect(scrim).toHaveAttribute('aria-hidden', 'true');
+        expect(scrim).toHaveAttribute('tabindex', '-1');
         await fireEvent.click(scrim);
         expect(onClose).toHaveBeenCalledTimes(2);
     });
@@ -737,6 +745,7 @@ describe('StoryMapSheet', () => {
 
     it('renders the supplied translations', () => {
         const zhT = {
+            locale: 'zh',
             reader: {
                 ...t.reader,
                 actLabel: '第 {n} 章',
@@ -755,13 +764,16 @@ describe('StoryMapSheet', () => {
                     ending: '結局',
                     jumpToDecision: '跳至這個抉擇',
                     jumpToEnding: '再次閱讀這個結局',
-                    statsActs: '{n} 章',
-                    statsDecisions: '{n} 個抉擇',
-                    statsEndings: '{n} 個結局',
+                    statsActs: { one: '{n} 章', other: '{n} 章' },
+                    statsDecisions: { one: '{n} 個抉擇', other: '{n} 個抉擇' },
+                    statsEndings: { one: '{n} 個結局', other: '{n} 個結局' },
+                    statsActsLabel: '章',
+                    statsDecisionsLabel: '抉擇',
+                    statsEndingsLabel: '結局',
                     expandRun: '展開 {label}',
                     collapseRun: '收合 {label}',
                     decision: '抉擇',
-                    options: '{n} 個選項',
+                    options: { one: '{n} 個選項', other: '{n} 個選項' },
                     unreadLabel: '尚未閱讀',
                     endingLabel: '結局 {label}',
                     withBranch: '{label} — {branch}',

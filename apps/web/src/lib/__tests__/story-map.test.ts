@@ -144,10 +144,12 @@ function progress(visited: string[], endings: string[] = []): StoryProgress {
 }
 
 function mapAt(visited: string[], current: string, endings: string[] = []) {
+    const p = progress(visited, endings);
     return buildStoryMap({
         flow: forkFlow,
         choices: forkChoices,
-        progress: progress(visited, endings),
+        visible: visibleSceneIds(forkFlow, p, current),
+        progress: p,
         currentSceneId: current,
         t,
     });
@@ -293,6 +295,7 @@ describe('buildStoryMap', () => {
         const view = buildStoryMap({
             flow: forkFlow,
             choices: forkChoices,
+            visible: visibleSceneIds(forkFlow, null, null),
             progress: null,
             currentSceneId: null,
             t,
@@ -302,10 +305,12 @@ describe('buildStoryMap', () => {
     });
 
     it('shows visited paths as explored when the current scene is unavailable', () => {
+        const p = progress(['act1', 'act2', 'b1a_act3', 'b1b_act3']);
         const view = buildStoryMap({
             flow: forkFlow,
             choices: forkChoices,
-            progress: progress(['act1', 'act2', 'b1a_act3', 'b1b_act3']),
+            visible: visibleSceneIds(forkFlow, p, null),
+            progress: p,
             currentSceneId: null,
             t,
         });
@@ -323,6 +328,7 @@ describe('buildStoryMap', () => {
     });
 
     it('keeps all flow options when a choice definition omits some of them', () => {
+        const p = progress(['act1', 'act2', 'b1a_act3']);
         const view = buildStoryMap({
             flow: forkFlow,
             choices: {
@@ -342,7 +348,8 @@ describe('buildStoryMap', () => {
                     ],
                 },
             },
-            progress: progress(['act1', 'act2', 'b1a_act3']),
+            visible: visibleSceneIds(forkFlow, p, 'b1a_act3'),
+            progress: p,
             currentSceneId: 'b1a_act3',
             t,
         });
@@ -360,10 +367,12 @@ describe('buildStoryMap', () => {
     });
 
     it('falls back to option IDs when a choice definition is missing', () => {
+        const p = progress(['act1', 'act2', 'b1a_act3']);
         const view = buildStoryMap({
             flow: forkFlow,
             choices: {},
-            progress: progress(['act1', 'act2', 'b1a_act3']),
+            visible: visibleSceneIds(forkFlow, p, 'b1a_act3'),
+            progress: p,
             currentSceneId: 'b1a_act3',
             t,
         });
@@ -384,10 +393,12 @@ describe('buildStoryMap', () => {
                 { kind: 'scene', id: 'act2', sceneId: 'act2', next: 'act1' },
             ],
         } as unknown as StoryFlowConfig;
+        const p = progress(['act1', 'act2']);
         const view = buildStoryMap({
             flow,
             choices: {},
-            progress: progress(['act1', 'act2']),
+            visible: visibleSceneIds(flow, p, 'act2'),
+            progress: p,
             currentSceneId: 'act2',
             t,
         });
@@ -419,10 +430,12 @@ describe('buildStoryMap', () => {
                 { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
             ],
         } as unknown as StoryFlowConfig;
+        const p = progress(['act1', 'act2']);
         const view = buildStoryMap({
             flow,
             choices: {},
-            progress: progress(['act1', 'act2']),
+            visible: visibleSceneIds(flow, p, 'act2'),
+            progress: p,
             currentSceneId: 'act2',
             t,
         });
@@ -444,10 +457,12 @@ describe('buildStoryMap', () => {
                 },
             ],
         } as unknown as StoryFlowConfig;
+        const p = progress(['act1']);
         const view = buildStoryMap({
             flow,
             choices: {},
-            progress: progress(['act1']),
+            visible: visibleSceneIds(flow, p, 'act1'),
+            progress: p,
             currentSceneId: 'act1',
             t,
         });
@@ -457,10 +472,12 @@ describe('buildStoryMap', () => {
     });
 
     it('hides an unread destination of a single-option link', () => {
+        const p = progress(['act1']);
         const view = buildStoryMap({
             flow: linkOnlyFlow,
             choices: {},
-            progress: progress(['act1']),
+            visible: visibleSceneIds(linkOnlyFlow, p, 'act1'),
+            progress: p,
             currentSceneId: 'act1',
             t,
         });
@@ -477,10 +494,12 @@ describe('buildStoryMap', () => {
                 { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
             ],
         } as unknown as StoryFlowConfig;
+        const p = progress(['intro', 'act2']);
         const view = buildStoryMap({
             flow,
             choices: {},
-            progress: progress(['intro', 'act2']),
+            visible: visibleSceneIds(flow, p, 'act2'),
+            progress: p,
             currentSceneId: 'act2',
             t,
         });
@@ -629,10 +648,12 @@ describe('buildStoryMap', () => {
     it('counts same-numbered acts on real sibling branches separately', () => {
         const flow = storyFlow('train_adventure');
         const { choices } = getStoryContent('train_adventure', 'en');
+        const p = progress(['b1a_b2a_act7', 'b1a_b2b_act7']);
         const view = buildStoryMap({
             flow,
             choices,
-            progress: progress(['b1a_b2a_act7', 'b1a_b2b_act7']),
+            visible: visibleSceneIds(flow, p, 'b1a_b2a_act7'),
+            progress: p,
             currentSceneId: 'b1a_b2a_act7',
             t,
         });
@@ -669,14 +690,16 @@ describe('buildStoryMap on the real Platform flow', () => {
 
     it('reveals the ancestor chain of a deep scene without sibling leaks', () => {
         const current = 'b1a_b2b_b3a_act10';
+        const p = progress([]);
+        const visible = visibleSceneIds(flow, p, current);
         const view = buildStoryMap({
             flow,
             choices,
-            progress: progress([]),
+            visible,
+            progress: p,
             currentSceneId: current,
             t: realT,
         });
-        const visible = visibleSceneIds(flow, progress([]), current);
         const runs = flatten(view.root).filter(
             (n): n is StoryMapRun => n.kind === 'run'
         );
@@ -717,10 +740,12 @@ describe('story map over the full catalog', () => {
             const endings = flow.nodes
                 .filter(n => n.kind === 'scene' && n.next == null)
                 .map(n => (n.kind === 'scene' ? n.sceneId : n.id));
+            const p = progress(sceneIds, endings);
             const view = buildStoryMap({
                 flow,
                 choices,
-                progress: progress(sceneIds, endings),
+                visible: visibleSceneIds(flow, p, flow.start),
+                progress: p,
                 currentSceneId: flow.start,
                 t,
             });
@@ -739,6 +764,35 @@ describe('story map over the full catalog', () => {
                 expect(ids.has(edge.from), `${entry.id} ${edge.id}`).toBe(true);
                 expect(ids.has(edge.to), `${entry.id} ${edge.id}`).toBe(true);
             }
+        }
+    });
+});
+
+describe('catalog flows stay trees', () => {
+    // The map keeps only the first parent link per node (indexFlow warns on
+    // merges). Every catalog flow must therefore remain a tree — two distinct
+    // parents into one node would silently produce wrong ancestor closures.
+    it('no node has more than one distinct parent', () => {
+        for (const entry of STORY_CATALOG) {
+            const flow = storyFlow(entry.id);
+            const parents = new Map<string, Set<string>>();
+            for (const node of flow.nodes) {
+                const targets =
+                    node.kind === 'scene'
+                        ? node.next
+                            ? [node.next]
+                            : []
+                        : Object.values(node.nextByOption);
+                for (const target of targets) {
+                    let set = parents.get(target);
+                    if (!set) parents.set(target, (set = new Set()));
+                    set.add(node.id);
+                }
+            }
+            const merged = [...parents.entries()].filter(
+                ([, set]) => set.size > 1
+            );
+            expect(merged, entry.id).toEqual([]);
         }
     });
 });

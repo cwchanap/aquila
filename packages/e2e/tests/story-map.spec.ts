@@ -35,7 +35,7 @@ const choice = maybeChoice;
 const [takenOption, unreadOption] = choice.options;
 const LAST_LINE = sceneDialogue.length;
 const DECISION_NAME = `Decision · ${choice.options.length} options`;
-const JUMP_TO_ACT3 = 'Jump to Act 3';
+const JUMP_TO_DECISION = 'Jump to this decision';
 const MENU_TRIGGER = '#mobile-reader-menu-trigger';
 const SETTINGS_TRIGGER = '#reader-settings-trigger';
 const TRAIN_VISITED = [
@@ -51,7 +51,7 @@ const TRAIN_VISITED = [
     'b1b_act4',
 ];
 const TRAIN_CURRENT = 'b1a_b2a_act8';
-const CURRENT_CAPTION = 'Current position';
+const CURRENT_CAPTION = 'You are here';
 const LOCATE_CURRENT = 'Locate current position';
 
 const t = {
@@ -114,9 +114,21 @@ test.describe('Story map', () => {
         await expect(details.getByText(choice.prompt)).toBeVisible();
         await expect(details.getByText(t.unread)).toBeVisible();
 
-        await details
-            .getByRole('button', { name: JUMP_TO_ACT3 })
-            .click({ position: { x: 24, y: 22 } });
+        const jump = details.getByRole('button', { name: JUMP_TO_DECISION });
+        const detailsBox = await details.boundingBox();
+        const jumpBox = await jump.boundingBox();
+        const unreadBox = await details.getByText(t.unread).boundingBox();
+        expect(detailsBox).not.toBeNull();
+        expect(jumpBox).not.toBeNull();
+        expect(unreadBox).not.toBeNull();
+        expect(jumpBox!.y).toBeGreaterThanOrEqual(detailsBox!.y);
+        expect(jumpBox!.y + jumpBox!.height).toBeLessThanOrEqual(
+            detailsBox!.y + detailsBox!.height
+        );
+        expect(unreadBox!.y + unreadBox!.height).toBeLessThanOrEqual(
+            jumpBox!.y
+        );
+        await jump.click({ position: { x: 24, y: 22 } });
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(CHOICE_SCENE_ID));
         await expect(page).toHaveURL(
@@ -136,6 +148,64 @@ test.describe('Story map', () => {
                     : MENU_TRIGGER
             )
         ).toBeFocused();
+    });
+
+    test('centers a short graph and keeps its choice labels clear of the decision', async ({
+        page,
+    }, testInfo) => {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await readThroughChoice(page);
+        await openStoryMap(page, testInfo.project.name);
+        const surface = page.getByTestId('story-map-surface');
+        const boxes = await surface.evaluate((root, label) => {
+            const decision = root.querySelector('[data-kind="decision"]');
+            const routeLabel = [
+                ...root.querySelectorAll('[data-edge-label]'),
+            ].find(el => el.textContent?.trim() === label);
+            const graph = root.firstElementChild;
+            if (!decision || !routeLabel || !graph) return null;
+            return {
+                decision: decision.getBoundingClientRect().toJSON(),
+                label: routeLabel.getBoundingClientRect().toJSON(),
+                graph: graph.getBoundingClientRect().toJSON(),
+                surface: root.getBoundingClientRect().toJSON(),
+            };
+        }, takenOption.label);
+        expect(boxes).not.toBeNull();
+        expect(boxes!.label.left).toBeGreaterThanOrEqual(boxes!.decision.right);
+        if (boxes!.graph.height < boxes!.surface.height) {
+            expect(
+                Math.abs(
+                    boxes!.graph.y +
+                        boxes!.graph.height / 2 -
+                        (boxes!.surface.y + boxes!.surface.height / 2)
+                )
+            ).toBeLessThan(2);
+        }
+    });
+
+    test('shows the next unread marker next to the current act on open', async ({
+        page,
+    }, testInfo) => {
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await readThroughChoice(page);
+        await openStoryMap(page, testInfo.project.name);
+        const surface = page.getByTestId('story-map-surface');
+        const next = surface.getByRole('button', {
+            name: `${t.unread} — ${takenOption.label}`,
+        });
+        await expect
+            .poll(async () => {
+                const viewport = await surface.boundingBox();
+                const marker = await next.boundingBox();
+                return !!(
+                    viewport &&
+                    marker &&
+                    marker.x >= viewport.x &&
+                    marker.x + marker.width <= viewport.x + viewport.width
+                );
+            })
+            .toBe(true);
     });
 
     test('paints the taken route as a gradient, not a flat stroke', async ({

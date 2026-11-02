@@ -564,6 +564,19 @@ describe('layoutStoryMap', () => {
         expect(rows.get('b1c_act3')).toBe(3);
     });
 
+    it('widens decision labels without widening ordinary run links', () => {
+        const decisionGap = 92;
+        const layout = layoutStoryMap(fullView(), new Set(), {
+            ...metrics,
+            decisionGap,
+        });
+        const root = layout.nodes.find(n => n.id === 'act1')!;
+        const decision = layout.nodes.find(n => n.id === 'choice:c1')!;
+        const branch = layout.nodes.find(n => n.id === 'b1a_act3')!;
+        expect(decision.x - (root.x + root.width)).toBe(metrics.columnGap);
+        expect(branch.x - (decision.x + decision.width)).toBe(decisionGap);
+    });
+
     it('always unfolds the run containing the current scene', () => {
         const view = mapAt(
             ['act1', 'act2', 'b1a_act3', 'b1a_act4'],

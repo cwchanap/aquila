@@ -80,6 +80,7 @@ export interface StoryMapMetrics {
     rowHeight: number;
     nodeHeight: number;
     columnGap: number;
+    decisionGap?: number;
     trunkGap: number;
     runWidth: number;
     sceneWidth: number;
@@ -597,7 +598,7 @@ export function layoutStoryMap(
                 row,
                 status: node.status,
             });
-            const childX = x + m.decisionWidth + m.columnGap;
+            const childX = x + m.decisionWidth + (m.decisionGap ?? m.columnGap);
             const trunkX = x + m.decisionWidth + m.trunkGap;
             const primary = node.options.findIndex(
                 o => o.child.kind === 'run' && o.child.status === 'route'

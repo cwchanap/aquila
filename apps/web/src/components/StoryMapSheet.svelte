@@ -56,6 +56,7 @@
     rowHeight: 108,
     nodeHeight: 44,
     columnGap: 72,
+    decisionGap: 148,
     trunkGap: 36,
     runWidth: 148,
     sceneWidth: 44,
@@ -66,6 +67,7 @@
 
   let expandedRunIds = new SvelteSet<string>();
   let selectedId = $state<string | null>(null);
+  let selectedKind = $state<StoryMapLayoutNode['kind'] | null>(null);
   let mapEl = $state<HTMLElement | null>(null);
 
   let view = $derived(
@@ -74,6 +76,11 @@
   let layout = $derived(layoutStoryMap(view, expandedRunIds, MAP_METRICS));
   let nodesById = $derived(new SvelteMap(layout.nodes.map(n => [n.id, n])));
   let sm = $derived(t.reader.storyMap);
+  let stats = $derived([
+    { label: sm.statsActs, count: view.stats.acts },
+    { label: sm.statsDecisions, count: view.stats.decisions },
+    { label: sm.statsEndings, count: view.stats.endings },
+  ]);
 
   interface ViewIndex {
     runs: Map<string, StoryMapRun>;
@@ -156,14 +163,16 @@
   let selection = $derived.by((): Selection => {
     const id = selectedId;
     if (!id) return { kind: 'current' };
-    const decision = index.decisions.get(id);
+    const decision = selectedKind === 'decision' && index.decisions.get(id);
     if (decision) return { kind: 'decision', ...decision };
-    const ending = index.endings.get(id);
+    const ending = selectedKind === 'ending' && index.endings.get(id);
     if (ending) return { kind: 'ending', ending };
-    if (index.unknowns.has(id)) return { kind: 'unknown' };
-    const run = index.runs.get(id);
+    if (selectedKind === 'unknown' && index.unknowns.has(id)) {
+      return { kind: 'unknown' };
+    }
+    const run = selectedKind === 'run' && index.runs.get(id);
     if (run) return { kind: 'run', run };
-    const sceneRun = index.scenes.get(id);
+    const sceneRun = selectedKind === 'scene' && index.scenes.get(id);
     if (sceneRun) {
       return {
         kind: 'scene',
@@ -210,6 +219,7 @@
 
   function activateNode(node: StoryMapLayoutNode): void {
     selectedId = node.id;
+    selectedKind = node.kind;
     if (node.kind === 'run') {
       const run = index.runs.get(node.id);
       if (run && run.sceneIds.length > 1) expandedRunIds.add(node.id);
@@ -267,16 +277,16 @@
   }
 
   function nodeClasses(node: StoryMapLayoutNode): string {
-    const selected = selectedId === node.id;
+    const selected = selectedId === node.id && selectedKind === node.kind;
     if (node.kind === 'run') {
       return cn(
-        'rounded-full bg-white/95 px-3 text-sm font-semibold text-slate-700 shadow-md ring-1 ring-sky-200 hover:bg-white',
-        selected && 'ring-2 ring-blue-600'
+        'rounded-full',
+        selected && 'outline-2 outline-dashed outline-blue-600'
       );
     }
     return cn(
       'rounded-full',
-      selected && 'ring-2 ring-blue-700 ring-offset-1 ring-offset-sky-100'
+      selected && 'outline-2 outline-dashed outline-blue-600 outline-offset-[-2px]'
     );
   }
 
@@ -298,13 +308,15 @@
 
   function edgeLabelPos(
     edge: StoryMapLayoutEdge
-  ): { x: number; y: number } | null {
+  ): { x: number; y: number; width: number } | null {
     const a = nodesById.get(edge.from);
     const b = nodesById.get(edge.to);
     if (!a || !b) return null;
+    const x = a.x + a.width + 6;
     return {
-      x: (a.x + a.width + b.x) / 2,
+      x,
       y: b.y + b.height / 2 - 14,
+      width: Math.max(0, b.x - x - 6),
     };
   }
 
@@ -324,7 +336,9 @@
     const captionBox = caption?.getBoundingClientRect() ?? node;
     const top = Math.min(node.top, captionBox.top);
     const bottom = Math.max(node.bottom, captionBox.bottom);
-    const dx = Math.max(node.right, captionBox.right) - usableRight;
+    // Leave room for the next visible marker without clipping the current pill.
+    const context = Math.min(108, Math.max(0, mapEl.clientWidth - captionBox.width));
+    const dx = Math.max(node.right, captionBox.right) + context - usableRight;
     let dy = 0;
     if (top < usableTop) dy = top - usableTop;
     else if (bottom > usableBottom) dy = bottom - usableBottom;
@@ -336,8 +350,8 @@
   }
 
   function locateCurrent(): void {
-    const current = layout.nodes.find(n => n.current);
-    if (current) selectedId = current.id;
+    selectedId = null;
+    selectedKind = null;
     scrollCurrentIntoView();
   }
 
@@ -351,6 +365,7 @@
     wasOpen = open;
     if (open) {
       selectedId = null;
+      selectedKind = null;
       expandedRunIds.clear();
       void tick().then(() => scrollCurrentIntoView());
     }
@@ -378,39 +393,37 @@
     >
       <div class="flex items-start justify-between gap-3 px-4 pt-4 sm:px-6">
         <div class="min-w-0">
-          <h2 id="story-map-title" class="text-xl font-bold text-slate-900">
+          <p
+            id="story-map-title"
+            class="text-xs font-bold uppercase tracking-widest text-blue-700"
+          >
             {sm.title}
+          </p>
+          <h2 class="mt-1 truncate text-xl font-bold text-slate-800 sm:text-2xl">
+            {storyTitle}
           </h2>
-          <p class="truncate text-sm text-slate-600">{storyTitle}</p>
         </div>
-        <div class="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            class="flex h-11 items-center gap-2 rounded-full bg-white/80 px-4 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-white/70 backdrop-blur-sm hover:bg-white"
-            onclick={locateCurrent}
-          >
-            <Crosshair size={16} aria-hidden="true" />
-            {sm.locateCurrent}
-          </button>
-          <button
-            type="button"
-            class="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-600 shadow-sm ring-1 ring-white/70 backdrop-blur-sm hover:bg-white"
-            aria-label={sm.close}
-            onclick={onClose}
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
-        </div>
+        <button
+          type="button"
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-md hover:bg-white"
+          aria-label={sm.close}
+          onclick={onClose}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col gap-3 p-4 sm:p-6 lg:flex-row">
         <div
-          bind:this={mapEl}
-          data-testid="story-map-surface"
-          class="relative min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl bg-white/55 ring-1 ring-white/70 backdrop-blur-md"
+          class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] bg-white/55 ring-1 ring-white/70 backdrop-blur-md"
         >
           <div
-            class="relative"
+            bind:this={mapEl}
+            data-testid="story-map-surface"
+            class="relative flex min-h-0 flex-1 overflow-auto overscroll-contain"
+          >
+          <div
+            class="relative m-auto shrink-0"
             style={`width:${layout.bounds.width}px;height:${layout.bounds.height}px`}
           >
             <svg
@@ -429,7 +442,7 @@
                   x2={layout.bounds.width}
                   y2={0}
                 >
-                  <stop offset="0" stop-color="#2563eb" />
+                  <stop offset="0" stop-color="#3b82f6" />
                   <stop offset="1" stop-color="#22d3ee" />
                 </linearGradient>
               </defs>
@@ -454,22 +467,30 @@
                   stroke-linejoin="round"
                   stroke-dasharray={status === 'unread' ? '0.1 8' : undefined}
                 />
-                {#if edge.label}
-                  {@const pos = edgeLabelPos(edge)}
-                  {#if pos}
-                    <text
-                      x={pos.x}
-                      y={pos.y}
-                      text-anchor="middle"
-                      font-size="11"
-                      class="fill-slate-600 font-semibold"
-                    >
-                      {edge.label}
-                    </text>
-                  {/if}
-                {/if}
               {/each}
             </svg>
+            {#each layout.edges as edge (edge.id)}
+              {#if edge.label}
+                {@const pos = edgeLabelPos(edge)}
+                {#if pos}
+                  <div
+                    aria-hidden="true"
+                    data-edge-label
+                    class={cn(
+                      'pointer-events-none absolute flex items-end text-xs font-semibold leading-tight',
+                      edgeStatus(edge) === 'route'
+                        ? 'text-blue-700'
+                        : edgeStatus(edge) === 'explored'
+                          ? 'text-teal-700'
+                          : 'text-slate-500'
+                    )}
+                    style={`left:${pos.x}px;top:${pos.y - 32}px;width:${pos.width}px;height:32px`}
+                  >
+                    <span class="line-clamp-2 break-words rounded bg-sky-100/90 px-1">{edge.label}</span>
+                  </div>
+                {/if}
+              {/if}
+            {/each}
             {#each layout.nodes as node (node.id)}
               {@const expandable =
                 node.kind === 'run' &&
@@ -483,17 +504,23 @@
                 style={`left:${node.x}px;top:${node.y}px;width:${node.width}px;height:${node.height}px`}
                 data-kind={node.kind}
                 data-status={node.status}
-                data-selected={selectedId === node.id ? 'true' : undefined}
+                data-selected={selectedId === node.id && selectedKind === node.kind ? 'true' : undefined}
                 data-current={node.current ? 'true' : undefined}
                 aria-label={nodeLabel(node)}
-                aria-pressed={selectedId === node.id}
+                aria-pressed={selectedId === node.id && selectedKind === node.kind}
                 aria-expanded={expandable ? 'false' : undefined}
                 aria-current={node.current ? 'location' : undefined}
                 onclick={() => activateNode(node)}
                 onkeydown={e => handleNodeKeydown(e, node)}
               >
                 {#if node.kind === 'run'}
-                  <span class="truncate">{node.label}</span>
+                  <span
+                    class={cn(
+                      'flex h-[34px] w-full items-center justify-center truncate rounded-full border-2 bg-white px-3 text-[13px] font-semibold text-slate-800 shadow-sm',
+                      node.status === 'route' ? 'border-blue-300' : 'border-teal-200'
+                    )}
+                    >{node.label}</span
+                  >
                 {:else if node.kind === 'scene'}
                   {#if node.current}
                     <span
@@ -502,24 +529,33 @@
                     ></span>
                     <span
                       aria-hidden="true"
-                      class="h-4 w-4 rounded-full bg-blue-600 shadow ring-2 ring-white"
+                      class="h-5 w-5 rounded-full bg-blue-500 shadow ring-[3px] ring-white"
                     ></span>
                     <span
+                      aria-hidden="true"
                       data-current-caption
-                      class="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold uppercase tracking-wide text-blue-800"
+                      class="absolute bottom-full left-1/2 mb-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-blue-500 px-2.5 py-1 text-[11px] font-bold leading-none text-white"
                     >
-                      {sm.currentPosition}
+                      {sm.youAreHere}
                     </span>
                   {:else}
                     <span
                       aria-hidden="true"
-                      class="h-3.5 w-3.5 rounded-full bg-white shadow ring-2 ring-slate-400/60"
+                      class={cn(
+                        'h-3.5 w-3.5 rounded-full bg-white shadow ring-[3px]',
+                        node.status === 'route' ? 'ring-blue-500' : 'ring-teal-500'
+                      )}
                     ></span>
                   {/if}
+                  <span
+                    aria-hidden="true"
+                    class="absolute left-1/2 top-full -translate-x-1/2 whitespace-nowrap text-xs text-slate-500"
+                    >{sceneLabel(node.id, index.scenes.get(node.id))}</span
+                  >
                 {:else if node.kind === 'decision'}
                   <span
                     aria-hidden="true"
-                    class="h-5 w-5 rotate-45 rounded-[5px] bg-amber-400 shadow ring-2 ring-amber-200"
+                    class="h-5 w-5 rotate-45 rounded-sm border-[2.5px] border-amber-500 bg-amber-100"
                   ></span>
                 {:else if node.kind === 'unknown'}
                   <span
@@ -538,31 +574,94 @@
                       class="text-amber-400"
                     />
                   </span>
+                  <span
+                    aria-hidden="true"
+                    class="absolute left-full ml-1 whitespace-nowrap text-xs font-semibold text-teal-700"
+                    >{sm.ending}</span
+                  >
                 {/if}
               </button>
             {/each}
+            {#each [...index.runs.values()] as run (run.id)}
+              {#if canFold(run) && isExpanded(run)}
+                {@const first = nodesById.get(run.sceneIds[0])}
+                {@const last = nodesById.get(run.sceneIds[run.sceneIds.length - 1])}
+                {#if first && last}
+                  <button
+                    type="button"
+                    aria-label={contextual(run.id, sm.collapseRun.replace('{label}', run.label))}
+                    aria-expanded="true"
+                    class="absolute flex h-11 items-center justify-center rounded text-xs font-semibold text-slate-500 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
+                    style={`left:${first.x}px;top:${first.y - 44}px;width:${last.x + last.width - first.x}px`}
+                    onclick={() => {
+                      selectedId = run.id;
+                      selectedKind = 'run';
+                      toggleFold(run);
+                    }}
+                  >
+                    {run.label}
+                  </button>
+                {/if}
+              {/if}
+            {/each}
+          </div>
+          </div>
+          <div class="flex shrink-0 items-end justify-between gap-2 p-3">
+            <div
+              role="group"
+              aria-label={sm.legend}
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl bg-white/85 px-3 py-2 text-[11px] font-medium text-slate-600 shadow-sm sm:rounded-full"
+            >
+              <span class="flex items-center gap-1.5">
+                <span aria-hidden="true" class="h-1 w-5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"></span>
+                {sm.yourRoute}
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span aria-hidden="true" class="h-1 w-5 rounded-full bg-teal-500"></span>
+                {sm.explored}
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span aria-hidden="true" class="w-5 border-t-[3px] border-dotted border-slate-400"></span>
+                {sm.unreadLabel}
+              </span>
+              <span class="flex items-center gap-1.5">
+                <span aria-hidden="true" class="mx-1 h-2.5 w-2.5 rotate-45 border-2 border-amber-500 bg-amber-100"></span>
+                {sm.decision}
+              </span>
+            </div>
+            <button
+              type="button"
+              aria-label={sm.locateCurrent}
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/90 text-blue-600 shadow-md hover:bg-white"
+              onclick={locateCurrent}
+            >
+              <Crosshair size={20} aria-hidden="true" />
+            </button>
           </div>
         </div>
 
         <aside
           data-testid="story-map-details"
           aria-live="polite"
-          class="max-h-[38%] w-full shrink-0 overflow-y-auto rounded-2xl bg-white/90 p-4 text-slate-800 shadow-inner ring-1 ring-white/70 backdrop-blur-md lg:max-h-none lg:w-80"
+          class="flex max-h-[50%] w-full shrink-0 flex-col overflow-y-auto rounded-[20px] bg-white/92 p-5 text-slate-800 shadow-lg lg:max-h-none lg:w-60"
         >
           {#if selection.kind === 'current'}
             <h3
-              class="text-xs font-bold uppercase tracking-widest text-slate-500"
+              class="text-xs font-bold uppercase tracking-widest text-blue-600"
             >
-              {sm.currentPosition}
+              {sm.youAreHere}
             </h3>
-            <p class="mt-2 text-lg font-semibold">{currentActLabel}</p>
+            <p class="mt-2 text-3xl font-bold">{currentActLabel}</p>
             {#if lineCount > 0}
               <p class="mt-1 text-sm text-slate-600">{lineProgressText}</p>
             {/if}
-            <ul class="mt-4 space-y-1 text-sm text-slate-600">
-              <li>{statText(sm.statsActs, view.stats.acts)}</li>
-              <li>{statText(sm.statsDecisions, view.stats.decisions)}</li>
-              <li>{statText(sm.statsEndings, view.stats.endings)}</li>
+            <ul class="mt-4 grid grid-cols-3 gap-2 text-slate-600">
+              {#each stats as stat (stat.label)}
+                <li aria-label={statText(stat.label, stat.count)} class="border-t border-slate-200 pt-2">
+                  <strong aria-hidden="true" class="block text-2xl font-bold text-slate-800">{stat.count}</strong>
+                  <span aria-hidden="true" class="text-xs">{stat.label.replace('{n}', '').trim()}</span>
+                </li>
+              {/each}
             </ul>
           {:else if selection.kind === 'run'}
             {@const run = selection.run}
@@ -577,7 +676,7 @@
             <div class="mt-3 flex flex-col gap-2">
               <button
                 type="button"
-                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
                 onclick={() => onJump(run.entrySceneId, 'start')}
               >
                 {sm.jumpTo.replace('{label}', run.label)}
@@ -607,7 +706,7 @@
             <div class="mt-3">
               <button
                 type="button"
-                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
                 onclick={() => onJump(selection.sceneId, 'start')}
               >
                 {sm.jumpTo.replace('{label}', selection.label)}
@@ -615,40 +714,52 @@
             </div>
           {:else if selection.kind === 'decision'}
             {@const d = selection.decision}
-            <h3 class="text-lg font-bold">{sm.decision}</h3>
+            <h3 class="text-xs font-bold uppercase tracking-widest text-blue-600">{sm.decision}</h3>
             {#if choices[d.choiceId]?.prompt}
-              <p class="mt-1 text-sm text-slate-600">
+              <p class="mt-2 text-lg font-semibold leading-snug text-slate-700">
                 {choices[d.choiceId].prompt}
               </p>
             {/if}
-            <ul class="mt-3 space-y-1.5 text-sm">
+            <ul class="mt-4 space-y-3 text-sm">
               {#each d.options as option (option.id)}
-                <li class="flex items-center justify-between gap-2">
-                  <span class="font-medium">{option.label}</span>
+                <li class="flex items-start gap-2">
                   <span
-                    class={option.child.kind === 'run'
-                      ? 'text-slate-600'
-                      : 'italic text-slate-400'}
-                  >
-                    {option.child.kind === 'run'
-                      ? option.child.label
-                      : sm.unreadLabel}
-                  </span>
+                    aria-hidden="true"
+                    class={cn(
+                      'mt-2 w-5 shrink-0',
+                      option.child.kind === 'unknown'
+                        ? 'border-t-[3px] border-dotted border-slate-400'
+                        : option.child.status === 'route'
+                          ? 'h-1 rounded-full bg-blue-500'
+                          : 'h-1 rounded-full bg-teal-500'
+                    )}
+                  ></span>
+                  <div class="min-w-0">
+                    <span class="block font-semibold">{option.label}</span>
+                    <span class="block text-xs text-slate-500">
+                      <span>{option.child.kind === 'unknown'
+                        ? sm.unreadLabel
+                        : option.child.status === 'route'
+                          ? sm.yourRoute
+                          : sm.explored}</span>
+                      {#if option.child.kind === 'run'}
+                        <span aria-hidden="true"> &middot; </span>
+                        <span>{option.child.label}</span>
+                      {/if}
+                    </span>
+                  </div>
                 </li>
               {/each}
             </ul>
             {#if selection.precedingSceneId}
               {@const preceding = selection.precedingSceneId}
-              <div class="mt-3">
+              <div class="sticky bottom-0 mt-auto bg-[#f4f9fc] pt-3 lg:static lg:bg-transparent lg:pt-4">
                 <button
                   type="button"
-                  class="flex min-h-11 w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                  class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
                   onclick={() => onJump(preceding, 'end')}
                 >
-                  {sm.jumpTo.replace(
-                    '{label}',
-                    sceneLabel(preceding, index.scenes.get(preceding))
-                  )}
+                  {sm.jumpToDecision}
                 </button>
               </div>
             {/if}
@@ -656,13 +767,13 @@
             <h3 class="text-lg font-bold">
               {sm.endingLabel.replace('{label}', selection.ending.label)}
             </h3>
-            <div class="mt-3">
+            <div class="sticky bottom-0 mt-auto bg-[#f4f9fc] pt-3 lg:static lg:bg-transparent lg:pt-4">
               <button
                 type="button"
-                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
                 onclick={() => onJump(selection.ending.sceneId, 'start')}
               >
-                {sm.jumpTo.replace('{label}', selection.ending.label)}
+                {sm.jumpToEnding}
               </button>
             </div>
           {:else}

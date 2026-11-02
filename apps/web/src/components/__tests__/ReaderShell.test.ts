@@ -95,6 +95,13 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
                 close: 'Close story map',
                 locateCurrent: 'Locate current position',
                 currentPosition: 'Current position',
+                youAreHere: 'You are here',
+                legend: 'Story map legend',
+                yourRoute: 'Your route',
+                explored: 'Explored',
+                ending: 'Ending',
+                jumpToDecision: 'Jump to this decision',
+                jumpToEnding: 'Read this ending again',
                 statsActs: '{n} acts',
                 statsDecisions: '{n} decisions',
                 statsEndings: '{n} endings',
@@ -2939,7 +2946,7 @@ describe('ReaderShell furigana', () => {
             const dialog = screen.getByRole('dialog', { name: 'Story map' });
             expect(dialog.querySelector('[data-kind="ending"]')).not.toBeNull();
             expect(
-                within(details()).getByText('1 endings')
+                within(details()).getByLabelText('1 endings')
             ).toBeInTheDocument();
         });
 
@@ -2961,7 +2968,7 @@ describe('ReaderShell furigana', () => {
             );
             await fireEvent.click(
                 within(details()).getByRole('button', {
-                    name: 'Jump to Act 2',
+                    name: 'Jump to this decision',
                 })
             );
 

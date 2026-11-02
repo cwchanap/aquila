@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
+import { getTranslations } from '@aquila/stories/translations';
 import type { ChoiceMap, StoryFlowConfig, Translations } from '@aquila/stories';
 import type { StoryProgress } from '@/lib/story-progress-store';
 import StoryMapSheet from '@/components/StoryMapSheet.svelte';
@@ -19,6 +20,13 @@ const t = {
             close: 'Close story map',
             locateCurrent: 'Locate current position',
             currentPosition: 'Current position',
+            youAreHere: 'You are here',
+            legend: 'Story map legend',
+            yourRoute: 'Your route',
+            explored: 'Explored',
+            ending: 'Ending',
+            jumpToDecision: 'Jump to this decision',
+            jumpToEnding: 'Read this ending again',
             statsActs: '{n} acts',
             statsDecisions: '{n} decisions',
             statsEndings: '{n} endings',
@@ -169,12 +177,12 @@ describe('StoryMapSheet', () => {
 
     it('shows the current act, line and discovered stats by default', () => {
         render(StoryMapSheet, { props: baseProps() });
-        expect(within(details()).getByText('Current position')).toBeTruthy();
+        expect(within(details()).getByText('You are here')).toBeTruthy();
         expect(within(details()).getByText('Act 3')).toBeTruthy();
         expect(within(details()).getByText('Line 3 of 5')).toBeTruthy();
-        expect(within(details()).getByText('3 acts')).toBeTruthy();
-        expect(within(details()).getByText('1 decisions')).toBeTruthy();
-        expect(within(details()).getByText('0 endings')).toBeTruthy();
+        expect(within(details()).getByLabelText('3 acts')).toBeTruthy();
+        expect(within(details()).getByLabelText('1 decisions')).toBeTruthy();
+        expect(within(details()).getByLabelText('0 endings')).toBeTruthy();
     });
 
     it('marks the current node and moves focus inside the dialog', () => {
@@ -185,6 +193,45 @@ describe('StoryMapSheet', () => {
         expect(current.getAttribute('aria-current')).toBe('location');
         const dialog = screen.getByRole('dialog');
         expect(dialog.contains(document.activeElement)).toBe(true);
+    });
+
+    it('shows a legend for each map symbol and keeps locate alongside it', () => {
+        render(StoryMapSheet, { props: baseProps() });
+        const legend = screen.getByRole('group', { name: 'Story map legend' });
+        for (const label of [
+            'Your route',
+            'Explored',
+            'Not read yet',
+            'Decision',
+        ]) {
+            expect(within(legend).getByText(label)).toBeVisible();
+        }
+        expect(
+            screen.getByRole('button', { name: 'Locate current position' })
+                .parentElement
+        ).toContainElement(legend);
+    });
+
+    it('labels visited acts visually, including when a run is unfolded', async () => {
+        render(StoryMapSheet, { props: baseProps() });
+        const current = within(surface()).getByRole('button', {
+            name: 'Current position: Act 3 — Left path',
+        });
+        expect(within(current).getByText('Act 3')).toBeVisible();
+        expect(within(current).getByText('You are here')).toBeVisible();
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
+        );
+        expect(
+            within(
+                within(surface()).getByRole('button', { name: 'Act 1' })
+            ).getByText('Act 1')
+        ).toBeVisible();
+        expect(
+            within(
+                within(surface()).getByRole('button', { name: 'Act 2' })
+            ).getByText('Act 2')
+        ).toBeVisible();
     });
 
     it('selects a scene node and offers a start jump to it', async () => {
@@ -229,6 +276,36 @@ describe('StoryMapSheet', () => {
         ).toBeTruthy();
     });
 
+    it('folds an expanded run from its visible map label', async () => {
+        render(StoryMapSheet, { props: baseProps() });
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
+        );
+        const label = within(surface()).getByRole('button', {
+            name: 'Collapse Acts 1–2',
+        });
+        expect(within(label).getByText('Acts 1–2')).toBeVisible();
+        await fireEvent.click(label);
+        expect(
+            within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
+        ).toBeVisible();
+    });
+
+    it('selects the first act of an unfolded run rather than the run itself', async () => {
+        const onJump = vi.fn();
+        render(StoryMapSheet, { props: baseProps({ onJump }) });
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
+        );
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Act 1' })
+        );
+        await fireEvent.click(
+            within(details()).getByRole('button', { name: 'Jump to Act 1' })
+        );
+        expect(onJump).toHaveBeenCalledWith('act1', 'start');
+    });
+
     it('activates focused nodes with Enter and Space', async () => {
         render(StoryMapSheet, { props: baseProps() });
         const pill = within(surface()).getByRole('button', {
@@ -270,11 +347,29 @@ describe('StoryMapSheet', () => {
         expect(within(details()).getByText('Middle path')).toBeTruthy();
         expect(within(details()).getByText('Right path')).toBeTruthy();
         expect(within(details()).getAllByText('Not read yet')).toHaveLength(2);
+        expect(within(details()).getByText('Your route')).toBeTruthy();
         expect(within(details()).getByText('Act 3')).toBeTruthy();
         await fireEvent.click(
-            within(details()).getByRole('button', { name: 'Jump to Act 2' })
+            within(details()).getByRole('button', {
+                name: 'Jump to this decision',
+            })
         );
         expect(onJump).toHaveBeenCalledWith('act2', 'end');
+    });
+
+    it('distinguishes explored and current routes without revealing unread destinations', async () => {
+        render(StoryMapSheet, {
+            props: baseProps({
+                progress: progress(['act1', 'act2', 'b1a_act3', 'b1b_act3']),
+            }),
+        });
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Decision · 3 options' })
+        );
+        expect(within(details()).getByText('Your route')).toBeVisible();
+        expect(within(details()).getByText('Explored')).toBeVisible();
+        expect(within(details()).getByText('Not read yet')).toBeVisible();
+        expect(details().textContent).not.toContain('b1c_act3');
     });
 
     it('keeps unpassed decisions and unread destinations hidden', () => {
@@ -331,10 +426,13 @@ describe('StoryMapSheet', () => {
         expect(
             screen.getByRole('button', { name: 'Ending Act 3 — Middle path' })
         ).toBeTruthy();
+        expect(within(ending as HTMLElement).getByText('Ending')).toBeVisible();
         await fireEvent.click(ending as HTMLElement);
         expect(within(details()).getByText('Ending Act 3')).toBeTruthy();
         await fireEvent.click(
-            within(details()).getByRole('button', { name: 'Jump to Act 3' })
+            within(details()).getByRole('button', {
+                name: 'Read this ending again',
+            })
         );
         expect(onJump).toHaveBeenCalledWith('b1b_act3', 'start');
     });
@@ -447,7 +545,7 @@ describe('StoryMapSheet', () => {
             screen.getByRole('button', { name: 'Locate current position' })
         );
         expect(scrollSpy).toHaveBeenCalled();
-        expect(within(details()).getByText('Current position')).toBeTruthy();
+        expect(within(details()).getByText('You are here')).toBeTruthy();
     });
 
     it('closes on Escape and on the scrim', async () => {
@@ -527,6 +625,13 @@ describe('StoryMapSheet', () => {
                     close: '關閉故事地圖',
                     locateCurrent: '顯示目前位置',
                     currentPosition: '目前位置',
+                    youAreHere: '你在這裡',
+                    legend: '故事地圖圖例',
+                    yourRoute: '你的路線',
+                    explored: '已探索',
+                    ending: '結局',
+                    jumpToDecision: '跳至這個抉擇',
+                    jumpToEnding: '再次閱讀這個結局',
                     statsActs: '{n} 章',
                     statsDecisions: '{n} 個抉擇',
                     statsEndings: '{n} 個結局',
@@ -546,11 +651,27 @@ describe('StoryMapSheet', () => {
         expect(
             screen.getByRole('button', { name: '展開 第 1–2 章' })
         ).toBeTruthy();
-        expect(within(details()).getByText('3 章')).toBeTruthy();
+        expect(within(details()).getByLabelText('3 章')).toBeTruthy();
         expect(within(details()).getByText('第 3 / 5 行')).toBeTruthy();
         expect(
             within(surface()).getAllByRole('button', { name: /^尚未閱讀/ })
                 .length
         ).toBeGreaterThan(0);
     });
+
+    it.each([
+        ['en', 'Story map legend', 'Your route', 'Not read yet'],
+        ['zh', '故事地圖圖例', '你的路線', '尚未閱讀'],
+        ['ja', 'ストーリーマップの凡例', '現在のルート', '未読'],
+    ] as const)(
+        'renders the %s legend using the real locale',
+        (locale, legendLabel, routeLabel, unreadLabel) => {
+            render(StoryMapSheet, {
+                props: baseProps({ t: getTranslations(locale) }),
+            });
+            const legend = screen.getByRole('group', { name: legendLabel });
+            expect(within(legend).getByText(routeLabel)).toBeVisible();
+            expect(within(legend).getByText(unreadLabel)).toBeVisible();
+        }
+    );
 });

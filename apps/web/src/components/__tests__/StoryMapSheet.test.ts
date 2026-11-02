@@ -274,6 +274,12 @@ describe('StoryMapSheet', () => {
         expect(
             within(details()).getByRole('button', { name: 'Expand Acts 1–2' })
         ).toBeTruthy();
+        await fireEvent.click(
+            within(details()).getByRole('button', { name: 'Expand Acts 1–2' })
+        );
+        expect(
+            within(surface()).getByRole('button', { name: 'Act 2' })
+        ).toBeVisible();
     });
 
     it('folds an expanded run from its visible map label', async () => {
@@ -312,6 +318,11 @@ describe('StoryMapSheet', () => {
             name: 'Expand Acts 1–2',
         });
         pill.focus();
+        await fireEvent.keyDown(pill, { key: 'ArrowRight' });
+        expect(pill).toHaveAttribute('aria-pressed', 'false');
+        expect(
+            within(surface()).queryByRole('button', { name: 'Act 1' })
+        ).toBeNull();
         await fireEvent.keyDown(pill, { key: 'Enter' });
         expect(screen.getByRole('button', { name: 'Act 1' })).toBeTruthy();
         await fireEvent.click(
@@ -370,6 +381,63 @@ describe('StoryMapSheet', () => {
         expect(within(details()).getByText('Explored')).toBeVisible();
         expect(within(details()).getByText('Not read yet')).toBeVisible();
         expect(details().textContent).not.toContain('b1c_act3');
+    });
+
+    it('shows decision options even when the localized prompt is empty', async () => {
+        render(StoryMapSheet, {
+            props: baseProps({
+                choices: {
+                    ...choices,
+                    c1: { ...choices.c1, prompt: '' },
+                },
+            }),
+        });
+        await fireEvent.click(
+            within(surface()).getByRole('button', {
+                name: 'Decision · 3 options',
+            })
+        );
+        expect(within(details()).queryByText('Which fork?')).toBeNull();
+        expect(within(details()).getByText('Left path')).toBeVisible();
+        expect(within(details()).getAllByText('Not read yet')).toHaveLength(2);
+        expect(
+            within(details()).getByRole('button', {
+                name: 'Jump to this decision',
+            })
+        ).toBeVisible();
+    });
+
+    it('returns to the current details if a selected node becomes unread', async () => {
+        const { rerender } = render(StoryMapSheet, { props: baseProps() });
+        await fireEvent.click(
+            within(surface()).getByRole('button', {
+                name: 'Decision · 3 options',
+            })
+        );
+        expect(within(details()).getByText('Which fork?')).toBeVisible();
+        await rerender(
+            baseProps({ currentSceneId: 'act1', progress: progress(['act1']) })
+        );
+        expect(within(details()).getByText('You are here')).toBeVisible();
+        expect(within(details()).getByText('Act 1')).toBeVisible();
+        expect(within(details()).queryByText('Which fork?')).toBeNull();
+    });
+
+    it('handles an unknown current scene without a map node or line count', async () => {
+        render(StoryMapSheet, {
+            props: baseProps({
+                currentSceneId: 'missing_scene',
+                progress: progress([]),
+                lineCount: 0,
+            }),
+        });
+        expect(within(details()).getByText('You are here')).toBeVisible();
+        expect(within(details()).queryByText(/Line \d/)).toBeNull();
+        expect(surface().querySelector('[data-current]')).toBeNull();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Locate current position' })
+        );
+        expect(screen.getByRole('dialog')).toBeVisible();
     });
 
     it('keeps unpassed decisions and unread destinations hidden', () => {
@@ -546,6 +614,59 @@ describe('StoryMapSheet', () => {
         );
         expect(scrollSpy).toHaveBeenCalled();
         expect(within(details()).getByText('You are here')).toBeTruthy();
+    });
+
+    it('scrolls upward or downward to include the current node and caption', async () => {
+        const scrollSpy = vi
+            .spyOn(Element.prototype, 'scrollTo')
+            .mockImplementation(() => {});
+        render(StoryMapSheet, { props: baseProps() });
+        await vi.waitFor(() => expect(scrollSpy).toHaveBeenCalled());
+
+        const map = surface();
+        const current = within(map).getByRole('button', {
+            name: 'Current position: Act 3 — Left path',
+        });
+        const caption = current.querySelector('[data-current-caption]')!;
+        const rect = (x: number, y: number, width: number, height: number) =>
+            ({
+                x,
+                y,
+                width,
+                height,
+                left: x,
+                right: x + width,
+                top: y,
+                bottom: y + height,
+                toJSON: () => ({}),
+            }) as DOMRect;
+        vi.spyOn(map, 'getBoundingClientRect').mockReturnValue(
+            rect(0, 100, 300, 200)
+        );
+        Object.defineProperties(map, {
+            clientWidth: { configurable: true, value: 300 },
+            clientHeight: { configurable: true, value: 200 },
+        });
+        map.scrollTop = 100;
+        const currentRect = vi.spyOn(current, 'getBoundingClientRect');
+        const captionRect = vi.spyOn(caption, 'getBoundingClientRect');
+        currentRect.mockReturnValue(rect(20, 60, 44, 44));
+        captionRect.mockReturnValue(rect(10, 40, 80, 20));
+
+        const locate = screen.getByRole('button', {
+            name: 'Locate current position',
+        });
+        await fireEvent.click(locate);
+        expect(scrollSpy).toHaveBeenLastCalledWith(
+            expect.objectContaining({ top: 40 })
+        );
+
+        currentRect.mockReturnValue(rect(20, 350, 44, 44));
+        captionRect.mockReturnValue(rect(10, 330, 80, 20));
+        await fireEvent.click(locate);
+        expect(scrollSpy).toHaveBeenLastCalledWith(
+            expect.objectContaining({ top: 194 })
+        );
     });
 
     it('closes on Escape and on the scrim', async () => {

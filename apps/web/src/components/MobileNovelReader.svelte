@@ -32,7 +32,7 @@
     Bookmark,
     Film,
     Languages,
-    Map,
+    Map as MapIcon,
   } from 'lucide-svelte';
   import { longpress } from '@/lib/longpress';
 
@@ -435,7 +435,7 @@
               onRelease: hideTooltip,
             }}
           >
-            <Map size={20} aria-hidden="true" />
+            <MapIcon size={20} aria-hidden="true" />
           </button>
         {/if}
         <button

@@ -36,6 +36,10 @@ export interface ProgressPosition {
     atEnding: boolean;
 }
 
+function isVisitedList(value: unknown): value is string[] {
+    return Array.isArray(value) && value.every(e => typeof e === 'string');
+}
+
 function isProgress(value: unknown): value is StoryProgress {
     if (!value || typeof value !== 'object') return false;
     const v = value as Record<string, unknown>;
@@ -47,10 +51,7 @@ function isProgress(value: unknown): value is StoryProgress {
         typeof v.updatedAt === 'number' &&
         typeof v.finished === 'boolean' &&
         Array.isArray(v.endings) &&
-        v.endings.every(e => typeof e === 'string') &&
-        (v.visited === undefined ||
-            (Array.isArray(v.visited) &&
-                v.visited.every(e => typeof e === 'string')))
+        v.endings.every(e => typeof e === 'string')
     );
 }
 
@@ -75,7 +76,13 @@ export class StoryProgressStore {
             }
             const out: StoryProgressMap = {};
             for (const [id, value] of Object.entries(parsed)) {
-                if (isProgress(value)) out[id] = value;
+                if (!isProgress(value)) continue;
+                // A malformed `visited` forfeits only itself: the saved
+                // position and reached endings still apply.
+                const { visited, ...rest } = value as Record<string, unknown>;
+                const record: Record<string, unknown> = { ...rest };
+                if (isVisitedList(visited)) record.visited = visited;
+                out[id] = record as StoryProgress;
             }
             return out;
         } catch {

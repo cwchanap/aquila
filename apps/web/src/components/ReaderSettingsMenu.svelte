@@ -34,6 +34,7 @@
     bookmarkDisabled,
     triggerUnavailable,
     storyMapAvailable = false,
+    storyMapDisabled = false,
     onOpenStoryMap = () => {},
   }: {
     open?: boolean;
@@ -60,6 +61,7 @@
     bookmarkDisabled: boolean;
     triggerUnavailable: boolean;
     storyMapAvailable?: boolean;
+    storyMapDisabled?: boolean;
     onOpenStoryMap?: () => void;
   } = $props();
 
@@ -224,7 +226,8 @@
       {#if storyMapAvailable}
         <button
           type="button"
-          class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600"
+          class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={storyMapDisabled}
           onclick={() => void openStoryMap()}
         >
           {t.reader.storyMap.title}

@@ -787,7 +787,7 @@
   });
 
   function openStoryMap(): void {
-    if (!storyMapAvailable || storyMapOpen) return;
+    if (!storyMapAvailable || storyMapOpen || isBlocking) return;
     storyMapProgress = getCurrentStoryProgressSnapshot();
     storyMapOpen = true;
   }
@@ -799,7 +799,7 @@
   }
 
   function handleStoryMapJump(sceneId: string, at?: 'start' | 'end'): void {
-    if (!hasActivePayload) return;
+    if (!hasActivePayload || isBlocking) return;
     onNavigate(sceneId, at);
     if (storyMapOpen) void closeStoryMap();
   }
@@ -970,6 +970,7 @@
     bookmarkDisabled={isBlocking}
     triggerUnavailable={storyMapOpen || (leafOverlayOpen && !isBlocking)}
     {storyMapAvailable}
+    storyMapDisabled={isBlocking}
     onOpenStoryMap={openStoryMap}
   />
 {/if}
@@ -1117,5 +1118,6 @@
     onJump={handleStoryMapJump}
     onClose={() => void closeStoryMap()}
     restoreFocusTarget={storyMapFocusTarget}
+    visibleSceneIds={storyMapVisibleIds}
   />
 {/if}

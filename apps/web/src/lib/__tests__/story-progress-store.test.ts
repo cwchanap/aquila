@@ -129,6 +129,31 @@ describe('StoryProgressStore', () => {
         expect(new StoryProgressStore(storage).getAll()).toEqual({});
     });
 
+    it('drops a malformed visited list but keeps the rest of the record', () => {
+        for (const visited of [42, 'act1', ['act1', 7], {}]) {
+            const storage = memoryStorage({
+                [STORY_PROGRESS_KEY]: JSON.stringify({
+                    elevator_game: {
+                        sceneId: 'act3',
+                        dialogueIndex: 4,
+                        updatedAt: 9,
+                        finished: true,
+                        endings: ['act3'],
+                        visited,
+                    },
+                }),
+            });
+            const record = new StoryProgressStore(storage).get('elevator_game');
+            expect(record).toEqual({
+                sceneId: 'act3',
+                dialogueIndex: 4,
+                updatedAt: 9,
+                finished: true,
+                endings: ['act3'],
+            });
+        }
+    });
+
     it('ignores a stored value that is not a map of stories', () => {
         for (const raw of ['[]', 'null', '42']) {
             const store = new StoryProgressStore(

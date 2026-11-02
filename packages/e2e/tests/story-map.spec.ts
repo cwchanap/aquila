@@ -337,14 +337,14 @@ test.describe('Story map', () => {
                 if (!el) return null;
                 return {
                     tag: el.tagName,
-                    label: el.getAttribute('aria-label'),
+                    testid: el.getAttribute('data-testid'),
                     cls: typeof el.className === 'string' ? el.className : '',
                 };
             },
             [point.x, point.y] as [number, number]
         );
         expect(hit?.tag).toBe('BUTTON');
-        expect(hit?.label).toBe(t.closeStoryMap);
+        expect(hit?.testid).toBe('story-map-scrim');
         expect(hit?.cls).toContain('fixed inset-0');
 
         await page.mouse.click(point.x, point.y);

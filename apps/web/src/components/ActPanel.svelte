@@ -55,7 +55,7 @@
   }
 
   function handleEscape(e: KeyboardEvent) {
-    if (e.key === 'Escape' && open) {
+    if (e.key === 'Escape' && open && !e.defaultPrevented) {
       onToggle();
     }
   }

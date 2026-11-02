@@ -27,7 +27,7 @@ Keep this implementation simple:
 | `packages/stories/src/flow-types.ts` | Scene nodes link by `next`; choice nodes expose `choiceId` / `nextByOption` | Read as-is |
 | `packages/stories/src/types.ts` | `ChoiceMap` provides prompts, labels, and destination scenes | Make active map available to the sheet |
 | `apps/web/src/lib/story-progress-store.ts` | Persists one position plus all reached ending IDs per story | Add optional visited-scene IDs |
-| `apps/web/src/lib/reader-manager.ts` | `goToScene(sceneId)` pushes one history entry; `applySession` loads active flow; line persistence is debounced by 500 ms | Optional `at: 'start' | 'end'` jump, active choices, and a synchronous current-progress snapshot callback that flushes pending position writes |
+| `apps/web/src/lib/reader-manager.ts` | `goToScene(sceneId)` pushes one history entry; `applySession` loads active flow; line persistence is debounced by 500 ms | Optional `at: 'start' \| 'end'` jump, active choices, and a synchronous current-progress snapshot callback that flushes pending position writes |
 | `apps/web/src/lib/reader-state.svelte.ts` | Canonical reactive progression and active flow | Add/reset `activeChoices` runtime payload only |
 | `apps/web/src/components/ReaderShell.svelte` | Chooses the text/mobile/visual leaf, owns settings overlay, and renders Settings *outside* the inert reader subtree | Own map sheet, derive eligibility/visible acts once, disable reader leaf **and Settings trigger** while open; restore focus after unlock |
 | `apps/web/src/lib/act-navigation.ts` | `buildChapterData` builds full Acts lists for desktop and mobile | Optional visible-scene filter **before** choosing/grouping act candidates |

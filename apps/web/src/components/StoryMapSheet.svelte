@@ -256,7 +256,11 @@
       const base = sceneLabel(node.id, index.scenes.get(node.id));
       return contextual(
         node.id,
-        node.current ? `${sm.currentPosition}: ${base}` : base
+        node.current
+          ? sm.currentNode
+              .replace('{position}', sm.currentPosition)
+              .replace('{label}', base)
+          : base
       );
     }
     if (node.kind === 'decision') {
@@ -264,7 +268,9 @@
         index.decisions.get(node.id)?.decision.options.length ?? 0;
       return contextual(
         node.id,
-        `${sm.decision} · ${statText(sm.options, n)}`
+        sm.decisionNode
+          .replace('{decision}', sm.decision)
+          .replace('{options}', statText(sm.options, n))
       );
     }
     if (node.kind === 'ending') {

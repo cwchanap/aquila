@@ -112,6 +112,8 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
                 unreadLabel: 'Not read yet',
                 endingLabel: 'Ending {label}',
                 withBranch: '{label} — {branch}',
+                currentNode: '{position}: {label}',
+                decisionNode: '{decision} · {options}',
                 jumpTo: 'Jump to {label}',
             },
         },

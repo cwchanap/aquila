@@ -23,7 +23,7 @@ Run commands from `packages/stories`. `<rawDir>` is the folder name under `raw/`
 
 ### 1. Scope
 
-Pick the story and scene ids, e.g. `ch1_act2`. Scene ids are the keys of the compiled dialogue map, as in `src/generated/<rawDir>/dialogue.zh.ts`. Voice one act per run, which keeps listening and re-rolling manageable.
+Pick the story and scene ids, e.g. `ch1_act2`. Scene ids are the keys of the compiled dialogue map, as in `src/generated/<rawDir>/dialogue.zh.ts` (gitignored; `bun install` or `bun compile:stories` builds it). Voice one act per run, which keeps listening and re-rolling manageable.
 
 ### 2. Japanese text (stories without Japanese reader text only)
 

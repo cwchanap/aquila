@@ -45,6 +45,16 @@ describe('cli --report', () => {
         expect(report.unused).toEqual([]);
     });
 
+    it('accepts --quiet and keeps stdout to the JSON report', () => {
+        const stdout = execFileSync(
+            cliRuntime,
+            ['src/compiler/cli.ts', '--quiet', '--report', 'theSeventhMirror'],
+            { cwd: packageRoot, encoding: 'utf8' }
+        );
+
+        expect(JSON.parse(stdout).story).toBe('theSeventhMirror');
+    });
+
     it('fails with a usage error when no story name is given', () => {
         expect(() => runReport([])).toThrow(/usage: --report <storyName>/);
     });

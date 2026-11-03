@@ -6,7 +6,15 @@ import { loadAudioPlan } from '../audio-plan-loader';
 import { buildAudioUsageReport, collectAudioUsage } from './audio-usage';
 
 async function main(): Promise<void> {
-    const args = process.argv.slice(2);
+    // --quiet (used by `bun install`, web dev/build and the voice/publisher
+    // scripts) hides per-story logs and warnings and keeps stdout clean; errors
+    // still print.
+    const quiet = process.argv.includes('--quiet');
+    const args = process.argv.slice(2).filter(arg => arg !== '--quiet');
+    if (quiet) {
+        console.log = () => {};
+        console.warn = () => {};
+    }
     if (args[0] === '--report') {
         if (args.length !== 2 || !args[1]) {
             throw new Error('[story-compiler] usage: --report <storyName>');
@@ -40,10 +48,17 @@ async function main(): Promise<void> {
         return;
     }
 
+    let sceneCount = 0;
     for (const name of names) {
         const story = await compileNamedStory(name, true);
+        sceneCount += story.scenes.length;
         console.log(
             `[story-compiler] ${name}: ${story.scenes.length} scenes, ${story.choices.length} choices`
+        );
+    }
+    if (quiet) {
+        process.stderr.write(
+            `[story-compiler] compiled ${names.length} stories (${sceneCount} scenes)\n`
         );
     }
 }

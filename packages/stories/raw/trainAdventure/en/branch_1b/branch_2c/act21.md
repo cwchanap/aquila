@@ -14,7 +14,7 @@
 
 **Narrator**: To repay the elves for taking them in, Li Jie and Asuka began helping with the work of the village.
 
-**Narrator**: Li Jie went out with the elven swordsmen to learn how to patrol, while Asuka helped tend the luminous plants.
+**Narrator**: Li Jie went out with the elf swordsmen to learn how to patrol, while Asuka helped tend the luminous plants.
 
 **Narrator**: Now and then they also went along with Lila's patrol, searching the forest for any other survivors.
 
@@ -22,9 +22,9 @@
 
 **Narrator**: The morning of the third day — or rather, the third cycle since they had woken.
 
-**Narrator**: Li Jie was on the village training ground, practicing swordplay with a young elven swordsman.
+**Narrator**: Li Jie was on the village training ground, practicing swordplay with a young elf swordsman.
 
-**Narrator**: Not far away, Asuka was by the flower beds with a few elven women, tending the glowing blossoms.
+**Narrator**: Not far away, Asuka was by the flower beds with a few elf women, tending the glowing blossoms.
 
 **Narrator**: Lila came over from the center of the village, a trace of weariness on her face.
 

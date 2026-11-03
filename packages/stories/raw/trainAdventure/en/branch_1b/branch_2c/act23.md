@@ -42,7 +42,7 @@
 
 ---
 
-**Narrator**: Not far away, Li Jie was on the training ground, practicing swordplay with several elven swordsmen.
+**Narrator**: Not far away, Li Jie was on the training ground, practicing swordplay with several elf swordsmen.
 
 **Narrator**: His swordsmanship was still clumsy, but the elves were patient teachers.
 
@@ -60,7 +60,7 @@
 
 **Li Jie**: It's all thanks to your teaching.
 
-**Narrator**: The elven swordsman smiled and clapped Li Jie on the shoulder.
+**Narrator**: The elf swordsman smiled and clapped Li Jie on the shoulder.
 
 ---
 

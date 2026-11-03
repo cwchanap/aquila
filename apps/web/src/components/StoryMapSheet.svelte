@@ -241,6 +241,14 @@
     else expandedRunIds.add(run.id);
   }
 
+  function focusMapNode(id: string): void {
+    mapEl
+      ?.querySelector<HTMLElement>(
+        `[data-node-id="${id.replace(/["\\]/g, '\\$&')}"]`
+      )
+      ?.focus();
+  }
+
   // The on-map collapse button unmounts itself on click, so focus moves to
   // the folded run pill that replaces it rather than dropping to <body>.
   async function collapseRun(run: StoryMapRun): Promise<void> {
@@ -248,20 +256,20 @@
     selectedKind = 'run';
     toggleFold(run);
     await tick();
-    mapEl
-      ?.querySelector<HTMLElement>(
-        `[data-node-id="${run.id.replace(/["\\]/g, '\\$&')}"]`
-      )
-      ?.focus();
+    focusMapNode(run.id);
   }
 
-  function activateNode(node: StoryMapLayoutNode): void {
+  // The on-map run pill unmounts itself when it expands, so focus moves to
+  // the first revealed scene node rather than dropping to <body>.
+  async function activateNode(node: StoryMapLayoutNode): Promise<void> {
     selectedId = node.id;
     selectedKind = node.kind;
-    if (node.kind === 'run') {
-      const run = index.runs.get(node.id);
-      if (run && run.sceneIds.length > 1) expandedRunIds.add(node.id);
-    }
+    if (node.kind !== 'run') return;
+    const run = index.runs.get(node.id);
+    if (!run || run.sceneIds.length <= 1) return;
+    expandedRunIds.add(node.id);
+    await tick();
+    focusMapNode(run.sceneIds[0]);
   }
 
   function contextual(id: string, base: string): string {
@@ -553,7 +561,7 @@
                 aria-pressed={selectedId === node.id && selectedKind === node.kind}
                 aria-expanded={expandable ? 'false' : undefined}
                 aria-current={node.current ? 'location' : undefined}
-                onclick={() => activateNode(node)}
+                onclick={() => void activateNode(node)}
               >
                 {#if node.kind === 'run'}
                   <span

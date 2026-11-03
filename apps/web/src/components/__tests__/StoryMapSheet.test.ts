@@ -316,6 +316,23 @@ describe('StoryMapSheet', () => {
         expect(document.activeElement).toBe(folded);
     });
 
+    it('moves focus to the first scene when a run expands', async () => {
+        render(StoryMapSheet, { props: baseProps() });
+        const pill = within(surface()).getByRole('button', {
+            name: 'Expand Acts 1–2',
+        });
+        pill.focus();
+        await fireEvent.click(pill);
+        const firstScene = within(surface()).getByRole('button', {
+            name: 'Act 1',
+        });
+        expect(firstScene).toBeVisible();
+        expect(document.activeElement).toBe(firstScene);
+        expect(
+            screen.getByRole('dialog').contains(document.activeElement)
+        ).toBe(true);
+    });
+
     it('selects the first act of an unfolded run rather than the run itself', async () => {
         const onJump = vi.fn();
         render(StoryMapSheet, { props: baseProps({ onJump }) });

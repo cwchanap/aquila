@@ -240,11 +240,11 @@
 
 **Narrator**: Silver Moon Lake, the forest, Asuka — everything vanished.
 
-**Narrator**: In their place was an endless grey void.
+**Narrator**: In their place was an endless gray void.
 
-**Narrator**: The sky was grey, the ground was grey; even the air was thick with a dull grey haze.
+**Narrator**: The sky was gray, the ground was gray; even the air was thick with a dull gray haze.
 
-**Narrator**: The whole world seemed to have lost every color, leaving nothing but flat shades of grey.
+**Narrator**: The whole world seemed to have lost every color, leaving nothing but flat shades of gray.
 
 **Li Jie**: What... what's going on?!
 
@@ -258,7 +258,7 @@
 
 **Narrator**: Li Jie shouted at the top of his lungs, but no answer came.
 
-**Narrator**: In the grey void, only his own voice echoed.
+**Narrator**: In the gray void, only his own voice echoed.
 
 **Li Jie**: Damn it... What the hell is going on?!
 
@@ -346,7 +346,7 @@
 
 **Narrator**: But the Sacred Tree did not answer.
 
-**Narrator**: The grey world began to fade, and color slowly returned.
+**Narrator**: The gray world began to fade, and color slowly returned.
 
 **Li Jie**: Wait! Tell me what you mean!
 

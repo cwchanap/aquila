@@ -111,7 +111,7 @@ describe('story text locales', () => {
 
     it('reports which stories have text in a language', () => {
         expect(hasStoryText('day_4012', 'ja')).toBe(true);
-        expect(hasStoryText('train_adventure', 'ja')).toBe(false);
+        expect(hasStoryText('the_seventh_mirror', 'ja')).toBe(false);
         expect(hasStoryText('not_a_story', 'zh')).toBe(false);
     });
 
@@ -196,9 +196,15 @@ describe('Japanese furigana', () => {
                 ...c.options.map(o => ({ text: o.label, ruby: o.labelRuby })),
             ]),
         ];
-        expect(lines.filter(e => e.ruby?.length).length).toBeGreaterThan(
-            lines.length / 2
+        // Only Japanese lines count: scenes a partial mirror tree has not
+        // translated yet read the zh text, which has no readings.
+        const japaneseLines = lines.filter(e =>
+            /[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(e.dialogue)
         );
+        expect(japaneseLines.length).toBeGreaterThan(0);
+        expect(
+            japaneseLines.filter(e => e.ruby?.length).length
+        ).toBeGreaterThan(japaneseLines.length / 2);
         for (const { text, ruby = [] } of texts) {
             let cursor = 0;
             for (const span of ruby) {

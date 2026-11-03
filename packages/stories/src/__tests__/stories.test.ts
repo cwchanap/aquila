@@ -93,10 +93,12 @@ describe('stories', () => {
             expect(fr.choices).toEqual(en.choices);
         });
 
-        it('en currently mirrors zh dialogue (placeholder until en is authored)', () => {
+        it('reads the en translation', () => {
             const en = getTrainAdventureStory('en');
             const zh = getTrainAdventureStory('zh');
-            expect(en.dialogue).toBe(zh.dialogue);
+            expect(en.dialogue.act1[0].dialogue).not.toBe(
+                zh.dialogue.act1[0].dialogue
+            );
         });
     });
 });

@@ -50,7 +50,7 @@ export const SOURCE_LOCALE: Locale = 'zh';
  *  a story read in a language it lacks shows the zh source instead. */
 export const STORY_TEXT_LOCALES: Record<RegisteredStoryId, readonly Locale[]> =
     {
-        train_adventure: ['zh'],
+        train_adventure: ['zh', 'en', 'ja'],
         dont_save_me_before_midnight: ['zh'],
         the_seventh_mirror: ['zh'],
         elevator_game: ['zh', 'en', 'ja'],

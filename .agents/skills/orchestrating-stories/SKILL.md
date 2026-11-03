@@ -7,7 +7,7 @@ description: Use when creating a new branching story, adding a new chapter to an
 
 ## Overview
 
-Stories are authored as **Chinese markdown** under `packages/stories/raw/<storyName>/`. A deterministic compiler (`bun compile:stories`) turns the markdown + folder structure into runtime TypeScript (dialogue maps, flow graphs, choice scaffolds). You then wire the generated output into the game and web app.
+Stories are authored as **Chinese markdown** under `packages/stories/raw/<storyName>/`. A deterministic compiler (`bun compile:stories`) turns the markdown + folder structure into runtime TypeScript (dialogue maps, flow graphs, choice scaffolds). You then wire the generated output into the game and web app. The generated output under `src/generated/` is gitignored: commit only the raw markdown, `compiler.config.ts` and the hand-written files under `src/stories/`. `bun install` (root `postinstall`) and web `dev`/`build` compile it automatically.
 
 The **directory structure IS the branching graph**: `branch_*` subdirectories become player choices. The compiler is generic — any story with a `compiler.config.ts` is discovered automatically.
 
@@ -415,15 +415,12 @@ Only if you ship image assets: edit `packages/assets/package.json` and `packages
 ### Step 8: Verify
 
 ```bash
-bun compile:stories               # Re-run compiler (deterministic, no diff expected)
-bun run compile:check             # CI guard: recompile + assert no diff in generated/ and stories/
+bun compile:stories               # Re-run compiler (generated/ is gitignored; nothing to commit there)
 bun --filter @aquila/stories test # Run story package tests (includes golden compile test)
 bun --filter @aquila/stories typecheck  # Typecheck generated output
 bun test                          # Full monorepo test suite
 bun run lint                      # Lint check
 ```
-
-The `compile:check` script is the CI no-diff guard — it recompiles and fails if committed generated output has drifted from source markdown. Run it before committing.
 
 ## Image Asset Workflow
 
@@ -505,4 +502,4 @@ For backgrounds that put the cast in the scene (one set, many shots), plan with 
 - **Putting a chapter after branches**: Compiler limitation — branch terminals are hard-terminal, so any following chapter is unreachable. See Step 1 limitation. Either duplicate content into both branches or drop the chapter.
 - **Wrong act numbering**: Branches CONTINUE the parent's act numbering; chapters RESTART at `act1`. Reversed, this is the most common authoring mistake.
 - **Forgetting to register**: After compiling, the story won't appear until you register in **all required places** (`story-metadata.ts`, `stories/index.ts`, `async/registry.ts`, `story-types.ts`, `local-characters.ts`, `catalog.ts`, `assert-story-chunks.ts`, `translations/{en,zh}.json`). See Quick Reference.
-- **Editing generated files**: Everything under `src/generated/` is compiler-owned. Re-run `bun compile:stories` after any markdown change.
+- **Editing or committing generated files**: Everything under `src/generated/` is compiler-owned and gitignored. Re-run `bun compile:stories` after any markdown change; never `git add -f` it.

@@ -87,7 +87,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 - **Story Content (compile-from-raw)**:
   - Author stories as raw markdown acts under `packages/stories/raw/[storyName]/` (e.g., `act1.md`, with branches/chapters as subdirs) plus a per-story `compiler.config.ts`
   - Compile with `bun compile:stories` (runs `packages/stories/src/compiler/cli.ts`) — emits `packages/stories/src/generated/[story]/` (dialogue, flow, characters, portraits, backgrounds, image-assets) and loaders under `packages/stories/src/stories/[story]/`
-  - `bun compile:check` regenerates and fails on uncommitted drift — generated output is committed and must stay in sync
+  - `packages/stories/src/generated/` is gitignored, never committed: the raw markdown is the only source. The root `postinstall` compiles it on every `bun install`, and web `dev`/`build`, `voice:*` and the R2 publisher (`assets`) recompile first. After editing raw markdown mid-session, rerun `bun compile:stories` (or restart `bun dev`); in a fresh checkout run `bun install` before reading generated files
   - Core types: `DialogueMap`, `ChoiceMap` in `packages/stories/src/types.ts`; `FlowConfig` in `packages/stories/src/flow-types.ts`
   - Multi-language: `dialogue.zh.ts` and `choices.todo.zh.ts` generated per story; UI strings live in `packages/stories/src/translations/` (`en.json`, `zh.json`)
   - Access via `getStoryContent(storyId, locale)` and `getStoryFlow(storyId)` from `@aquila/stories`
@@ -203,7 +203,7 @@ Aquila is a **monorepo** using Turbo and Bun workspaces containing:
 - **`packages/stories/`**:
   - `raw/[story]/` - Hand-authored markdown acts + per-story `compiler.config.ts` (source of truth)
   - `src/compiler/` - The compiler (`cli.ts`, `compile.ts`, `parse-scene.ts`, `parse-characters.ts`, `build-graph.ts`, `emit.ts`, `validate.ts`)
-  - `src/generated/[story]/` - Compiled output (dialogue, flow, characters, portraits, backgrounds) — do not edit; regenerate via `bun compile:stories`
+  - `src/generated/[story]/` - Compiled output (dialogue, flow, characters, portraits, backgrounds) — gitignored, built by `bun install` / `bun compile:stories`; never edit
   - `src/stories/` - Generated loaders + `index.ts` story registry
   - `src/translations/` - UI text translations (`en.json`, `zh.json`)
   - `src/types.ts` - Core types (`DialogueMap`, `ChoiceMap`, `DialogueEntry`)

@@ -25,7 +25,7 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc",
+    "build": "bun src/compiler/cli.ts --quiet && tsc",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "lint": "eslint .",
     "test": "vitest run",
@@ -34,8 +34,8 @@
     "audio:report": "bun src/compiler/cli.ts --report",
     "audio:generate": "bun src/audio-generation/cli.ts generate",
     "audio:select": "bun src/audio-generation/cli.ts select",
-    "voice:generate": "bun src/voice/cli.ts generate",
-    "voice:check": "bun src/voice/cli.ts check"
+    "voice:generate": "bun src/compiler/cli.ts --quiet && bun src/voice/cli.ts generate",
+    "voice:check": "bun src/compiler/cli.ts --quiet && bun src/voice/cli.ts check"
   },
   "dependencies": {
     "zod": "^3.24.2"

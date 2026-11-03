@@ -92,7 +92,7 @@ packages/
 │   ├── raw/            # Hand-authored markdown acts + compiler.config.ts
 │   └── src/
 │       ├── compiler/   # Markdown → dialogue/flow compiler
-│       ├── generated/  # Compiled output (do not edit; run bun compile:stories)
+│       ├── generated/  # Compiled output, gitignored (built on bun install / bun compile:stories)
 │       ├── stories/    # Generated loaders + index.ts registry
 │       └── translations/ # UI text (en.json, zh.json)
 ├── e2e/                # Playwright E2E test suite
@@ -158,7 +158,7 @@ packages/
 ### Adding a New Story
 
 1. Author story as markdown acts in `packages/stories/raw/[storyName]/` with a `compiler.config.ts`
-2. Compile with `bun compile:stories` (generates `packages/stories/src/generated/[storyName]/` and loaders)
+2. Compile with `bun compile:stories` (generates the gitignored `packages/stories/src/generated/[storyName]/` and scaffolds `choices.zh.ts`)
 3. Register the loader in `packages/stories/src/stories/index.ts`
 4. Add the story id to the `StoryId` enum in `apps/web/src/lib/story-types.ts`
 

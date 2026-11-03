@@ -229,7 +229,7 @@ ignored local working copy remains under
 repository or runtime delivery path. The final private-archive restore remains
 locally under `.tmp/hpa-231-final-restore/` for the same reason.
 
-CI now runs the strict visual-fixture verifier after `compile:check`. It enforces
+CI now runs the strict visual-fixture verifier after lint (the stories are compiled during `bun install`). It enforces
 the exact four-path allowlist, image dimensions, individual and total byte
 budgets, and the absence of stale production-image references from tracked
 story documentation. The final verification set passed:

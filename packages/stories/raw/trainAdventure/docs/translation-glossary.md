@@ -181,6 +181,13 @@ Used before a character is named. All are registered as aliases in
 | 強零 | Strong Zero | ストロングゼロ |
 | 全家 | FamilyMart | ファミマ |
 | 円 | yen | 円（えん） |
+| 迷霧之森 | the Misty Forest | 迷霧の森（めいむのもり） |
+| 銀月湖 | Silver Moon Lake | 銀月湖（ぎんげつこ） |
+| 亡者峽谷 | the Canyon of the Dead | 亡者の峡谷（もうじゃのきょうこく） |
+| 永恆之森 | the Eternal Forest | 永遠の森（えいえんのもり） |
+| 魔族之島 | the Demon Isle | 魔族の島（まぞくのしま） |
+| 神劍 | the holy sword | 神剣（しんけん） |
+| 珠海 | Zhuhai | 珠海（しゅかい） |
 | 圖騰（恵美の絵） | pattern, symbol | 紋様（もんよう） |
 | 緊急通話鈕 | emergency call button | 非常ボタン（ひじょうぼたん） |
 | 沒有服務 / 圈外 | no signal | 圏外（けんがい） |

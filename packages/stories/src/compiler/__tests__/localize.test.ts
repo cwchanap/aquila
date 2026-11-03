@@ -182,11 +182,19 @@ describe('en mirror tree', () => {
         );
     });
 
-    it('rejects a missing translation file', () => {
+    it('leaves out scenes that have no translated file yet', () => {
+        const story = compile(makeFixture({ 'en/act1.md': enAct1 }));
+        expect(story.mirrors!.en!.map(s => s.id)).toEqual(['act1']);
+    });
+
+    it('points untranslated scenes in dialogue.en.ts at the zh scene file', () => {
         const rawDir = makeFixture({ 'en/act1.md': enAct1 });
-        expect(() => compile(rawDir)).toThrow(
-            /missing en translation: en\/act2.md/
-        );
+        compile(rawDir, true);
+        const out = join(rawDir, 'out');
+        const index = readFileSync(join(out, 'dialogue.en.ts'), 'utf8');
+        expect(index).toContain("from './scenes/en/act1'");
+        expect(index).toContain("from './scenes/act2'");
+        expect(existsSync(join(out, 'scenes/en/act2.ts'))).toBe(false);
     });
 
     it('rejects translation files with no zh source', () => {

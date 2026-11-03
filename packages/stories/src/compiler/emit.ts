@@ -150,9 +150,17 @@ function emitDialogueIndex(
     story: StoryIR,
     locale: 'zh' | MirrorLocale = 'zh'
 ): string {
-    const dir = locale === 'zh' ? './scenes' : `./scenes/${locale}`;
+    // Scenes a partial mirror tree has not translated yet read the zh file.
+    const translated = new Set(
+        locale === 'zh' ? [] : (story.mirrors?.[locale] ?? []).map(s => s.id)
+    );
     const imports = story.scenes
-        .map(s => `import { scene as s_${s.id} } from '${dir}/${s.id}';`)
+        .map(s => {
+            const dir = translated.has(s.id)
+                ? `./scenes/${locale}`
+                : './scenes';
+            return `import { scene as s_${s.id} } from '${dir}/${s.id}';`;
+        })
         .join('\n');
     const entries = story.scenes
         .map(s => `    ${q(s.id)}: s_${s.id},`)

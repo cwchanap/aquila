@@ -25,8 +25,11 @@ function listMarkdown(dir: string): string[] {
  * paths, each with exactly one entry per zh entry, in the same order, spoken
  * by the same character. Visual and audio fields (background, portrait, sfx,
  * bgm) are copied from the zh entry at the same index, so a translation can
- * never drift from the art or the flow graph. Returns undefined when the
- * story has no mirror tree for this locale.
+ * never drift from the art or the flow graph.
+ *
+ * A tree may be partial: only the scenes with a translated file are returned,
+ * and the emitter points every other scene at its zh file. Returns undefined
+ * when the story has no mirror tree for this locale.
  */
 export function buildMirrorScenes(
     rawDir: string,
@@ -48,14 +51,12 @@ export function buildMirrorScenes(
         );
     }
 
-    return zhScenes.map(scene => {
+    const translated = zhScenes.filter(scene =>
+        existsSync(join(root, scene.sourcePath))
+    );
+    return translated.map(scene => {
         const sourcePath = `${locale}/${scene.sourcePath}`;
         const fullPath = join(rawDir, sourcePath);
-        if (!existsSync(fullPath)) {
-            throw new Error(
-                `[story-compiler] missing ${locale} translation: ${sourcePath}`
-            );
-        }
         const md = readFileSync(fullPath, 'utf8');
         if (/^```/m.test(md)) {
             throw new Error(

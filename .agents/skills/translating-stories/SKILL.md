@@ -67,6 +67,8 @@ file falls back to the zh scene, so a tree can be filled in route by route.
 ```bash
 bun compile:stories                                        # alignment + speaker checks
 bun --filter @aquila/stories test src/__tests__/locales.test.ts
+# ja only: kana inside a ruby base (should print nothing)
+grep -nP '｜[^《》｜]*[\p{Hiragana}\p{Katakana}][^《》｜]*《' <file>
 ```
 
 A count or speaker error names the file and entry; fix the translation, not the

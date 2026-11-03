@@ -23,6 +23,11 @@ later routes stay consistent. Mirror-tree rules live in the
   the name only where zh does.
 - **Honorifics**: English drops -san/-kun; Japanese keeps whatever the
   speaker would naturally use (さん, くん, 先輩).
+- **Japanese first person**: Li Jie 俺 (自分 where reflexive), Tanaka Kenta 俺,
+  Suzuki Asuka and Takahashi Misaki あたし, Saito Ren 僕. Add a row here when
+  you fix another character's pronoun.
+- **Stage directions**: `(內心)` → (thinking) / （心の声）; `(小聲)` →
+  (whispering) / （小声で）.
 
 ## Characters
 
@@ -166,7 +171,7 @@ Used before a character is named. All are registered as aliases in
 | 新宿車站 | Shinjuku Station | 新宿駅（しんじゅくえき） |
 | 中央線 | Chuo Line | 中央線（ちゅうおうせん） |
 | 高尾 | Takao | 高尾（たかお） |
-| 末班車 | the last train | 終電（しゅうでん） |
+| 末班車 | the last train | 終電（しゅうでん）; station announcements say 最終電車（さいしゅうでんしゃ） |
 | 月台 | platform | ホーム |
 | 兩輪紫月 / 紫色殘月 | the two violet moons / violet crescent moons | 二つの紫の月（ふたつのむらさきのつき） |
 | 精靈 | elf, elves | エルフ |
@@ -176,3 +181,6 @@ Used before a character is named. All are registered as aliases in
 | 強零 | Strong Zero | ストロングゼロ |
 | 全家 | FamilyMart | ファミマ |
 | 円 | yen | 円（えん） |
+| 圖騰（恵美の絵） | pattern, symbol | 紋様（もんよう） |
+| 緊急通話鈕 | emergency call button | 非常ボタン（ひじょうぼたん） |
+| 沒有服務 / 圈外 | no signal | 圏外（けんがい） |

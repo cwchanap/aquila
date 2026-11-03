@@ -12,7 +12,7 @@
 
 **Narrator**: He found himself lying on a cold floor.
 
-**Narrator**: Around him was a cramped little room, all four walls bare grey-white concrete.
+**Narrator**: Around him was a cramped little room, all four walls bare gray-white concrete.
 
 **Narrator**: There was nothing in it but a single heavy metal door.
 

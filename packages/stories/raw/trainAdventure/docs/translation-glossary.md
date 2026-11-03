@@ -270,7 +270,7 @@ Used before a character is named. All are registered as aliases in
 | 黑劍 | the black sword | 黒い剣（くろいけん） |
 | 黑劍男 / 持黑劍的年輕人 | the black-sword man / the young man with the black sword | 黒剣の男（こっけんのおとこ） / 黒い剣を持った若者（くろいけんをもったわかもの） |
 | 黑衣男（Ling Mo, unnamed in this route; not 黑劍男） | the man in black | 黒衣の男（こくいのおとこ） |
-| 神樹的幻境 / 灰色空間 | the Sacred Tree's vision / the grey void | 神樹の幻境（しんじゅのげんきょう） / 灰色の空間（はいいろのくうかん） |
+| 神樹的幻境 / 灰色空間 | the Sacred Tree's vision / the gray void | 神樹の幻境（しんじゅのげんきょう） / 灰色の空間（はいいろのくうかん） |
 | 可悲的罪人 | pitiful sinner | 哀れな罪人（あわれなざいにん） |
 | 那扇門，需要代價 | That door demands a price. | その扉には、代償が要る（そのとびらには、だいしょうがいる） |
 | 那扇門（the glowing door behind the altar） | the door | 扉（とびら） |

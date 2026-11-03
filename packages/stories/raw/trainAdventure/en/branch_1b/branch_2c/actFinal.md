@@ -22,7 +22,7 @@
 
 **Narrator**: It was her father, Suzuki Taro.
 
-**Narrator**: He looked to be in his sixties, his hair already gone grey.
+**Narrator**: He looked to be in his sixties, his hair already gone gray.
 
 **Narrator**: The years had etched their lines into his face, but his eyes were as kind as ever.
 

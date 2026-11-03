@@ -2,7 +2,7 @@
 
 **Narrator**: Beyond the open doors lay a bottomless silence, like a gaping mouth waiting for its prey. Cold air kept pouring in from outside, thick with salt and the scent of unfamiliar plants.
 
-**Narrator**: The passengers sat as if a spell had frozen them in place; no one dared to take the first step. The two violet crescent moons cast an eerie light through the windows, turning every face an ashen grey.
+**Narrator**: The passengers sat as if a spell had frozen them in place; no one dared to take the first step. The two violet crescent moons cast an eerie light through the windows, turning every face an ashen gray.
 
 **Narrator**: Fear had every one of them by the throat, and time crept by in a suffocating silence.
 

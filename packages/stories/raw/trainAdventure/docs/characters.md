@@ -412,12 +412,12 @@
 ## 70. 精靈守衛（Elf Guard）
 
 - **ID**: `elf_guard`
-- **Aliases**: Elf Guard, エルフの衛兵
+- **Aliases**: Elf Guard, エルフの衛兵, Elf Swordsman, エルフの剣士
 
 ## 71. 精靈（Elf）
 
 - **ID**: `elf`
-- **Aliases**: Elf, エルフ
+- **Aliases**: Elf, エルフ, Elf Woman, エルフの女性, Elder Elf, 年長のエルフ
 
 ## 72. 士兵（Soldier）
 
@@ -547,7 +547,7 @@
 ## 97. 男子（Man）
 
 - **ID**: `man`
-- **Aliases**: Man, 男
+- **Aliases**: Man, 男, Uncle Zhang, 張おじさん
 
 ## 98. 女子（Woman）
 

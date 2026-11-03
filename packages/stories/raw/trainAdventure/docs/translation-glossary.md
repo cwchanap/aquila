@@ -162,6 +162,11 @@ Used before a character is named. All are registered as aliases in
 | 白袍劍士 | White-Robed Swordsman | 白いローブの剣士 | `takayama_sho` |
 | 斎藤父親 | Saito's Father | 斎藤の父 | `saito_koichi` |
 | 斎藤母親 | Saito's Mother | 斎藤の母 | `saito_mika` |
+| 精靈女性 | Elf Woman | エルフの女性 | `elf` |
+| 年長精靈 | Elder Elf | 年長のエルフ | `elf` |
+| 精靈劍士 | Elf Swordsman | エルフの剣士 | `elf_guard` |
+| 張伯伯 | Uncle Zhang | 張おじさん | `man` |
+| 女將 | Innkeeper | 女将 | `inn_keeper` |
 
 ## Places and terms
 

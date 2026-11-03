@@ -3,11 +3,15 @@ import type { FlowConfig } from '../../flow-types';
 import { buildChoiceMap } from '../choice-utils';
 import { pickLocalized, type LocalizedContent } from '../localized';
 import { trainAdventureZhDialogue } from '../../generated/trainAdventure/dialogue.zh';
+import { trainAdventureEnDialogue } from '../../generated/trainAdventure/dialogue.en';
+import { trainAdventureJaDialogue } from '../../generated/trainAdventure/dialogue.ja';
 import {
     trainAdventureFlow,
     type TrainAdventureSceneId,
 } from '../../generated/trainAdventure/flow';
 import { trainAdventureChoiceText } from './choices.zh';
+import { trainAdventureChoiceTextEn } from './choices.en';
+import { trainAdventureChoiceTextJa } from './choices.ja';
 
 export { trainAdventureFlow };
 export type { TrainAdventureSceneId };
@@ -15,18 +19,19 @@ export type { TrainAdventureSceneId };
 // Convenience alias consumed by the story registry (stories/index.ts).
 export type TrainAdventureFlowConfig = FlowConfig<TrainAdventureSceneId>;
 
-// Only the zh source is authored so far; every locale reads it until a
-// mirror tree is added (see STORY_TEXT_LOCALES).
+// The en and ja mirror trees (raw/trainAdventure/en/, ja/) are being filled
+// route by route; scenes not translated yet read the zh text.
 const dialogueByLocale: LocalizedContent<DialogueMap> = {
     zh: trainAdventureZhDialogue,
+    en: trainAdventureEnDialogue,
+    ja: trainAdventureJaDialogue,
 };
 
-// Choices are locale-independent: flow transitions merged with hand-maintained
-// choice text. Empty text surfaces as visible TODO markers (see buildChoiceMap).
-const choices: ChoiceMap = buildChoiceMap(
-    trainAdventureFlow,
-    trainAdventureChoiceText
-);
+const choicesByLocale: LocalizedContent<ChoiceMap> = {
+    zh: buildChoiceMap(trainAdventureFlow, trainAdventureChoiceText),
+    en: buildChoiceMap(trainAdventureFlow, trainAdventureChoiceTextEn),
+    ja: buildChoiceMap(trainAdventureFlow, trainAdventureChoiceTextJa),
+};
 
 export function getTrainAdventureStory(locale: string): {
     dialogue: DialogueMap;
@@ -34,6 +39,6 @@ export function getTrainAdventureStory(locale: string): {
 } {
     return {
         dialogue: pickLocalized('train_adventure', dialogueByLocale, locale),
-        choices,
+        choices: pickLocalized('train_adventure', choicesByLocale, locale),
     };
 }

@@ -45,8 +45,9 @@ export interface StoryIR {
     scenes: SceneIR[];
     choices: ChoiceIR[];
     assetManifest?: AssetManifest;
-    /** Translated scenes from each `<locale>/` mirror tree, aligned 1:1 with
-     *  `scenes`. A locale with no mirror tree is absent. */
+    /** Translated scenes from each `<locale>/` mirror tree, in `scenes`
+     *  order; scenes without a translated file are left out and read the zh
+     *  text. A locale with no mirror tree is absent. */
     mirrors?: Partial<Record<MirrorLocale, SceneIR[]>>;
     stats?: StoryStats;
 }

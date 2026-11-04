@@ -9,6 +9,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
     parseVoiceCast,
@@ -335,6 +336,24 @@ describe('runVoiceCli', () => {
         expect(await translatedScenesIn('the_seventh_mirror', 'ja')).toEqual(
             new Set()
         );
+    });
+
+    it('throws on a locale index built before translated-scene provenance', async () => {
+        const probeDir = fileURLToPath(
+            new URL('../../generated/staleProbe', import.meta.url)
+        );
+        mkdirSync(probeDir, { recursive: true });
+        try {
+            writeFileSync(
+                join(probeDir, 'dialogue.ja.ts'),
+                'export const staleProbeJaDialogue = {};\n'
+            );
+            await expect(
+                translatedScenesIn('stale_probe', 'ja')
+            ).rejects.toThrow('re-run bun compile:stories');
+        } finally {
+            rmSync(probeDir, { recursive: true, force: true });
+        }
     });
 
     it('voices from the voice script for scenes a partial ja tree has not translated', async () => {

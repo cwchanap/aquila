@@ -154,6 +154,11 @@ export async function translatedScenesIn(
     const ids = Object.entries(mod).find(([key]) =>
         key.endsWith('TranslatedScenes')
     )?.[1] as readonly string[] | undefined;
+    if (ids === undefined && language !== 'zh') {
+        throw new Error(
+            `${indexPath} has no translated-scene list: re-run bun compile:stories`
+        );
+    }
     return new Set(ids ?? []);
 }
 

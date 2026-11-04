@@ -146,9 +146,20 @@ async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
     if (hasStoryText(storyId, cast.language)) {
         const translated = getStoryContent(storyId, cast.language).dialogue;
         for (const [scene, entries] of Object.entries(translated)) {
-            spoken[scene] = entries.map(entry => entry.dialogue);
+            // A partial mirror tree reads the zh file for scenes it has not
+            // translated yet; identical text is not voice input, so those
+            // scenes still go through the voice script.
+            const source = dialogue[scene];
+            const isZhFallback =
+                source !== undefined &&
+                entries.length === source.length &&
+                entries.every(
+                    (entry, i) => entry.dialogue === source[i].dialogue
+                );
+            if (!isZhFallback) {
+                spoken[scene] = entries.map(entry => entry.dialogue);
+            }
         }
-        return { storyId, cast, dialogue, spoken };
     }
 
     const scriptPath = join(
@@ -161,6 +172,7 @@ async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
         JSON.parse(readFileSync(scriptPath, 'utf8'))
     );
     for (const [scene, lines] of Object.entries(script.scenes)) {
+        if (spoken[scene]) continue; // the reader text is the spoken text
         const source = dialogue[scene];
         if (!source)
             throw new Error(`${scriptPath}: ${storyId} has no scene ${scene}`);

@@ -10,7 +10,7 @@ description: Use when adding or extending voice acting (spoken dialogue/narratio
 Voice is a **Japanese dub**: each story is spoken in one language (`ja`), and the same take plays whatever language the reader shows (zh, en or ja), like an anime with subtitles. Every spoken line gets one mp3, generated with ElevenLabs `eleven_v4` text to speech (`POST https://api.elevenlabs.io/v1/text-to-speech/{voice_id}`, `language_code: "ja"`).
 
 - **Cast**: `packages/stories/raw/<rawDir>/docs/voice-cast.json` sets `language` and maps each compiled `characterId` to an ElevenLabs voice. Characters that aren't cast stay silent.
-- **Spoken text**: if the story has Japanese reader text (`STORY_TEXT_LOCALES` in `src/story-metadata.ts`), the CLI speaks that. Otherwise it reads `docs/voice-script.ja.json`: for each voiced scene, one `{ "zh": …, "ja": … }` pair per zh line, in order. The `zh` half must equal the current zh line, so a zh edit fails `voice:check` until the script is updated.
+- **Spoken text**: the CLI speaks the Japanese reader text of each translated scene (`STORY_TEXT_LOCALES` in `src/story-metadata.ts`). For scenes with none — stories without ja text, or scenes a partial ja tree has not translated yet — it reads `docs/voice-script.ja.json`: one `{ "zh": …, "ja": … }` pair per zh line, in order. The `zh` half must equal the current zh line, so a zh edit fails `voice:check` until the script is updated.
 - **Line id** = hash of voice id + exact prompt (`voiceLineId()` in `src/voice/cast.ts`). A recast, a retranslation or a new direction tag asks for a new take; nothing stale is ever reused.
 - **Files**: `packages/assets/voice/<storyId>/<lineId>.mp3` plus `index.json`, which maps every voiced scene to one entry per dialogue line (a line id, or `null` for silence). Translations mirror the zh source line for line, so the same position works in every language. All of it is committed, but the app never bundles it: the `Media Sync` workflow uploads it to R2 (`vn/voice/<storyId>/`) when a PR touching it merges to `main`, and the reader fetches it from `PUBLIC_ASSET_BASE_URL`.
 - **Reader**: in visual mode it plays the index entry for the current scene and line. There is a Voice on/off toggle in reader settings. The reader only fetches an index for stories in `STORY_VOICE_LANGUAGE` (`src/voice/index.ts`).
@@ -25,7 +25,7 @@ Run commands from `packages/stories`. `<rawDir>` is the folder name under `raw/`
 
 Pick the story and scene ids, e.g. `ch1_act2`. Scene ids are the keys of the compiled dialogue map, as in `src/generated/<rawDir>/dialogue.zh.ts` (gitignored; `bun install` or `bun compile:stories` builds it). Voice one act per run, which keeps listening and re-rolling manageable.
 
-### 2. Japanese text (stories without Japanese reader text only)
+### 2. Japanese text (scenes without Japanese reader text only)
 
 Add the scene to `docs/voice-script.ja.json`:
 - One entry per zh line, in order, with `zh` copied exactly from the compiled zh dialogue.

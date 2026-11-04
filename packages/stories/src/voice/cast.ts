@@ -35,9 +35,10 @@ export function parseVoiceCast(value: unknown): VoiceCast {
 }
 
 /**
- * Spoken text for stories with no reader text in the voice language:
+ * Spoken text for scenes with no reader text in the voice language:
  * `docs/voice-script.<language>.json`, one `{ zh, <language> }` pair per zh line
  * of each voiced scene. The zh half pins each translation to its source line.
+ * Scenes a partial translation has not reached yet use this too.
  */
 export const VoiceScriptSchema = z
     .object({

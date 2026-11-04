@@ -17,7 +17,7 @@ export const trainAdventureChoiceTextEn: ChoiceText = {
         },
     },
     choice_b1a_b2a_act8: {
-        prompt: 'Four paths. Which one do you take?',
+        prompt: 'Four paths — but only one is a real choice.',
         labels: {
             b3a: 'Keep to the main path',
         },

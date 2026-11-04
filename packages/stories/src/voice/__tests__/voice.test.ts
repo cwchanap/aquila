@@ -326,6 +326,35 @@ describe('runVoiceCli', () => {
         await expect(run()).rejects.toThrow('has no scene nope');
     });
 
+    it('voices from the voice script for scenes a partial ja tree has not translated', async () => {
+        const rawRoot = tempDir();
+        const run = () =>
+            runVoiceCli(
+                [
+                    'generate',
+                    '--story',
+                    'train',
+                    '--scene',
+                    'b1a_act4',
+                    '--dry-run',
+                ],
+                { rawRoot, log: () => {} }
+            );
+        rawStory(rawRoot, 'train', 'train_adventure');
+        // train_adventure's ja tree is partial: b1a_act4's ja read is the zh
+        // source, which is not voice input — the scene needs the script.
+        await expect(run()).rejects.toThrow('no ja text for b1a_act4');
+
+        const act = getStoryContent('train_adventure', 'zh').dialogue.b1a_act4;
+        rawStory(rawRoot, 'train', 'train_adventure', {
+            schemaVersion: 1,
+            scenes: {
+                b1a_act4: act.map(entry => ({ zh: entry.dialogue, ja: 'あ' })),
+            },
+        });
+        await expect(run()).resolves.toBe(0);
+    });
+
     it('voices from the reader text when the story has that language', async () => {
         const rawRoot = tempDir();
         rawStory(rawRoot, 'elevator', 'elevator_game');

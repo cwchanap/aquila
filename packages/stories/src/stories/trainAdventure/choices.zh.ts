@@ -17,7 +17,7 @@ export const trainAdventureChoiceText: ChoiceText = {
         },
     },
     choice_b1a_b2a_act8: {
-        prompt: '四條岔路，該走哪一條？',
+        prompt: '四條岔路，敢走的只有一條。',
         labels: {
             b3a: '沿著主路繼續前進',
         },

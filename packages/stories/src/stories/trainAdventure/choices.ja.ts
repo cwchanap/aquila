@@ -17,7 +17,7 @@ export const trainAdventureChoiceTextJa: ChoiceText = {
         },
     },
     choice_b1a_b2a_act8: {
-        prompt: '｜分《わ》かれ｜道《みち》は｜四《よっ》つ。どれを｜行《い》く？',
+        prompt: '｜分《わ》かれ｜道《みち》は｜四《よっ》つ——｜行《い》けるのは｜一《ひと》つだけ。',
         labels: {
             b3a: '｜本道《ほんどう》をそのまま｜進《すす》む',
         },

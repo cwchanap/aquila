@@ -16,7 +16,7 @@ import {
     spokenText,
     voiceLineId,
 } from '../cast';
-import { ffmpegTranscode, runVoiceCli } from '../cli';
+import { ffmpegTranscode, runVoiceCli, translatedScenesIn } from '../cli';
 import { getStoryContent } from '../../stories';
 import { hasStoryVoice } from '../index';
 
@@ -324,6 +324,17 @@ describe('runVoiceCli', () => {
             scenes: { nope: [] },
         });
         await expect(run()).rejects.toThrow('has no scene nope');
+    });
+
+    it('takes translated scenes from compiler provenance, not text equality', async () => {
+        // train_adventure's ja tree covers act1 and the b1b route only.
+        const translated = await translatedScenesIn('train_adventure', 'ja');
+        expect(translated.has('act1')).toBe(true);
+        expect(translated.has('b1a_act4')).toBe(false);
+        // A story with no mirror tree has no translated scenes.
+        expect(await translatedScenesIn('the_seventh_mirror', 'ja')).toEqual(
+            new Set()
+        );
     });
 
     it('voices from the voice script for scenes a partial ja tree has not translated', async () => {

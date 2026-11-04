@@ -607,9 +607,11 @@ test.describe('Visual novel reader', () => {
         await expect(visual.rightPortrait).not.toHaveAttribute('src');
 
         await expect(
-            page.getByText('TODO: prompt for choice_act3')
+            page.getByText('The doors are open. Do you step out?')
         ).toBeVisible();
-        await page.getByRole('button', { name: 'TODO: b1a' }).click();
+        await page
+            .getByRole('button', { name: 'Step off onto the platform' })
+            .click();
         await expect(page).toHaveURL(/scene=b1a_act4/);
         await expect(page).toHaveURL(dialogueUrl(1));
         await expect(visual.root).toBeVisible();

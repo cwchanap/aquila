@@ -165,11 +165,18 @@ function emitDialogueIndex(
     const entries = story.scenes
         .map(s => `    ${q(s.id)}: s_${s.id},`)
         .join('\n');
-    return (
+    let out =
         HEADER +
         `import type { DialogueMap } from '../../types';\n${imports}\n\n` +
-        `export const ${story.name}${cap(locale)}Dialogue: DialogueMap = {\n${entries}\n};\n`
-    );
+        `export const ${story.name}${cap(locale)}Dialogue: DialogueMap = {\n${entries}\n};\n`;
+    if (locale !== 'zh') {
+        // Locale-loader provenance: exactly the scenes the mirror tree
+        // translated — every other scene above reads a zh scene file.
+        out +=
+            `\nexport const ${story.name}${cap(locale)}TranslatedScenes: readonly string[] = [` +
+            `${[...translated].map(q).join(', ')}];\n`;
+    }
+    return out;
 }
 
 function emitStats(story: StoryIR): string {

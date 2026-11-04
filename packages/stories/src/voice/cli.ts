@@ -132,6 +132,31 @@ type VoiceStory = {
     spoken: Record<string, string[]>;
 };
 
+/** The scene ids a mirror tree has actually translated, straight from the
+ *  generated dialogue index (compiler provenance) — never text equality,
+ *  which cannot tell an intentional identical translation from a zh
+ *  fallback. Generated dirs are named after the story: camelCase(storyId). */
+export async function translatedScenesIn(
+    storyId: string,
+    language: string
+): Promise<Set<string>> {
+    const dir = storyId.replace(/_([a-z0-9])/g, (_, c: string) =>
+        c.toUpperCase()
+    );
+    const indexPath = join(
+        STORIES_ROOT,
+        'src/generated',
+        dir,
+        `dialogue.${language}.ts`
+    );
+    if (!existsSync(indexPath)) return new Set();
+    const mod = (await import(indexPath)) as Record<string, unknown>;
+    const ids = Object.entries(mod).find(([key]) =>
+        key.endsWith('TranslatedScenes')
+    )?.[1] as readonly string[] | undefined;
+    return new Set(ids ?? []);
+}
+
 async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
     const castPath = join(rawDir, 'docs', 'voice-cast.json');
     if (!existsSync(castPath)) throw new Error(`No voice cast at ${castPath}`);
@@ -144,19 +169,16 @@ async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
     const spoken: Record<string, string[]> = {};
 
     if (hasStoryText(storyId, cast.language)) {
+        // A partial mirror tree reads the zh file for scenes it has not
+        // translated yet; only translated scenes are voice input, so the
+        // rest still go through the voice script.
+        const translatedScenes = await translatedScenesIn(
+            storyId,
+            cast.language
+        );
         const translated = getStoryContent(storyId, cast.language).dialogue;
         for (const [scene, entries] of Object.entries(translated)) {
-            // A partial mirror tree reads the zh file for scenes it has not
-            // translated yet; identical text is not voice input, so those
-            // scenes still go through the voice script.
-            const source = dialogue[scene];
-            const isZhFallback =
-                source !== undefined &&
-                entries.length === source.length &&
-                entries.every(
-                    (entry, i) => entry.dialogue === source[i].dialogue
-                );
-            if (!isZhFallback) {
+            if (translatedScenes.has(scene)) {
                 spoken[scene] = entries.map(entry => entry.dialogue);
             }
         }

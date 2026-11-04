@@ -154,6 +154,9 @@ describe('en mirror tree', () => {
         const index = readFileSync(join(out, 'dialogue.en.ts'), 'utf8');
         expect(index).toContain("from './scenes/en/act1'");
         expect(index).toContain('export const mirrorStoryEnDialogue');
+        expect(index).toContain(
+            'export const mirrorStoryEnTranslatedScenes: readonly string[] = ["act1", "act2"]'
+        );
         const scene = readFileSync(join(out, 'scenes/en/act1.ts'), 'utf8');
         expect(scene).toContain("from '../../../../types'");
         expect(scene).toContain("from '../../characters'");
@@ -194,6 +197,9 @@ describe('en mirror tree', () => {
         const index = readFileSync(join(out, 'dialogue.en.ts'), 'utf8');
         expect(index).toContain("from './scenes/en/act1'");
         expect(index).toContain("from './scenes/act2'");
+        expect(index).toContain(
+            'export const mirrorStoryEnTranslatedScenes: readonly string[] = ["act1"]'
+        );
         expect(existsSync(join(out, 'scenes/en/act2.ts'))).toBe(false);
     });
 

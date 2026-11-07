@@ -83,12 +83,16 @@ export function chapterOf(sceneId: string): number | null {
 export function readerHref(
     locale: string,
     storyId: string,
-    position?: { sceneId: string; dialogueIndex: number }
+    position?: { sceneId: string; dialogueIndex: number },
+    options?: { restart?: boolean }
 ): string {
     const params = new URLSearchParams({ story: storyId });
     if (position) {
         params.set('scene', position.sceneId);
         params.set('dialogue', String(position.dialogueIndex + 1));
+    }
+    if (options?.restart) {
+        params.set('restart', '1');
     }
     return `/${locale}/reader?${params.toString()}`;
 }
@@ -155,7 +159,9 @@ export function buildCard(
               ? t.readAgain
               : t.start;
 
-    const startHref = `${readerHref(locale, entry.id)}&restart=1`;
+    const startHref = readerHref(locale, entry.id, undefined, {
+        restart: true,
+    });
     return {
         entry,
         title: strings[entry.translationKey] ?? entry.translationKey,

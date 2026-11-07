@@ -339,4 +339,57 @@ describe('focusTrap', () => {
         expect(document.activeElement).toBe(outside);
         handle.destroy();
     });
+
+    it('focuses an explicit initialFocus element on activate and wraps Tab normally', () => {
+        const container = document.createElement('div');
+        const heading = document.createElement('h1');
+        heading.tabIndex = -1;
+        heading.textContent = 'Heading';
+        const a = makeButton('a');
+        const b = makeButton('b');
+        container.append(heading, a, b);
+        document.body.append(container);
+
+        const handle = focusTrap(container, {
+            enabled: true,
+            initialFocus: heading,
+        });
+
+        expect(document.activeElement).toBe(heading);
+
+        // Tab from heading moves to the first focusable element
+        dispatchTab(heading);
+        expect(document.activeElement).toBe(a);
+
+        // Tab from 'b' wraps back to 'a'
+        b.focus();
+        dispatchTab(b);
+        expect(document.activeElement).toBe(a);
+
+        handle.destroy();
+    });
+
+    it('wraps Shift+Tab from an initialFocus element to the last focusable element', () => {
+        const container = document.createElement('div');
+        const heading = document.createElement('h1');
+        heading.tabIndex = -1;
+        heading.textContent = 'Heading';
+        const a = makeButton('a');
+        const b = makeButton('b');
+        container.append(heading, a, b);
+        document.body.append(container);
+
+        const handle = focusTrap(container, {
+            enabled: true,
+            initialFocus: () => heading,
+        });
+
+        expect(document.activeElement).toBe(heading);
+
+        // Shift+Tab from heading wraps to the last focusable element
+        dispatchTab(heading, /* shift */ true);
+        expect(document.activeElement).toBe(b);
+
+        handle.destroy();
+    });
 });

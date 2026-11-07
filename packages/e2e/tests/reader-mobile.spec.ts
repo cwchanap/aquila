@@ -44,8 +44,13 @@ test.describe('Mobile reader', () => {
 
     test('navigates to a different act from the drawer', async ({ page }) => {
         const reader = new MobileReaderPage(page);
-        await reader.seedVisitedScenes('train_adventure', ['act1', 'act2']);
+        await reader.seedVisitedScenes(
+            'train_adventure',
+            ['act1', 'act2'],
+            'act1'
+        );
         await reader.goto();
+        await expect(page).not.toHaveURL(/scene=act2/);
 
         // The reader starts at act1 (train_adventure flow start). Open the
         // drawer and click a non-active act to verify the onNavigate wiring

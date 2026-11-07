@@ -262,6 +262,7 @@
     "dialogueBodyLabel": "對話內容",
     "openMenu": "開啟選單",
     "closeMenu": "關閉選單",
+    "closeEnding": "關閉結局",
     "tapToContinue": "點擊繼續",
     "lineProgress": "第 {current} / {total} 行",
     "previousLine": "上一行",

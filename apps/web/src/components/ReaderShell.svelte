@@ -81,11 +81,27 @@
   import StoryMapSheet from '@/components/StoryMapSheet.svelte';
   import VisualNovelReader from '@/components/VisualNovelReader.svelte';
   import Button from '@/components/ui/Button.svelte';
+  import { X } from 'lucide-svelte';
+  import { isEndingPosition } from '@/lib/reader-interaction';
+
+  function defaultOnNext(): void {
+    if (
+      isEndingPosition(
+        readerState.activeFlow,
+        readerState.currentSceneId,
+        readerState.dialogueIndex,
+        readerState.dialogue.length,
+        Boolean(readerState.choice)
+      )
+    ) {
+      readerState.endingOpen = true;
+    }
+  }
 
   let {
     onChoice = () => {},
     onBookmark = () => {},
-    onNext = () => {},
+    onNext = defaultOnNext,
     onNavigate = () => {},
     onIndexChange = () => {},
     getSceneDialogue = () => null,
@@ -661,15 +677,13 @@
   let leafOverlayOpen = $state(false);
   let storyMapOpen = $state(false);
   let storyMapProgress = $state<StoryProgress | null>(null);
-  let completedPosition = $state<string | null>(null);
-  let positionKey = $derived(`${storyId}:${currentSceneId}:${dialogueIndex}`);
-  let endingOpen = $derived(completedPosition === positionKey && !isBlocking);
-  let endingTitle = $derived(
-    t.reader.storyMap.endingLabel.replace(
-      '{label}',
-      actLabel(extractActName(currentSceneId), t)
-    )
-  );
+  let endingTitleElement = $state<HTMLElement | null>(null);
+  let endingOpen = $derived(readerState.endingOpen && !isBlocking);
+  let endingTitle = $derived.by(() => {
+    const act = extractActName(currentSceneId);
+    const label = act ? actLabel(act, t) : currentSceneId;
+    return t.reader.storyMap.endingLabel.replace('{label}', label);
+  });
   let restoreMobileMenuFocus = $state(false);
   let settingsAvailable = $derived(
     readerMode === 'visual' || !isMobile || isBlocking
@@ -789,8 +803,17 @@
   }
 
   $effect.pre(() => {
-    if (completedPosition !== null && completedPosition !== positionKey) {
-      completedPosition = null;
+    if (
+      readerState.endingOpen &&
+      !isEndingPosition(
+        activeFlow,
+        currentSceneId,
+        dialogueIndex,
+        dialogue.length,
+        Boolean(choice)
+      )
+    ) {
+      readerState.endingOpen = false;
     }
   });
 
@@ -814,24 +837,28 @@
     storyMapOpen = true;
   }
 
+  function closeEnding(): void {
+    readerState.endingOpen = false;
+  }
+
   function handleNext(): void {
-    if (canGoNext) {
-      onNext();
-    } else if (
-      !choice &&
-      dialogue.length > 0 &&
-      dialogueIndex === dialogue.length - 1 &&
-      activeFlow?.nodes.some(
-        n => n.kind === 'scene' && n.sceneId === currentSceneId && n.next === null
+    if (leafDisabled) return;
+    if (
+      canGoNext ||
+      isEndingPosition(
+        activeFlow,
+        currentSceneId,
+        dialogueIndex,
+        dialogue.length,
+        Boolean(choice)
       )
     ) {
-      storyMapProgress = getCurrentStoryProgressSnapshot();
-      completedPosition = positionKey;
+      onNext();
     }
   }
 
   async function openMapFromEnding(): Promise<void> {
-    completedPosition = null;
+    closeEnding();
     await tick();
     openStoryMap();
   }
@@ -1151,42 +1178,69 @@
 
 {#if endingOpen}
   <div class="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-slate-950/90 p-6 backdrop-blur-md">
+    <button
+      type="button"
+      data-testid="reader-ending-backdrop"
+      class="fixed inset-0 -z-10 h-full w-full cursor-default bg-transparent"
+      aria-label={t.reader.closeEnding}
+      tabindex="-1"
+      onclick={closeEnding}
+    ></button>
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="reader-ending-title"
       tabindex="-1"
-      use:focusTrap={{ enabled: true, restoreFocus: overlayFocusTarget }}
+      use:focusTrap={{
+        enabled: true,
+        restoreFocus: overlayFocusTarget,
+        initialFocus: () => endingTitleElement,
+      }}
       onkeydown={(event) => {
         if (event.key === 'Escape') {
           event.stopPropagation();
-          completedPosition = null;
+          closeEnding();
         }
       }}
-      class="w-full max-w-lg rounded-3xl border border-white/20 bg-white/10 p-8 text-center text-white shadow-2xl"
+      class="relative w-full max-w-lg rounded-3xl border border-white/20 bg-white/10 p-8 text-center text-white shadow-2xl backdrop-blur-xl"
     >
+      <button
+        type="button"
+        class="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white"
+        aria-label={t.reader.closeEnding}
+        onclick={closeEnding}
+      >
+        <X size={20} aria-hidden="true" />
+      </button>
       <p class="mb-3 text-sm text-white/70">{storyTitle}</p>
-      <h1 id="reader-ending-title" class="font-serif text-3xl font-semibold">{endingTitle}</h1>
+      <h1
+        id="reader-ending-title"
+        bind:this={endingTitleElement}
+        tabindex="-1"
+        class="font-serif text-3xl font-semibold outline-none focus:outline-none"
+      >{endingTitle}</h1>
       <p class="mt-4 text-white/80">{t.reader.endOfStory}</p>
       <div class="mt-8 flex flex-col gap-3">
+        {#if storyMapAvailable}
+          <Button
+            variant="menu"
+            className="h-auto px-5 py-3 text-base normal-case tracking-normal hover:translate-y-0 hover:scale-100"
+            onclick={() => void openMapFromEnding()}
+          >{t.reader.storyMap.title}</Button>
+        {/if}
+        <Button
+          variant="menu"
+          className="h-auto px-5 py-3 text-base normal-case tracking-normal hover:translate-y-0 hover:scale-100"
+          onclick={() => {
+            closeEnding();
+            onNavigate(currentSceneId, 'start');
+          }}
+        >{t.reader.storyMap.jumpToEnding}</Button>
         <Button
           variant="menu"
           href={`/${locale}/stories`}
           className="h-auto px-5 py-3 text-base normal-case tracking-normal hover:translate-y-0 hover:scale-100"
         >{t.reader.backToStories}</Button>
-        {#if storyMapAvailable}
-          <button
-            class="rounded-xl border border-white/25 px-5 py-3"
-            onclick={() => void openMapFromEnding()}
-          >{t.reader.storyMap.title}</button>
-        {/if}
-        <button
-          class="rounded-xl px-5 py-3 text-white/80"
-          onclick={() => {
-            completedPosition = null;
-            onNavigate(currentSceneId, 'start');
-          }}
-        >{t.reader.storyMap.jumpToEnding}</button>
       </div>
     </div>
   </div>

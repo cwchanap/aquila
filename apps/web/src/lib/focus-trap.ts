@@ -18,7 +18,11 @@
  */
 export type FocusTrapParams =
     | boolean
-    | { enabled: boolean; restoreFocus?: HTMLElement | null };
+    | {
+          enabled: boolean;
+          restoreFocus?: HTMLElement | null;
+          initialFocus?: HTMLElement | (() => HTMLElement | null) | null;
+      };
 
 /**
  * Maximum number of microtask retries to spend waiting for an `inert`
@@ -49,6 +53,7 @@ function getFocusable(node: HTMLElement): HTMLElement[] {
 function normalizeParams(params: FocusTrapParams): {
     enabled: boolean;
     restoreFocus?: HTMLElement | null;
+    initialFocus?: HTMLElement | (() => HTMLElement | null) | null;
 } {
     if (typeof params === 'boolean') {
         return { enabled: params };
@@ -56,6 +61,7 @@ function normalizeParams(params: FocusTrapParams): {
     return {
         enabled: params.enabled,
         restoreFocus: params.restoreFocus,
+        initialFocus: params.initialFocus,
     };
 }
 
@@ -63,6 +69,8 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
     let active = false;
     let previouslyFocused: HTMLElement | null = null;
     let restoreFocus: HTMLElement | null | undefined = undefined;
+    let initialFocus:
+        HTMLElement | (() => HTMLElement | null) | null | undefined = undefined;
     // Per-activation retry budget for the moveFocusIn inert race. Reset on each
     // activate() so a fresh open gets a full budget.
     let focusInertRetries = 0;
@@ -95,6 +103,16 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
      */
     function moveFocusIn(): void {
         if (!active) return;
+        const targetInit =
+            typeof initialFocus === 'function' ? initialFocus() : initialFocus;
+        if (
+            targetInit &&
+            targetInit.isConnected &&
+            !targetInit.closest('[inert]')
+        ) {
+            targetInit.focus();
+            return;
+        }
         const focusable = getFocusable(node);
         if (focusable.length > 0) {
             // Move focus into the overlay so the user lands inside the dialog
@@ -183,15 +201,24 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
         const inside = current && node.contains(current);
 
         if (event.shiftKey) {
-            // Shift+Tab from the first item (or from outside the trap) wraps to
-            // the last, keeping focus inside the overlay.
-            if (current === first || !inside) {
+            // Shift+Tab from the first item (or from outside the trap, or an initial non-focusable item like heading)
+            // wraps to the last, keeping focus inside the overlay.
+            if (
+                current === first ||
+                !inside ||
+                (current !== null && !focusable.includes(current))
+            ) {
                 event.preventDefault();
                 last.focus();
             }
         } else {
-            // Tab from the last item wraps back to the first.
-            if (current === last || !inside) {
+            // Tab from the last item (or from an initial non-focusable item like heading)
+            // moves to the first focusable element.
+            if (
+                current === last ||
+                !inside ||
+                (current !== null && !focusable.includes(current))
+            ) {
                 event.preventDefault();
                 first.focus();
             }
@@ -201,12 +228,14 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
     node.addEventListener('keydown', onKeydown);
     const initial = normalizeParams(params);
     restoreFocus = initial.restoreFocus ?? null;
+    initialFocus = initial.initialFocus ?? null;
     setEnabled(initial.enabled);
 
     return {
         update(next: FocusTrapParams): void {
             const normalized = normalizeParams(next);
             restoreFocus = normalized.restoreFocus ?? null;
+            initialFocus = normalized.initialFocus ?? null;
             setEnabled(normalized.enabled);
         },
         destroy(): void {

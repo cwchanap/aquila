@@ -262,6 +262,7 @@
     "dialogueBodyLabel": "セリフ",
     "openMenu": "メニューを開く",
     "closeMenu": "メニューを閉じる",
+    "closeEnding": "エンディングを閉じる",
     "tapToContinue": "タップして続ける",
     "lineProgress": "{current} / {total} 行",
     "previousLine": "前の行",

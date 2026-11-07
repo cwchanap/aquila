@@ -809,7 +809,6 @@
   }
 
   function handleNext(): void {
-    if (leafDisabled) return;
     if (canGoNext) {
       onNext();
     } else if (

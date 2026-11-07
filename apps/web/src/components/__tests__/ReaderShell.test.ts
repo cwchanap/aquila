@@ -611,9 +611,48 @@ describe('ReaderShell', () => {
         await vi.advanceTimersByTimeAsync(1000);
         await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
         const panel = screen.getByRole('dialog', { name: 'Ending Act 3' });
+        await fireEvent.keyDown(panel, { key: 'Tab' });
+        expect(panel).toBeVisible();
         await fireEvent.keyDown(panel, { key: 'Escape' });
         expect(
             screen.queryByRole('dialog', { name: 'Ending Act 3' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('renders ending panel without story map button for linear stories', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = bgmFlow;
+        readerState.activeChoices = null;
+        readerState.currentSceneId = 'act3';
+        readerState.dialogue = [{ dialogue: 'Linear end.' }];
+        readerState.canGoNext = false;
+        render(ReaderShell);
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        const panel = screen.getByRole('dialog', { name: 'Ending Act 3' });
+        expect(
+            within(panel).queryByRole('button', { name: /story map/i })
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not open ending panel when scene is not terminal', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = bgmFlow;
+        readerState.activeChoices = null;
+        readerState.currentSceneId = 'act1';
+        readerState.dialogue = [{ dialogue: 'Not ending.' }];
+        readerState.canGoNext = false;
+        const next = vi.fn();
+        render(ReaderShell, { props: { onNext: next } });
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        expect(next).not.toHaveBeenCalled();
+        expect(
+            screen.queryByRole('dialog', { name: /ending/i })
         ).not.toBeInTheDocument();
     });
 

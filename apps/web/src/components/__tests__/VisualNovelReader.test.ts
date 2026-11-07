@@ -810,6 +810,22 @@ describe('VisualNovelReader', () => {
         expect(onNext).toHaveBeenCalled();
     });
 
+    it('does not call onNext on container click when choices are present', async () => {
+        setReducedMotion(false);
+        const onNext = vi.fn();
+        renderReader({
+            dialogue: [dialogue[0]],
+            dialogueIndex: 0,
+            canGoNext: false,
+            choice,
+            onNext,
+        });
+        await vi.runAllTimersAsync();
+        const container = screen.getByTestId('visual-novel-reader');
+        await fireEvent.click(container);
+        expect(onNext).not.toHaveBeenCalled();
+    });
+
     it('does not advance when a non-Enter/Space key is pressed', async () => {
         setReducedMotion(false);
         const { onIndexChange } = renderReader({

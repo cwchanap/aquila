@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { elevatorGameFlow } from '../../stories/src/generated/elevatorGame/flow';
 import { scene as act3Dialogue } from '../../stories/src/generated/elevatorGame/scenes/en/act3';
+import { scene as endingDialogue } from '../../stories/src/generated/elevatorGame/scenes/en/b1a_act4';
 import { elevatorGameChoiceTextEn } from '../../stories/src/stories/elevatorGame/choices.en';
 import { buildChoiceMap } from '../../stories/src/stories/choice-utils';
 import { MobileReaderPage } from './utils';
@@ -96,6 +97,102 @@ async function readThroughChoice(page: Page): Promise<void> {
 }
 
 test.describe('Story map', () => {
+    for (const mode of ['text', 'visual']) {
+        test(`completes an ending, remembers it in the catalogue, and resumes in ${mode} mode`, async ({
+            page,
+        }, testInfo) => {
+            test.setTimeout(60_000);
+            await page.addInitScript(
+                mode => localStorage.setItem('aquila:reader-mode:v1', mode),
+                mode
+            );
+            await page.goto(readerUrl('b1a_act4', endingDialogue.length - 1), {
+                waitUntil: 'domcontentloaded',
+            });
+            await expect(page.getByTestId('reader-ready')).toBeVisible();
+            // Astro's development toolbar covers the visual footer on mobile.
+            await page.addStyleTag({
+                content: 'astro-dev-toolbar { display: none !important; }',
+            });
+            const advance =
+                mode === 'text' && !isDesktop(testInfo.project.name)
+                    ? page.getByRole('button', {
+                          name: 'Tap to continue',
+                          exact: true,
+                      })
+                    : page.getByRole('button', {
+                          name: 'Continue',
+                          exact: true,
+                      });
+            await advance.click();
+            await expect(
+                page.getByText('Complete', { exact: true })
+            ).toBeVisible();
+            const complete =
+                mode === 'text' && !isDesktop(testInfo.project.name)
+                    ? advance
+                    : page.getByRole('button', {
+                          name: 'Complete',
+                          exact: true,
+                      });
+            await complete.click();
+            const ending = page.getByRole('dialog', { name: 'Ending Act 4' });
+            await expect(ending).toBeVisible();
+            await expect(ending).toContainText('The Elevator Game');
+            await expect(page.getByTestId('reader-ready')).toHaveAttribute(
+                'inert',
+                ''
+            );
+            await ending
+                .getByRole('button', { name: 'Read this ending again' })
+                .click();
+            await expect(page).toHaveURL(/scene=b1a_act4&dialogue=1/);
+            await expect(ending).not.toBeVisible();
+            await page.goto(readerUrl('b1a_act4', endingDialogue.length), {
+                waitUntil: 'domcontentloaded',
+            });
+            await page.addStyleTag({
+                content: 'astro-dev-toolbar { display: none !important; }',
+            });
+            await expect(
+                page.getByText('Complete', { exact: true })
+            ).toBeVisible();
+            await complete.click();
+            await ending
+                .getByRole('button', { name: 'Story map', exact: true })
+                .click();
+            const map = page.getByRole('dialog', {
+                name: 'Story map',
+                exact: true,
+            });
+            await expect(map).toBeVisible();
+            await expect(map.locator(':focus')).toHaveCount(1);
+            await expect(map).toContainText('Explored acts');
+            await expect(map.locator('[data-kind="ending"]')).toHaveCount(1);
+            await page
+                .getByRole('button', { name: 'Close story map', exact: true })
+                .click();
+            await complete.click();
+            await ending.getByRole('link', { name: 'Back to stories' }).click();
+            const card = page.locator('[data-story-id="elevator_game"]');
+            await expect(card).toContainText('1 of 2 endings');
+
+            await page.goto('/en/reader?story=elevator_game', {
+                waitUntil: 'domcontentloaded',
+            });
+            await expect(page).toHaveURL(
+                new RegExp(`scene=b1a_act4&dialogue=${endingDialogue.length}`)
+            );
+            await expect(
+                page.getByText('Complete', { exact: true })
+            ).toBeVisible();
+            await page.goto('/en/stories', { waitUntil: 'domcontentloaded' });
+            await expect(card).toContainText('1 of 2 endings');
+            await card.click();
+            await expect(page).toHaveURL(/scene=act1&dialogue=1/);
+        });
+    }
+
     test('keeps the unchosen route unread and jumps back to the choice prompt', async ({
         page,
     }, testInfo) => {

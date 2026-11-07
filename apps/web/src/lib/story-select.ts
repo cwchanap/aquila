@@ -155,6 +155,7 @@ export function buildCard(
               ? t.readAgain
               : t.start;
 
+    const startHref = `${readerHref(locale, entry.id)}&restart=1`;
     return {
         entry,
         title: strings[entry.translationKey] ?? entry.translationKey,
@@ -166,8 +167,10 @@ export function buildCard(
         actionLabel,
         href: inProgress
             ? readerHref(locale, entry.id, progress)
-            : readerHref(locale, entry.id),
-        startOverHref: inProgress ? readerHref(locale, entry.id) : null,
+            : progress
+              ? startHref
+              : readerHref(locale, entry.id),
+        startOverHref: inProgress ? startHref : null,
         endingsFound,
         endingsTotal,
         fraction,

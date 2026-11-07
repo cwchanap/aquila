@@ -1482,6 +1482,73 @@ describe('ReaderManager', () => {
             });
         });
 
+        it('resumes a bare story URL from per-story progress even after reading another story', async () => {
+            const saved = JSON.stringify({
+                train_adventure: {
+                    sceneId: 'act2',
+                    dialogueIndex: 1,
+                    updatedAt: 1,
+                    finished: true,
+                    endings: ['act2'],
+                },
+            });
+            mockStorage.getItem.mockImplementation((key: string) =>
+                key === 'aquila:storyProgress:v1' ? saved : null
+            );
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act2: [{ dialogue: 'a' }, { dialogue: 'b' }] },
+                choices: {},
+            });
+            setLocation('?story=train_adventure');
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            expect(readerState.currentSceneId).toBe('act2');
+            expect(readerState.dialogueIndex).toBe(1);
+        });
+
+        it.each(['&restart=1', '&scene=act1&dialogue=1'])(
+            'keeps an explicit start ahead of saved progress: %s',
+            async suffix => {
+                const saved = JSON.stringify({
+                    train_adventure: {
+                        sceneId: 'act2',
+                        dialogueIndex: 0,
+                        updatedAt: 1,
+                        finished: true,
+                        endings: ['act2'],
+                    },
+                });
+                mockStorage.getItem.mockImplementation((key: string) =>
+                    key === 'aquila:storyProgress:v1' ? saved : null
+                );
+                setLocation(`?story=train_adventure${suffix}`);
+                manager = new ReaderManager('en');
+                await manager.initialize();
+                expect(readerState.currentSceneId).toBe('act1');
+            }
+        );
+
+        it('persists the last line of an ending immediately', async () => {
+            mockGetStoryContent.mockReturnValue({
+                dialogue: { act2: [{ dialogue: 'a' }, { dialogue: 'b' }] },
+                choices: {},
+            });
+            setLocation('?story=train_adventure&scene=act2');
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            manager.onIndexChange(1);
+            const writes = mockStorage.setItem.mock.calls.filter(
+                ([key]) => key === 'aquila:storyProgress:v1'
+            );
+            expect(JSON.parse(writes.at(-1)![1]).train_adventure).toMatchObject(
+                {
+                    dialogueIndex: 1,
+                    finished: true,
+                    endings: ['act2'],
+                }
+            );
+        });
+
         it('keeps a per-story place and records the ending reached', async () => {
             mockGetStoryContent.mockReturnValue({
                 dialogue: {

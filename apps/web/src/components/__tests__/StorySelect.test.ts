@@ -141,12 +141,15 @@ describe('StorySelect', () => {
         expect(cardLink('the_seventh_mirror')).toHaveAttribute('href', resume);
         expect(
             screen.getByTestId('start-over-the_seventh_mirror')
-        ).toHaveAttribute('href', '/en/reader?story=the_seventh_mirror');
+        ).toHaveAttribute(
+            'href',
+            '/en/reader?story=the_seventh_mirror&restart=1'
+        );
 
         expect(cardLink('elevator_game')).toHaveTextContent('1 of 2 endings');
         expect(cardLink('elevator_game')).toHaveAttribute(
             'href',
-            '/en/reader?story=elevator_game'
+            '/en/reader?story=elevator_game&restart=1'
         );
     });
 

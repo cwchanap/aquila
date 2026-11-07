@@ -146,7 +146,10 @@ test.describe('Story select shelves', () => {
         ).toHaveAttribute('href', /scene=act1&dialogue=1/);
         await expect(
             stories.sagas.getByTestId('start-over-the_seventh_mirror')
-        ).toHaveAttribute('href', '/en/reader?story=the_seventh_mirror');
+        ).toHaveAttribute(
+            'href',
+            '/en/reader?story=the_seventh_mirror&restart=1'
+        );
     });
 });
 

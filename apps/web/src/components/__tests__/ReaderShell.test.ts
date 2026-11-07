@@ -40,6 +40,7 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             continue: 'Continue',
             nextScene: 'Next Scene',
             complete: 'Complete',
+            endOfStory: 'End of story!',
             bookmark: 'Bookmark',
             pageDisplay: '{current} / {total}',
             actPanel: 'Acts',
@@ -512,6 +513,56 @@ describe('ReaderShell', () => {
         vi.clearAllMocks();
         vi.unstubAllEnvs();
     });
+
+    it.each(['desktop', 'mobile', 'visual'])(
+        'opens an ending panel from Complete in %s mode',
+        async mode => {
+            stubMatchMedia(mode === 'mobile');
+            if (mode === 'visual')
+                localStorage.setItem(READER_MODE_KEY, 'visual');
+            readerState.storyId = 'elevator_game';
+            readerState.activeFlow = branchFlow;
+            readerState.activeChoices = branchChoices;
+            readerState.currentSceneId = 'b1a_act3';
+            readerState.dialogue = [{ dialogue: 'The end.' }];
+            readerState.canGoNext = false;
+            const navigate = vi.fn();
+            render(ReaderShell, {
+                props: {
+                    onNavigate: navigate,
+                    createVisualRuntime: () => createRuntimeHarness().runtime,
+                    getCurrentStoryProgressSnapshot: () =>
+                        mapProgress(['act1', 'act2', 'b1a_act3'], ['b1a_act3']),
+                },
+            });
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            expect(screen.getByText('Complete')).toBeVisible();
+            if (mode === 'mobile')
+                await fireEvent.click(
+                    screen.getByRole('button', { name: 'Tap to continue' })
+                );
+            else
+                await fireEvent.click(
+                    screen.getByRole('button', { name: 'Complete' })
+                );
+            const panel = screen.getByRole('dialog', { name: 'Ending Act 3' });
+            expect(within(panel).getByText('The Elevator Game')).toBeVisible();
+            expect(
+                within(panel).getByRole('link', { name: 'Back to stories' })
+            ).toHaveAttribute('href', '/en/stories');
+            expect(screen.getByTestId('reader-ready')).toHaveAttribute('inert');
+            await fireEvent.click(
+                within(panel).getByRole('button', {
+                    name: 'Read this ending again',
+                })
+            );
+            expect(
+                screen.queryByRole('dialog', { name: 'Ending Act 3' })
+            ).not.toBeInTheDocument();
+            expect(navigate).toHaveBeenCalledWith('b1a_act3', 'start');
+        }
+    );
 
     it.each([
         'elevator_game',

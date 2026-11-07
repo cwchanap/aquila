@@ -1689,6 +1689,48 @@ describe('ReaderManager', () => {
             expect(readerState.endingOpen).toBe(false);
             expect(mockShowAlert).not.toHaveBeenCalled();
         });
+
+        function mockTwoLineEnding() {
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act2',
+                nodes: [
+                    { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+                ],
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act2: [
+                        { characterId: 'narrator', dialogue: 'First' },
+                        { characterId: 'narrator', dialogue: 'Last' },
+                    ],
+                },
+                choices: {},
+            });
+        }
+
+        it('onIndexChange closes the ending panel when the reader leaves the ending line', async () => {
+            mockTwoLineEnding();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            readerState.endingOpen = true;
+
+            manager.onIndexChange(1);
+            expect(readerState.endingOpen).toBe(true);
+
+            manager.onIndexChange(0);
+            expect(readerState.endingOpen).toBe(false);
+        });
+
+        it('goToScene closes an open ending panel', async () => {
+            mockTwoLineEnding();
+            manager = new ReaderManager('en');
+            await manager.initialize();
+            readerState.endingOpen = true;
+
+            manager.goToScene('act2', 'start');
+
+            expect(readerState.endingOpen).toBe(false);
+        });
     });
 
     describe('story map wiring', () => {

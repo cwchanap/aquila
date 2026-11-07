@@ -262,6 +262,7 @@
     "dialogueBodyLabel": "Dialogue content",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
+    "closeEnding": "Close ending",
     "tapToContinue": "Tap to continue",
     "lineProgress": "Line {current} of {total}",
     "previousLine": "Previous line",

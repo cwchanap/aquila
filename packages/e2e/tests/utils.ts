@@ -338,9 +338,13 @@ export class MobileReaderPage {
         await this.page.goto(`/${this.locale}/reader?story=train_adventure`);
     }
 
-    async seedVisitedScenes(storyId: string, sceneIds: string[]) {
+    async seedVisitedScenes(
+        storyId: string,
+        sceneIds: string[],
+        currentSceneId?: string
+    ) {
         await this.page.addInitScript(
-            ([key, story, ids]) => {
+            ([key, story, ids, current]) => {
                 const raw = localStorage.getItem(key);
                 let map: Record<string, unknown> = {};
                 if (raw) {
@@ -358,7 +362,7 @@ export class MobileReaderPage {
                     }
                 }
                 map[story] = {
-                    sceneId: ids[ids.length - 1],
+                    sceneId: current ?? ids[ids.length - 1],
                     dialogueIndex: 0,
                     updatedAt: Date.now(),
                     finished: false,
@@ -367,7 +371,12 @@ export class MobileReaderPage {
                 };
                 localStorage.setItem(key, JSON.stringify(map));
             },
-            ['aquila:storyProgress:v1', storyId, sceneIds] as const
+            [
+                'aquila:storyProgress:v1',
+                storyId,
+                sceneIds,
+                currentSceneId,
+            ] as const
         );
     }
 

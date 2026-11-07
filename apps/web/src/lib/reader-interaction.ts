@@ -1,3 +1,5 @@
+import type { StoryFlowConfig, SceneNodeDefinition } from '@aquila/stories';
+
 export type ReaderAdvanceDecision =
     'skip' | 'advance-line' | 'advance-scene' | 'complete' | 'none';
 
@@ -17,6 +19,23 @@ export function getReaderAdvanceDecision(
     if (input.canGoNext && !input.hasChoice) return 'advance-scene';
     if (input.length > 0 && !input.hasChoice) return 'complete';
     return 'none';
+}
+
+export function isEndingPosition(
+    flow: StoryFlowConfig | null,
+    sceneId: string | null,
+    dialogueIndex: number,
+    dialogueLength: number,
+    hasChoice: boolean
+): boolean {
+    if (!flow || !sceneId || hasChoice || dialogueLength === 0) return false;
+    if (dialogueIndex !== dialogueLength - 1) return false;
+    const node = flow.nodes.find(
+        (n): n is SceneNodeDefinition =>
+            n.kind === 'scene' && n.sceneId === sceneId
+    );
+    if (!node) return false;
+    return node.next === null || node.next === undefined;
 }
 
 export function isReaderInteractiveTarget(target: EventTarget | null): boolean {

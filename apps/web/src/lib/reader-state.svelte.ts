@@ -30,6 +30,7 @@ class ReaderState {
     hasActivePayload: boolean = $state(false);
     activeFlow: StoryFlowConfig | null = $state(null);
     activeChoices: ChoiceMap | null = $state(null);
+    endingOpen: boolean = $state(false);
 
     reset() {
         this.dialogue = [];
@@ -48,6 +49,7 @@ class ReaderState {
         this.hasActivePayload = false;
         this.activeFlow = null;
         this.activeChoices = null;
+        this.endingOpen = false;
     }
 }
 

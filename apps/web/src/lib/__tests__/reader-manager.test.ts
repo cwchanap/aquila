@@ -1483,7 +1483,14 @@ describe('ReaderManager', () => {
         });
 
         it('resumes a bare story URL from per-story progress even after reading another story', async () => {
-            const saved = JSON.stringify({
+            const progress = JSON.stringify({
+                elevator_game: {
+                    sceneId: 'act3',
+                    dialogueIndex: 4,
+                    updatedAt: 2,
+                    finished: false,
+                    endings: [],
+                },
                 train_adventure: {
                     sceneId: 'act2',
                     dialogueIndex: 1,
@@ -1492,9 +1499,18 @@ describe('ReaderManager', () => {
                     endings: ['act2'],
                 },
             });
-            mockStorage.getItem.mockImplementation((key: string) =>
-                key === 'aquila:storyProgress:v1' ? saved : null
-            );
+            const sessionState = JSON.stringify({
+                storyId: 'elevator_game',
+                sceneId: 'act3',
+                dialogueIndex: 4,
+                locale: 'en',
+                version: 1,
+            });
+            mockStorage.getItem.mockImplementation((key: string) => {
+                if (key === 'aquila:storyProgress:v1') return progress;
+                if (key === 'aquila:reader:state') return sessionState;
+                return null;
+            });
             mockGetStoryContent.mockReturnValue({
                 dialogue: { act2: [{ dialogue: 'a' }, { dialogue: 'b' }] },
                 choices: {},
@@ -1592,7 +1608,7 @@ describe('ReaderManager', () => {
             });
         });
 
-        it('handleNext shows end-of-story alert at a terminal scene', async () => {
+        it('handleNext opens the ending dialog at a terminal scene', async () => {
             mockGetStoryFlow.mockReturnValue({
                 start: 'act2',
                 nodes: [
@@ -1608,12 +1624,36 @@ describe('ReaderManager', () => {
 
             manager = new ReaderManager('en');
             await manager.initialize();
-            await manager.handleNext();
+            expect(readerState.endingOpen).toBe(false);
 
-            expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
+            manager.handleNext();
+
+            expect(readerState.endingOpen).toBe(true);
+            expect(mockShowAlert).not.toHaveBeenCalled();
         });
 
-        it('handleNext shows end-of-story alert at a choice point', async () => {
+        it('handleNext treats omitted next field as a terminal scene ending', async () => {
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act2',
+                nodes: [{ kind: 'scene', id: 'act2', sceneId: 'act2' }],
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act2: [{ characterId: 'narrator', dialogue: 'Last scene' }],
+                },
+                choices: {},
+            });
+
+            manager = new ReaderManager('en');
+            await manager.initialize();
+
+            manager.handleNext();
+
+            expect(readerState.endingOpen).toBe(true);
+            expect(mockShowAlert).not.toHaveBeenCalled();
+        });
+
+        it('handleNext does not open ending at a choice point', async () => {
             mockGetStoryFlow.mockReturnValue({
                 start: 'act3',
                 nodes: [
@@ -1631,14 +1671,23 @@ describe('ReaderManager', () => {
                         { characterId: 'narrator', dialogue: 'Choice scene' },
                     ],
                 },
-                choices: {},
+                choices: {
+                    choice_act3: {
+                        prompt: 'Choice?',
+                        options: [
+                            { id: 'opt1', nextScene: 'act4', label: 'Go' },
+                        ],
+                    },
+                },
             });
 
             manager = new ReaderManager('en');
             await manager.initialize();
-            await manager.handleNext();
 
-            expect(mockShowAlert).toHaveBeenCalledWith('End of story reached');
+            manager.handleNext();
+
+            expect(readerState.endingOpen).toBe(false);
+            expect(mockShowAlert).not.toHaveBeenCalled();
         });
     });
 

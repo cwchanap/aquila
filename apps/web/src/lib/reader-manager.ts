@@ -15,6 +15,7 @@ import {
 } from './story-progress-store';
 import { getBrowserStorage } from './reader-mode';
 import { readerState } from './reader-state.svelte';
+import { isEndingPosition } from './reader-interaction';
 import {
     migratePersisted,
     serializeSessionParams,
@@ -351,14 +352,16 @@ export class ReaderManager {
      *  the most recent story) and note when the reader has reached an ending:
      *  the last line of a scene with no next scene and no choice. */
     private recordStoryProgress(): void {
-        const { storyId, currentSceneId, dialogueIndex, dialogue } =
+        const { storyId, currentSceneId, dialogueIndex, dialogue, choice } =
             readerState;
         if (!storyId || !currentSceneId || !this.activeStory) return;
-        const node = this.getSceneNode(storyId, currentSceneId);
-        if (!node) return;
-        const atEnding =
-            node.next === null &&
-            dialogueIndex >= Math.max(dialogue.length - 1, 0);
+        const atEnding = isEndingPosition(
+            this.activeStory.flow,
+            currentSceneId,
+            dialogueIndex,
+            dialogue.length,
+            Boolean(choice)
+        );
         this.storyProgress.record({
             storyId,
             sceneId: currentSceneId,
@@ -501,15 +504,21 @@ export class ReaderManager {
     onIndexChange = (i: number): void => {
         readerState.dialogueIndex = clampIndex(i, readerState.dialogue.length);
         this.scheduleReplace();
-        if (
-            this.getSceneNode(readerState.storyId, readerState.currentSceneId)
-                ?.next === null &&
-            readerState.dialogueIndex === readerState.dialogue.length - 1
-        ) {
+        const atEnding = isEndingPosition(
+            this.activeStory?.flow ?? null,
+            readerState.currentSceneId,
+            readerState.dialogueIndex,
+            readerState.dialogue.length,
+            Boolean(readerState.choice)
+        );
+        if (atEnding) {
             this.cancelPersistTimer();
             this.persist();
         } else {
             this.schedulePersist();
+        }
+        if (readerState.endingOpen && !atEnding) {
+            readerState.endingOpen = false;
         }
     };
 
@@ -519,6 +528,9 @@ export class ReaderManager {
     goToScene = (sceneId: string, at?: 'start' | 'end'): void => {
         if (!this.activeStory || readerState.loadStatus !== 'ready') return;
         this.flushPendingReplace(); // preserve accurate line for Back
+        if (readerState.endingOpen) {
+            readerState.endingOpen = false;
+        }
         readerState.currentSceneId = sceneId;
         const { dialogue, choice } = this.getSceneData(
             readerState.storyId,
@@ -616,14 +628,22 @@ export class ReaderManager {
         }
     };
 
-    handleNext = async (): Promise<void> => {
+    handleNext = (): void => {
         if (!this.activeStory || readerState.loadStatus !== 'ready') return;
-        const translations = this.t;
         const next = this.getLinearNextScene(readerState.currentSceneId);
         if (next !== null) {
             this.goToScene(next);
-        } else {
-            await showAlert(translations.reader.endOfStory);
+            return;
+        }
+        const atEnding = isEndingPosition(
+            this.activeStory.flow,
+            readerState.currentSceneId,
+            readerState.dialogueIndex,
+            readerState.dialogue.length,
+            Boolean(readerState.choice)
+        );
+        if (atEnding) {
+            readerState.endingOpen = true;
         }
     };
 

@@ -146,7 +146,7 @@ test.describe('Story map', () => {
             await ending
                 .getByRole('button', { name: 'Read this ending again' })
                 .click();
-            await expect(page).toHaveURL(/scene=b1a_act4&dialogue=1/);
+            await expect(page).toHaveURL(/scene=b1a_act4&dialogue=1(?![0-9])/);
             await expect(ending).not.toBeVisible();
             await page.goto(readerUrl('b1a_act4', endingDialogue.length), {
                 waitUntil: 'domcontentloaded',
@@ -189,7 +189,7 @@ test.describe('Story map', () => {
             await page.goto('/en/stories', { waitUntil: 'domcontentloaded' });
             await expect(card).toContainText('1 of 2 endings');
             await card.click();
-            await expect(page).toHaveURL(/scene=act1&dialogue=1/);
+            await expect(page).toHaveURL(/scene=act1&dialogue=1(?![0-9])/);
         });
     }
 

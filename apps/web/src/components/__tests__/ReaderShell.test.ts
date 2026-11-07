@@ -54,6 +54,7 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             historyTitle: 'History',
             openMenu: 'Open menu',
             closeMenu: 'Close menu',
+            closeEnding: 'Close ending',
             openHistory: 'Open history',
             closeHistory: 'Close history',
             dialogueBodyLabel: 'Dialogue content',
@@ -658,9 +659,8 @@ describe('ReaderShell', () => {
         await tick();
         await vi.advanceTimersByTimeAsync(1000);
         await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
-        expect(
-            screen.getByRole('dialog', { name: 'Ending Act 3' })
-        ).toBeVisible();
+        const panel = screen.getByRole('dialog', { name: 'Ending Act 3' });
+        expect(panel).toBeVisible();
 
         // Simulate navigating to previous dialogue line (e.g. browser back)
         readerState.dialogueIndex = 0;
@@ -676,6 +676,105 @@ describe('ReaderShell', () => {
             screen.queryByRole('dialog', { name: 'Ending Act 3' })
         ).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Complete' })).toBeVisible();
+    });
+
+    it('focuses the dialog heading rather than back link when ending panel opens', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = branchFlow;
+        readerState.activeChoices = branchChoices;
+        readerState.currentSceneId = 'b1a_act3';
+        readerState.dialogue = [{ dialogue: 'The end.' }];
+        readerState.dialogueIndex = 0;
+        readerState.canGoNext = false;
+        render(ReaderShell, {
+            props: {
+                getCurrentStoryProgressSnapshot: () =>
+                    mapProgress(['act1', 'act2', 'b1a_act3'], ['b1a_act3']),
+            },
+        });
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        const heading = screen.getByRole('heading', {
+            level: 1,
+            name: 'Ending Act 3',
+        });
+        expect(document.activeElement).toBe(heading);
+        const backLink = screen.getByRole('link', { name: 'Back to stories' });
+        expect(document.activeElement).not.toBe(backLink);
+    });
+
+    it('closes ending panel via close button and backdrop click', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = branchFlow;
+        readerState.activeChoices = branchChoices;
+        readerState.currentSceneId = 'b1a_act3';
+        readerState.dialogue = [{ dialogue: 'The end.' }];
+        readerState.dialogueIndex = 0;
+        readerState.canGoNext = false;
+        render(ReaderShell, {
+            props: {
+                getCurrentStoryProgressSnapshot: () =>
+                    mapProgress(['act1', 'act2', 'b1a_act3'], ['b1a_act3']),
+            },
+        });
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        const panel = screen.getByRole('dialog', { name: 'Ending Act 3' });
+        expect(panel).toBeVisible();
+
+        // Close via close button (X button) inside dialog
+        const closeBtn = within(panel).getByRole('button', {
+            name: 'Close ending',
+        });
+        await fireEvent.click(closeBtn);
+        expect(
+            screen.queryByRole('dialog', { name: 'Ending Act 3' })
+        ).not.toBeInTheDocument();
+
+        // Reopen via Complete
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        expect(
+            screen.getByRole('dialog', { name: 'Ending Act 3' })
+        ).toBeVisible();
+
+        // Close via backdrop click
+        const backdrop = screen.getByTestId('reader-ending-backdrop');
+        await fireEvent.click(backdrop);
+        expect(
+            screen.queryByRole('dialog', { name: 'Ending Act 3' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('treats scenes with missing next field as endings and falls back when act name is empty', async () => {
+        stubMatchMedia(false);
+        const customFlow = {
+            start: 'custom_ending',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'custom_ending',
+                    sceneId: 'custom_ending',
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = customFlow;
+        readerState.activeChoices = null;
+        readerState.currentSceneId = 'custom_ending';
+        readerState.dialogue = [{ dialogue: 'Custom end.' }];
+        readerState.dialogueIndex = 0;
+        readerState.canGoNext = false;
+        render(ReaderShell);
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        expect(
+            screen.getByRole('dialog', { name: 'Ending custom_ending' })
+        ).toBeVisible();
     });
 
     it('does not open ending panel when scene is not terminal', async () => {

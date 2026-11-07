@@ -42,7 +42,8 @@ describe('voiceLineId', () => {
 
     it('lists the stories that have voice', () => {
         expect(hasStoryVoice('the_seventh_mirror')).toBe(true);
-        expect(hasStoryVoice('train_adventure')).toBe(false);
+        expect(hasStoryVoice('train_adventure')).toBe(true);
+        expect(hasStoryVoice('dont_save_me_before_midnight')).toBe(false);
     });
 });
 
@@ -411,11 +412,12 @@ describe('runVoiceCli', () => {
 
     it('reminds you to register a story the reader does not voice yet', async () => {
         const rawRoot = tempDir();
-        const act1 = getStoryContent('train_adventure', 'zh').dialogue.act1;
-        rawStory(rawRoot, 'train', 'train_adventure', {
+        const act1 = getStoryContent('dont_save_me_before_midnight', 'zh')
+            .dialogue.ch1_act1;
+        rawStory(rawRoot, 'midnight', 'dont_save_me_before_midnight', {
             schemaVersion: 1,
             scenes: {
-                act1: act1.map(entry => ({ zh: entry.dialogue, ja: 'あ' })),
+                ch1_act1: act1.map(entry => ({ zh: entry.dialogue, ja: 'あ' })),
             },
         });
         const log = vi.fn();
@@ -424,9 +426,9 @@ describe('runVoiceCli', () => {
             [
                 'generate',
                 '--story',
-                'train',
+                'midnight',
                 '--scene',
-                'act1',
+                'ch1_act1',
                 '--out',
                 tempDir(),
             ],

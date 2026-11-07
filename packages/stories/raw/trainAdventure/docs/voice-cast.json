@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "modelId": "eleven_v4",
+  "language": "ja",
+  "roles": {
+    "li_jie": {
+      "voiceId": "kDjNtb1AbMP0kqZ1BUxW",
+      "voiceName": "Riu | Calm Japanese Male",
+      "innerDirection": "[softly]",
+      "notes": "Hapadona's pick from Riu, HIRO and Taro. Every Li Jie line is inner monologue, spoken softly. Narration stays silent."
+    },
+    "tanaka_kenta": {
+      "voiceId": "FNpElEHmcXikbgLHkDkJ",
+      "voiceName": "りょう丸 - 明るくハイテンポな男性",
+      "notes": "Hapadona's pick from りょう丸, Kyo and Minto."
+    },
+    "suzuki_asuka": {
+      "voiceId": "OSwaPSNdfituxkWcjlkR",
+      "voiceName": "★cute anime voice（kano）★",
+      "notes": "Hapadona's pick from Itsuki, Yuko and kano."
+    },
+    "sato_takumi": {
+      "voiceId": "j2wQfRuM1ojMKh3iMJ1c",
+      "voiceName": "ケンジ - 誠実・解説青年",
+      "notes": "Hapadona's pick from Gran, Kenji and Haruto."
+    },
+    "takahashi_misaki": {
+      "voiceId": "KgETZ36CCLD1Cob4xpkv",
+      "voiceName": "Romaco - Anime Girl Voice",
+      "notes": "Hapadona's pick from Unya, Romaco and Sumire."
+    },
+    "saito_ren": {
+      "voiceId": "CtUbzbpXB2NakSL8sYID",
+      "voiceName": "AKIRA- Warm, Humble, Clear & Friendly",
+      "notes": "Hapadona's pick from Sey, Benny and AKIRA. Not the Akira voice used for Lu Chi in One Pot Before Dawn."
+    },
+    "yamamoto_koji": {
+      "voiceId": "4UeMMcJzBVRXxesigZKz",
+      "voiceName": "Believe - Calm Japanese Male",
+      "notes": "Hapadona's pick from Ryusuke, Hajisan and Believe."
+    },
+    "ito_nana": {
+      "voiceId": "5Y52LJ80BoqKDtJh7hSM",
+      "voiceName": "Akari - Calm Japanese Narrator",
+      "notes": "Hapadona's pick from toto, Naomi and Akari."
+    },
+    "ito_makoto": {
+      "voiceId": "jyogAI7BN5DyoykAgSk6",
+      "voiceName": "ryo kazuma-Deep&Calm Japanese VoiceActor",
+      "notes": "Hapadona's pick from Atsuji, ryo kazuma and Akio shima."
+    },
+    "nakamura_hayato": {
+      "voiceId": "QPtBgsg1dxKTQHNpHrHt",
+      "voiceName": "odanobuVT - Joker & Prankster",
+      "notes": "Hapadona's pick from odanobuVT, Sun-taro and Nozomu."
+    },
+    "kobayashi_tomoko": {
+      "voiceId": "UFY2ptayjOHIwhz2WLOA",
+      "voiceName": "Lirica",
+      "notes": "Hapadona's pick from Popo, Hiyori and Lirica."
+    },
+    "kobayashi_shota": {
+      "voiceId": "eymz1ANTJnON6eFsgi2l",
+      "voiceName": "chinyaku – Cute Japanese Voice Actress",
+      "notes": "Hapadona's pick from chinyaku, いろはうた and Masaki. A female voice that sounds boyish; the library has no real Japanese boy voice. Kobayashi Shota is a 10-year-old boy."
+    },
+    "announcement": {
+      "voiceId": "1czwMoQxv9Ni4H7M5hXx",
+      "voiceName": "みーこ - クリアな公共案内",
+      "notes": "Library pick for in-scene platform announcements, kept by Hapadona on the audition page."
+    }
+  }
+}

@@ -79,7 +79,7 @@ describe('createVoicePlayer', () => {
         const player = createVoicePlayer({ createAudio, fetchImpl });
 
         player.play('ch1_act1', 0);
-        await player.load('train_adventure');
+        await player.load('dont_save_me_before_midnight');
         player.play('act1', 0);
 
         expect(fetchImpl).not.toHaveBeenCalled();
@@ -160,7 +160,7 @@ describe('createVoicePlayer', () => {
         });
 
         const slow = player.load('the_seventh_mirror');
-        await player.load('train_adventure');
+        await player.load('dont_save_me_before_midnight');
         release(indexResponse([FIRST]));
         await expect(slow).resolves.toBe(false);
         player.play('ch1_act1', 0);
@@ -184,7 +184,7 @@ describe('createVoicePlayer', () => {
         await Promise.resolve();
         player.dispose();
         player.play('ch1_act1', 0);
-        await player.load('train_adventure');
+        await player.load('dont_save_me_before_midnight');
 
         expect(createAudio).toHaveBeenCalledOnce();
     });

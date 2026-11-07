@@ -129,7 +129,9 @@ describe('buildCard', () => {
         expect(card.href).toBe(
             '/en/reader?story=the_seventh_mirror&scene=ch9_act3&dialogue=5'
         );
-        expect(card.startOverHref).toBe('/en/reader?story=the_seventh_mirror');
+        expect(card.startOverHref).toBe(
+            '/en/reader?story=the_seventh_mirror&restart=1'
+        );
     });
 
     it('offers a finished story again from the top', () => {
@@ -141,7 +143,7 @@ describe('buildCard', () => {
         );
         expect(card.action).toBe('readAgain');
         expect(card.status).toBe('Finished');
-        expect(card.href).toBe('/en/reader?story=the_seventh_mirror');
+        expect(card.href).toBe('/en/reader?story=the_seventh_mirror&restart=1');
     });
 
     it('counts the endings found on a finished branching saga', () => {

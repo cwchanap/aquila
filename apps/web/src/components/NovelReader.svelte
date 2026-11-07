@@ -231,7 +231,7 @@
       onIndexChange(dialogueIndex + 1);
       return;
     }
-    if (decision === 'advance-scene') onNext();
+    if (decision === 'advance-scene' || decision === 'complete') onNext();
   }
 
   function handleChoice(nextScene: string) {

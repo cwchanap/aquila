@@ -789,6 +789,12 @@
   }
 
   $effect.pre(() => {
+    if (completedPosition !== null && completedPosition !== positionKey) {
+      completedPosition = null;
+    }
+  });
+
+  $effect.pre(() => {
     if (storyMapOpen && !(storyMapAvailable && activeChoices !== null)) {
       storyMapOpen = false;
     }

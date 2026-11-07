@@ -637,6 +637,47 @@ describe('ReaderShell', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('clears ending panel when position changes and does not reopen on return without Complete', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = branchFlow;
+        readerState.activeChoices = branchChoices;
+        readerState.currentSceneId = 'b1a_act3';
+        readerState.dialogue = [
+            { dialogue: 'Line 1.' },
+            { dialogue: 'The end.' },
+        ];
+        readerState.dialogueIndex = 1;
+        readerState.canGoNext = false;
+        render(ReaderShell, {
+            props: {
+                getCurrentStoryProgressSnapshot: () =>
+                    mapProgress(['act1', 'act2', 'b1a_act3'], ['b1a_act3']),
+            },
+        });
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        expect(
+            screen.getByRole('dialog', { name: 'Ending Act 3' })
+        ).toBeVisible();
+
+        // Simulate navigating to previous dialogue line (e.g. browser back)
+        readerState.dialogueIndex = 0;
+        await tick();
+        expect(
+            screen.queryByRole('dialog', { name: 'Ending Act 3' })
+        ).not.toBeInTheDocument();
+
+        // Simulate navigating forward again to ending line
+        readerState.dialogueIndex = 1;
+        await tick();
+        expect(
+            screen.queryByRole('dialog', { name: 'Ending Act 3' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Complete' })).toBeVisible();
+    });
+
     it('does not open ending panel when scene is not terminal', async () => {
         stubMatchMedia(false);
         readerState.storyId = 'elevator_game';

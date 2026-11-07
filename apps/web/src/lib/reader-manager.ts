@@ -222,6 +222,7 @@ export class ReaderManager {
         readerState.dialogue = dialogue;
         readerState.choice = choice;
         readerState.canGoNext = this.hasNextScene(state.sceneId);
+        readerState.endingOpen = false;
         readerState.hasActivePayload = true;
         readerState.loadStatus = 'ready';
         readerState.loadError = null;

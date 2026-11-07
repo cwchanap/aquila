@@ -1731,6 +1731,40 @@ describe('ReaderManager', () => {
 
             expect(readerState.endingOpen).toBe(false);
         });
+
+        it('popstate restoring a different ending keeps the panel closed', async () => {
+            // Two terminal scenes: completing act2 then landing on act3's
+            // last line via history must not reopen the panel without a
+            // new Complete action.
+            mockGetStoryFlow.mockReturnValue({
+                start: 'act2',
+                nodes: [
+                    { kind: 'scene', id: 'act2', sceneId: 'act2', next: null },
+                    { kind: 'scene', id: 'act3', sceneId: 'act3', next: null },
+                ],
+            });
+            mockGetStoryContent.mockReturnValue({
+                dialogue: {
+                    act2: [{ characterId: 'narrator', dialogue: 'Ending A' }],
+                    act3: [{ characterId: 'narrator', dialogue: 'Ending B' }],
+                },
+                choices: {},
+            });
+            setLocation('?story=train_adventure&scene=act2&dialogue=1');
+            manager = new ReaderManager('en');
+            await manager.initialize();
+
+            manager.handleNext();
+            expect(readerState.endingOpen).toBe(true);
+
+            setLocation('?story=train_adventure&scene=act3&dialogue=1');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            await vi.waitFor(() =>
+                expect(readerState.currentSceneId).toBe('act3')
+            );
+
+            expect(readerState.endingOpen).toBe(false);
+        });
     });
 
     describe('story map wiring', () => {

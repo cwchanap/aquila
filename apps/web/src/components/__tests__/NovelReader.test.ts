@@ -622,6 +622,19 @@ describe('NovelReader — navigation buttons', () => {
         await fireEvent.click(screen.getByText('Next Scene'));
         expect(onNext).toHaveBeenCalled();
     });
+
+    it('calls onNext when the complete button is clicked', async () => {
+        const onNext = vi.fn();
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            dialogueIndex: 0,
+            canGoNext: false,
+            onNext,
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(screen.getByText('Complete'));
+        expect(onNext).toHaveBeenCalled();
+    });
 });
 
 describe('NovelReader — bookmark & progress', () => {

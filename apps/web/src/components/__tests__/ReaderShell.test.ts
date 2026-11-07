@@ -564,6 +564,81 @@ describe('ReaderShell', () => {
         }
     );
 
+    it('opens story map from ending panel', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = branchFlow;
+        readerState.activeChoices = branchChoices;
+        readerState.currentSceneId = 'b1a_act3';
+        readerState.dialogue = [{ dialogue: 'The end.' }];
+        readerState.canGoNext = false;
+        render(ReaderShell, {
+            props: {
+                getCurrentStoryProgressSnapshot: () =>
+                    mapProgress(['act1', 'act2', 'b1a_act3'], ['b1a_act3']),
+            },
+        });
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        const panel = screen.getByRole('dialog', { name: 'Ending Act 3' });
+        await fireEvent.click(
+            within(panel).getByRole('button', { name: /story map/i })
+        );
+        expect(
+            screen.queryByRole('dialog', { name: 'Ending Act 3' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('dialog', { name: /story map/i })
+        ).toBeVisible();
+    });
+
+    it('closes ending panel on Escape key', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = branchFlow;
+        readerState.activeChoices = branchChoices;
+        readerState.currentSceneId = 'b1a_act3';
+        readerState.dialogue = [{ dialogue: 'The end.' }];
+        readerState.canGoNext = false;
+        render(ReaderShell, {
+            props: {
+                getCurrentStoryProgressSnapshot: () =>
+                    mapProgress(['act1', 'act2', 'b1a_act3'], ['b1a_act3']),
+            },
+        });
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(screen.getByRole('button', { name: 'Complete' }));
+        const panel = screen.getByRole('dialog', { name: 'Ending Act 3' });
+        await fireEvent.keyDown(panel, { key: 'Escape' });
+        expect(
+            screen.queryByRole('dialog', { name: 'Ending Act 3' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('calls onNext when canGoNext is true', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = branchFlow;
+        readerState.activeChoices = branchChoices;
+        readerState.currentSceneId = 'act1';
+        readerState.dialogue = [{ dialogue: 'First line.' }];
+        readerState.canGoNext = true;
+        const next = vi.fn();
+        render(ReaderShell, {
+            props: {
+                onNext: next,
+            },
+        });
+        await tick();
+        await vi.advanceTimersByTimeAsync(1000);
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Next Scene' })
+        );
+        expect(next).toHaveBeenCalledTimes(1);
+    });
+
     it.each([
         'elevator_game',
         'demon_lord_is_hiring',

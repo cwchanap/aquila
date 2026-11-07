@@ -461,6 +461,19 @@ describe('MobileNovelReader', () => {
             expect(onNext).toHaveBeenCalled();
         });
 
+        it('calls onNext on the last line when complete', async () => {
+            const onNext = vi.fn();
+            renderReader({
+                dialogue: [mockDialogue[0]],
+                dialogueIndex: 0,
+                canGoNext: false,
+                onNext,
+            });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Tap to continue'));
+            expect(onNext).toHaveBeenCalled();
+        });
+
         it('renders choices on the last line and calls onChoice', async () => {
             const onChoice = vi.fn();
             renderReader({

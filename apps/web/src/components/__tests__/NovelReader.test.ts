@@ -635,6 +635,20 @@ describe('NovelReader — navigation buttons', () => {
         await fireEvent.click(screen.getByText('Complete'));
         expect(onNext).toHaveBeenCalled();
     });
+
+    it('does not call onNext when Enter is pressed on choice line', async () => {
+        const onNext = vi.fn();
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            dialogueIndex: 0,
+            canGoNext: false,
+            choice: mockChoice,
+            onNext,
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onNext).not.toHaveBeenCalled();
+    });
 });
 
 describe('NovelReader — bookmark & progress', () => {

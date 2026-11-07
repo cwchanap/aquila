@@ -16,6 +16,8 @@
   import { readerState } from '@/lib/reader-state.svelte';
   import { logger } from '@/lib/logger';
   import type { StoryProgress } from '@/lib/story-progress-store';
+  import { actLabel, extractActName } from '@/lib/act-navigation';
+  import { focusTrap } from '@/lib/focus-trap';
   import {
     readReaderMode,
     writeReaderMode,
@@ -78,6 +80,7 @@
   import ReaderSettingsMenu from '@/components/ReaderSettingsMenu.svelte';
   import StoryMapSheet from '@/components/StoryMapSheet.svelte';
   import VisualNovelReader from '@/components/VisualNovelReader.svelte';
+  import Button from '@/components/ui/Button.svelte';
 
   let {
     onChoice = () => {},
@@ -658,11 +661,22 @@
   let leafOverlayOpen = $state(false);
   let storyMapOpen = $state(false);
   let storyMapProgress = $state<StoryProgress | null>(null);
+  let completedPosition = $state<string | null>(null);
+  let positionKey = $derived(`${storyId}:${currentSceneId}:${dialogueIndex}`);
+  let endingOpen = $derived(completedPosition === positionKey && !isBlocking);
+  let endingTitle = $derived(
+    t.reader.storyMap.endingLabel.replace(
+      '{label}',
+      actLabel(extractActName(currentSceneId), t)
+    )
+  );
   let restoreMobileMenuFocus = $state(false);
   let settingsAvailable = $derived(
     readerMode === 'visual' || !isMobile || isBlocking
   );
-  let leafDisabled = $derived(isBlocking || settingsOpen || storyMapOpen);
+  let leafDisabled = $derived(
+    isBlocking || settingsOpen || storyMapOpen || endingOpen
+  );
   let activeChoices = $derived(readerState.activeChoices);
   let storyMapAvailable = $derived(
     activeFlow !== null && hasRealDecision(activeFlow)
@@ -681,8 +695,10 @@
       return visibleSceneIds(activeFlow, storyMapProgress, currentSceneId);
     }
   );
-  let storyMapFocusTarget = $derived.by((): HTMLElement | null => {
-    if (!storyMapOpen || typeof document === 'undefined') return null;
+  let overlayFocusTarget = $derived.by((): HTMLElement | null => {
+    if (!(storyMapOpen || endingOpen) || typeof document === 'undefined') {
+      return null;
+    }
     const id =
       readerMode === 'text' && isMobile
         ? 'mobile-reader-menu-trigger'
@@ -790,6 +806,29 @@
     if (!storyMapAvailable || storyMapOpen || isBlocking) return;
     storyMapProgress = getCurrentStoryProgressSnapshot();
     storyMapOpen = true;
+  }
+
+  function handleNext(): void {
+    if (leafDisabled) return;
+    if (canGoNext) {
+      onNext();
+    } else if (
+      !choice &&
+      dialogue.length > 0 &&
+      dialogueIndex === dialogue.length - 1 &&
+      activeFlow?.nodes.some(
+        n => n.kind === 'scene' && n.sceneId === currentSceneId && n.next === null
+      )
+    ) {
+      storyMapProgress = getCurrentStoryProgressSnapshot();
+      completedPosition = positionKey;
+    }
+  }
+
+  async function openMapFromEnding(): Promise<void> {
+    completedPosition = null;
+    await tick();
+    openStoryMap();
   }
 
   async function closeStoryMap(): Promise<void> {
@@ -968,7 +1007,7 @@
     {showBookmarkButton}
     {backUrl}
     bookmarkDisabled={isBlocking}
-    triggerUnavailable={storyMapOpen || (leafOverlayOpen && !isBlocking)}
+    triggerUnavailable={endingOpen || storyMapOpen || (leafOverlayOpen && !isBlocking)}
     {storyMapAvailable}
     storyMapDisabled={isBlocking}
     onOpenStoryMap={openStoryMap}
@@ -1002,6 +1041,7 @@
       data-audio-release-id={audioReleaseIdentity?.releaseId}
       data-audio-manifest-sha256={audioReleaseIdentity?.manifestSha256}
       aria-hidden={leafDisabled ? 'true' : undefined}
+      inert={endingOpen}
     >
       {#if readerMode === 'visual'}
         <VisualNovelReader
@@ -1023,7 +1063,7 @@
           {canGoNext}
           {locale}
           {onChoice}
-          {onNext}
+          onNext={handleNext}
           {onNavigate}
           onVisualStatusChange={handleVisualStatusChange}
           onOverlayChange={handleVisualOverlayChange}
@@ -1049,7 +1089,7 @@
           {locale}
           {onChoice}
           {onBookmark}
-          {onNext}
+          onNext={handleNext}
           {onNavigate}
           {backUrl}
           {showBookmarkButton}
@@ -1083,7 +1123,7 @@
           {canGoNext}
           {locale}
           {onChoice}
-          {onNext}
+          onNext={handleNext}
           {onNavigate}
           {isInitialMount}
           interactionDisabled={leafDisabled}
@@ -1104,6 +1144,49 @@
   </div>
 {/if}
 
+{#if endingOpen}
+  <div class="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-slate-950/90 p-6 backdrop-blur-md">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reader-ending-title"
+      tabindex="-1"
+      use:focusTrap={{ enabled: true, restoreFocus: overlayFocusTarget }}
+      onkeydown={(event) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation();
+          completedPosition = null;
+        }
+      }}
+      class="w-full max-w-lg rounded-3xl border border-white/20 bg-white/10 p-8 text-center text-white shadow-2xl"
+    >
+      <p class="mb-3 text-sm text-white/70">{storyTitle}</p>
+      <h1 id="reader-ending-title" class="font-serif text-3xl font-semibold">{endingTitle}</h1>
+      <p class="mt-4 text-white/80">{t.reader.endOfStory}</p>
+      <div class="mt-8 flex flex-col gap-3">
+        <Button
+          variant="menu"
+          href={`/${locale}/stories`}
+          className="h-auto px-5 py-3 text-base normal-case tracking-normal hover:translate-y-0 hover:scale-100"
+        >{t.reader.backToStories}</Button>
+        {#if storyMapAvailable}
+          <button
+            class="rounded-xl border border-white/25 px-5 py-3"
+            onclick={() => void openMapFromEnding()}
+          >{t.reader.storyMap.title}</button>
+        {/if}
+        <button
+          class="rounded-xl px-5 py-3 text-white/80"
+          onclick={() => {
+            completedPosition = null;
+            onNavigate(currentSceneId, 'start');
+          }}
+        >{t.reader.storyMap.jumpToEnding}</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
 {#if hasActivePayload && activeFlow && activeChoices}
   <StoryMapSheet
     open={storyMapOpen}
@@ -1117,7 +1200,7 @@
     {t}
     onJump={handleStoryMapJump}
     onClose={() => void closeStoryMap()}
-    restoreFocusTarget={storyMapFocusTarget}
+    restoreFocusTarget={overlayFocusTarget}
     visibleSceneIds={storyMapVisibleIds}
   />
 {/if}

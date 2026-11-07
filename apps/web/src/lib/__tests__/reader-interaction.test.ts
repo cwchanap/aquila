@@ -6,6 +6,22 @@ import {
 } from '@/lib/reader-interaction';
 
 describe('getReaderAdvanceDecision', () => {
+    it('allows completion at an ending without advancing past choices or empty content', () => {
+        const ending = {
+            isTyping: false,
+            index: 1,
+            length: 2,
+            canGoNext: false,
+            hasChoice: false,
+        };
+        expect(getReaderAdvanceDecision(ending)).toBe('complete');
+        expect(getReaderAdvanceDecision({ ...ending, hasChoice: true })).toBe(
+            'none'
+        );
+        expect(
+            getReaderAdvanceDecision({ ...ending, index: 0, length: 0 })
+        ).toBe('none');
+    });
     it.each([
         [
             {

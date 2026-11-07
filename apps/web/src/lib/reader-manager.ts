@@ -170,6 +170,19 @@ export class ReaderManager {
 
     private selectInitialIntent(): IntentSelection {
         const params = new URLSearchParams(window.location.search);
+        const storyId = params.get('story');
+        if (
+            storyId &&
+            !params.has('scene') &&
+            !params.has('dialogue') &&
+            params.get('restart') !== '1'
+        ) {
+            const progress = this.storyProgress.get(storyId);
+            if (progress) {
+                params.set('scene', progress.sceneId);
+                params.set('dialogue', String(progress.dialogueIndex + 1));
+            }
+        }
         const raw = localStorage.getItem(this.storageKey);
         let persisted: PersistedSession | null = null;
         if (raw) {
@@ -488,7 +501,16 @@ export class ReaderManager {
     onIndexChange = (i: number): void => {
         readerState.dialogueIndex = clampIndex(i, readerState.dialogue.length);
         this.scheduleReplace();
-        this.schedulePersist();
+        if (
+            this.getSceneNode(readerState.storyId, readerState.currentSceneId)
+                ?.next === null &&
+            readerState.dialogueIndex === readerState.dialogue.length - 1
+        ) {
+            this.cancelPersistTimer();
+            this.persist();
+        } else {
+            this.schedulePersist();
+        }
     };
 
     /** Shared scene-navigation method. Flushes any pending line replace so the

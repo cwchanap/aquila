@@ -1,8 +1,5 @@
 export type ReaderAdvanceDecision =
-    | 'skip'
-    | 'advance-line'
-    | 'advance-scene'
-    | 'none';
+    'skip' | 'advance-line' | 'advance-scene' | 'complete' | 'none';
 
 export type ReaderAdvanceInput = {
     isTyping: boolean;
@@ -18,6 +15,7 @@ export function getReaderAdvanceDecision(
     if (input.isTyping) return 'skip';
     if (input.index < input.length - 1) return 'advance-line';
     if (input.canGoNext && !input.hasChoice) return 'advance-scene';
+    if (input.length > 0 && !input.hasChoice) return 'complete';
     return 'none';
 }
 

@@ -78,7 +78,7 @@ train interior, warm fluorescent lighting, empty seats
 
 - A `bg` block applies starting from the **next** dialogue entry.
 - The background **carries forward** to all following entries — no need to repeat it.
-- Multiple `bg` blocks in one scene create distinct **sections** (indexed `s0`, `s1`, `s2`, …). Each section gets its own background image.
+- Each unnamed `bg` block with a prompt starts a new **section** with its own background image, indexed `s0`, `s1`, `s2`, … in order. Named and `reuse` blocks (below) are the exceptions.
 - **Multi-line prompts** are supported: every line inside the fence becomes part of the prompt.
 - **Show an existing background again** with a block whose body is `reuse <key>`, the key as `image-assets.json` lists it (any scene of the story). It makes no new image:
 

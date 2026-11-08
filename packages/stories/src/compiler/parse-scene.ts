@@ -16,7 +16,13 @@ function parseBgBlock(
     body: string,
     sourcePath: string
 ): PendingBackground {
-    const reuse = BG_REUSE_RE.exec(body.trim());
+    const trimmed = body.trim();
+    const reuse = BG_REUSE_RE.exec(trimmed);
+    if (!reuse && /^reuse(\s|$)/.test(trimmed)) {
+        throw new Error(
+            `[story-compiler] ${sourcePath}: malformed bg reuse block "${trimmed}"; write "reuse <key>" alone on one line`
+        );
+    }
     if (reuse) {
         if (name !== undefined) {
             throw new Error(

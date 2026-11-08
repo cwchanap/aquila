@@ -116,13 +116,17 @@ the same late-night Shinjuku Chuo Line platform as the reference image: steel ca
 
 **李杰**：(內心)那個人⋯⋯總覺得有點違和感。為什麼要把自己裹得那麼嚴實？而且那個姿勢⋯⋯不像是在等車，更像是在⋯⋯觀察什麼。算了，大概是我想多了。這座城市裡，什麼樣的人都有。
 
-```bg platform_arrival
-the same late-night Shinjuku Chuo Line platform as the reference image: steel canopy roof with lattice girders and rows of white fluorescent tubes, square brushed-steel pillars, glossy light-grey tiled floor, yellow tactile strip along the platform edge, tracks running into a black tunnel mouth at the far end, a black departure board with glowing amber bars and no readable characters, silver metal benches against a low back wall with a steel railing, the Tokyo night city with lit office towers beyond; no advertisements. Camera: low, near the platform edge, looking straight down the length of the tracks and the platform toward the black tunnel mouth at the far end, the yellow tactile strip running away from the camera like a guide line. Inside the darkness of the tunnel mouth, two bright white headlights have just broken through, their glare blooming in a soft halo, light spilling forward along the rails and glinting on the steel; no train body is visible, only the lights in the dark. The departure board glows above. A few late-night commuters far down the platform step back behind the yellow line as small dark silhouettes with no visible faces. No train carriages, no train front. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```bg
+reuse _root/act1_s0
 ```
 
 **旁白**：這時，月台的廣播響起，打斷了李杰的思緒。
 
 **廣播聲**：往高尾方向的末班車即將進站，請各位乘客退到黃線後方等候。
+
+```bg platform_arrival
+the same late-night Shinjuku Chuo Line platform as the reference image: steel canopy roof with lattice girders and rows of white fluorescent tubes, square brushed-steel pillars, glossy light-grey tiled floor, yellow tactile strip along the platform edge, tracks running into a black tunnel mouth at the far end, a black departure board with glowing amber bars and no readable characters, silver metal benches against a low back wall with a steel railing, the Tokyo night city with lit office towers beyond; no advertisements. Camera: low, near the platform edge, looking straight down the length of the tracks and the platform toward the black tunnel mouth at the far end, the yellow tactile strip running away from the camera like a guide line. Inside the darkness of the tunnel mouth, two bright white headlights have just broken through, their glare blooming in a soft halo, light spilling forward along the rails and glinting on the steel; no train body is visible, only the lights in the dark. The departure board glows above. A few late-night commuters far down the platform step back behind the yellow line as small dark silhouettes with no visible faces. No train carriages, no train front. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：遠處的隧道口開始透出微弱的光芒。列車的頭燈劃破黑暗，伴隨著逐漸清晰的軌道摩擦聲，一節節銀白色的車廂緩緩駛入月台。冰冷的金屬車身反射著月台的燈光，像一條冰冷的銀蛇。
 

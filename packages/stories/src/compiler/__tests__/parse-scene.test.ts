@@ -203,6 +203,21 @@ describe('parseScene', () => {
         ).toThrow(/cannot also name/);
     });
 
+    it('rejects a malformed reuse block instead of treating it as a prompt', () => {
+        const block = (body: string) =>
+            ['```bg', body, '```', '', '**旁白**：a'].join('\n');
+        expect(() => parseScene(block('reuse'), resolve, 'a.md')).toThrow(
+            /malformed bg reuse/
+        );
+        expect(() =>
+            parseScene(block('reuse _root/act1_s0 extra'), resolve, 'a.md')
+        ).toThrow(/malformed bg reuse/);
+        expect(
+            parseScene(block('reused tracks at dusk'), resolve, 'a.md')
+                .entries[0].backgroundPrompt
+        ).toBe('reused tracks at dusk');
+    });
+
     it('parses [expression] override tag after speaker name', () => {
         const result = parseScene(
             '**李杰** [angry]：妳做什麼！',

@@ -94,6 +94,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **旁白**：沒有人動。剛才還在哭喊的乘客，此刻都恐懼地望著那敞開的車門。
 
+```bg door_argument
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera: a three-quarter wide shot at standing eye level from inside the carriage, looking diagonally toward the RIGHT wall, where one sliding door with yellow edging stands wide open in the right third of the frame. Jishui station: through the open door, a dark, empty, weathered wooden platform at the edge of a black, mirror-still sea, and in the sky two violet crescent moons, one large and one small, each a thin sickle with its disc dark; the station sign is out of view. Through the right windows, only the black sky and the black sea, no moon; the two crescent moons are seen only through the open door, exactly two moons in the picture; no city, no buildings, no lights. Cold violet moonlight mixes with the white carriage light. A tense argument near the open door: Yamamoto (late-40s man, short grey-streaked hair, grey suit, navy striped tie) stands just inside the door with one hand on its frame, half turned toward the others, gesturing outside as he suggests going to look; facing him in the aisle, Ito Makoto (husband, short dark hair, white shirt with rolled sleeves, navy tie) points at him and shouts, furious; beside a silver stanchion pole Nakamura (thin balding man in a crumpled navy suit, loosened tie) clings to the pole with both hands, shaking his head, frightened; a step back on the left of the frame the four university students huddle together, scared and unsure, from left to right: Kenta (messy light-brown hair, black-and-grey track jacket over a graphic tee), Asuka (high brown ponytail, denim jacket) holding Misaki's arm, Misaki (dark chin-length bob, lavender cardigan, cream shoulder bag), Takumi (short black hair, black knit sweater). Nobody has stepped outside. Only the people named here are in view, with empty seats between groups and no other passengers; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **慷慨大叔**：我們⋯⋯下去看看嗎？也許車站裡有人⋯⋯
 
 **煩躁丈夫**：你瘋了嗎？外面是什麼鬼地方！誰知道會遇到什麼！
@@ -107,6 +111,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **多話女大生**：怎麼辦怎麼辦，到底該怎麼辦⋯⋯
 
 **旁白**：車廂內陷入了混亂的爭論。
+
+```bg
+reuse _root/act3_s4
+```
 
 **李杰**：(內心)留下，是待在這失控的鐵盒裡；出去，是踏入一個無法理解的世界⋯⋯我們⋯⋯到底該怎麼辦？
 

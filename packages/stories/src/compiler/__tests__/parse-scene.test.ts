@@ -156,6 +156,53 @@ describe('parseScene', () => {
         expect(result.entries[0].backgroundPrompt).toContain('無人');
     });
 
+    it('reads a name from the bg fence line', () => {
+        const md = [
+            '```bg platform_students',
+            '月台上的四個大學生',
+            '```',
+            '',
+            '**旁白**：a',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+        expect(result.entries[0].backgroundPrompt).toBe('月台上的四個大學生');
+        expect(result.entries[0].backgroundName).toBe('platform_students');
+    });
+
+    it('parses a reuse bg block without a prompt, on narration and dialogue', () => {
+        const md = [
+            '```bg',
+            'reuse _root/act1_s1',
+            '```',
+            '',
+            '**旁白**：a',
+            '',
+            '```bg',
+            'reuse _root/act2_s0',
+            '```',
+            '',
+            '**李杰**：b',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act2.md');
+        expect(result.entries[0].backgroundReuse).toBe('_root/act1_s1');
+        expect(result.entries[0].backgroundPrompt).toBeUndefined();
+        expect(result.entries[1].backgroundReuse).toBe('_root/act2_s0');
+    });
+
+    it('rejects a bad bg name and a named reuse block', () => {
+        const block = (fence: string, body: string) =>
+            ['```bg ' + fence, body, '```', '', '**旁白**：a'].join('\n');
+        expect(() =>
+            parseScene(block('Platform-Students', 'x'), resolve, 'a.md')
+        ).toThrow(/invalid bg name/);
+        expect(() => parseScene(block('s3', 'x'), resolve, 'a.md')).toThrow(
+            /invalid bg name/
+        );
+        expect(() =>
+            parseScene(block('extra', 'reuse _root/act1_s0'), resolve, 'a.md')
+        ).toThrow(/cannot also name/);
+    });
+
     it('parses [expression] override tag after speaker name', () => {
         const result = parseScene(
             '**李杰** [angry]：妳做什麼！',

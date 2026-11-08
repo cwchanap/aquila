@@ -80,6 +80,15 @@ train interior, warm fluorescent lighting, empty seats
 - The background **carries forward** to all following entries — no need to repeat it.
 - Multiple `bg` blocks in one scene create distinct **sections** (indexed `s0`, `s1`, `s2`, …). Each section gets its own background image.
 - **Multi-line prompts** are supported: every line inside the fence becomes part of the prompt.
+- **Show an existing background again** with a block whose body is `reuse <key>`, the key as `image-assets.json` lists it (any scene of the story). It makes no new image:
+
+  ````markdown
+  ```bg
+  reuse _root/act1_s1
+  ```
+  ````
+
+- **Name a new background** on the fence line (` ```bg platform_students `, lowercase words joined by `_`) to key it `<dir>/<scene>_platform_students`. Named blocks don't count toward the `s0`, `s1`, … numbering, so adding art to a scene that already has images never renumbers (and silently swaps) the existing ones. Use a name for any background added after a scene's art exists.
 
 **Audio cue blocks** — ` ```sfx ` and ` ```bgm ` fenced blocks both attach a cue to the **next** dialogue entry, but behave differently at runtime: an SFX **fires once** at that entry (a one-shot), while BGM playback **persists** from that entry until the next `bgm` block or a `stop`. Each block contains a single lowercase-hyphenated cue key from the story's audio plan; `stop` is reserved for BGM:
 

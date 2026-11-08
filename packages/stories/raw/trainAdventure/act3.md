@@ -28,6 +28,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **沉穩男大生**：這不可能⋯⋯這違反所有物理法則⋯⋯
 
+```bg
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. High-angle wide shot, tilted: the camera is up near the ceiling at the door end, looking down the length of the carriage at a slanted Dutch angle. Cold violet moonlight; through the windows on the LEFT a towering dark dense forest, through the windows on the RIGHT the black sea and two violet crescent moons. Panic among the groups, still with empty seats between them: on the right bench, Saito Ren (rimless glasses, navy blazer over a white tee) hunched in his end seat nearest the camera clutching his head, the four students huddled together mid-carriage, Nakamura (thin balding man in a crumpled navy suit) on his feet pounding a window with his fist, and at the far end the Kobayashi family, the mother hugging her crying son; on the left bench, Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) in the end seat nearest the camera with Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) beside her, Yamamoto (late-40s man, grey hair, grey suit, striped tie) standing in the aisle looking around, Ito Nana (wife, grey cardigan) on her knees on the floor with her hands pressed together in prayer while Ito Makoto (husband, white shirt with rolled sleeves, navy tie) jabs at his phone, and in the far corner Ling Mo (black hooded sweatshirt, hood pulled low over his face) sitting perfectly still. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **膽小眼鏡男**：一⋯⋯一定是某種宣傳活動⋯⋯對，是利用大氣反射原理製造的海市蜃樓⋯⋯全息投影⋯⋯
 
 **煩躁丈夫**：你還在胡說八道什麼！你家投影能連空氣的味道都改變嗎！快報警啊！誰的手機有訊號？！
@@ -35,10 +39,6 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **旁白**：他瘋狂地拿出手機，拼命刷新著螢幕。但螢幕上依然顯示著「沒有服務」。周圍的乘客也紛紛拿出手機，絕望地發現同樣的結果。
 
 **旁白**：「失聯」這兩個字像一把重錘，敲碎了所有人最後的僥倖。
-
-```bg
-the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. High-angle wide shot, tilted: the camera is up near the ceiling at the door end, looking down the length of the carriage at a slanted Dutch angle. Cold violet moonlight; through the windows on the LEFT a towering dark dense forest, through the windows on the RIGHT the black sea and two violet crescent moons. Panic among the groups, still with empty seats between them: on the right bench, Saito Ren (rimless glasses, navy blazer over a white tee) hunched in his end seat nearest the camera clutching his head, the four students huddled together mid-carriage, Nakamura (thin balding man in a crumpled navy suit) on his feet pounding a window with his fist, and at the far end the Kobayashi family, the mother hugging her crying son; on the left bench, Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) in the end seat nearest the camera with Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) beside her, Yamamoto (late-40s man, grey hair, grey suit, striped tie) standing in the aisle looking around, Ito Nana (wife, grey cardigan) on her knees on the floor with her hands pressed together in prayer while Ito Makoto (husband, white shirt with rolled sleeves, navy tie) jabs at his phone, and in the far corner Ling Mo (black hooded sweatshirt, hood pulled low over his face) sitting perfectly still. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
-```
 
 **天真弟弟**：媽媽！我害怕！我要回家！我要回家！
 

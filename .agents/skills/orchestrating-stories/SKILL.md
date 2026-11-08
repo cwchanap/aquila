@@ -465,7 +465,7 @@ For backgrounds that put the cast in the scene (one set, many shots), plan with 
 
 - Portrait paths use the character's **ID** (snake_case from `characters.md`, e.g. `gu_yan`), **not** the display name. The expression key defaults to `base` when no `[override]` is given.
 - Background paths embed the **raw directory name**: root-level scenes use `_root`, otherwise the source directory (e.g. `chapter_1`, `branch_1a`).
-- `<section>` is a **zero-based** index that increments each time a new ` ```bg ` block appears in a scene (`s0` for the first, `s1` for the second, ...).
+- `<section>` is a **zero-based** index that increments each time a new unnamed ` ```bg ` block appears in a scene (`s0` for the first, `s1` for the second, ...). A named block (` ```bg <name> `) is keyed `<sceneId>_<name>` instead, and a `reuse <key>` block shows an existing background without adding one (see `writing-story-acts`).
 - Generated `Portrait` / `Background` enum keys are derived mechanically (each path segment capitalized, joined with `_`). See Step 5 for emit conditions.
 
 ### Key files to touch when adding a story

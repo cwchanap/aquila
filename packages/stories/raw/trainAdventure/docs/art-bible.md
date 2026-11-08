@@ -38,10 +38,12 @@ Vary both the camera position and the distance from scene to scene; never run th
 | act2_s5 | Emi's spiral drawing | over-the-shoulder insert | Emi's sketchbook and hand |
 | act2_s6 | Blue-black glow ahead | B, extreme wide | everyone, in their groups |
 | act3_s0 | Sea and two moons | from behind, medium-wide | students at the windows (Nakamura, family small far off) |
-| act3_s1 | Panic | high angle, tilted wide | everyone, in their groups |
+| act3_s1 | Saito's hologram, no signal, panic | high angle, tilted wide | everyone, in their groups |
 | act3_s2 | Emi terrified | close-up | Emi (Li Jie blurred in front) |
 | act3_s3 | Jishui station | over Yamamoto's shoulder | Yamamoto, the station through the window |
 | act3_s4 | The door opens, nobody moves | straight on at the open door | Saito, Yamamoto |
+
+Shown again with a `reuse` bg block: act1_s1 in act 2 while the students plan tomorrow, then act2_s0 for Li Jie's next thought. Any background added to acts 1-3 from now on gets a name on its fence (` ```bg platform_students `) so the 14 keys above never renumber.
 
 There is no exterior shot: an outside view of the train never matched the interior, so the station is seen through the windows and the open door.
 

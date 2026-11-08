@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { resolveSceneAssets } from '../resolve-assets';
+import {
+    assertBackgroundReusesResolve,
+    buildAssetManifest,
+    resolveSceneAssets,
+} from '../resolve-assets';
 import type { DialogueEntryIR } from '../ir';
 
 type PortraitPromptMap = Partial<Record<string, Record<string, string>>>;
@@ -64,6 +68,111 @@ describe('resolveSceneAssets', () => {
         resolveSceneAssets('demo', 'act1', 'act1.md', entries, portraitMap);
         expect(entries[0].background).toBe('_root/act1_s0');
         expect(entries[1].background).toBe('_root/act1_s1');
+    });
+
+    it('keys a named background by name without renumbering the others', () => {
+        const entries: DialogueEntryIR[] = [
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'a',
+                backgroundPrompt: 'scene1',
+            },
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'b',
+                backgroundPrompt: 'students',
+                backgroundName: 'students',
+            },
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'c',
+                backgroundPrompt: 'scene2',
+            },
+        ];
+        const { backgrounds } = resolveSceneAssets(
+            'demo',
+            'act1',
+            'act1.md',
+            entries,
+            portraitMap
+        );
+        expect(entries.map(e => e.background)).toEqual([
+            '_root/act1_s0',
+            '_root/act1_students',
+            '_root/act1_s1',
+        ]);
+        expect(backgrounds.map(b => b.path)).toEqual([
+            'demo/backgrounds/_root/act1_s0.png',
+            'demo/backgrounds/_root/act1_students.png',
+            'demo/backgrounds/_root/act1_s1.png',
+        ]);
+    });
+
+    it('shows a reused background without adding it to the manifest', () => {
+        const entries: DialogueEntryIR[] = [
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'a',
+                backgroundPrompt: 'scene1',
+            },
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'b',
+                backgroundReuse: '_root/act1_s0',
+            },
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'c',
+            },
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'd',
+                backgroundPrompt: 'scene2',
+            },
+        ];
+        const { backgrounds } = resolveSceneAssets(
+            'demo',
+            'act2',
+            'act2.md',
+            entries,
+            portraitMap
+        );
+        expect(entries.map(e => e.background)).toEqual([
+            '_root/act2_s0',
+            '_root/act1_s0',
+            '_root/act1_s0',
+            '_root/act2_s1',
+        ]);
+        expect(backgrounds.map(b => b.key)).toEqual([
+            '_root/act2_s0',
+            '_root/act2_s1',
+        ]);
+    });
+
+    it('rejects a name used twice in one scene', () => {
+        const named = (dialogue: string): DialogueEntryIR => ({
+            characterId: 'narrator',
+            displayName: '旁白',
+            dialogue,
+            backgroundPrompt: dialogue,
+            backgroundName: 'students',
+        });
+        expect(() =>
+            resolveSceneAssets(
+                'demo',
+                'act1',
+                'act1.md',
+                [named('a'), named('b')],
+                portraitMap
+            )
+        ).toThrow(/defined twice/);
     });
 
     it('uses directory name from sourcePath for nested scenes', () => {
@@ -164,5 +273,57 @@ describe('resolveSceneAssets', () => {
         expect(backgrounds[0].path).toBe('demo/backgrounds/_root/act1_s0.png');
         expect(portraits[0].path).toBe('demo/characters/li_jie/base.png');
         expect(portraits[0].prompt).toBe('17yo boy, school uniform');
+    });
+});
+
+describe('assertBackgroundReusesResolve', () => {
+    const scene = (
+        sourcePath: string,
+        entries: DialogueEntryIR[]
+    ): { sourcePath: string; entries: DialogueEntryIR[] } => ({
+        sourcePath,
+        entries,
+    });
+    const define: DialogueEntryIR = {
+        characterId: 'narrator',
+        displayName: '旁白',
+        dialogue: 'a',
+        backgroundPrompt: 'scene1',
+    };
+
+    it('accepts a reuse of a background another scene defines', () => {
+        const act1 = scene('act1.md', [{ ...define }]);
+        const act2 = scene('act2.md', [
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'b',
+                backgroundReuse: '_root/act1_s0',
+            },
+        ]);
+        const manifest = buildAssetManifest('demo', [
+            resolveSceneAssets('demo', 'act1', 'act1.md', act1.entries, {}),
+            resolveSceneAssets('demo', 'act2', 'act2.md', act2.entries, {}),
+        ]);
+        expect(() =>
+            assertBackgroundReusesResolve([act1, act2], manifest)
+        ).not.toThrow();
+    });
+
+    it('rejects a reuse of a key no scene defines', () => {
+        const act2 = scene('act2.md', [
+            {
+                characterId: 'narrator',
+                displayName: '旁白',
+                dialogue: 'b',
+                backgroundReuse: '_root/act9_s0',
+            },
+        ]);
+        const manifest = buildAssetManifest('demo', [
+            resolveSceneAssets('demo', 'act2', 'act2.md', act2.entries, {}),
+        ]);
+        expect(() => assertBackgroundReusesResolve([act2], manifest)).toThrow(
+            /act2\.md: bg block reuses "_root\/act9_s0"/
+        );
     });
 });

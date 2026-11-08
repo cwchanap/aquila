@@ -2,7 +2,50 @@ import type { DialogueEntryIR } from './ir';
 import type { ResolvedCharacter } from './config';
 
 const HEADER_RE = /^\*\*(.+?)\*\*(?:\s*\[([^\]]+)\])?[：:]\s*([\s\S]*)$/;
-const BG_BLOCK_RE = /^```bg\s*\n([\s\S]*?)\n```$/;
+// ```bg [name]\n<prompt or "reuse <key>">\n```
+const BG_BLOCK_RE = /^```bg(?:[ \t]+(\S+))?[ \t]*\n([\s\S]*?)\n```$/;
+const BG_REUSE_RE = /^reuse[ \t]+(\S+)$/;
+// Lowercase words joined by `_` (they become part of a TS enum member), and
+// never `s<N>`, which is what unnamed blocks are numbered.
+const BG_NAME_RE = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
+
+type PendingBackground = { prompt: string; name?: string } | { reuse: string };
+
+function parseBgBlock(
+    name: string | undefined,
+    body: string,
+    sourcePath: string
+): PendingBackground {
+    const reuse = BG_REUSE_RE.exec(body.trim());
+    if (reuse) {
+        if (name !== undefined) {
+            throw new Error(
+                `[story-compiler] ${sourcePath}: a bg reuse block cannot also name a background ("${name}")`
+            );
+        }
+        return { reuse: reuse[1] };
+    }
+    if (name === undefined) return { prompt: body.trim() };
+    if (!BG_NAME_RE.test(name) || /^s\d+$/.test(name)) {
+        throw new Error(
+            `[story-compiler] ${sourcePath}: invalid bg name "${name}"; use lowercase words joined by "_", not s<N>`
+        );
+    }
+    return { prompt: body.trim(), name };
+}
+
+function applyBackground(
+    entry: DialogueEntryIR,
+    bg: PendingBackground | undefined
+): void {
+    if (bg === undefined) return;
+    if ('reuse' in bg) {
+        entry.backgroundReuse = bg.reuse;
+        return;
+    }
+    entry.backgroundPrompt = bg.prompt;
+    if (bg.name !== undefined) entry.backgroundName = bg.name;
+}
 const SFX_BLOCK_RE =
     /^```sfx[ \t]*\n[ \t]*([a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\n```$/;
 const BGM_BLOCK_RE =
@@ -27,7 +70,7 @@ export function parseScene(
 
     let title: string | undefined;
     const entries: DialogueEntryIR[] = [];
-    let pendingBg: string | undefined;
+    let pendingBg: PendingBackground | undefined;
     let pendingSfx: string | undefined;
     let pendingBgm: string | null | undefined;
 
@@ -40,7 +83,7 @@ export function parseScene(
         if (/^-{3,}$/.test(block)) continue;
         const bgMatch = BG_BLOCK_RE.exec(block);
         if (bgMatch) {
-            pendingBg = bgMatch[1].trim();
+            pendingBg = parseBgBlock(bgMatch[1], bgMatch[2], sourcePath);
             continue;
         }
         const sfxMatch = SFX_BLOCK_RE.exec(block);
@@ -86,16 +129,15 @@ export function parseScene(
             // it is a malformed scene and we fail loudly.
             if (defaultSpeaker) {
                 const wrapped = /^\*\*([\s\S]+)\*\*$/.exec(oneLine);
-                entries.push({
+                const narration: DialogueEntryIR = {
                     characterId: defaultSpeaker.id,
                     displayName: defaultSpeaker.displayName,
                     dialogue: (wrapped ? wrapped[1] : oneLine).trim(),
-                    ...(pendingBg !== undefined
-                        ? { backgroundPrompt: pendingBg }
-                        : {}),
                     ...(pendingSfx !== undefined ? { sfx: pendingSfx } : {}),
                     ...(pendingBgm !== undefined ? { bgm: pendingBgm } : {}),
-                });
+                };
+                applyBackground(narration, pendingBg);
+                entries.push(narration);
                 pendingBg = undefined;
                 pendingSfx = undefined;
                 pendingBgm = undefined;
@@ -119,10 +161,8 @@ export function parseScene(
             displayName: resolved.displayName,
             dialogue,
         };
-        if (pendingBg !== undefined) {
-            entry.backgroundPrompt = pendingBg;
-            pendingBg = undefined;
-        }
+        applyBackground(entry, pendingBg);
+        pendingBg = undefined;
         if (pendingSfx !== undefined) {
             entry.sfx = pendingSfx;
             pendingSfx = undefined;

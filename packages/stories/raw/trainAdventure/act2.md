@@ -8,6 +8,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **旁白**：車廂內，除了那四個大學生偶爾的笑鬧聲，大部分乘客都在閉目養神或滑著手機。有人戴著耳機，頭輕輕搖晃；有人靠著窗戶，半夢半醒。一切都是如此平凡，如此令人安心。
 
+```bg
+reuse _root/act1_s1
+```
+
 **健談男大生**：欸欸，你們明天要不要一起去打籃球啊？我約了幾個學長⋯⋯
 
 **活潑女大生**：明天？我想睡到中午耶⋯⋯今天玩得好累喔⋯⋯
@@ -15,6 +19,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **多話女大生**：對啊對啊，我也超累的，而且明天我還要整理筆記，下週要考試了。教授說這次考試超難的，範圍超大，我都還沒開始準備⋯⋯
 
 **沉穩男大生**：明天再說吧。先回家再說。
+
+```bg
+reuse _root/act2_s0
+```
 
 **李杰**：(內心)總算能安靜一下了⋯⋯這週末也真夠累的。派對、應酬、假笑⋯⋯有時候真想就這樣一個人待著，什麼都不用想。
 

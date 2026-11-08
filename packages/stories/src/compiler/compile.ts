@@ -11,7 +11,11 @@ import { emitStory } from './emit';
 import { parseCharacters } from './parse-characters';
 import type { ParsedCharacterDirectory } from './parse-characters';
 import { buildResolveCharacter } from './resolve-character';
-import { resolveSceneAssets, buildAssetManifest } from './resolve-assets';
+import {
+    assertBackgroundReusesResolve,
+    buildAssetManifest,
+    resolveSceneAssets,
+} from './resolve-assets';
 import type { SceneAssets } from './resolve-assets';
 import { loadAudioPlan } from '../audio-plan-loader';
 import { collectAudioUsage, validateAudioUsage } from './audio-usage';
@@ -96,6 +100,7 @@ export function compileStory(opts: CompileOptions): StoryIR {
         opts.config.storyId,
         allSceneAssets
     );
+    assertBackgroundReusesResolve(scenes, assetManifest);
 
     const story: StoryIR = {
         storyId: opts.config.storyId,

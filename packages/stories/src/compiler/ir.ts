@@ -13,7 +13,14 @@ export interface DialogueEntryIR {
     dialogue: string;
     sfx?: string;
     bgm?: string | null;
+    /** Prompt of a ```bg block that starts a new background here. */
     backgroundPrompt?: string;
+    /** Name given on that block's fence (```bg <name>); keys the background
+     *  `<dir>/<scene>_<name>` instead of the next `_s<N>`. */
+    backgroundName?: string;
+    /** Key of an existing background shown again from here (a ```bg block
+     *  whose body is `reuse <key>`). */
+    backgroundReuse?: string;
     expressionKey?: string;
     background?: string;
     portrait?: string;

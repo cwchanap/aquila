@@ -38,7 +38,7 @@ These are Hapadona's calls for any story whose backgrounds include the cast (`tr
 
 It needs five parts:
 
-1. **Cast**: the exact count and names. "Exactly N passengers, no extras anywhere" stops the model inventing commuters.
+1. **Cast**: the exact count and names. "Exactly N passengers, no extras inside the train" stops the model inventing passengers. If a location outside the set has bystanders the text describes (the platform's commuters), say how many and how they look (small, far off, faceless).
 2. **The set**: one paragraph that every prompt reuses word for word (materials, colours, fixtures, doors, no ads or text).
 3. **Seating plan**: who sits where, group by group (see Seating below).
 4. **Camera angles**: a small fixed set, each with its own empty reference image, plus the seat order as it appears on screen from each angle (a view from the far end flips left and right).
@@ -67,7 +67,7 @@ A near-empty last train is the model that works. People in a group sit side by s
 
 ### 5. Write each prompt
 
-Same skeleton every time, in this order: the set sentence from the art bible, the camera and distance, the window view for the act, the people with a one-line look each (hair, outfit, props) in order of position, what each is doing, the empty-seat statement, and the closing "only the people named here are in view, no other passengers, no text, no logo, 16:9". The look lines must match the portraits.
+Same skeleton every time, in this order: the set sentence from the art bible, the camera and distance, the window view for the act, the people with a one-line look each (hair, outfit, props) in order of position, what each is doing, the empty-seat statement, and the closing "only the people named here are in view, no other passengers, no text, no logo, 16:9" (outside the set, name any bystanders the art bible allows). The look lines must match the portraits.
 
 ### 6. Generate
 
@@ -86,7 +86,7 @@ Open each image, then crop and enlarge the parts that matter. A contact sheet of
 Per shot:
 
 - the **framing** matches the prompt (angle and distance, not just the people);
-- **exactly the named people**, no extras, including reflections in black windows;
+- **exactly the named people**, no extras, including reflections in black windows (outside the set, only the bystanders the art bible allows);
 - every face and outfit matches its portrait, and similar characters stay distinct (two dark-haired young men; make sure the one with glasses has them);
 - the **order** along each bench is as written, and each group is separated by clear empty seats;
 - the set matches the reference (fabric, poles, straps, ceiling, doors, end wall);

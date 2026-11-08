@@ -236,6 +236,10 @@ describe('parseScene', () => {
         expect(() => parseScene(md, resolve, 'a.md')).toThrow(
             /pending bg was not consumed/
         );
+        const trailing = ['**旁白**：x', '', '```bg', 'a', '```'].join('\n');
+        expect(() => parseScene(trailing, resolve, 'a.md')).toThrow(
+            /unconsumed bg block at end of scene/
+        );
     });
 
     it('rejects a malformed reuse block instead of treating it as a prompt', () => {

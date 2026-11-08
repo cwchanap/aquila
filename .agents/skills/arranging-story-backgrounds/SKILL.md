@@ -98,7 +98,7 @@ Across the set, on the contact sheet:
 
 - follow each character through every scene they appear in and check their markers (glasses, hood, hairstyle, props); a drift often shows only next to another scene;
 - check each group's order against the approved wide shot, and check mirrored layouts (which side the partition or door is on);
-- if the frame shows a group's seats, the group should be in them, small and out of focus is enough.
+- if the frame shows a group's seats, the group should be in them, small and out of focus is enough (unless the shot list makes it a cast-free insert).
 
 ### 8. Fix, don't re-roll
 

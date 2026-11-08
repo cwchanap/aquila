@@ -89,10 +89,15 @@ export function parseScene(
         if (/^-{3,}$/.test(block)) continue;
         const bgMatch = BG_BLOCK_RE.exec(block);
         if (bgMatch) {
+            if (pendingBg !== undefined) {
+                throw new Error(
+                    `[story-compiler] ${sourcePath}: pending bg was not consumed before another bg block`
+                );
+            }
             pendingBg = parseBgBlock(bgMatch[1], bgMatch[2], sourcePath);
             continue;
         }
-        if (/^```bg(?![a-z])/.test(block)) {
+        if (block.startsWith('```bg') && !block.startsWith('```bgm')) {
             throw new Error(
                 `[story-compiler] ${sourcePath}: invalid bg block; expected \`\`\`bg or \`\`\`bg <name> followed by a prompt or reuse line`
             );

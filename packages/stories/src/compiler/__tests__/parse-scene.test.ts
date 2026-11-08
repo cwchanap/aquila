@@ -215,6 +215,27 @@ describe('parseScene', () => {
         expect(() => parseScene(md, resolve, 'a.md', narrator)).toThrow(
             /invalid bg block/
         );
+        const typo = ['```bgvisual', 'x', '```', '', '**旁白**：a'].join('\n');
+        expect(() => parseScene(typo, resolve, 'a.md', narrator)).toThrow(
+            /invalid bg block/
+        );
+    });
+
+    it('rejects a second bg block before the first is consumed', () => {
+        const md = [
+            '```bg',
+            'a',
+            '```',
+            '',
+            '```bg',
+            'b',
+            '```',
+            '',
+            '**旁白**：x',
+        ].join('\n');
+        expect(() => parseScene(md, resolve, 'a.md')).toThrow(
+            /pending bg was not consumed/
+        );
     });
 
     it('rejects a malformed reuse block instead of treating it as a prompt', () => {

@@ -92,6 +92,11 @@ export function parseScene(
             pendingBg = parseBgBlock(bgMatch[1], bgMatch[2], sourcePath);
             continue;
         }
+        if (/^```bg(?![a-z])/.test(block)) {
+            throw new Error(
+                `[story-compiler] ${sourcePath}: invalid bg block; expected \`\`\`bg or \`\`\`bg <name> followed by a prompt or reuse line`
+            );
+        }
         const sfxMatch = SFX_BLOCK_RE.exec(block);
         if (sfxMatch) {
             if (pendingSfx !== undefined) {

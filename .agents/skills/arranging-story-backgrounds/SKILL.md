@@ -39,7 +39,7 @@ These are Hapadona's calls for any story whose backgrounds include the cast (`tr
 It needs five parts:
 
 1. **Cast**: the exact count and names. "Exactly N passengers, no extras inside the train" stops the model inventing passengers. If a location outside the set has bystanders the text describes (the platform's commuters), say how many and how they look (small, far off, faceless).
-2. **The set**: one paragraph that every prompt reuses word for word (materials, colours, fixtures, doors, no ads or text).
+2. **The set**: one paragraph per location that every prompt in that location reuses word for word (materials, colours, fixtures, doors, no ads or text).
 3. **Seating plan**: who sits where, group by group (see Seating below).
 4. **Camera angles**: a small fixed set, each with its own empty reference image, plus the seat order as it appears on screen from each angle (a view from the far end flips left and right).
 5. **Window views per act**: what shows outside, per act, so the same window never changes meaning.

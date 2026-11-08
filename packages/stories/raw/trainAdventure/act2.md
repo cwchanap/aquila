@@ -84,6 +84,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **旁白**：他的語氣雖然自信，但額頭上已經滲出了細密的汗珠。幾個大學生面面相覷，表情依然充滿疑惑，顯然並沒有被他的說法說服。
 
+```bg yamamoto
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera: a three-quarter medium shot from the aisle at seated eye level, angled along the LEFT bench, closer than the reference. Inside the tunnel: every window is pure black and works as a mirror, faintly reflecting the lit carriage; no city, no buildings, no lights outside. Yamamoto (late-40s man, short grey-streaked hair, grey suit, white shirt, navy striped tie) sits alone on the navy bench with empty seats on both sides of him, leaning forward with his forearms on his knees and his hands loosely clasped, looking up and slightly to the right at someone out of frame, calm, firm and serious as he speaks. Further along the same bench, beyond several empty seats, small and out of focus: Ito Makoto (husband, white shirt with rolled sleeves, navy tie) and Ito Nana (wife, grey cardigan) side by side, looking toward Yamamoto. Only the people named here are in view, with empty seats between groups and no other passengers; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：這時，一個低沉而沉穩的聲音響起，打破了膽小眼鏡男試圖營造的「專業氛圍」。
 
 **慷慨大叔**：小兄弟，話不是這麼說。我坐這條中央線三十年了，從我年輕的時候就開始坐。這條隧道我閉著眼都能數出來需要多久——五分鐘，最多六分鐘。
@@ -117,6 +121,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **溫柔母親**：啊⋯⋯手機也⋯⋯
 
 **旁白**：她的聲音戛然而止，臉色變得蒼白。孩子察覺到母親的不安，哭聲更大了。那位母親只能把孩子的臉按在自己懷裡，不讓他看到周圍人臉上的恐懼。
+
+```bg intercom
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor, sliding doors with yellow edging, no advertisements. Camera: a low-angle medium-wide shot from seat height on the LEFT bench, looking across the aisle at the RIGHT wall where a sliding door with yellow edging stands closed; beside the door, a small grey emergency intercom panel with a round red call button, no readable text. Inside the tunnel: every window is pure black and works as a mirror; no city, no buildings, no lights outside. Nakamura (thin balding man in his 50s with wispy thin hair, crumpled navy suit, loosened navy striped tie) is on his feet beside the door, reaching toward the red button, his face twisted with panic as he shouts; Yamamoto (late-40s man, short grey-streaked hair, grey suit, white shirt, navy striped tie) has stepped across the aisle and grips Nakamura's wrist firmly with one hand, his other hand raised palm out, telling him to calm down. Further along the right bench, beyond several empty seats, small and out of focus: the Kobayashi family side by side (the father in a light jacket and polo, the twelve-year-old girl in pigtails, the mother in a cream cardigan holding her ten-year-old son's face against her chest). Only the people named here are in view, with empty seats between groups and no other passengers; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：焦慮像會傳染的病毒，迅速在車廂內蔓延。人們開始交頭接耳，竊竊私語變成了公開的抱怨和質疑。有人開始頻繁地看手錶，有人不停刷新手機，有人站起來走動。
 

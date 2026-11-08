@@ -203,6 +203,11 @@ export function parseScene(
             `[story-compiler] ${sourcePath}: unconsumed bgm at end of scene`
         );
     }
+    if (pendingBg !== undefined) {
+        throw new Error(
+            `[story-compiler] ${sourcePath}: unconsumed bg block at end of scene`
+        );
+    }
 
     return { title, entries };
 }

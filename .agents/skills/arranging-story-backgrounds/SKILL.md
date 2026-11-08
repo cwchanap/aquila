@@ -16,9 +16,9 @@ It was worked out on the train carriage in `train_adventure` (16 passengers, 14 
 These are Hapadona's calls for any story whose backgrounds include the cast (`train_adventure` today). They come first; the workflow below is how to meet them.
 
 1. **The cast is in the picture.** Character beats show the characters in them, not an empty set. Atmosphere, establishing or detail inserts may leave the cast out when the shot list calls for it (the headlights in the tunnel). Only the story's named cast appears inside the set: no extra passengers or ghost figures in reflections. Outside it, keep only the bystanders the text describes and the art bible allows (the platform's few commuters: small, far off, out of focus, faceless, never in front of the cast).
-2. **Same place, same people, same seats.** Each location's design (for the carriage: seats, poles, doors, end walls) stays identical in every shot of that location, with its own reference images when the story moves somewhere new, and each character keeps one seat and one look. A pair that belongs together sits together in every shot (Emi and Li Jie).
+2. **Same place, same people, same seats.** Each location's design (for the carriage: seats, poles, doors, end walls) stays identical in every shot of that location, with its own reference images when the story moves somewhere new, and each character keeps one seat and one look, changing only when the text changes it (a jacket taken off) and from then on. A pair that belongs together sits together in every shot (Emi and Li Jie).
 3. **Change the camera, not just the people.** Never use the same angle and distance for every shot, and never twice in a row. Mix wide, medium, close-up and inserts, and different angles.
-4. **Switch often, and follow the dialogue.** Change the image, to a new shot or by reusing an earlier one, when someone who speaks or acts is not in frame, or when the beat or location changes. A shot that already shows everyone in an exchange can carry it (the four students on the platform). Don't hold one image while the text moves on (49 lines on one platform shot was too long). Most holds run 3 to 13 lines.
+4. **Switch often, and follow the dialogue.** Change the image, to a new shot or by reusing an earlier one, when someone who speaks or acts is not in frame (a voice the story keeps unseen, like an announcement, stays off screen), or when the beat or location changes. A shot that already shows everyone in an exchange can carry it (the four students on the platform). Don't hold one image while the text moves on (49 lines on one platform shot was too long). Most holds run 3 to 13 lines.
 5. **Show only what the text has shown, when it shows it.** Cue each image on the line where its event happens. The headlights appear when the glow is first described, not during the announcement before it. Don't draw an action the text doesn't describe: the intercom argument is pointing and a raised hand, not a wrist grab.
 6. **Show only who the beat needs.** Use the full cast only for establishing and group shots. Groups sit apart, with empty seats between them, so the train feels near-empty and lonely.
 7. **No exterior shots of the vehicle.** Show the outside world through windows and open doors, and make it match the act (black windows in the tunnel, the platform right beside the train at a station).
@@ -46,7 +46,7 @@ It needs five parts:
 
 ### 2. Make the empty references and get them approved
 
-Generate the set with **no people** from each fixed angle, first one from the master, then the others with the master as a reference so the design is identical. Check every one against the master (seat fabric, poles, straps, ceiling, floor, doors, end walls) before any scene is generated. Get the person who owns the look to approve them. A wrong reference poisons every scene.
+For each location, generate the set with **no people** from each fixed angle, first one from that location's master, then the others with the master as a reference so the design is identical. Check every one against the master (seat fabric, poles, straps, ceiling, floor, doors, end walls) before any scene is generated. Get the person who owns the look to approve them. A wrong reference poisons every scene.
 
 ### 3. Write the shot list
 
@@ -88,7 +88,7 @@ Per shot:
 - the **framing** matches the prompt (angle and distance, not just the people);
 - **exactly the named people**, no extras, including reflections in black windows (outside the set, only the bystanders the art bible allows);
 - every face and outfit matches its portrait, and similar characters stay distinct (two dark-haired young men; make sure the one with glasses has them);
-- the **order** along each bench is as written, and each group is separated by clear empty seats;
+- the **order** along each bench is as written (for the people the shot list puts in frame), and each group is separated by clear empty seats;
 - the set matches the reference (fabric, poles, straps, ceiling, doors, end wall);
 - the **window view** is right for the act and no window shows the wrong world;
 - moons or other sky details match the rest of the act;

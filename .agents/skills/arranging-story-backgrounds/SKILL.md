@@ -11,12 +11,26 @@ Some stories need backgrounds **with the cast in them** (a fixed set, a closed c
 
 It was worked out on the train carriage in `train_adventure` (16 passengers, 14 backgrounds, acts 1-3). The same method fits any one-location ensemble.
 
+## Direction
+
+These are Hapadona's calls for any story whose backgrounds include the cast (`train_adventure` today). They come first; the workflow below is how to meet them.
+
+1. **The cast is in the picture.** Each background shows the characters in the beat, not an empty set. Only the story's named cast ever appears: no extra passengers, crowds or ghost figures in reflections.
+2. **Same place, same people, same seats.** The set's design (seats, poles, doors, end walls) stays identical in every shot, and each character keeps one seat and one look. A pair that belongs together sits together in every shot (Emi and Li Jie).
+3. **Change the camera, not just the people.** Never use the same angle and distance for every shot, and never twice in a row. Mix wide, medium, close-up and inserts, and different angles.
+4. **Switch often, and follow the dialogue.** When someone new speaks or acts, or the beat moves, change the image, to a new shot or by reusing an earlier one. Don't hold one image while the text moves on (49 lines on one platform shot was too long). Most holds run 3 to 13 lines.
+5. **Show only what the text has shown, when it shows it.** Cue each image on the line where its event happens. The headlights appear when the glow is first described, not during the announcement before it. Don't draw an action the text doesn't describe: the intercom argument is pointing and a raised hand, not a wrist grab.
+6. **Show only who the beat needs.** Use the full cast only for establishing and group shots. Groups sit apart, with empty seats between them, so the train feels near-empty and lonely.
+7. **No exterior shots of the vehicle.** Show the outside world through windows and open doors, and make it match the act (black windows in the tunnel, the platform right beside the train at a station).
+8. **Portraits are transparent cut-outs**, and their faces and outfits are what every background must match.
+9. **Review before showing.** Check every image zoomed in and the whole set side by side for consistency before asking for approval, and fix drift rather than re-rolling a whole image.
+
 ## Where things live
 
 - **Prompts**: ` ```bg ` blocks in the act markdown and `### Portrait Prompts` in `docs/characters.md`. Put each `bg` block right before the first line of the beat it shows; keys are `<dir>/<sceneId>_sK`, numbered by block order within the scene file (`_root/act1_s0` for a root act, `branch_1b/b1b_act4_s0` for a scene in a subdirectory), so inserting an unnamed block renumbers the ones after it. Once a scene's images exist, give every added block a name on the fence (` ```bg platform_students ` → `_root/act1_platform_students`) so the existing keys stay put, and show an existing image again with a block whose body is `reuse <key>` instead of generating a near-copy. `bun compile:stories` extracts them into `packages/stories/src/generated/<rawDir>/image-assets.json` (`portraits[]` and `backgrounds[]`, each with a `key`, a `path` and a `prompt`). Edit the raw source and recompile. Don't edit only the generated JSON: the next compile overwrites it. See the `orchestrating-stories` skill.
 - **Art bible**: `packages/stories/raw/<rawDir>/docs/art-bible.md`. One file that is the single source of truth for the set, the seating plan, the camera angles, the window views and the shot list. Every prompt must agree with it.
 - **Files**: save each image at the `path` its manifest entry gives, under `packages/assets/media/` (for example `<storyId>/backgrounds/_root/act1_s0.png` or `<storyId>/backgrounds/branch_1b/b1b_act4_s0.png`). Portraits are `.../characters/<id>/base.png` (transparent), and the empty set reference images go in `.../backgrounds/_reference/`.
-- **Delivery**: media under `packages/assets/media/` is gitignored, so commit it with `git add -f`. Publishing to R2 and wiring it into the reader is separate work (see Generated Asset Delivery in `CLAUDE.md`). The reader still draws the speaker's portrait (`entry.portrait`) over every background, so a story whose backgrounds include the cast shows speakers twice until the reader skips portraits for it; make that change in the same task that turns on the story's visuals.
+- **Delivery**: media under `packages/assets/media/` is gitignored, so commit it with `git add -f`. Publishing to R2 and wiring it into the reader is separate work (see Generated Asset Delivery in `CLAUDE.md`). Add the story's id to `CAST_INCLUSIVE_BACKGROUND_STORY_IDS` in `packages/stories/src/story-metadata.ts` so the reader doesn't draw the speaker's portrait over a background that already shows them.
 
 ## Workflow
 

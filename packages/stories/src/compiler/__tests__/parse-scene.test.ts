@@ -203,6 +203,20 @@ describe('parseScene', () => {
         ).toThrow(/cannot also name/);
     });
 
+    it('rejects a malformed bg fence instead of emitting it as narration', () => {
+        const narrator = { id: 'narrator', displayName: '旁白' };
+        const md = [
+            '```bg platform students',
+            'x',
+            '```',
+            '',
+            '**旁白**：a',
+        ].join('\n');
+        expect(() => parseScene(md, resolve, 'a.md', narrator)).toThrow(
+            /invalid bg block/
+        );
+    });
+
     it('rejects a malformed reuse block instead of treating it as a prompt', () => {
         const block = (body: string) =>
             ['```bg', body, '```', '', '**旁白**：a'].join('\n');

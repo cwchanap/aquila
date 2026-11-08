@@ -44,7 +44,7 @@ Vary both the camera position and the distance from scene to scene; never run th
 | act1_platform_saito | Saito cuts in | medium-wide from the track side | Saito, the four students |
 | act1_platform_emi | Li Jie notices Emi | medium close-up, low side angle | Emi |
 | act1_platform_lingmo | The man in the pillar's shadow | long-lens medium, low angle | Ling Mo (commuters blurred) |
-| act1_platform_arrival | The last train arrives | low, down the tracks | headlights in the tunnel mouth, no train body |
+| act1_platform_arrival | The last train arrives, from the first glimmer in the tunnel through boarding (held over the doors opening, since the train body is never shown) | low, down the tracks | headlights in the tunnel mouth, no train body |
 | act1_s1 | Boarding, doors close | A, wide, eye level | everyone, spread out in their groups |
 | act2_s0 | City lights, quiet ride | three-quarter diagonal, medium | Emi, Li Jie (Yamamoto far off) |
 | act2_s1 | Into the tunnel | close-up, side view against the black window | Li Jie (Emi at the edge) |
@@ -52,7 +52,7 @@ Vary both the camera position and the distance from scene to scene; never run th
 | act2_yamamoto | Yamamoto: thirty years on this line | three-quarter medium along the left bench | Yamamoto (Ito couple blurred, further along) |
 | act2_s3 | Ito couple argue | C, medium, straight on | Ito couple, Ling Mo in the corner |
 | act2_s4 | Boy cries, Nakamura agitated | three-quarter close-up | the Kobayashi family (Nakamura blurred, further along) |
-| act2_intercom | Nakamura goes for the emergency button | low angle from seat height, medium-wide across the aisle | Nakamura, Yamamoto (Kobayashi family blurred) |
+| act2_intercom | Nakamura demands someone press the emergency button | low angle from seat height, medium-wide across the aisle; a shouting match, nobody touches the button or each other | Nakamura, Yamamoto (Kobayashi family blurred) |
 | act2_s5 | Emi's spiral drawing | over-the-shoulder insert | Emi's sketchbook and hand |
 | act2_s6 | Blue-black glow ahead | B, extreme wide | everyone, in their groups |
 | act3_s0 | Sea and two moons | from behind, medium-wide | students at the windows (Nakamura, family small far off) |
@@ -62,7 +62,7 @@ Vary both the camera position and the distance from scene to scene; never run th
 | act3_s4 | The door opens, nobody moves | straight on at the open door | Saito, Yamamoto |
 | act3_door_argument | Argument at the open door | three-quarter wide toward the open door | Yamamoto, Ito Makoto, Nakamura, the four students |
 
-The new backgrounds are named on their fence (` ```bg platform_students ` keys `act1_platform_students`) so the original 14 `s<N>` keys never renumber. Shown again with a `reuse` bg block: act1_platform_students when the students go back to their own talk, act1_s0 while Saito fakes scrolling, act1_s1 in act 2 while the students plan tomorrow, then act2_s0 for Li Jie's next thought, and act3_s4 once the door argument dies down.
+The new backgrounds are named on their fence (` ```bg platform_students ` keys `act1_platform_students`) so the original 14 `s<N>` keys never renumber. Shown again with a `reuse` bg block: act1_platform_students when the students go back to their own talk, act1_s0 while Saito fakes scrolling and again during the arrival announcement, act1_s1 in act 2 while the students plan tomorrow, then act2_s0 for Li Jie's next thought, and act3_s4 once the door argument dies down.
 
 There is no exterior shot: an outside view of the train never matched the interior, so the station is seen through the windows and the open door.
 

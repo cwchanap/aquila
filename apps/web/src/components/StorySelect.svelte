@@ -15,20 +15,27 @@
   import { getTranslations } from '@aquila/stories/translations';
   import { STORY_CATALOG, type StoryAccent } from '@aquila/stories/catalog';
   import { assetHostUrl } from '@/lib/asset-host';
+  import type { AuthState } from '@/lib/auth-utils';
   import { getBrowserStorage } from '@/lib/reader-mode';
   import {
     StoryProgressStore,
     importSavedSessions,
     type StoryProgressMap,
   } from '@/lib/story-progress-store';
+  import { syncStoryProgress } from '@/lib/story-progress-sync';
   import { buildCards, pickContinueCard } from '@/lib/story-select';
 
-  let { locale }: { locale: Locale } = $props();
+  let {
+    locale,
+    authState,
+  }: { locale: Locale; authState: AuthState } = $props();
 
   let t = $derived(getTranslations(locale).stories);
   // Server render (and the first client frame) shows every story as unread;
   // saved progress lives in this browser only and is applied on mount.
   let progress: StoryProgressMap = $state({});
+  let syncState: 'idle' | 'synced' | 'failed' = $state('idle');
+  let syncInFlight: Promise<void> | null = null;
   // Covers live on the R2 asset host — an <img> that 404s removes itself so
   // the accent-gradient + icon fallback underneath shows through.
   let failedCovers = new SvelteSet<string>();
@@ -37,6 +44,26 @@
   let shorts = $derived(cards.filter(c => c.entry.format === 'short'));
   let sagas = $derived(cards.filter(c => c.entry.format === 'saga'));
   let continueCard = $derived(pickContinueCard(cards));
+
+  type SyncLine = 'syncing' | 'synced' | 'failed' | 'signed-out';
+  let syncLine = $derived.by((): SyncLine | null => {
+    if (authState === 'unavailable') return null;
+    if (authState === 'signed-out') {
+      return Object.keys(progress).length > 0 ? 'signed-out' : null;
+    }
+    if (syncState === 'synced') return 'synced';
+    if (syncState === 'failed') return 'failed';
+    return 'syncing';
+  });
+  let syncDot = $derived(
+    syncLine === 'synced'
+      ? 'bg-emerald-300/80'
+      : syncLine === 'failed'
+        ? 'bg-amber-300/80'
+        : syncLine === 'syncing'
+          ? 'bg-cyan-300/70 motion-safe:animate-pulse'
+          : 'bg-white/40'
+  );
 
   const ACCENTS: Record<
     StoryAccent,
@@ -77,12 +104,33 @@
     progress = store.getAll();
   }
 
+  function runSync(): Promise<void> {
+    // A cached page returning mid-request joins the request already running.
+    if (syncInFlight) return syncInFlight;
+    const run = (async () => {
+      try {
+        const result = await syncStoryProgress();
+        syncState = result.ok ? 'synced' : 'failed';
+      } catch {
+        syncState = 'failed';
+      } finally {
+        syncInFlight = null;
+        refresh();
+      }
+    })();
+    syncInFlight = run;
+    return run;
+  }
+
   onMount(() => {
     refresh();
+    if (authState === 'signed-in') void runSync();
     // Returning with the Back button can restore this page from the
     // back/forward cache; re-read so the cards show the latest place.
     const onPageShow = (event: Event) => {
-      if ((event as Event & { persisted?: boolean }).persisted) refresh();
+      if (!(event as Event & { persisted?: boolean }).persisted) return;
+      refresh();
+      if (authState === 'signed-in') void runSync();
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);
@@ -118,6 +166,21 @@
         </span>
       </a>
     </section>
+  {/if}
+
+  {#if syncLine}
+    <p
+      data-testid="progress-sync-status"
+      role={authState === 'signed-in' ? 'status' : undefined}
+      class="-my-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-white/70 drop-shadow-[0_1px_6px_rgba(15,23,42,0.6)]"
+    >
+      <span class="h-1.5 w-1.5 shrink-0 rounded-full {syncDot}" aria-hidden="true"></span>
+      {#if syncLine === 'signed-out'}
+        <span>{t.syncLocalOnly} <a href={`/${locale}/login`} class="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white">{t.syncSignIn}</a></span>
+      {:else}
+        <span>{syncLine === 'synced' ? t.syncSynced : syncLine === 'failed' ? t.syncFailed : t.syncSyncing}</span>
+      {/if}
+    </p>
   {/if}
 
   <section aria-labelledby="quick-reads-heading" class="flex flex-col gap-4" data-testid="quick-reads">

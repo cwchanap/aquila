@@ -23,7 +23,7 @@ vi.mock('../../constants/errorIds.js', () => ({
     ERROR_IDS: { AUTH_SESSION_GET_FAILED: 'AUTH_005' },
 }));
 
-import { getSessionUser } from '../auth-utils';
+import { authStateFromSession, getSessionUser } from '../auth-utils';
 import { auth } from '../auth.js';
 import { logger } from '../logger.js';
 import { ERROR_IDS } from '../../constants/errorIds.js';
@@ -148,5 +148,28 @@ describe('getSessionUser', () => {
                 expect(result.error).toBe('string error');
             }
         });
+    });
+});
+
+describe('authStateFromSession', () => {
+    it('reports signed-in when the session has a user', () => {
+        expect(
+            authStateFromSession({
+                status: 'ok',
+                user: { id: 'user-1' } as any,
+            })
+        ).toBe('signed-in');
+    });
+
+    it('reports signed-out when auth is healthy without a user', () => {
+        expect(authStateFromSession({ status: 'ok', user: null })).toBe(
+            'signed-out'
+        );
+    });
+
+    it('reports unavailable when the auth system failed', () => {
+        expect(
+            authStateFromSession({ status: 'error', error: new Error('down') })
+        ).toBe('unavailable');
     });
 });

@@ -299,5 +299,69 @@ describe('api-utils', () => {
             expect(result.data).toBeNull();
             expect(result.error?.status).toBe(400);
         });
+
+        it('should cap UTF-8 bytes, not string characters, when maxBytes is set', async () => {
+            const body = JSON.stringify({
+                name: 'é'.repeat(24 * 1024),
+                age: 1,
+            });
+            expect(body.length).toBeLessThan(48 * 1024);
+            expect(new TextEncoder().encode(body).byteLength).toBeGreaterThan(
+                48 * 1024
+            );
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                body,
+            });
+            expect(request.headers.has('content-length')).toBe(false);
+
+            const result = await parseBody(request, TestSchema, 48 * 1024);
+
+            expect(result.data).toBeNull();
+            expect(result.error?.status).toBe(413);
+        });
+
+        it('should accept a body exactly at the maxBytes limit', async () => {
+            const body = JSON.stringify({ name: 'é', age: 1 });
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                body,
+            });
+
+            const result = await parseBody(
+                request,
+                TestSchema,
+                new TextEncoder().encode(body).byteLength
+            );
+
+            expect(result.error).toBeNull();
+            expect(result.data).toEqual({ name: 'é', age: 1 });
+        });
+
+        it('should return malformed JSON under the maxBytes limit', async () => {
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                body: 'not valid json',
+            });
+
+            const result = await parseBody(request, TestSchema, 1024);
+
+            expect(result.data).toBeNull();
+            expect(result.error?.status).toBe(400);
+            const json = await result.error?.json();
+            expect(json.error).toBe('Malformed JSON');
+        });
+
+        it('should stay unbounded when maxBytes is omitted', async () => {
+            const request = new Request('http://localhost/api/test', {
+                method: 'POST',
+                body: JSON.stringify({ name: 'x'.repeat(50 * 1024), age: 1 }),
+            });
+
+            const result = await parseBody(request, TestSchema);
+
+            expect(result.error).toBeNull();
+            expect(result.data?.name).toHaveLength(50 * 1024);
+        });
     });
 });

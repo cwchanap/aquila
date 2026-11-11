@@ -10,23 +10,15 @@ import type { Locale } from '@aquila/stories';
 import { isRegisteredStoryId } from '@aquila/stories/async';
 import { SUPPORTED_LOCALES } from '@aquila/stories/translations';
 import { migratePersisted, READER_SESSION_KEY_PREFIX } from './reader-session';
+import {
+    normalizeStoryProgressMap,
+    type StoryProgress,
+    type StoryProgressMap,
+} from './story-progress';
+
+export type { StoryProgress, StoryProgressMap } from './story-progress';
 
 export const STORY_PROGRESS_KEY = 'aquila:storyProgress:v1';
-
-export interface StoryProgress {
-    sceneId: string;
-    /** 0-based index of the current line within the scene. */
-    dialogueIndex: number;
-    /** Epoch milliseconds of the last recorded position. */
-    updatedAt: number;
-    /** True once the reader has reached an ending and not moved since. */
-    finished: boolean;
-    /** Ending scene ids reached at least once, in the order first reached. */
-    endings: string[];
-    visited?: string[];
-}
-
-export type StoryProgressMap = Record<string, StoryProgress>;
 
 export interface ProgressPosition {
     storyId: string;
@@ -34,25 +26,6 @@ export interface ProgressPosition {
     dialogueIndex: number;
     /** The position is the last line of a scene with no next scene. */
     atEnding: boolean;
-}
-
-function isVisitedList(value: unknown): value is string[] {
-    return Array.isArray(value) && value.every(e => typeof e === 'string');
-}
-
-function isProgress(value: unknown): value is StoryProgress {
-    if (!value || typeof value !== 'object') return false;
-    const v = value as Record<string, unknown>;
-    return (
-        typeof v.sceneId === 'string' &&
-        typeof v.dialogueIndex === 'number' &&
-        Number.isFinite(v.dialogueIndex) &&
-        v.dialogueIndex >= 0 &&
-        typeof v.updatedAt === 'number' &&
-        typeof v.finished === 'boolean' &&
-        Array.isArray(v.endings) &&
-        v.endings.every(e => typeof e === 'string')
-    );
 }
 
 export class StoryProgressStore {
@@ -66,25 +39,7 @@ export class StoryProgressStore {
         try {
             const raw = this.storage?.getItem(STORY_PROGRESS_KEY);
             if (!raw) return {};
-            const parsed: unknown = JSON.parse(raw);
-            if (
-                !parsed ||
-                typeof parsed !== 'object' ||
-                Array.isArray(parsed)
-            ) {
-                return {};
-            }
-            const out: StoryProgressMap = {};
-            for (const [id, value] of Object.entries(parsed)) {
-                if (!isProgress(value)) continue;
-                // A malformed `visited` forfeits only itself: the saved
-                // position and reached endings still apply.
-                const { visited, ...rest } = value as Record<string, unknown>;
-                const record: Record<string, unknown> = { ...rest };
-                if (isVisitedList(visited)) record.visited = visited;
-                out[id] = record as StoryProgress;
-            }
-            return out;
+            return normalizeStoryProgressMap(JSON.parse(raw));
         } catch {
             return {};
         }
@@ -93,6 +48,18 @@ export class StoryProgressStore {
     get(storyId: string): StoryProgress | null {
         const all = this.getAll();
         return Object.hasOwn(all, storyId) ? all[storyId] : null;
+    }
+
+    /** Commits a map already merged with the account copy. Storage failures
+     *  stay nonfatal, like the other writes. */
+    replaceAll(map: StoryProgressMap): boolean {
+        if (!this.storage) return false;
+        try {
+            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(map));
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     /** Adds a record for a story that has none yet, from a place saved before
@@ -105,15 +72,18 @@ export class StoryProgressStore {
     }): boolean {
         if (!this.storage || this.get(position.storyId)) return false;
         const all = this.getAll();
-        all[position.storyId] = {
-            sceneId: position.sceneId,
-            dialogueIndex: Math.trunc(position.dialogueIndex),
-            updatedAt: 0,
-            finished: false,
-            endings: [],
+        const next: StoryProgressMap = {
+            ...all,
+            [position.storyId]: {
+                sceneId: position.sceneId,
+                dialogueIndex: Math.trunc(position.dialogueIndex),
+                updatedAt: 0,
+                finished: false,
+                endings: [],
+            },
         };
         try {
-            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(all));
+            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(next));
             return true;
         } catch {
             return false;
@@ -135,18 +105,21 @@ export class StoryProgressStore {
         if (!visited.includes(position.sceneId)) {
             visited.push(position.sceneId);
         }
-        all[position.storyId] = {
-            sceneId: position.sceneId,
-            dialogueIndex: Number.isFinite(position.dialogueIndex)
-                ? Math.max(0, Math.trunc(position.dialogueIndex))
-                : 0,
-            updatedAt: this.now(),
-            finished: position.atEnding,
-            endings,
-            visited,
+        const next: StoryProgressMap = {
+            ...all,
+            [position.storyId]: {
+                sceneId: position.sceneId,
+                dialogueIndex: Number.isFinite(position.dialogueIndex)
+                    ? Math.max(0, Math.trunc(position.dialogueIndex))
+                    : 0,
+                updatedAt: this.now(),
+                finished: position.atEnding,
+                endings,
+                visited,
+            },
         };
         try {
-            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(all));
+            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(next));
             return true;
         } catch {
             return false;

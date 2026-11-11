@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+    mergeStoryProgressMaps,
+    type StoryProgressMap,
+} from '../story-progress';
+import {
     STORY_PROGRESS_KEY,
     StoryProgressStore,
     importSavedSessions,
@@ -270,5 +274,73 @@ describe('StoryProgressStore', () => {
                 atEnding: false,
             })
         ).toBe(false);
+    });
+
+    it('commits an already merged map under the existing key', () => {
+        const storage = memoryStorage();
+        const store = new StoryProgressStore(storage);
+        const merged: StoryProgressMap = {
+            elevator_game: {
+                sceneId: 'act3',
+                dialogueIndex: 4,
+                updatedAt: 9,
+                finished: true,
+                endings: ['act3'],
+                visited: ['act1', 'act3'],
+            },
+        };
+        expect(store.replaceAll(merged)).toBe(true);
+        expect(
+            JSON.parse(storage.getItem(STORY_PROGRESS_KEY) as string)
+        ).toEqual(merged);
+        expect(store.getAll()).toEqual(merged);
+    });
+
+    it('reports a failed commit without throwing', () => {
+        const merged: StoryProgressMap = {
+            elevator_game: {
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                updatedAt: 1,
+                finished: false,
+                endings: [],
+            },
+        };
+        expect(new StoryProgressStore(null).replaceAll(merged)).toBe(false);
+        const throwing = memoryStorage();
+        throwing.setItem = () => {
+            throw new Error('QuotaExceededError');
+        };
+        expect(new StoryProgressStore(throwing).replaceAll(merged)).toBe(false);
+    });
+
+    it('keeps a legacy-imported place when the account has none for it', () => {
+        const storage = memoryStorage({
+            'aquila:readerState:en': session(
+                'the_seventh_mirror',
+                'ch9_act3',
+                4
+            ),
+        });
+        const store = new StoryProgressStore(storage, () => 50);
+        importSavedSessions(store, storage, 'en');
+        const remote: StoryProgressMap = {
+            elevator_game: {
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                updatedAt: 900,
+                finished: false,
+                endings: [],
+            },
+        };
+        expect(
+            store.replaceAll(mergeStoryProgressMaps(store.getAll(), remote))
+        ).toBe(true);
+        expect(store.get('the_seventh_mirror')).toMatchObject({
+            sceneId: 'ch9_act3',
+            dialogueIndex: 4,
+            updatedAt: 0,
+        });
+        expect(store.get('elevator_game')?.updatedAt).toBe(900);
     });
 });

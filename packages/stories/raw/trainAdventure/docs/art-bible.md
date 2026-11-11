@@ -9,13 +9,13 @@ Act 1 opens on the platform before the train arrives. Every platform shot uses t
 A late-night Chuo Line platform at Shinjuku, 23:50: an elevated platform under a steel canopy roof with exposed lattice girders and long rows of white fluorescent tubes; a row of square brushed-steel pillars; a glossy light-grey tiled floor that reflects the lights; a yellow tactile strip along the platform edge; the tracks run into a black tunnel mouth at the far end, with small red and white signal lights in the dark; a black departure board hangs from the canopy, its lines shown only as glowing amber bars with no readable characters; silver metal benches against a low back wall topped by a steel railing; beyond it the Tokyo night city, office towers with lit windows. Cold white light, no advertisements, no text.
 
 - **Reference** (`platform_master.png`, empty): eye level, looking down the platform toward the tunnel. Benches and railing on the left, the yellow strip and the tracks on the right, the departure board at the upper middle, the tunnel mouth at the far right end.
-- **Where people stand**, seen from the reference angle: Li Jie behind the yellow line in the foreground; the four students in a loose circle mid-platform near the yellow line (Kenta, Asuka, Misaki, Takumi), with Saito at the edge of their circle on the track side; Emi alone at the end of a bench against the back wall on the left; Ling Mo leaning in the shadow of the pillar just beyond Emi's bench.
+- **Where people stand**, seen from the reference angle: Li Jie behind the yellow line in the foreground; the four students in a loose circle mid-platform near the yellow line (Kenta, Asuka, Misaki, Takumi), with Saito standing alone a few metres further down the platform toward the tunnel, clear of their circle until he cuts in (act1_platform_saito); Emi alone at the end of a bench against the back wall on the left; Ling Mo leaning in the shadow of the pillar just beyond Emi's bench.
 - **Commuters**: unlike the train, the platform has a scattered late-night crowd. Keep it to a few people, small, far off and out of focus, with no visible faces, never in front of the cast.
 - **No train body.** As with the carriage exterior, the arriving train is shown only as headlights in the tunnel mouth.
 
 ## Carriage (identical in every in-train scene)
 
-A single Chuo Line commuter carriage: continuous side-facing bench seats along both walls in dark navy patterned fabric, split into seat groups by silver stanchion poles; silver overhead grab rails with white hanging hand straps; flat white LED ceiling lights; large rectangular windows above the benches; sliding doors with yellow edging at both ends of each side; both end walls have the same plain grey connecting door with a small window; no advertisements, no text. Lighting and what shows through the windows change per scene, the carriage does not.
+A single Chuo Line commuter carriage: continuous side-facing bench seats along both walls in dark navy patterned fabric, split into seat groups by silver stanchion poles; silver overhead grab rails with white hanging hand straps; flat white LED ceiling lights; large rectangular windows above the benches; the benches come in seven-seat sections (`carriage_side.png`), each ending in a curved grey partition panel, with a sliding door with yellow edging between sections and at each end, so no seat ever stands in front of a door and every doorway is clear floor; both end walls have the same plain grey connecting door with a small window; no advertisements, no text. Lighting and what shows through the windows change per scene, the carriage does not.
 
 ## Seating plan
 
@@ -24,7 +24,7 @@ It is a near-empty last train, so the passengers sit group by group with empty s
 - **Left bench, near to far:** Emi in the end seat against the partition, Li Jie beside her; a few empty seats; Yamamoto alone; a few empty seats; Ito Makoto and Ito Nana; several empty seats; Ling Mo alone in the far corner, always.
 - **Right bench, near to far:** Saito Ren alone in the end seat by the door; a couple of empty seats; the four university students (Kenta, Asuka, Misaki, Takumi); a few empty seats; Nakamura alone; a few empty seats; the Kobayashi family (Yudai, Hina, Tomoko, Shota).
 
-Anyone shown standing stands near their own seat, unless the beat needs them elsewhere (Yamamoto at the window in act3_s3).
+The "end seat" is the first seat of the nearest section, against the partition beside the door at the door end, so Emi and Saito sit directly across the aisle from each other. Anyone shown standing stands near their own seat, unless the beat needs them elsewhere (Yamamoto at the window in act3_s3 and by the door in act3_s4). Emi and Li Jie sit side by side but are strangers in acts 1-3: he only glances at her, never leans in, and she never looks back at him.
 
 ## Camera angles and framing
 
@@ -39,13 +39,13 @@ Vary both the camera position and the distance from scene to scene; never run th
 
 | Background | Beat | Framing | Who is in view |
 | --- | --- | --- | --- |
-| act1_s0 | Shinjuku platform; again while Saito fakes scrolling | wide, over Li Jie's shoulder | Li Jie, students, Saito, Emi, Ling Mo |
+| act1_s0 | Shinjuku platform; again while Saito fakes scrolling | wide, over Li Jie's shoulder | Li Jie, students, Saito standing apart from them, Emi, Ling Mo |
 | act1_platform_students | Students mock the beer bar; again when they shut Saito out | medium, three-quarter, eye level | the four students |
 | act1_platform_saito | Saito cuts in | medium-wide from the track side | Saito, the four students |
 | act1_platform_emi | Li Jie notices Emi | medium close-up, low side angle | Emi |
 | act1_platform_lingmo | The man in the pillar's shadow | long-lens medium, low angle | Ling Mo (commuters blurred) |
 | act1_platform_arrival | The last train arrives, from the first glimmer in the tunnel through boarding (held over the doors opening, since the train body is never shown) | low, down the tracks | headlights in the tunnel mouth, no train body |
-| act1_s1 | Boarding, doors close | A, wide, eye level | everyone, spread out in their groups |
+| act1_s1 | Boarding, doors close | A, wide, eye level, near doors clear | everyone, spread out in their groups |
 | act2_s0 | City lights, quiet ride | three-quarter diagonal, medium | Emi, Li Jie (Yamamoto far off) |
 | act2_s1 | Into the tunnel | close-up, side view against the black window | Li Jie (Emi at the edge) |
 | act2_s2 | No signal, Saito explains | low angle, medium | Saito standing, students seated |
@@ -55,12 +55,12 @@ Vary both the camera position and the distance from scene to scene; never run th
 | act2_intercom | Nakamura demands someone press the emergency button | low angle from seat height, medium-wide across the aisle; a shouting match, nobody touches the button or each other | Nakamura, Yamamoto (Kobayashi family blurred) |
 | act2_s5 | Emi's spiral drawing | over-the-shoulder insert | Emi's sketchbook and hand |
 | act2_s6 | Blue-black glow ahead | B, extreme wide | everyone, in their groups |
-| act3_s0 | Sea and two moons | from behind, medium-wide | students at the windows (Nakamura, family small far off) |
+| act3_s0 | Sea and two moons | from behind, medium, straight on to the right windows | the four students on their knees at the windows |
 | act3_s1 | Saito's hologram, no signal, panic | high angle, tilted wide | everyone, in their groups |
-| act3_s2 | Emi terrified | close-up | Emi (Li Jie blurred in front) |
-| act3_s3 | Jishui station | over Yamamoto's shoulder | Yamamoto, the station through the window |
-| act3_s4 | The door opens, nobody moves | straight on at the open door | Saito, Yamamoto |
-| act3_door_argument | Argument at the open door | three-quarter wide toward the open door | Yamamoto, Ito Makoto, Nakamura, the four students |
+| act3_s2 | Emi terrified | medium, across the aisle at seated eye level | Emi staring at the sea, Li Jie in the next seat glancing at her |
+| act3_s3 | Jishui station | over Yamamoto's shoulder at a left window | Yamamoto, the station through the window |
+| act3_s4 | The door opens, nobody moves | straight on at the open left door at the door end | Emi, Li Jie, Yamamoto |
+| act3_door_argument | Argument at the open door | three-quarter wide toward the same open left door | Yamamoto, Ito Makoto, Nakamura, the four students (Emi and Li Jie in their seats beside the door) |
 
 The new backgrounds are named on their fence (` ```bg platform_students ` keys `act1_platform_students`) so the original 14 `s<N>` keys never renumber. Shown again with a `reuse` bg block: act1_platform_students when the students go back to their own talk, act1_s0 while Saito fakes scrolling and again during the arrival announcement, act1_s1 in act 2 while the students plan tomorrow, then act2_s0 for Li Jie's next thought, and act3_s4 once the door argument dies down.
 
@@ -69,7 +69,7 @@ There is no exterior shot: an outside view of the train never matched the interi
 ## Window views
 
 - Acts 1-2: Tokyo night city on both sides, then the black tunnel (windows act as mirrors), then the blue-black glow.
-- Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the sea (right) side; its weathered sign reads 寂海.
+- Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the forest (left) side, so the doors open on the left: a cracked grey-white concrete platform, a shabby wooden waiting shelter with a rusted tin roof, a weathered sign reading 寂海, the dark forest right behind it and a dirt path from the platform's end into the trees (act 4 walks it). The sea and the two moons show only through the right windows; the left windows and the open door show no moon.
 
 ## Portraits
 

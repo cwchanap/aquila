@@ -67,10 +67,19 @@ function cyrb53(text: string): number {
     return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 }
 
-/** A take is named by the voice and the exact prompt it was made from, so a
- *  recast, a retranslation or a new direction tag all ask for a new take. */
+/** How takes are processed after ElevenLabs (`ffmpegTranscode` in `cli.ts`).
+ *  It is part of every line id: takes on R2 are create-only and never replaced,
+ *  so audio processed differently has to live under new ids. Bump it whenever
+ *  the transcode output changes, then re-import the existing takes. */
+export const VOICE_MASTERING = 'lufs-20';
+
+/** A take is named by its mastering, the voice and the exact prompt it was made
+ *  from, so a recast, a retranslation or a new direction tag all ask for a new
+ *  take. */
 export function voiceLineId(voiceId: string, text: string): string {
-    return cyrb53(`${voiceId}\u0000${text}`).toString(16).padStart(14, '0');
+    return cyrb53(`${VOICE_MASTERING}\u0000${voiceId}\u0000${text}`)
+        .toString(16)
+        .padStart(14, '0');
 }
 
 const INNER_MARKER = /^\s*[（(]\s*[內内]心\s*[）)]\s*/;

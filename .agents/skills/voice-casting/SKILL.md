@@ -11,7 +11,8 @@ Voice is a **Japanese dub**: each story is spoken in one language (`ja`), and th
 
 - **Cast**: `packages/stories/raw/<rawDir>/docs/voice-cast.json` sets `language` and maps each compiled `characterId` to an ElevenLabs voice. Characters that aren't cast stay silent.
 - **Spoken text**: the CLI speaks the Japanese reader text of each translated scene (`STORY_TEXT_LOCALES` in `src/story-metadata.ts`). For scenes with none — stories without ja text, or scenes a partial ja tree has not translated yet — it reads `docs/voice-script.ja.json`: one `{ "zh": …, "ja": … }` pair per zh line, in order. The `zh` half must equal the current zh line, so a zh edit fails `voice:check` until the script is updated.
-- **Line id** = hash of voice id + exact prompt (`voiceLineId()` in `src/voice/cast.ts`). A recast, a retranslation or a new direction tag asks for a new take; nothing stale is ever reused.
+- **Line id** = hash of the mastering version + voice id + exact prompt (`voiceLineId()` in `src/voice/cast.ts`). A recast, a retranslation or a new direction tag asks for a new take; nothing stale is ever reused.
+- **Loudness**: every take is leveled to -20 LUFS (one gain per take, plus a limiter at -3 dBFS for the rare peak) before it is encoded, so all voices play at the same volume whatever level ElevenLabs returned. Quiet voices and `[softly]` lines used to come out up to 18 dB apart.
 - **Files**: `packages/assets/voice/<storyId>/<lineId>.mp3` plus `index.json`, which maps every voiced scene to one entry per dialogue line (a line id, or `null` for silence). Translations mirror the zh source line for line, so the same position works in every language. All of it is committed, but the app never bundles it: the `Media Sync` workflow uploads it to R2 (`vn/voice/<storyId>/`) when a PR touching it merges to `main`, and the reader fetches it from `PUBLIC_ASSET_BASE_URL`.
 - **Reader**: in visual mode it plays the index entry for the current scene and line. There is a Voice on/off toggle in reader settings. The reader only fetches an index for stories in `STORY_VOICE_LANGUAGE` (`src/voice/index.ts`).
 
@@ -76,7 +77,7 @@ ELEVENLABS_API_KEY=... bun src/voice/cli.ts generate --story <rawDir> --scene <s
    bun src/voice/cli.ts generate --story <rawDir> --scene <sceneId> --from-dir <tmpDir>
    ```
 
-Both paths transcode with `ffmpeg` (mono 48 kbps mp3), write the files and rebuild `index.json` for the whole story.
+Both paths level the take to -20 LUFS and transcode it with `ffmpeg` (mono 48 kbps mp3), write the files and rebuild `index.json` for the whole story.
 
 ### 5. Register (first scene of a story only)
 
@@ -97,6 +98,10 @@ Add the story to `STORY_VOICE_LANGUAGE` in `src/voice/index.ts`. The CLI prints 
 
 - **zh edit in a voiced scene**: `voice:check` fails. Update the matching `zh`/`ja` pair in the voice script, then re-run step 4 for that scene (only changed lines are pending) with `--prune`.
 - **Japanese reader text edit**: the prompt changes, so the line id changes. Re-run step 4 with `--prune`.
+
+## When the transcode changes
+
+Takes on R2 can't be replaced (see Delivery), so audio processed differently needs new line ids. When `ffmpegTranscode` in `src/voice/cli.ts` starts producing different audio (loudness target, bitrate, codec), bump `VOICE_MASTERING` in `src/voice/cast.ts` in the same PR, then re-import the existing takes instead of paying for new ones: for each story, run the dry run with `--out <emptyDir>` before and after the bump to get each line's old and new id, copy every committed `<oldId>.mp3` to `<tmpDir>/<newId>.mp3`, and run step 4's `--from-dir <tmpDir> --prune` for every voiced scene. The old takes stay on R2, unreferenced.
 
 ## Delivery
 

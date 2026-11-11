@@ -1,5 +1,9 @@
 # 第六幕：幽冥之都 
 
+```bg
+reuse branch_1b/b1b_act5_half_empty
+```
+
 **旁白**：列車沿著海岸線緩慢而平穩地行駛著。窗外依舊是那片詭異的風景——左側幽深的森林,右側平靜的黑海,天空中兩輪紫色殘月靜靜懸掛。
 
 **旁白**：但車廂內剩下的人們,似乎刻意遺忘了這一切。劫後餘生的慶幸感,讓他們沉浸在一種不切實際的樂觀氛圍中。
@@ -10,6 +14,10 @@
 
 **自私中年男**：(清了清喉嚨,得意地說)我就說嘛,肯定是列車調度出了點小問題,繞了遠路而已。看你們一個個嚇得要死,真是沒見過世面。
 
+```bg
+reuse branch_1b/b1b_act5_relief
+```
+
 **溫柔母親**：(溫柔地對孩子們說)等一下到站,爸爸媽媽就帶你們回家睡覺,明天還要上學呢。
 
 **天真弟弟**：媽媽,我回家想吃冰淇淋!
@@ -19,6 +27,10 @@
 **懂事姐姐**：(小聲)弟弟,現在還很晚呢,明天再吃好不好?
 
 **旁白**：車廂內充滿了閒聊聲、孩子的笑聲、還有對未來的規劃。彷彿剛才的恐懼只是一場惡夢,而現在他們已經醒來,正在回家的路上。
+
+```bg
+reuse branch_1b/b1b_act5_lijie_sea
+```
 
 **旁白**：只有李杰,沉默地坐在角落,望著窗外那片沒有盡頭的黑色海洋。他無法融入這份廉價的樂觀。
 
@@ -31,6 +43,10 @@
 **旁白**：李杰的目光始終停留在窗外。他看著紫月在天空中緩緩移動,看著森林的黑影在車窗外流動。心中的不安不但沒有減輕,反而隨著列車的前進愈發強烈。
 
 **李杰**：(內心)這條路⋯⋯到底通往哪裡?
+
+```bg
+reuse branch_1b/b1b_act5_half_empty
+```
 
 **旁白**：就在這時,列車的速度開始放緩。車輪與軌道的聲音變得緩慢而沉重。
 
@@ -50,11 +66,19 @@
 
 **旁白**：列車緩緩駛入月台,平穩地停靠在站台旁。車輪的聲音漸漸停止,只剩下令人窒息的寂靜。
 
+```bg yomi_arrival
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: inside the stopped carriage at standing eye level, from behind the passengers who have crowded to the LEFT windows to stare out; the doors are still shut. Through the large left windows fills the view: a colossal ancient station far larger than any normal station: towering square stone pillars rising into darkness and holding up a vast, heavy roof; walls of dark stone carved all over with strange symbols and totems that cannot be read; a long, wide platform of huge worn stone blocks; no lamps and no lights anywhere, only cold violet moonlight falling from the open side and turning everything purple-black. Above it all hangs a huge ancient stone sign board carved with four large characters in an old, unfamiliar brush style that can still be read: 幽冥之都. No moon in these windows; the moonlight comes from behind the train. In front of the windows, seen from behind and in profile, faces lit pale violet: Shota (ten-year-old boy, mop of black hair, navy t-shirt) and Hina (twelve-year-old girl, two low pigtails, sleeveless dress with a light cardigan) kneel on the seat with their hands on the glass; Tomoko (the mother, long dark hair tied low over one shoulder, cream cardigan) and Yudai (the father, short neat black hair, light zip-up jacket over a polo shirt) stand behind them, holding them; next along, Ito Nana (wife, shoulder-length dark hair, grey cardigan) clutches the arm of Ito Makoto (husband, short black hair, white shirt with rolled sleeves, navy tie), both frozen; Nakamura (thin balding man in a crumpled navy suit, loosened tie) bends toward the glass, mouth open. A step apart at the right edge, Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) stands watching, seen from behind. Only the people named here are in view; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text except the four characters 幽冥之都 on the station sign, no logo
+```
+
 **旁白**：乘客們屏住呼吸,望向月台上那塊巨大的站牌。上面用古老而陌生的字體,刻著四個大字——
 
 **旁白**：「幽冥之都」。
 
 **煩躁丈夫**：(聲音顫抖)什⋯⋯什麼?
+
+```bg breakdown
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: at standing eye level from the far end of the carriage, slightly left of the aisle, looking back down its length toward the door end, so the RIGHT bench runs along the LEFT of the frame and the LEFT bench along the RIGHT of the frame. At the door end, on the right of the frame, the sliding door in the left wall stands wide open; through it and the left windows: a colossal ancient station far larger than any normal station: towering square stone pillars rising into darkness and holding up a vast, heavy roof; walls of dark stone carved all over with strange symbols and totems that cannot be read; a long, wide platform of huge worn stone blocks; no lamps and no lights anywhere, only cold violet moonlight falling from the open side and turning everything purple-black. Through the windows on the left of the frame: a flat black sea and two thin violet crescent moons. Cold air seems to pour in. In the left foreground, on the right bench, the Kobayashi family: Shota (ten-year-old boy, mop of black hair, navy t-shirt) and Hina (twelve-year-old girl, two low pigtails, sleeveless dress with a light cardigan) sob openly, Tomoko (the mother, long dark hair tied low over one shoulder, cream cardigan) clutches them both, trembling, and Yudai (the father, short neat black hair, light zip-up jacket over a polo shirt) holds them with a grey face. Further along the right bench, Nakamura (thin balding man in a crumpled navy suit, loosened tie) has leapt to his feet, screaming in panic, hands on his head. On the right, nearer, on the left bench, Ito Nana (wife, shoulder-length dark hair, grey cardigan) bends over sobbing into her hands, and Ito Makoto (husband, short black hair, white shirt with rolled sleeves, navy tie) has punched the window beside him, his fist still against the glass, furious. Far away, in the seat beside the partition next to the open door, Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) sits still, apart, unmoved. Empty seats between everyone, and the doorway is clear floor. Only the people named here are in view; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：「嘶——」
 
@@ -80,11 +104,19 @@
 
 **旁白**：剛才還在規劃回家後要做什麼的人們,此刻全都崩潰了。虛假的希望破滅後,恐懼變得更加強烈。
 
+```bg
+reuse branch_1b/b1b_act5_lijie_sea
+```
+
 **李杰**：(內心,語氣充滿了厭煩)⋯⋯真吵。
 
 **旁白**：他看著這些陷入崩潰的成年人。剛才還信誓旦旦說要回家,現在卻哭得比孩子還慘。心中的恐懼反而被一股強烈的煩躁所取代。
 
 **李杰**：(內心)到了這種地步,哭喊和抱怨又有什麼用?比起門外未知的危險,這些人的噪音更讓人心煩。
+
+```bg lijie_steps_out
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: inside the carriage, low and close behind Li Jie at the open sliding door in the LEFT wall, looking out through the doorway. Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) stands on the threshold in the centre of the frame, seen from behind, stepping down onto the platform without looking back. Outside: a colossal ancient station far larger than any normal station: towering square stone pillars rising into darkness and holding up a vast, heavy roof; walls of dark stone carved all over with strange symbols and totems that cannot be read; a long, wide platform of huge worn stone blocks; no lamps and no lights anywhere, only cold violet moonlight falling from the open side and turning everything purple-black; the long shadows of the pillars stretch away from the train across the stone blocks into a deep darkness ahead. No moon in the picture. Soft at the left edge of the frame inside the carriage, Ito Makoto (husband, short black hair, white shirt with rolled sleeves, navy tie) half rises from his seat, one hand raised, shouting after him. Only the people named here are in view. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：李杰深吸一口氣,讓自己冷靜下來。他的目光望向敞開的車門,望向那座名為「幽冥之都」的詭異車站。
 

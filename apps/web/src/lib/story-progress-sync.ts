@@ -90,12 +90,19 @@ export async function syncStoryProgress(
 ): Promise<StoryProgressSyncResult> {
     const store = new StoryProgressStore(getBrowserStorage());
     try {
-        const payload = await postProgress(store.getAll(), options);
+        const local = store.getAllChecked();
+        if (!local) throw new Error('Local progress is unavailable');
+        const payload = await postProgress(local, options);
         const stored = serverProgress(payload);
         if (!stored) throw new Error('Invalid progress response');
         // A line can be read while the request is in flight; merge into the
-        // freshest local copy so a late response cannot erase it.
-        store.replaceAll(mergeStoryProgressMaps(store.getAll(), stored));
+        // freshest local copy so a late response cannot erase it. A failed
+        // read must not be mistaken for an empty map and overwrite storage.
+        const freshLocal = store.getAllChecked();
+        if (!freshLocal) throw new Error('Local progress is unavailable');
+        if (!store.replaceAll(mergeStoryProgressMaps(freshLocal, stored))) {
+            throw new Error('Could not save merged progress');
+        }
         return { ok: true };
     } catch (error) {
         return { ok: false, error };

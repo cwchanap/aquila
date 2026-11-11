@@ -314,6 +314,46 @@ describe('StoryProgressStore', () => {
         expect(new StoryProgressStore(throwing).replaceAll(merged)).toBe(false);
     });
 
+    describe('getAllChecked', () => {
+        it('returns the stored map, and an empty map when nothing is stored', () => {
+            const stored = {
+                elevator_game: {
+                    sceneId: 'act1',
+                    dialogueIndex: 2,
+                    updatedAt: 5,
+                    finished: false,
+                    endings: [],
+                },
+            };
+            const storage = memoryStorage({
+                [STORY_PROGRESS_KEY]: JSON.stringify(stored),
+            });
+            expect(new StoryProgressStore(storage).getAllChecked()).toEqual(
+                stored
+            );
+            expect(
+                new StoryProgressStore(memoryStorage()).getAllChecked()
+            ).toEqual({});
+        });
+
+        it('returns null when storage cannot be read, unlike getAll', () => {
+            expect(new StoryProgressStore(null).getAllChecked()).toBeNull();
+
+            const throwing = memoryStorage();
+            throwing.getItem = () => {
+                throw new Error('SecurityError');
+            };
+            expect(new StoryProgressStore(throwing).getAllChecked()).toBeNull();
+            expect(new StoryProgressStore(throwing).getAll()).toEqual({});
+
+            const corrupt = memoryStorage({
+                [STORY_PROGRESS_KEY]: '{not json',
+            });
+            expect(new StoryProgressStore(corrupt).getAllChecked()).toBeNull();
+            expect(new StoryProgressStore(corrupt).getAll()).toEqual({});
+        });
+    });
+
     it('keeps a legacy-imported place when the account has none for it', () => {
         const storage = memoryStorage({
             'aquila:readerState:en': session(

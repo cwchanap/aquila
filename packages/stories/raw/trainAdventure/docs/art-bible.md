@@ -55,7 +55,7 @@ Vary both the camera position and the distance from scene to scene; never run th
 | act2_intercom | Nakamura demands someone press the emergency button | low angle from seat height, medium-wide across the aisle; a shouting match, nobody touches the button or each other | Nakamura, Yamamoto (Kobayashi family blurred) |
 | act2_s5 | Emi's spiral drawing | over-the-shoulder insert | Emi's sketchbook and hand |
 | act2_s6 | Blue-black glow ahead | B, extreme wide | everyone, in their groups |
-| act3_s0 | Sea and two moons | from behind, medium, straight on to the right windows | the four students on their knees at the windows |
+| act3_s0 | Sea and two moons | from behind, medium, straight on to the right windows | the four students on their knees at the windows, Saito frozen in his end seat |
 | act3_s1 | Saito's hologram, no signal, panic | high angle, tilted wide | everyone, in their groups |
 | act3_s2 | Emi terrified | medium, across the aisle at seated eye level | Emi staring at the sea, Li Jie in the next seat glancing at her |
 | act3_s3 | Jishui station | over Yamamoto's shoulder at a left window | Yamamoto, the station through the window |

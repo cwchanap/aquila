@@ -69,7 +69,7 @@ There is no exterior shot: an outside view of the train never matched the interi
 ## Window views
 
 - Acts 1-2: Tokyo night city on both sides, then the black tunnel (windows act as mirrors), then the blue-black glow.
-- Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the forest (left) side, so the doors open on the left: a cracked grey-white concrete platform, a shabby wooden waiting shelter with a rusted tin roof, a weathered sign reading 寂海, the dark forest right behind it and a dirt path from the platform's end into the trees (act 4 walks it). The sea and the two moons show only through the right windows; the left windows and the open door show no moon.
+- Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the forest (left) side, so the doors open on the left: a short platform of cracked grey-white stone slabs with moss; along its far side a real single-storey wooden station house (the waiting room of acts 4-6: plank walls with cracks and mould, glassless windows, a dark open doorway, rows of benches inside, a timetable board by the door, a few old lanterns under the eaves, unlit in act 3); a weathered wooden sign reading 寂海 with a worn line of small text beneath (act 6 reads it as ← 永恆之森 | 幽冥之都 →; keep it unreadable in act 3); the dark forest right behind, and a dirt path from the platform's end into the trees (act 4 walks it). The sea and the two moons show only through the right windows; the left windows and the open door show no moon.
 
 ## Portraits
 

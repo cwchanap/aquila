@@ -1,6 +1,6 @@
-# Art bible, Shinjuku platform and train carriage (acts 1-3)
+# Art bible, Shinjuku platform, train carriage and Jishui station (acts 1-6)
 
-The train carries exactly 16 passengers, the cast on the character sheet. No extras anywhere inside the train. A scene shows only the people its beat needs; nobody has to appear in every background.
+The train carries exactly 16 passengers, the cast on the character sheet. No extras anywhere inside the train. A scene shows only the people its beat needs; nobody has to appear in every background. Ling Mo is gone from act 4 on in both branches; who else stays aboard depends on the branch (see Acts 4-6 below).
 
 ## Shinjuku platform (act 1)
 
@@ -32,7 +32,7 @@ Vary both the camera position and the distance from scene to scene; never run th
 
 - **A, down the length** (`carriage_master.png`): camera at the door end looking toward the far end.
 - **B, reverse** (`carriage_reverse.png`): camera at the far end looking back. The right bench is on the left of the frame, near to far: Shota, Tomoko, Hina, Yudai; Nakamura; Takumi, Misaki, Asuka, Kenta; Saito. The left bench is on the right of the frame, near to far: Ling Mo; Ito Nana, Ito Makoto; Yamamoto; Li Jie, Emi.
-- **C, across the aisle** (`carriage_side.png`): camera facing one bench straight on. Facing the left bench, left to right: Emi, Li Jie; Yamamoto; Ito Makoto, Ito Nana; Ling Mo. Facing the right bench, left to right: Shota, Tomoko, Hina, Yudai; Nakamura; Takumi, Misaki, Asuka, Kenta; Saito.
+- **C, across the aisle** (`carriage_side.png`): camera facing one bench straight on. Facing the left bench, left to right: Emi, Li Jie; Yamamoto; Ito Makoto, Ito Nana; Ling Mo. Facing the right bench, left to right: Shota, Tomoko, Hina, Yudai; Nakamura; Takumi, Misaki, Asuka, Kenta; Saito. So facing the left bench the door end is on the left of the frame, and facing the right bench it is on the right; prompts that get this backwards come out with the seating order reversed.
 - **Free framings** (use `carriage_master.png` for the design): three-quarter diagonal along a bench, low angle from seat height, high angle from the ceiling, over-the-shoulder, close-up and detail insert. Seat positions still follow the plan above.
 
 ## Shot list
@@ -69,7 +69,72 @@ There is no exterior shot: an outside view of the train never matched the interi
 ## Window views
 
 - Acts 1-2: Tokyo night city on both sides, then the black tunnel (windows act as mirrors), then the blue-black glow.
-- Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the forest (left) side, so the doors open on the left: a short platform of cracked grey-white stone slabs with moss; along its far side a real single-storey wooden station house (the waiting room of acts 4-6: plank walls with cracks and mould, glassless windows, a dark open doorway, rows of benches inside, a timetable board by the door, a few old lanterns under the eaves, unlit in act 3); a weathered wooden sign reading 寂海 with a worn line of small text beneath (act 6 reads it as ← 永恆之森 | 幽冥之都 →; keep it unreadable in act 3); the dark forest right behind, and a dirt path from the platform's end into the trees (act 4 walks it). The sea and the two moons show only through the right windows; the left windows and the open door show no moon.
+- Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the forest (left) side, so the doors open on the left: a short platform of cracked grey-white stone slabs with moss; along its far side a real single-storey wooden station house (the waiting room of acts 4-6: plank walls with cracks and mould, glassless windows, a dark open doorway, rows of benches inside, a timetable board by the door, a few old paper lanterns under the eaves, unlit in act 3 and glowing faintly from act 4 on); a weathered wooden sign reading 寂海 with a worn line of small text beneath (act 6 reads it as ← 永恆之森 | 幽冥之都 →; keep it unreadable in act 3); the dark forest right behind, and a dirt path from the platform's end into the trees (act 4 walks it). The sea and the two moons show only through the right windows; the left windows and the open door show no moon.
+
+## Acts 4-6
+
+After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui and the art moves to the platform and the waiting room; in branch 1b he stays aboard, the doors lock and the train runs on along the coast to 幽冥之都. The carriage, seating plan and window views above still hold inside the train.
+
+### Who is where
+
+- **Act 4, both branches:** the 15 passengers left after Ling Mo, in their own seats. His far corner seat stays empty (b1a_act4_lingmo_gone).
+- **Branch 1a, from act 5 on:** on the platform, Li Jie, Emi, Yamamoto, Saito and the four students. Still aboard when the doors close, the Ito couple, Nakamura and the Kobayashi family; the train then leaves them out of the art for good. In act 6 the students head for the forest and Saito runs after them, while Li Jie, Emi and Yamamoto stay at the waiting room.
+- **Branch 1b, from act 5 on:** aboard, Li Jie, the Ito couple, Nakamura and the Kobayashi family, in their own seats. Everyone else got off while Li Jie was in the front cars, so the near half of the carriage is empty.
+
+### Jishui station (branch 1a)
+
+The station is on the forest (left) side of the train. Seen from the platform: the station house along the far side with the forest right behind it, and the track and the black sea with the two moons on the other side. Every platform shot that faces the station house keeps the railway behind the camera, so it shows no train, no track and no moon. A shot that faces the sea (b1a_act5_train_gone) shows the empty track and the moons over the water, and no station house.
+
+- **Platform reference** (`_reference/jishui_platform.png`, empty): eye level from the platform's track edge. The long single-storey station house runs along the back: tiled roof with deep eaves, plank walls, glassless windows, a wide open doorway onto the benches inside, the timetable board, paper lanterns under the eaves, and the 寂海 sign on two posts. The dirt path leaves the platform's far end on the right into the forest.
+- **Waiting-room reference** (`_reference/jishui_waiting_room.png`, empty): a long low room with plank walls, cobwebbed roof beams and rows of slatted benches all facing one way. The front-wall windows look out onto the platform, the empty track and the black sea, with no moon in them. A torn parchment map of paths and forest hangs on the far end wall, and a barred ticket window sits in the corner. There are no lamps inside; moonlight falls in through the windows in pale shafts.
+- **Sign:** 寂海 large, with ← 永恆之森 ｜ 幽冥之都 → beneath. It is readable only in the act 6 close-up (b1a_act6_sign), where the image model wrote 恒 for 恆, a variant form of the same character.
+
+### 幽冥之都 (branch 1b, act 6)
+
+A colossal ancient station, far larger than any normal one. Towering square stone pillars hold up a vast roof, and the dark stone walls are carved with symbols and totems that cannot be read. The platform is made of huge worn stone blocks. It has no lamps: only cold violet moonlight from the open side lights it. A huge stone sign board reads 幽冥之都. It is on the left side of the train like Jishui, so the right windows still show the sea and the two moons. b1b_act6_yomi_arrival fixes its look; pass it as a reference for any later shot there.
+
+### Shot list, branch 1a
+
+| Background | Beat | Framing | Who is in view |
+| --- | --- | --- | --- |
+| b1a_act4_frozen_families | Nobody dares move at the open door | B, medium, seated eye level from near the far end | the Kobayashi family and the Ito couple in front; the rest small and soft toward the open door |
+| b1a_act4_lingmo_gone | Ling Mo's corner is empty | close detail, three-quarter | his empty far corner seat |
+| b1a_act4_lijie_stands | Li Jie stands up | A, low angle from seat height, open door in the left foreground | Li Jie standing beside Emi, Yamamoto in the aisle, Saito at his pole; the students, Nakamura, Ito couple and Kobayashi family in their seats |
+| b1a_act4_turned_on | Saito and the others turn on him | over Li Jie's shoulder, down the carriage | Li Jie from behind; Saito, Nakamura, Ito couple, students, Kobayashi family |
+| b1a_act4_platform_alone | Li Jie alone on the platform | wide, railway behind the camera | Li Jie |
+| b1a_act4_door_call | Yamamoto calls to him from the door | over the shoulders of the crowd at the open door | Yamamoto, Saito, Nakamura, the students at the door, Emi in her seat; Li Jie outside |
+| b1a_act4_emi_steps_out | Emi steps down | low and close behind Emi in the doorway | Emi stepping out, Saito and Yamamoto reaching after her; Li Jie outside |
+| b1a_act4_platform_pair | Emi on the platform with Li Jie | medium two-shot, side-on | Emi, Li Jie |
+| b1a_act5_emi_resolve | Emi explains why she followed | close-up, slightly high | Emi |
+| b1a_act5_rally | Yamamoto rallies the carriage | C, three-quarter toward the right bench | Yamamoto standing; Saito, the four students, Nakamura |
+| b1a_act5_followers | Yamamoto and the students step out | three-quarter wide, slightly high, from the track edge | Yamamoto and the students stepping out toward Li Jie and Emi |
+| b1a_act5_left_behind | Saito dashes for the door | B, seated eye level beside Nakamura | Saito running for the door; Nakamura and the Ito couple staying |
+| b1a_act5_doors_close | The doors shut behind the group | medium-wide from the platform edge, train behind the camera | the eight on the platform |
+| b1a_act5_gloating | The stayers gloat as the train pulls out | C, straight across to the left wall | Ito couple hugging, Nakamura jeering at the window, the Kobayashis cut off in the foreground; the eight small on the platform outside |
+| b1a_act5_train_gone | The train is gone | wide, from behind the group, facing the sea | the eight, backs to camera, the empty track, the moons over the sea |
+| b1a_act6_blame | The students blame Saito | medium-wide, station house behind | the students, Saito, Yamamoto, Li Jie, Emi |
+| b1a_act6_sign | Li Jie reads the sign | close, over his shoulder | Li Jie, the sign |
+| b1a_act6_waiting_room | The map in the waiting room | medium, three-quarter onto the map wall | Li Jie with his phone torch, Yamamoto, Emi |
+| b1a_act6_through_window | The students and Saito leave for the forest | inside, behind Li Jie and Emi at a front window | Li Jie, Emi; outside Yamamoto, Saito and the students walking off |
+
+Shown again with a `reuse` bg block in branch 1a: act3_s4 and act3_door_argument while the act 4 argument picks back up, lijie_stands while he answers them, platform_alone while he looks around, door_call when the students see Emi follow, platform_pair through the start of act 5, emi_resolve and train_gone as act 5 ends, train_gone again to open act 6, blame when Li Jie proposes the waiting room, and waiting_room when Yamamoto comes back in.
+
+### Shot list, branch 1b
+
+| Background | Beat | Framing | Who is in view |
+| --- | --- | --- | --- |
+| b1b_act4_empty_car | The empty front cars | A, standing eye level, another carriage of the same train | Li Jie walking; litter on the floor |
+| b1b_act4_figure | A figure walks into the forest | through a left window from inside | the platform's far end, the path, a tiny figure |
+| b1b_act4_doors_locked | Every door slams shut | close, side-on at a left door | Li Jie at the locked door; the figure through its window |
+| b1b_act5_half_empty | Most of the passengers are gone | A, wide | Ito couple, Nakamura, Kobayashi family |
+| b1b_act5_ito_explain | The Itos explain who got off | three-quarter medium onto the left bench | Ito couple, Li Jie standing |
+| b1b_act5_relief | Relief that the train is moving | C, three-quarter toward the far end of the right bench | Kobayashi family, Nakamura |
+| b1b_act5_lijie_sea | Li Jie alone with his doubts | medium, three-quarter along the left bench | Li Jie by the partition, the sea through the far windows |
+| b1b_act6_yomi_arrival | The 幽冥之都 sign | from behind the passengers crowded at the left windows | everyone aboard, the station and its sign |
+| b1b_act6_breakdown | The doors open and everyone breaks down | B, standing eye level, open door at the door end | everyone aboard; Li Jie apart by the door |
+| b1b_act6_lijie_steps_out | Li Jie steps out alone | low, close behind him in the doorway | Li Jie; Ito Makoto calling after him |
+
+Shown again in branch 1b: act3_s4 while nobody moves, b1a_act4_lijie_stands (from branch 1a) when he stands, empty_car on the walk back and into act 5, half_empty, relief and lijie_sea through act 6 until the station appears, and lijie_sea again for his last thought before he stands.
 
 ## Portraits
 

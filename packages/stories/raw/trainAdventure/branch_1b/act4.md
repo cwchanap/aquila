@@ -1,5 +1,9 @@
 # 第四幕：封閉的車廂
 
+```bg
+reuse _root/act3_s4
+```
+
 **旁白**：敞開的車門外是深不見底的寂靜,彷彿一張等待獵物的巨口。冰冷的空氣持續從外面灌進來,帶著濃郁的鹹味和陌生草木的氣息。
 
 **旁白**：車廂內的乘客們像是被施了定身咒,沒有人敢率先踏出那一步。那兩輪紫色殘月透過車窗投下詭異的光芒,將每個人的臉孔染成一片死灰。
@@ -11,6 +15,10 @@
 **旁白**：將近一個小時後,李杰終於無法再忍受這種煎熬的等待。
 
 **李杰**：(內心)這樣等下去不是辦法。我們對現在的情況一無所知,留在這裡,只是坐以待斃。至少⋯⋯我得先搞清楚這輛列車本身有什麼異常。
+
+```bg
+reuse branch_1a/b1a_act4_lijie_stands
+```
 
 **旁白**：在一片死寂中,李杰緩緩站了起來。這個簡單的動作立刻吸引了所有人的目光,像一顆投入死水的石子。
 
@@ -28,6 +36,10 @@
 
 **李杰**：(點了點頭)我會的。
 
+```bg empty_car
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: at standing eye level in the aisle of another, completely empty carriage of the same train, looking down its length toward the far end. Every seat is empty. A few blank paper flyers with no readable printing lie scattered on the light-grey floor; on the seats, things people left behind: a crumpled plastic bag, a magazine lying open, an empty coffee can. Through the right windows: a flat black sea and two thin violet crescent moons, one large and one small. Through the left windows: only the dark, dense forest, no moon. The flat white ceiling light is cold and a little dim. In the middle distance, Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) walks slowly down the aisle toward the camera, alone, looking around warily. Only the people named here are in view; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：車廂連接處的自動門發出「嘶」的一聲打開。一股更加冰冷的空氣撲面而來。李杰深吸一口氣,跨過車廂之間的連接處,走進了下一節車廂。
 
 **旁白**：第二節車廂。空蕩蕩的。座位整齊排列,頭頂的燈光發出淡淡的白光。幾張廣告傳單散落在地板上,隨著列車細微的震動輕輕晃動。
@@ -42,6 +54,10 @@
 
 **旁白**：一股寒意從李杰的背脊竄起。但他沒有停下腳步,決定繼續往列車的前端走去。第四節車廂。第五節車廂。全都一樣——空蕩、寂靜、只有他一個人的腳步聲。
 
+```bg figure
+Camera: from inside a dark, empty commuter carriage, looking out through one of its large rectangular windows on the left side; the silver window frame and a sliver of the grey wall edge the picture, with a faint reflection of the white carriage light on the glass. Outside, under cold violet moonlight: the far end of the short platform of an abandoned rural station, cracked grey-white stone slabs with moss in the cracks, ending at a narrow dirt path that leads off into a towering, black forest; at the edge of the frame, the corner of a dark single-storey wooden station house with deep eaves and one faint paper lantern. On the dirt path, already far away and very small, a lone dark human silhouette walks away from the platform toward the trees, its back turned, impossible to identify. No moon in the picture. Nobody else, inside or outside, and no reflected faces in the glass. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：當他走到第五節車廂時,他下意識地朝窗外瞥了一眼。就在那一瞬間,藉著兩輪紫色殘月微弱的光芒,他看到了——
 
 **旁白**：一個模糊的人影,正離開月台。那道身影頭也不回地朝著遠處那片深邃的森林走去。距離太遠,光線太暗,他完全無法辨認出那是誰。
@@ -53,6 +69,10 @@
 **李杰**：(喃喃自語)等等!
 
 **旁白**：李杰不再猶豫,立刻轉身衝向最近的車門。他的手伸向門邊的開關按鈕。就在他的指尖即將碰到按鈕的那一瞬間——
+
+```bg doors_locked
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: a close shot inside an empty carriage at a closed sliding door in the LEFT wall, side-on, at standing eye level. Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) stands in profile at the door, one palm pressed flat against the door's window, the other hand on the door-open button beside it, his face tense and frustrated, his breath faintly fogging the glass. Through the door window, outside under cold violet moonlight: the far end of the abandoned station's cracked stone platform and the narrow dirt path into the black forest, where a tiny dark silhouette is just vanishing among the trees. No moon in the picture. Behind him, the empty seats of the carriage, slightly out of focus; the ceiling light flickers faintly. Only Li Jie is in view; no reflected faces in the glass. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：「嘶——」
 
@@ -73,6 +93,10 @@
 **旁白**：車廂,再次變成了與世隔絕的牢籠。外面的世界近在咫尺,卻遙不可及。李杰靠在車門上,看著窗外那片吞噬了唯一線索的黑暗森林。
 
 **旁白**：一種深深的無力感湧上心頭。
+
+```bg
+reuse branch_1b/b1b_act4_empty_car
+```
 
 **李杰**：(緩緩呼出一口氣)⋯⋯回去吧。至少要告訴其他人這個情況。
 

@@ -1,5 +1,9 @@
 # 第五幕：分歧的旅程 
 
+```bg
+reuse branch_1b/b1b_act4_empty_car
+```
+
 **旁白**：李杰快步穿過一節又一節空蕩的車廂,腳步聲在寂靜中格外清晰。他必須盡快回去告訴其他人——所有的門都鎖死了,有人離開了列車。
 
 **旁白**：就在他經過第三節車廂時,整輛列車突然發出一陣低沉的嗡鳴聲,像某種沉睡已久的巨獸甦醒過來。
@@ -22,6 +26,10 @@
 
 **旁白**：他快速穿過剩餘的空蕩車廂,終於回到了原本乘客們聚集的地方。
 
+```bg half_empty
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: a wide shot at standing eye level from the door end of the carriage, looking down its length toward the far end. All doors are shut and the train is moving: the views outside are slightly motion-blurred. Through the right windows: a flat black sea silvered by moonlight and two thin violet crescent moons, one large and one small. Through the left windows: only the dark forest streaming past, no moon. The near half of the carriage, where most passengers used to sit, is now empty: the end seats by the partitions at both sides and the long stretches of navy seats after them are bare. Further down, on the left bench, Ito Makoto (husband, short black hair, white shirt with rolled sleeves, navy tie) and Ito Nana (wife, shoulder-length dark hair, grey cardigan) sit close together, tired and relieved. On the right bench, after empty seats, Nakamura (thin balding man in a crumpled navy suit, loosened tie) sits alone, leaning his shoulder against the window, smug. At the far end of the right bench, the Kobayashi family huddles together: Yudai (the father, short neat black hair, light zip-up jacket over a polo shirt), Hina (twelve-year-old girl, two low pigtails, sleeveless dress with a light cardigan), Tomoko (the mother, long dark hair tied low over one shoulder, cream cardigan), Shota (ten-year-old boy, mop of black hair, navy t-shirt) held in her arms. The far corner seat of the left bench is empty. Only the people named here are in view; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：然而,眼前的景象讓他心頭一沉。
 
 **李杰**：(驚愕)怎麼⋯⋯
@@ -29,6 +37,10 @@
 **旁白**：車廂裡的人數明顯少了——那個沉穩的大叔不見了。那四個吵鬧的大學生不見了。那個故作聰明的眼鏡男不見了。還有那個安靜畫畫的女孩,也不見了。
 
 **旁白**：原本十幾個人的車廂,現在只剩下寥寥幾人。那對中年夫婦還坐在角落,那個自私的中年男子靠在窗邊,還有那個抱著孩子的母親和她的一雙兒女。
+
+```bg ito_explain
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: a medium shot at seated eye level from the aisle, in three-quarter view onto the LEFT bench. The train is moving: through the left windows behind them, only the dark forest streaming past, slightly blurred, no moon. On the left of the frame, standing in the aisle in three-quarter profile, Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) looks down at the seated couple, intent. On the bench, Ito Nana (wife, shoulder-length dark hair, grey cardigan) leans forward, talking fast and gesturing with both hands, anxious; beside her Ito Makoto (husband, short black hair, white shirt with rolled sleeves, navy tie) sits back with his arms crossed, irritated, looking away with a dismissive frown. The seats on either side of them are empty. Only the people named here are in view; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **李杰**：(急切地問向中年夫婦)剛才發生了什麼事?其他人呢?
 
@@ -42,6 +54,10 @@
 
 **李杰**：(沉默了幾秒)⋯⋯我明白了。
 
+```bg relief
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: a three-quarter medium shot at seated eye level from the LEFT bench, looking across the aisle at the far end of the RIGHT bench. The train is moving: through the right windows behind them, a flat black sea silvered by moonlight and two thin violet crescent moons, one large and one small, slightly blurred by motion. On the right bench, the Kobayashi family huddles together in relief: Tomoko (the mother, long dark hair tied low over one shoulder, cream cardigan) holds Shota (ten-year-old boy, mop of black hair, navy t-shirt) tightly in her arms and strokes his head, smiling through tears, while he looks up at her hopefully; Hina (twelve-year-old girl, two low pigtails, sleeveless dress with a light cardigan) leans against her mother, eyes wet; Yudai (the father, short neat black hair, light zip-up jacket over a polo shirt) has his arms around all of them, exhaling. Nearer along the same bench, after two empty seats, Nakamura (thin balding man in a crumpled navy suit, loosened tie) sits alone with a smug smirk, one arm spread along the seat back. Only the people named here are in view; window reflections show only these same people, no extra figures. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
+
 **旁白**：李杰環顧四周。剩下的這幾個人,臉上竟然都露出了如釋重負的表情。列車的再次啟動,對他們而言似乎是某種救贖的信號。
 
 **自私中年男**：(幸災樂禍地)哼,總算走了,這下清靜多了。那個大叔一直在那邊指手畫腳,那幾個學生吵死了。我看這車是要開回去了!
@@ -53,6 +69,10 @@
 **溫柔母親**：(輕撫孩子的頭)會的,寶貝,會的⋯⋯
 
 **旁白**：車廂內響起了小聲的歡呼和慶幸。自私中年男甚至露出了笑容,焦慮妻子的表情也放鬆了不少。所有人都沉浸在列車重新啟動、即將「回家」的虛假希望中。
+
+```bg lijie_sea
+the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: a medium shot at seated eye level from a few seats along the LEFT bench, looking back toward the door end in three-quarter view. The train is moving. On the right of the frame, Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) sits alone in the second seat from the curved grey partition, his backpack on his lap, turned to gaze across the aisle; the end seat beside him against the partition is empty. The partition stands at the right edge of the frame. On the left of the frame, across the aisle, the empty right bench and its large windows: a flat black sea stretching to the horizon, silvered by moonlight, and two thin violet crescent moons hanging above it, one large and one small. Cold violet moonlight falls across his face. Only Li Jie is in view; no reflected faces in the glass. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **旁白**：只有李杰,無法感到一絲一毫的輕鬆。
 

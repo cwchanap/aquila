@@ -6,7 +6,7 @@ import AuthDegradedBanner from '../../../components/AuthDegradedBanner.astro';
 import StorySelect from '../../../components/StorySelect.svelte';
 import type { Locale } from '@aquila/stories';
 import { isLocale } from '@aquila/stories/translations';
-import { getSessionUser } from '../../../lib/auth-utils.js';
+import { authStateFromSession, getSessionUser } from '../../../lib/auth-utils.js';
 import { t as translate } from '../../../lib/utils';
 
 interface Props {
@@ -20,6 +20,7 @@ const t = (key: string) => translate(locale, key);
 const sessionResult = await getSessionUser(Astro.request);
 const user = sessionResult.status === 'ok' ? sessionResult.user : null;
 const authFailed = sessionResult.status === 'error';
+const authState = authStateFromSession(sessionResult);
 ---
 
 <MainLayout title={t("stories.title")}>
@@ -62,7 +63,7 @@ const authFailed = sessionResult.status === 'error';
         </p>
       </div>
 
-      <StorySelect client:load locale={locale} />
+      <StorySelect client:load locale={locale} authState={authState} />
 
     </div>
 

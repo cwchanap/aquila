@@ -13,8 +13,15 @@ import type { User } from './auth.js';
  *   logged-out, so a production auth outage is visible to the user.
  */
 export type SessionResult =
-    | { status: 'ok'; user: User | null }
-    | { status: 'error'; error: unknown };
+    { status: 'ok'; user: User | null } | { status: 'error'; error: unknown };
+
+/** Server-known auth state for pages that render differently when auth is down. */
+export type AuthState = 'signed-in' | 'signed-out' | 'unavailable';
+
+export function authStateFromSession(result: SessionResult): AuthState {
+    if (result.status === 'error') return 'unavailable';
+    return result.user ? 'signed-in' : 'signed-out';
+}
 
 /**
  * Get the authenticated user from the request headers (for Astro page

@@ -1,12 +1,39 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from '@testing-library/svelte';
 import '@testing-library/jest-dom';
+import type { Locale } from '@aquila/stories';
+import type { AuthState } from '../../lib/auth-utils';
 import StorySelect from '../StorySelect.svelte';
 import { STORY_PROGRESS_KEY } from '../../lib/story-progress-store';
+
+function renderSelect(
+    props: { locale?: Locale; authState?: AuthState } = {}
+): ReturnType<typeof render> {
+    return render(StorySelect, {
+        props: { locale: 'en', authState: 'signed-out', ...props },
+    });
+}
 
 function saveProgress(map: Record<string, unknown>): void {
     localStorage.setItem(STORY_PROGRESS_KEY, JSON.stringify(map));
 }
+
+function serverResponse(payload: unknown): Response {
+    return {
+        ok: true,
+        status: 200,
+        json: async () => payload,
+    } as Response;
+}
+
+const restoredPageShow = () =>
+    Object.assign(new Event('pageshow'), { persisted: true });
 
 function cardLink(id: string): HTMLAnchorElement {
     const link = document.querySelector<HTMLAnchorElement>(
@@ -25,10 +52,11 @@ describe('StorySelect', () => {
     afterEach(() => {
         localStorage.clear();
         vi.unstubAllEnvs();
+        vi.unstubAllGlobals();
     });
 
     it('puts short stories and sagas on separate shelves', () => {
-        render(StorySelect, { props: { locale: 'en' } });
+        renderSelect();
 
         const quickReads = screen.getByTestId('quick-reads');
         const sagas = screen.getByTestId('sagas');
@@ -49,7 +77,7 @@ describe('StorySelect', () => {
     });
 
     it('shows the generated cover for every short story while keeping its accessible title', () => {
-        render(StorySelect, { props: { locale: 'en' } });
+        renderSelect();
         for (const id of [
             'elevator_game',
             'demon_lord_is_hiring',
@@ -70,14 +98,14 @@ describe('StorySelect', () => {
 
     it('shows the icon fallback instead of covers when no asset host is configured', () => {
         vi.stubEnv('PUBLIC_ASSET_BASE_URL', '');
-        render(StorySelect, { props: { locale: 'en' } });
+        renderSelect();
         expect(cardLink('elevator_game').querySelector('img')).toBeNull();
     });
 
     it('drops a cover that fails to load so the icon fallback shows through', async () => {
         // Covers live on the asset host; a missing or stale file must
         // not leave a broken-image frame on the card.
-        render(StorySelect, { props: { locale: 'en' } });
+        renderSelect();
         const card = cardLink('elevator_game');
         const cover = card.querySelector('img');
         expect(cover).not.toBeNull();
@@ -88,7 +116,7 @@ describe('StorySelect', () => {
     });
 
     it('renders in Chinese', () => {
-        render(StorySelect, { props: { locale: 'zh' } });
+        renderSelect({ locale: 'zh' });
         expect(cardLink('elevator_game').getAttribute('href')).toBe(
             '/zh/reader?story=elevator_game'
         );
@@ -96,7 +124,7 @@ describe('StorySelect', () => {
     });
 
     it('renders in Japanese and tags the stories read in Chinese', () => {
-        render(StorySelect, { props: { locale: 'ja' } });
+        renderSelect({ locale: 'ja' });
         expect(cardLink('elevator_game').getAttribute('href')).toBe(
             '/ja/reader?story=elevator_game'
         );
@@ -107,7 +135,7 @@ describe('StorySelect', () => {
     });
 
     it('shows no language tag when reading in Chinese', () => {
-        render(StorySelect, { props: { locale: 'zh' } });
+        renderSelect({ locale: 'zh' });
         expect(
             screen.queryByTestId('language-note-the_seventh_mirror')
         ).toBeNull();
@@ -130,7 +158,7 @@ describe('StorySelect', () => {
                 endings: ['b1a_act4'],
             },
         });
-        render(StorySelect, { props: { locale: 'en' } });
+        renderSelect();
 
         const resume =
             '/en/reader?story=the_seventh_mirror&scene=ch3_act2&dialogue=5';
@@ -164,7 +192,7 @@ describe('StorySelect', () => {
                 version: 2,
             })
         );
-        render(StorySelect, { props: { locale: 'en' } });
+        renderSelect();
 
         const resume =
             '/en/reader?story=the_seventh_mirror&scene=ch4_act2&dialogue=7';
@@ -176,7 +204,7 @@ describe('StorySelect', () => {
     });
 
     it('re-reads progress when the page returns from the back/forward cache', async () => {
-        render(StorySelect, { props: { locale: 'en' } });
+        renderSelect();
         expect(screen.queryByTestId('continue-reading')).toBeNull();
 
         saveProgress({
@@ -201,5 +229,183 @@ describe('StorySelect', () => {
             'href',
             '/en/reader?story=train_adventure&scene=act2&dialogue=1'
         );
+    });
+
+    it('pulls account progress into Continue for a cloud-only story', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: {
+                    the_seventh_mirror: {
+                        sceneId: 'ch2_act1',
+                        dialogueIndex: 3,
+                        updatedAt: 20,
+                        finished: false,
+                        endings: ['ch1_ending'],
+                    },
+                },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+
+        expect(screen.getByTestId('progress-sync-status')).toHaveTextContent(
+            'Syncing your progress…'
+        );
+        expect(screen.queryByTestId('continue-reading')).toBeNull();
+
+        const strip = await screen.findByTestId('continue-reading');
+        expect(strip).toHaveAttribute(
+            'href',
+            '/en/reader?story=the_seventh_mirror&scene=ch2_act1&dialogue=4'
+        );
+        expect(
+            await screen.findByText('Your progress is saved to your account')
+        ).toBeInTheDocument();
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toEqual({
+            progress: {},
+        });
+        expect(
+            JSON.parse(localStorage.getItem(STORY_PROGRESS_KEY) ?? '{}')
+        ).toHaveProperty('the_seventh_mirror');
+    });
+
+    it('keeps local Continue cards and reports a failed signed-in sync', async () => {
+        saveProgress({
+            the_seventh_mirror: {
+                sceneId: 'ch3_act2',
+                dialogueIndex: 4,
+                updatedAt: 20,
+                finished: false,
+                endings: [],
+            },
+        });
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+        );
+
+        renderSelect({ authState: 'signed-in' });
+
+        expect(screen.getByTestId('continue-reading')).toHaveAttribute(
+            'href',
+            '/en/reader?story=the_seventh_mirror&scene=ch3_act2&dialogue=5'
+        );
+        expect(
+            await screen.findByText(
+                "Couldn't reach your account. Progress is kept in this browser and syncs next time."
+            )
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('continue-reading')).toHaveAttribute(
+            'href',
+            '/en/reader?story=the_seventh_mirror&scene=ch3_act2&dialogue=5'
+        );
+    });
+
+    it('offers the localized login link to a signed-out reader with local progress', () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        saveProgress({
+            elevator_game: {
+                sceneId: 'b1a_act4',
+                dialogueIndex: 9,
+                updatedAt: 30,
+                finished: true,
+                endings: ['b1a_act4'],
+            },
+        });
+
+        renderSelect({ authState: 'signed-out' });
+
+        const status = screen.getByTestId('progress-sync-status');
+        expect(status).toHaveTextContent(
+            'Progress is saved in this browser only.'
+        );
+        expect(
+            within(status).getByRole('link', {
+                name: 'Sign in to pick it up on any device.',
+            })
+        ).toHaveAttribute('href', '/en/login');
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('shows nothing and makes no requests for a new signed-out visitor', () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-out' });
+
+        expect(screen.queryByTestId('progress-sync-status')).toBeNull();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('shows nothing and makes no requests when auth is unavailable', () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        saveProgress({
+            the_seventh_mirror: {
+                sceneId: 'ch3_act2',
+                dialogueIndex: 4,
+                updatedAt: 20,
+                finished: false,
+                endings: [],
+            },
+        });
+
+        renderSelect({ authState: 'unavailable' });
+
+        expect(screen.queryByTestId('progress-sync-status')).toBeNull();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('uses the current locale for the signed-out login link', () => {
+        saveProgress({
+            elevator_game: {
+                sceneId: 'b1a_act4',
+                dialogueIndex: 9,
+                updatedAt: 30,
+                finished: true,
+                endings: ['b1a_act4'],
+            },
+        });
+
+        renderSelect({ locale: 'zh', authState: 'signed-out' });
+
+        expect(
+            within(screen.getByTestId('progress-sync-status')).getByRole(
+                'link',
+                { name: '登入後即可在任何裝置接續閱讀。' }
+            )
+        ).toHaveAttribute('href', '/zh/login');
+    });
+
+    it('syncs again when a cached page returns without overlapping requests', async () => {
+        let resolveFirst!: (response: Response) => void;
+        const fetchMock = vi
+            .fn()
+            .mockImplementationOnce(
+                () =>
+                    new Promise<Response>(resolve => {
+                        resolveFirst = resolve;
+                    })
+            )
+            .mockResolvedValueOnce(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        // The return event lands while the mount request is still in flight.
+        window.dispatchEvent(restoredPageShow());
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        resolveFirst(serverResponse({ progress: {} }));
+        expect(
+            await screen.findByText('Your progress is saved to your account')
+        ).toBeInTheDocument();
+
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     });
 });

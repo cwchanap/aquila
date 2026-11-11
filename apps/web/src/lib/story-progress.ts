@@ -76,7 +76,16 @@ export function mergeStoryProgressMaps(
         const localRecord = Object.hasOwn(local, id) ? local[id] : undefined;
         const storedRecord = Object.hasOwn(stored, id) ? stored[id] : undefined;
         if (!localRecord || !storedRecord) {
-            entries.push([id, (localRecord ?? storedRecord) as StoryProgress]);
+            const record = (localRecord ?? storedRecord) as StoryProgress;
+            const visited = unionStrings(record.visited, undefined);
+            entries.push([
+                id,
+                {
+                    ...record,
+                    endings: unionStrings(record.endings, undefined) ?? [],
+                    ...(visited && { visited }),
+                },
+            ]);
             continue;
         }
         // updatedAt picks the position; the stored side wins ties.

@@ -455,16 +455,37 @@ describe('runVoiceCli', () => {
 describe('ffmpegTranscode', () => {
     const run = vi.mocked(spawnSync);
 
-    it('pipes the take through ffmpeg as mono 48 kbps', () => {
+    it('levels the take to -20 LUFS and encodes it as mono 48 kbps', () => {
+        run.mockReturnValueOnce({
+            status: 0,
+            stderr: Buffer.from(
+                '[Parsed_loudnorm_0]\n{\n\t"input_i" : "-31.50"\n}\n'
+            ),
+        } as unknown as ReturnType<typeof spawnSync>);
         run.mockReturnValueOnce({ status: 0 } as ReturnType<typeof spawnSync>);
         const input = new Uint8Array([1]);
         ffmpegTranscode(input, '/out.mp3');
-        const [command, args, options] = run.mock.calls[0];
-        expect(command).toBe('ffmpeg');
-        expect(args).toEqual(
-            expect.arrayContaining(['-ac', '1', '-b:a', '48k', '/out.mp3'])
+
+        const [measure, measureArgs, measureOptions] = run.mock.calls[0];
+        expect(measure).toBe('ffmpeg');
+        expect(measureArgs).toEqual(
+            expect.arrayContaining(['loudnorm=print_format=json', '-f', 'null'])
         );
-        expect(options).toEqual({ input });
+        expect(measureOptions).toEqual({ input });
+
+        const [encode, encodeArgs, encodeOptions] = run.mock.calls[1];
+        expect(encode).toBe('ffmpeg');
+        expect(encodeArgs).toEqual(
+            expect.arrayContaining([
+                'volume=11.50dB,alimiter=limit=-3dB:level=disabled',
+                '-ac',
+                '1',
+                '-b:a',
+                '48k',
+                '/out.mp3',
+            ])
+        );
+        expect(encodeOptions).toEqual({ input });
     });
 
     it('throws when ffmpeg is missing or fails', () => {

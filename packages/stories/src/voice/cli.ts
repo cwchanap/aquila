@@ -61,17 +61,52 @@ export type VoiceCliIo = {
     rawRoot?: string;
 };
 
-/** Mono 48 kbps mp3: clear for speech at about a third of the source size. */
+/** Every take is leveled to this integrated loudness (EBU R128), so no voice
+ *  plays quieter than another. Changing it changes the audio: bump
+ *  `VOICE_MASTERING` in `cast.ts` with it. */
+const TARGET_LUFS = -20;
+
+function ffmpeg(args: string[], input: Uint8Array): string {
+    const result = spawnSync('ffmpeg', ['-hide_banner', '-nostats', ...args], {
+        input,
+    });
+    if (result.error) throw result.error;
+    if (result.status !== 0) {
+        throw new Error(`ffmpeg failed: ${result.stderr.toString().trim()}`);
+    }
+    return result.stderr?.toString() ?? '';
+}
+
+/** Level the take, then encode it as mono 48 kbps mp3: clear for speech at
+ *  about a third of the source size. Pass 1 measures the take's loudness;
+ *  pass 2 applies the one gain that brings it to the target, and a limiter
+ *  catches the few peaks that gain would push into clipping. */
 export const ffmpegTranscode: Transcode = (input, outPath) => {
-    const result = spawnSync(
-        'ffmpeg',
+    const report = ffmpeg(
         [
-            '-hide_banner',
+            '-i',
+            'pipe:0',
+            '-af',
+            'loudnorm=print_format=json',
+            '-f',
+            'null',
+            '-',
+        ],
+        input
+    );
+    const { input_i } = JSON.parse(report.slice(report.lastIndexOf('{'))) as {
+        input_i: string;
+    };
+    const gain = (TARGET_LUFS - Number(input_i)).toFixed(2);
+    ffmpeg(
+        [
             '-loglevel',
             'error',
             '-y',
             '-i',
             'pipe:0',
+            '-af',
+            `volume=${gain}dB,alimiter=limit=-3dB:level=disabled`,
             '-ac',
             '1',
             '-b:a',
@@ -80,12 +115,8 @@ export const ffmpegTranscode: Transcode = (input, outPath) => {
             '-1',
             outPath,
         ],
-        { input }
+        input
     );
-    if (result.error) throw result.error;
-    if (result.status !== 0) {
-        throw new Error(`ffmpeg failed: ${result.stderr.toString().trim()}`);
-    }
 };
 
 async function elevenLabsTts(

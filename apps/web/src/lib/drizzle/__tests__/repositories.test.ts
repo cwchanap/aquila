@@ -20,6 +20,7 @@ function createChain() {
     chain.orderBy = vi.fn(() => chain);
     chain.returning = vi.fn(() => chain);
     chain.onConflictDoUpdate = vi.fn(() => chain);
+    chain.for = vi.fn(() => chain);
     chain.transaction = vi.fn(async (callback: (tx: typeof chain) => unknown) =>
         callback(chain)
     );
@@ -45,6 +46,7 @@ import {
     ChapterRepository,
     SceneRepository,
     BookmarkRepository,
+    ReadingProgressRepository,
 } from '../repositories';
 
 describe('Repositories', () => {
@@ -67,6 +69,7 @@ describe('Repositories', () => {
             'orderBy',
             'returning',
             'onConflictDoUpdate',
+            'for',
             'transaction',
         ];
 
@@ -1000,6 +1003,92 @@ describe('Repositories', () => {
                 expect(set).toHaveProperty('locale', 'zh');
                 expect(set).toHaveProperty('updatedAt');
                 expect(set.updatedAt).toBeInstanceOf(Date);
+            });
+        });
+    });
+
+    describe('ReadingProgressRepository', () => {
+        let repo: ReadingProgressRepository;
+
+        const localRecord = {
+            sceneId: 'act1',
+            dialogueIndex: 2,
+            updatedAt: 100,
+            finished: false,
+            endings: [],
+        };
+
+        beforeEach(() => {
+            repo = new ReadingProgressRepository(mockDb as any);
+        });
+
+        describe('mergeForUser()', () => {
+            it('locks the user row and inserts merged progress on first write', async () => {
+                mockDb.for.mockResolvedValue([{ id: 'user-1' }]);
+                mockDb.limit.mockResolvedValue([]);
+
+                const result = await repo.mergeForUser('user-1', {
+                    story_a: localRecord,
+                });
+
+                expect(mockDb.transaction).toHaveBeenCalledTimes(1);
+                expect(mockDb.for).toHaveBeenCalledWith('no key update');
+                expect(result).toEqual({ story_a: localRecord });
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        userId: 'user-1',
+                        data: { story_a: localRecord },
+                    })
+                );
+                expect(mockDb.update).not.toHaveBeenCalled();
+            });
+
+            it('merges with the stored row and updates it', async () => {
+                const storedRecord = {
+                    sceneId: 'act2',
+                    dialogueIndex: 1,
+                    updatedAt: 50,
+                    finished: true,
+                    endings: ['ending_a'],
+                };
+                mockDb.for.mockResolvedValue([{ id: 'user-1' }]);
+                mockDb.limit.mockResolvedValue([
+                    { userId: 'user-1', data: { story_b: storedRecord } },
+                ]);
+
+                const result = await repo.mergeForUser('user-1', {
+                    story_a: localRecord,
+                });
+
+                expect(Object.keys(result).sort()).toEqual([
+                    'story_a',
+                    'story_b',
+                ]);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set.mock.calls[0][0].data).toEqual(result);
+                expect(mockDb.values).not.toHaveBeenCalled();
+            });
+
+            it('drops malformed stored records before merging', async () => {
+                mockDb.for.mockResolvedValue([{ id: 'user-1' }]);
+                mockDb.limit.mockResolvedValue([
+                    {
+                        userId: 'user-1',
+                        data: {
+                            story_b: localRecord,
+                            broken: { sceneId: 42 },
+                        },
+                    },
+                ]);
+
+                const result = await repo.mergeForUser('user-1', {
+                    story_a: localRecord,
+                });
+
+                expect(Object.keys(result).sort()).toEqual([
+                    'story_a',
+                    'story_b',
+                ]);
             });
         });
     });

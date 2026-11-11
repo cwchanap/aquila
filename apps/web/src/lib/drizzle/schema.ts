@@ -7,7 +7,9 @@ import {
     uniqueIndex,
     pgEnum,
     boolean,
+    jsonb,
 } from 'drizzle-orm/pg-core';
+import type { StoryProgressMap } from '../story-progress.js';
 
 // Enum for story status
 export const storyStatusEnum = pgEnum('story_status', [
@@ -135,9 +137,7 @@ export const characterSetups = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
         characterName: text('character_name').notNull(),
-        storyId: text('story_id')
-            .notNull()
-            .references(() => stories.id, { onDelete: 'cascade' }),
+        storyId: text('story_id').notNull(),
         createdAt: timestamp('created_at', { mode: 'date' })
             .notNull()
             .defaultNow(),
@@ -259,12 +259,8 @@ export const bookmarks = pgTable(
         userId: text('user_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
-        storyId: text('story_id')
-            .notNull()
-            .references(() => stories.id, { onDelete: 'cascade' }),
-        sceneId: text('scene_id')
-            .notNull()
-            .references(() => scenes.id, { onDelete: 'cascade' }),
+        storyId: text('story_id').notNull(),
+        sceneId: text('scene_id').notNull(),
         bookmarkName: text('bookmark_name').notNull(),
         locale: text('locale').notNull().default('en'),
         createdAt: timestamp('created_at', { mode: 'date' })
@@ -289,6 +285,16 @@ export const bookmarks = pgTable(
     })
 );
 
+// Reading progress table - one JSONB map per account. Progress for compiled
+// stories is keyed by compiled IDs, so there is no Story Writer FK here.
+export const readingProgress = pgTable('reading_progress', {
+    userId: text('user_id')
+        .primaryKey()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    data: jsonb('data').$type<StoryProgressMap>().notNull().default({}),
+    updatedAt: timestamp('updated_at', { mode: 'date' }).notNull().defaultNow(),
+});
+
 // Type exports - Story Management
 export type Story = typeof stories.$inferSelect;
 export type NewStory = typeof stories.$inferInsert;
@@ -300,3 +306,5 @@ export type NewScene = typeof scenes.$inferInsert;
 // Type exports - Reading Progress
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type NewBookmark = typeof bookmarks.$inferInsert;
+export type ReadingProgress = typeof readingProgress.$inferSelect;
+export type NewReadingProgress = typeof readingProgress.$inferInsert;

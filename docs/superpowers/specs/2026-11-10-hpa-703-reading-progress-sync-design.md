@@ -12,7 +12,7 @@ Aquila currently persists per-story progress in localStorage under `aquila:story
 
 There is no account-backed progress API. A signed-in user starting on another browser cannot see their prior Continue position.
 
-Cloud bookmarks have a separate schema mismatch: `bookmarks.story_id` and `bookmarks.scene_id` reference `stories` and `scenes`, which are Story Writer tables. Published, compiled stories use logical story/scene IDs that are not rows in those tables. Their authenticated bookmark insert can therefore violate the FK constraints. Existing API tests mock the repository, so the production error is a **schema-supported diagnosis, not yet a live reproduction**.
+Cloud bookmarks have a schema mismatch: `bookmarks.story_id` and `bookmarks.scene_id` reference `stories` and `scenes`, which contain Story Writer rows rather than compiled story IDs. A third field has the same problem: `character_setups.story_id` references `stories.id` even though `POST /api/character-setup` accepts registered compiled story IDs such as `train_adventure`. Their authenticated inserts can violate these constraints. Existing tests mock database repositories, so these are **schema-supported diagnoses, not yet live reproductions**.
 
 Existing seams to reuse:
 
@@ -29,6 +29,7 @@ Existing seams to reuse:
 3. **One endpoint:** `POST /api/progress` both pushes the browser copy and pulls the merged account copy. No separate GET, conflict dialogue, or client-side account cache.
 4. **Union discovery, latest position:** for each story retain the newer position and union its reached endings/visited scenes. This preserves discoveries even if the latest device has not visited them.
 5. **Explicit reader navigation still wins:** a URL with scene/dialogue parameters or `restart=1` must not be overridden by the remote opening position.
+6. **Fix all three compiled-ID FKs in one migration:** removing `character_setups.story_id` → `stories.id` is the same data-integrity correction as the two bookmark drops. This **does not** sync character names or change character-setup UX.
 
 ## Data and API contract
 
@@ -42,9 +43,9 @@ Define `readingProgress` in `schema.ts`, backed by table `reading_progress`:
 
 The JSON structure is `Record<string, StoryProgress>`, using existing logical compiled-story IDs as keys. Do **not** add FKs to `stories` or `scenes`, because those tables do not contain compiled story entries.
 
-For `bookmarks`, remove only the `story_id` and `scene_id` foreign keys. Keep both columns non-null text, the `user_id` user FK, and current indexes/uniqueness. No API or repository rewrite is needed for bookmark CRUD.
+For `bookmarks`, remove the `story_id` and `scene_id` foreign keys; keep both columns non-null text, the `user_id` user FK, and existing indexes/uniqueness. For `character_setups`, also remove its `story_id` foreign key to `stories.id`, leaving that column non-null text and retaining its `user_id` FK and indexes. No bookmark or character-setup API/repository rewrite is needed for this schema-only correction.
 
-Generate **one** Drizzle migration for these changes using `bun --cwd apps/web drizzle:generate`; review its SQL and metadata. Do not edit prior migrations or hand-edit the Drizzle journal.
+Generate **one** Drizzle migration for these changes using `bun --cwd apps/web drizzle:generate`; expect one table creation and **three** FK drops, with no unrelated drift. Review SQL and metadata; do not edit prior migrations or hand-edit the Drizzle journal.
 
 ### Request and response
 
@@ -53,11 +54,11 @@ Generate **one** Drizzle migration for these changes using `bun --cwd apps/web d
 - Request JSON: `{ "progress": { "<story-id>": { /* existing StoryProgress */ } } }`
 - Response HTTP 200 JSON: `{ "progress": { "<story-id>": { /* merged StoryProgress */ } } }`
 - Signed out: 401; auth system unavailable: existing `requireAuth` 503.
-- Malformed envelope or JSON: 400; request exceeding a small documented cap (propose **48 KiB**, safely under typical 64 KiB keepalive budgets): 413; database failure: 500.
+- Malformed envelope or JSON: 400; request exceeding **48 KiB** of UTF-8 request bytes: 413; database failure: 500. Browser `keepalive` requests must handle fetch rejection if the browser's remaining keepalive budget is insufficient.
 - Authenticate before processing or storing user data; user ID comes **only** from the session.
 - Use Zod for the envelope, and the shared progress sanitizer below for individual records. An invalid individual story record is **dropped** (the current local-store behavior), not a reason to erase unrelated valid stories.
 
-Do not rely on `Content-Length` alone for the cap; a bounded read must also reject a large body when the header is absent or incorrect. The existing API response helper can return the raw `{ progress }` object.
+Extend the existing `parseBody(request, schema)` helper with optional `maxBytes`. With a limit, read `request.text()` once, count **UTF-8 bytes** (not JavaScript string characters), return 413 when over budget, otherwise `JSON.parse` and run the existing Zod validation. Without a limit, preserve current behavior. Do not implement a bespoke streaming reader: the existing Vercel request-body limit bounds the read. The cap is independent of `Content-Length`. Continue returning the raw `{ progress }` via `jsonResponse`.
 
 ### Merge semantics
 
@@ -70,11 +71,11 @@ For each story:
 - Reject records failing the current `isProgress` checks. If `visited` alone is malformed, drop that field but keep its position/endings.
 - A merge must be idempotent; a later stale upload must not remove a previously discovered ending or visited act.
 
-**Cross-device limits:** “newer” is determined by the device-produced epoch-millisecond `updatedAt` already in the store. Clock skew can affect which position wins. We accept this existing timestamp rule for the MVP; do not add server revisions or a conflict UI.
+**Cross-device limits:** “newer” is determined by the device-produced epoch-millisecond `updatedAt` already in the store. This can legitimately move the Continue position **backward**: a freshly read ch1 on another browser beats an older saved ch9 when that browser signs in. That is acceptable because `visited` remains the union, and users can jump to visited scenes in the story map. Device clock skew can also affect which position wins. Do not add server revisions or a conflict UI.
 
 ### Atomic server write
 
-A read/merge/write must run inside **one** Drizzle transaction. Serialize by locking the authenticated `users` row (`FOR UPDATE`) before looking up `reading_progress`. This also protects the **first insert**, when there is no progress row to lock yet. Then read the current progress, run the pure merge, and insert/update the same user's row. No in-memory locks or separate transaction service.
+A read/merge/write must run inside **one** Drizzle transaction. Serialize by locking the authenticated `users` row with `FOR NO KEY UPDATE` (Drizzle `.for('no key update')`) before looking up `reading_progress`. It conflicts with another sync's lock (including the **first insert** where no progress row exists), without blocking unrelated foreign-key `FOR KEY SHARE` checks for sessions/bookmarks/character setups. Then read the stored progress, merge, insert/update, and return the result. No in-memory locks or extra transaction service.
 
 This lock is for correctness of the union under simultaneous device syncs, not a broader concurrency framework.
 
@@ -85,15 +86,15 @@ This lock is for correctness of the union under simultaneous device syncs, not a
 Add one small browser helper that:
 
 1. Reads the current local map from `StoryProgressStore`.
-2. POSTs it with same-origin session credentials and an optional short timeout/`keepalive` mode.
+2. POSTs it with same-origin session credentials; support a **1,500 ms timeout for the conditional reader-start wait** and optional `keepalive` for hidden/pagehide.
 3. On success, **re-reads localStorage** and merges the returned remote map into this freshest local copy before writing the result; otherwise an in-flight reply could overwrite a line read since the request began.
 4. Reports success/failure to its caller; a failure never clears local progress or blocks reading.
 
-Add the smallest local-store write method needed to commit an already merged map. Do not add a global Svelte store or background worker. A pagehide keepalive request is best-effort, not durable delivery; the next normal sync supplies eventual retry.
+Add the smallest local-store write method needed to commit an already merged map. Do not add a global Svelte store or background worker. A pagehide keepalive request is best-effort, not durable delivery; catch/recover from fetch rejection (including browser keepalive-budget errors), and let the next normal sync retry.
 
 ### Story selection
 
-Pass a simple server-rendered auth state from `stories/index.astro` to `StorySelect.svelte`: signed-in, signed-out, or auth-unavailable. Avoid redundant client-side session fetching. On mount, import legacy sessions, show the local Continue cards immediately, and, **only if signed in**, sync then recompute cards. On persisted `pageshow`, refresh and sync again when appropriate. No sync requests from signed-out or auth-unavailable visitors.
+Derive the three-state auth flag (`signed-in` / `signed-out` / `unavailable`) from existing `getSessionUser` / `SessionResult` in one small server-side helper reused by both Astro pages, then pass it to `StorySelect.svelte`. Avoid redundant client-side session fetching. On mount, import legacy sessions, show the local Continue cards immediately, and, **only if signed in**, sync then recompute cards. On persisted `pageshow`, refresh and sync again when appropriate. No sync requests from signed-out or auth-unavailable visitors.
 
 A discreet line after the Continue section (and before the shelves) uses translations in all three locales:
 
@@ -113,16 +114,18 @@ Resolve the session in `reader.astro` and supply the auth state to `ReaderManage
 
 For signed-in readers:
 
-- At first initialization, **import old local sessions first**, then attempt one short, bounded sync **before** `selectInitialIntent()`. On timeout or failure, start immediately from the local position. Preserve explicitly supplied scene/dialogue and restart routes.
-- After local persistence, throttle cloud pushes to no more than approximately once per minute while reading. Do **not** POST on every dialogue line.
-- Reuse existing `visibilitychange`/`pagehide` handlers to flush local progress, then attempt a best-effort `keepalive` push. Ensure listeners/timers are cleaned up in `destroy()` and no late result repositions an active reading session.
+- Import old local sessions first as today. **Wait up to 1,500 ms for initial sync only when the URL has `story` but no `scene`, `dialogue`, or `restart=1`**, because only this URL shape can use a newly merged position in `selectInitialIntent()`. On timeout/failure, start from local immediately. For explicit deep links, restart links, and no-story URLs, **do not await a network call**: load normally and let the first throttled push sync. Never redirect an already-open reader on a late response.
+- Inside the existing debounced `persist()`, use a **leading-edge timestamp check** (`Date.now() - lastPushAt >= 60_000`) to POST at most once per minute during reading; this is the first push for URL shapes that skip initial sync. Do **not** add a trailing throttle timer or POST on every line.
+- Reuse existing `visibilitychange`/`pagehide` handlers to flush local progress then make one best-effort `keepalive` POST. Avoid duplicate ordinary/keepalive sends from the same flush or repeated lifecycle events. Existing timers/listeners are cleaned up in `destroy()`; no new throttle timer is needed. A failure/late response never clears local progress or repositions the reader.
 - Syncing never requires the connection to be online for local navigation, and signing out leaves the local map intact.
 
 ## Testing and rollout
 
-Unit-test sanitization, newer/tied positions, empty maps, one-sided stories, malformed `visited`, stable discovery union, and repeat merges. Test API 401/400/413/200/500 plus transactional read-merge-write with sequential concurrent-device scenarios (including first-write). Component-test the auth-state status lines, local-then-cloud Continue updates, error fallback, and no calls while signed out. Reader tests must cover initial resume precedence, timeout fallback, throttling, pagehide, and cleanup. A migrated deployment must verify real compiled-story bookmark POST/list; mocked API tests cannot prove the DB fix.
+Unit-test sanitization, newer/tied/backward positions, empty maps, one-sided stories, malformed `visited`, stable discovery union, and repeat merges. Test API 401/400/413/200/500, including multibyte-byte-length limits. Component-test auth status lines, local-to-cloud Continue updates, error fallback, and zero signed-out calls. Reader tests cover conditional initial resume, 1,500 ms fallback, leading-edge throttling, pagehide, dedupe, and cleanup.
 
-**Migration gate:** Production migrations do not run in the Vercel build. Before merging the implementation, get Hapadona's approval and run `bun drizzle:migrate` against the production database. The table can exist before code ships; removal of the two bookmark FKs is compatible with current query paths. Do not run or claim a production migration as part of this design-only draft.
+**Real-DB gate before production:** reuse the existing `postgres:16` service and `bun run drizzle:migrate` step in `.github/workflows/e2e-tests.yml`. Add a focused DB-backed Vitest step immediately afterward (gated on an environment variable set by that job): create a user; run simultaneous first-time `mergeForUser` calls via `Promise.all` and verify the stored union; write and read a compiled-story bookmark **and** a character setup (`train_adventure` plus compiled scene ID for the bookmark). Clean up the test user. The current E2E job **skips draft PRs** (`if: ... draft == false`), so this gate must pass once the implementation is ready for review or via an explicitly triggered workflow before any production migration. Mocked repository or intercepted Playwright calls cannot substitute for this test.
+
+**Migration gate:** Production migrations do not run in the Vercel build. After the real-Postgres CI gate passes, obtain Hapadona's approval and run `bun drizzle:migrate` against production **before merging** the implementation. The table can exist before code ships; removing the three compiled-ID FKs preserves existing query paths. Do not run or claim a production migration as part of this design-only draft.
 
 ## Explicit exclusions
 

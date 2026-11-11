@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getTableConfig } from 'drizzle-orm/pg-core';
 import {
     storyStatusEnum,
     users,
@@ -10,6 +11,7 @@ import {
     chapters,
     scenes,
     bookmarks,
+    readingProgress,
 } from '../schema';
 
 // Symbol used by Drizzle to store the lazy index-builder callback on each table.
@@ -155,6 +157,54 @@ describe('Database schema', () => {
             expect(cols.sceneId).toBeDefined();
             expect(cols.bookmarkName).toBeDefined();
             expect(cols.locale).toBeDefined();
+        });
+    });
+
+    describe('readingProgress table', () => {
+        it('uses the user id as primary key and stores the map as jsonb', () => {
+            const config = getTableConfig(readingProgress);
+            expect(config.name).toBe('reading_progress');
+
+            const userId = config.columns.find(c => c.name === 'user_id');
+            expect(userId?.primary).toBe(true);
+            expect(userId?.notNull).toBe(true);
+
+            const data = config.columns.find(c => c.name === 'data');
+            expect(data?.getSQLType()).toBe('jsonb');
+            expect(data?.notNull).toBe(true);
+            expect(data?.default).toEqual({});
+
+            expect(
+                config.columns.find(c => c.name === 'updated_at')?.notNull
+            ).toBe(true);
+        });
+
+        it('cascades deletes from the owning user', () => {
+            const fks = getTableConfig(readingProgress).foreignKeys;
+            expect(fks).toHaveLength(1);
+            expect(fks[0].reference().foreignTable).toBe(users);
+            expect(fks[0].reference().columns.map(c => c.name)).toEqual([
+                'user_id',
+            ]);
+            expect(fks[0].onDelete).toBe('cascade');
+        });
+    });
+
+    describe('compiled-story foreign keys', () => {
+        function foreignTables(
+            table: typeof bookmarks | typeof characterSetups
+        ) {
+            return getTableConfig(table).foreignKeys.map(
+                fk => fk.reference().foreignTable
+            );
+        }
+
+        it('bookmarks keep only the user foreign key', () => {
+            expect(foreignTables(bookmarks)).toEqual([users]);
+        });
+
+        it('character setups keep only the user foreign key', () => {
+            expect(foreignTables(characterSetups)).toEqual([users]);
         });
     });
 

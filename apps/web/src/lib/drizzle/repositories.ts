@@ -8,6 +8,7 @@ import {
     scenes,
     bookmarks,
     accounts,
+    readingProgress,
     type User,
     type NewUser,
     type CharacterSetup,
@@ -22,6 +23,11 @@ import {
     type NewBookmark,
     type Account,
 } from './schema.js';
+import {
+    mergeStoryProgressMaps,
+    normalizeStoryProgressMap,
+    type StoryProgressMap,
+} from '../story-progress.js';
 import { nanoid } from 'nanoid';
 
 // ============= User Repository =============
@@ -433,6 +439,58 @@ export class BookmarkRepository extends BaseRepository<
             .returning();
 
         return bookmark;
+    }
+}
+
+// ============= Reading Progress Repository =============
+export class ReadingProgressRepository extends BaseRepository<
+    typeof readingProgress,
+    typeof readingProgress.$inferSelect
+> {
+    protected table = readingProgress;
+    protected idColumn = readingProgress.userId;
+
+    /**
+     * Merge a client map into the account's stored map atomically. Locking the
+     * user row (rather than the progress row) serializes two first-time writes
+     * without blocking FK-checked session/bookmark/character inserts.
+     */
+    async mergeForUser(
+        userId: string,
+        localMap: StoryProgressMap
+    ): Promise<StoryProgressMap> {
+        return await this.db.transaction(async tx => {
+            await tx
+                .select({ id: users.id })
+                .from(users)
+                .where(eq(users.id, userId))
+                .for('no key update');
+
+            const [stored] = await tx
+                .select()
+                .from(readingProgress)
+                .where(eq(readingProgress.userId, userId))
+                .limit(1);
+
+            const merged = mergeStoryProgressMaps(
+                localMap,
+                normalizeStoryProgressMap(stored?.data)
+            );
+            const updatedAt = new Date();
+
+            if (stored) {
+                await tx
+                    .update(readingProgress)
+                    .set({ data: merged, updatedAt })
+                    .where(eq(readingProgress.userId, userId));
+            } else {
+                await tx
+                    .insert(readingProgress)
+                    .values({ userId, data: merged, updatedAt });
+            }
+
+            return merged;
+        });
     }
 }
 

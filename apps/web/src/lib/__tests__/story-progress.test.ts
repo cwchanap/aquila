@@ -125,6 +125,21 @@ describe('mergeStoryProgressMaps', () => {
         });
     });
 
+    it('deduplicates discoveries on a one-sided story', () => {
+        const local = map({
+            elevator_game: {
+                endings: ['ending_a', 'ending_a'],
+                visited: ['act1', 'act1'],
+            },
+            train_adventure: {},
+        });
+        const merged = mergeStoryProgressMaps(local, {});
+        expect(merged.elevator_game.endings).toEqual(['ending_a']);
+        expect(merged.elevator_game.visited).toEqual(['act1']);
+        expect('visited' in merged.train_adventure).toBe(false);
+        expect(mergeStoryProgressMaps(merged, merged)).toEqual(merged);
+    });
+
     it('takes the newer local position', () => {
         const local = map({
             elevator_game: {

@@ -32,6 +32,14 @@ import {
     type LoadedIntentPhase,
     type ReaderIntent,
 } from './reader-intent';
+import type { AuthState } from './auth-utils';
+import {
+    STORY_PROGRESS_SYNC_TIMEOUT_MS,
+    syncStoryProgress,
+} from './story-progress-sync';
+
+/** Minimum gap between ordinary cloud pushes while reading. */
+const CLOUD_PUSH_INTERVAL_MS = 60_000;
 
 export interface ReaderManagerDependencies {
     loadStoryContent?: typeof loadStoryContent;
@@ -39,6 +47,8 @@ export interface ReaderManagerDependencies {
     loadReaderShell?: () => Promise<
         typeof import('@/components/ReaderShell.svelte')
     >;
+    /** Server-derived auth state; an unwired caller can never sync. */
+    authState?: AuthState;
 }
 
 export class ReaderManager {
@@ -51,6 +61,7 @@ export class ReaderManager {
             typeof import('@/components/ReaderShell.svelte')
         >;
         defaultStoryId: string;
+        authState: AuthState;
     };
     private readonly localBookmarks: LocalBookmarksStore;
     private readonly storyProgress: StoryProgressStore;
@@ -74,6 +85,12 @@ export class ReaderManager {
     // write.
     private replaceGen = 0;
     private persistTimer: ReturnType<typeof setTimeout> | null = null;
+    // Cloud sync state. lastPushAt is the leading edge of the ordinary
+    // once-per-minute push (also set by a successful startup merge and a hide
+    // flush); keepaliveSent makes visibilitychange+pagehide produce one
+    // request per hide until the tab becomes visible again.
+    private lastPushAt = 0;
+    private keepaliveSent = false;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
     // start a second initial load. renderReader has its own mount guard, but
@@ -100,6 +117,7 @@ export class ReaderManager {
                 dependencies.loadReaderShell ??
                 (() => import('@/components/ReaderShell.svelte')),
             defaultStoryId: defaultStoryId || 'the_seventh_mirror',
+            authState: dependencies.authState ?? 'signed-out',
         };
 
         readerState.dialogue = [];
@@ -333,7 +351,7 @@ export class ReaderManager {
      *  errors (Safari private mode throws QuotaExceededError; quota-exceeded
      *  throws on other browsers) so the pagehide path and normal navigation
      *  do not propagate an uncaught throw out of the event handler. */
-    private persist(): void {
+    private persist(options: { cloud?: boolean } = {}): void {
         const data = {
             storyId: readerState.storyId,
             sceneId: readerState.currentSceneId,
@@ -347,6 +365,53 @@ export class ReaderManager {
             console.error('Failed to persist reader state', e);
         }
         this.recordStoryProgress();
+        // The hide flush persists locally, then sends its own keepalive; it
+        // suppresses this ordinary push so one hide never sends twice.
+        if (options.cloud !== false) this.maybePushProgress();
+    }
+
+    /** Leading-edge ordinary push: at most one request per minute, no timer. */
+    private maybePushProgress(): void {
+        if (Date.now() - this.lastPushAt < CLOUD_PUSH_INTERVAL_MS) return;
+        this.pushProgress();
+    }
+
+    /** Fire-and-forget cloud push; failures leave local progress untouched. */
+    private pushProgress(keepalive = false): void {
+        if (this.deps.authState !== 'signed-in' || this.destroyed) return;
+        this.lastPushAt = Date.now();
+        void syncStoryProgress(keepalive ? { keepalive: true } : {}).catch(
+            () => {}
+        );
+    }
+
+    /** One best-effort final push per hide, after the local flush. */
+    private flushProgressKeepalive(): void {
+        if (this.keepaliveSent) return;
+        this.keepaliveSent = true;
+        this.pushProgress(true);
+    }
+
+    /** True only for a bare `?story=` link: explicit scene/dialogue/restart
+     *  links must win over the merged account position. */
+    private canResumeFromCloud(): boolean {
+        if (this.deps.authState !== 'signed-in') return false;
+        const params = new URLSearchParams(window.location.search);
+        return (
+            params.has('story') &&
+            !params.has('scene') &&
+            !params.has('dialogue') &&
+            params.get('restart') !== '1'
+        );
+    }
+
+    /** Bounded startup merge; failure or timeout starts from local progress. */
+    private async resumeFromCloud(): Promise<void> {
+        if (!this.canResumeFromCloud()) return;
+        const result = await syncStoryProgress({
+            timeoutMs: STORY_PROGRESS_SYNC_TIMEOUT_MS,
+        });
+        if (result.ok) this.lastPushAt = Date.now();
     }
 
     /** Keep a per-story copy of the position (the session above holds only
@@ -760,13 +825,19 @@ export class ReaderManager {
         if (!readerState.hasActivePayload) return;
         this.flushPendingReplace();
         this.cancelPersistTimer();
-        this.persist();
+        this.persist({ cloud: false });
+        this.flushProgressKeepalive();
     };
 
     /** Named visibilitychange handler so destroy() can remove the exact
      *  listener reference that initialize() registered. */
     private onVisibilityChange = (): void => {
-        if (document.visibilityState === 'hidden') this.onPageHide();
+        if (document.visibilityState === 'hidden') {
+            this.onPageHide();
+        } else {
+            // Re-arm the one-keepalive-per-hide rule for the next hide.
+            this.keepaliveSent = false;
+        }
     };
 
     private addLifecycleListeners(): void {
@@ -782,6 +853,10 @@ export class ReaderManager {
         this.addLifecycleListeners();
         const generation = ++this.loadGeneration;
         await this.renderReader();
+        if (!this.isCurrent(generation)) return;
+        // Only a bare ?story= link can use the merged position in
+        // selectInitialIntent(); every other shape starts without waiting.
+        await this.resumeFromCloud();
         if (!this.isCurrent(generation)) return;
         await this.loadIntent(
             this.selectInitialIntent(),

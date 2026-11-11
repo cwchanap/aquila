@@ -70,6 +70,15 @@ jobs:
           DATABASE_URL: ${{ env.DATABASE_URL }}
         run: bun run drizzle:migrate
 
+      - name: Run reading-progress real-Postgres tests
+        # Opt-in suite: proves the FOR NO KEY UPDATE merge and the
+        # compiled-story bookmark/character writes against the migrated job DB.
+        working-directory: apps/web
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          AQUILA_PROGRESS_DB_TEST: '1'
+        run: bun run test:run src/lib/drizzle/__tests__/progress-db.test.ts
+
       - name: Run Playwright tests
         working-directory: packages/e2e
         run: bun run test:e2e

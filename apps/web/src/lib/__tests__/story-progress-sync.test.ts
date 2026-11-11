@@ -40,9 +40,23 @@ function bodyOf(fetchMock: ReturnType<typeof vi.fn>): unknown {
     return JSON.parse(fetchMock.mock.calls[0][1].body as string);
 }
 
+function memoryStorage(initial: Record<string, string> = {}): Storage {
+    const data = new Map(Object.entries(initial));
+    return {
+        get length() {
+            return data.size;
+        },
+        clear: () => data.clear(),
+        getItem: key => data.get(key) ?? null,
+        key: i => [...data.keys()][i] ?? null,
+        removeItem: key => void data.delete(key),
+        setItem: (key, value) => void data.set(key, String(value)),
+    };
+}
+
 afterEach(() => {
-    localStorage.clear();
     vi.unstubAllGlobals();
+    localStorage.clear();
 });
 
 describe('syncStoryProgress', () => {
@@ -267,5 +281,104 @@ describe('syncStoryProgress', () => {
             keepalive: true,
             credentials: 'same-origin',
         });
+    });
+
+    it('returns failure without writing when the fresh local read fails', async () => {
+        const initial = JSON.stringify({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        const storage = memoryStorage({ [STORY_PROGRESS_KEY]: initial });
+        let reads = 0;
+        let writes = 0;
+        const getItem = storage.getItem.bind(storage);
+        const setItem = storage.setItem.bind(storage);
+        storage.getItem = key => {
+            reads += 1;
+            if (reads === 2) throw new Error('storage read failed');
+            return getItem(key);
+        };
+        storage.setItem = (key, value) => {
+            writes += 1;
+            setItem(key, value);
+        };
+        vi.stubGlobal('localStorage', storage);
+        const advanced = JSON.stringify({
+            the_seventh_mirror: record({ sceneId: 'ch5_act2', updatedAt: 40 }),
+            elevator_game: record({ updatedAt: 30 }),
+        });
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockImplementation(async () => {
+                // The reader advances and discovers another story while the
+                // response is in flight.
+                storage.setItem(STORY_PROGRESS_KEY, advanced);
+                return serverResponse({
+                    progress: {
+                        the_seventh_mirror: record({
+                            sceneId: 'ch2_act1',
+                            updatedAt: 20,
+                        }),
+                    },
+                });
+            })
+        );
+
+        const result = await syncStoryProgress();
+
+        expect(result.ok).toBe(false);
+        expect(writes).toBe(1);
+        expect(storage.getItem(STORY_PROGRESS_KEY)).toBe(advanced);
+    });
+
+    it('returns failure when the merged map cannot be committed', async () => {
+        const original = JSON.stringify({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        const storage = memoryStorage({ [STORY_PROGRESS_KEY]: original });
+        storage.setItem = () => {
+            throw new Error('QuotaExceededError');
+        };
+        vi.stubGlobal('localStorage', storage);
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue(
+                serverResponse({
+                    progress: {
+                        elevator_game: record({ updatedAt: 20 }),
+                    },
+                })
+            )
+        );
+
+        const result = await syncStoryProgress();
+
+        expect(result.ok).toBe(false);
+        expect(storage.getItem(STORY_PROGRESS_KEY)).toBe(original);
+    });
+
+    it('returns failure without a request when local storage is unavailable', async () => {
+        vi.stubGlobal('localStorage', undefined);
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await syncStoryProgress();
+
+        expect(result.ok).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('returns failure before posting when local progress cannot be read', async () => {
+        const storage = memoryStorage();
+        storage.getItem = () => {
+            throw new Error('SecurityError');
+        };
+        vi.stubGlobal('localStorage', storage);
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await syncStoryProgress();
+
+        expect(result.ok).toBe(false);
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 });

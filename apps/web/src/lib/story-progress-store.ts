@@ -36,12 +36,19 @@ export class StoryProgressStore {
 
     /** All valid records; malformed entries are dropped, never thrown on. */
     getAll(): StoryProgressMap {
+        return this.getAllChecked() ?? {};
+    }
+
+    /** Like getAll, but null when the saved map cannot be read, so a caller
+     *  that writes back (sync) never mistakes a failed read for no progress. */
+    getAllChecked(): StoryProgressMap | null {
+        if (!this.storage) return null;
         try {
-            const raw = this.storage?.getItem(STORY_PROGRESS_KEY);
-            if (!raw) return {};
+            const raw = this.storage.getItem(STORY_PROGRESS_KEY);
+            if (raw === null) return {};
             return normalizeStoryProgressMap(JSON.parse(raw));
         } catch {
-            return {};
+            return null;
         }
     }
 

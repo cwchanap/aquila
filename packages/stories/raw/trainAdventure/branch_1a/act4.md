@@ -176,10 +176,6 @@ the abandoned rural station of Jishui: a short platform of cracked grey-white st
 
 **旁白**：她的聲音細若蚊蚋，帶著哭腔，幾乎聽不清。
 
-```bg
-reuse branch_1a/b1a_act4_door_call
-```
-
 **健談男大生**：她⋯⋯她也下去了⋯⋯
 
 **沉穩男大生**：也許⋯⋯也許我們也應該⋯⋯
@@ -187,10 +183,6 @@ reuse branch_1a/b1a_act4_door_call
 **多話女大生**：可是⋯⋯可是外面好可怕啊⋯⋯我不敢⋯⋯萬一有什麼東西⋯⋯
 
 **自私中年男**：別去！待在車上！絕對不能下去！你們看，那兩個人肯定會出事的！
-
-```bg
-reuse branch_1a/b1a_act4_platform_pair
-```
 
 **旁白**：在兩輪紫月的光芒下，女孩顯得如此脆弱，彷彿隨時會被風吹倒。但她還是鼓起勇氣，踏出了那一步。
 

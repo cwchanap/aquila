@@ -107,6 +107,9 @@
   function runSync(): Promise<void> {
     // A cached page returning mid-request joins the request already running.
     if (syncInFlight) return syncInFlight;
+    // A retry starts from 'idle' so the previous answer is not shown as
+    // current while the new request is unanswered.
+    syncState = 'idle';
     const run = (async () => {
       try {
         const result = await syncStoryProgress();

@@ -1,6 +1,6 @@
 # HPA-703 — Account Reading Progress Sync and Cloud Bookmarks Design
 
-**Status:** Proposed for review. This is a documentation-only draft PR; implement the approved changes in the **same PR**, not a follow-up PR.
+**Status:** Implemented in this branch; CI, Hapadona's approval, the production migration, and deployed acceptance are still pending. Do not merge before the real-Postgres CI gate passes and the production migration is approved and run.
 
 - Linear: https://linear.app/cwchanap/issue/HPA-703/sync-reading-progress-to-the-account-and-fix-cloud-bookmarks
 - Implementation checklist: [2026-11-10-hpa-703-reading-progress-sync.md](../plans/2026-11-10-hpa-703-reading-progress-sync.md)
@@ -125,7 +125,7 @@ Unit-test sanitization, newer/tied/backward positions, empty maps, one-sided sto
 
 **Real-DB gate before production:** reuse the existing `postgres:16` service and `bun run drizzle:migrate` step in `.github/workflows/e2e-tests.yml`. Add a focused DB-backed Vitest step immediately afterward (gated on an environment variable set by that job): create a user; run simultaneous first-time `mergeForUser` calls via `Promise.all` and verify the stored union; write and read a compiled-story bookmark **and** a character setup (`train_adventure` plus compiled scene ID for the bookmark). Clean up the test user. The current E2E job **skips draft PRs** (`if: ... draft == false`), so this gate must pass once the implementation is ready for review or via an explicitly triggered workflow before any production migration. Mocked repository or intercepted Playwright calls cannot substitute for this test.
 
-**Migration gate:** Production migrations do not run in the Vercel build. After the real-Postgres CI gate passes, obtain Hapadona's approval and run `bun drizzle:migrate` against production **before merging** the implementation. The table can exist before code ships; removing the three compiled-ID FKs preserves existing query paths. Do not run or claim a production migration as part of this design-only draft.
+**Migration gate:** Production migrations do not run in the Vercel build. After the real-Postgres CI gate passes, obtain Hapadona's approval and run `bun drizzle:migrate` against production **before merging** the implementation. The table can exist before code ships; removing the three compiled-ID FKs preserves existing query paths. Do not run or claim a production migration before that approval.
 
 ## Explicit exclusions
 

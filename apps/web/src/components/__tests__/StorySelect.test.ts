@@ -408,4 +408,71 @@ describe('StorySelect', () => {
         window.dispatchEvent(restoredPageShow());
         await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     });
+
+    it('shows syncing again while a restored-page retry is still unseen', async () => {
+        let resolveSecond!: (response: Response) => void;
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(serverResponse({ progress: {} }))
+            .mockImplementationOnce(
+                () =>
+                    new Promise<Response>(resolve => {
+                        resolveSecond = resolve;
+                    })
+            );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        expect(
+            await screen.findByText('Your progress is saved to your account')
+        ).toBeInTheDocument();
+
+        // The retry starts now; the previous result is no longer current.
+        window.dispatchEvent(restoredPageShow());
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('progress-sync-status')
+            ).toHaveTextContent('Syncing your progress…')
+        );
+
+        resolveSecond(serverResponse({ progress: {} }));
+        expect(
+            await screen.findByText('Your progress is saved to your account')
+        ).toBeInTheDocument();
+    });
+
+    it('shows syncing again while a retry follows a failed sync', async () => {
+        let resolveSecond!: (response: Response) => void;
+        const fetchMock = vi
+            .fn()
+            .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+            .mockImplementationOnce(
+                () =>
+                    new Promise<Response>(resolve => {
+                        resolveSecond = resolve;
+                    })
+            );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        expect(
+            await screen.findByText(
+                "Couldn't reach your account. Progress is kept in this browser and syncs next time."
+            )
+        ).toBeInTheDocument();
+
+        window.dispatchEvent(restoredPageShow());
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('progress-sync-status')
+            ).toHaveTextContent('Syncing your progress…')
+        );
+
+        resolveSecond(serverResponse({ progress: {} }));
+        expect(
+            await screen.findByText('Your progress is saved to your account')
+        ).toBeInTheDocument();
+    });
 });

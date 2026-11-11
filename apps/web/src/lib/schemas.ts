@@ -131,3 +131,12 @@ export const CharacterSetupSchema = z.object({
 });
 
 export type CharacterSetup = z.infer<typeof CharacterSetupSchema>;
+
+// Reading progress sync schemas
+export const ProgressSyncSchema = z.object({
+    // Envelope shape only; individual records are sanitized by
+    // normalizeStoryProgressMap so one bad story cannot fail the whole sync.
+    progress: z.record(z.unknown()),
+});
+
+export type ProgressSync = z.infer<typeof ProgressSyncSchema>;

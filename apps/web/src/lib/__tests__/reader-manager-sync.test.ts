@@ -811,6 +811,17 @@ describe('ReaderManager account progress sync', () => {
         await flush();
         expect(authClient.getSession).toHaveBeenCalled();
 
+        // A normal pageshow does not revalidate; a persisted (bfcache)
+        // restore does.
+        window.dispatchEvent(new Event('pageshow'));
+        await flush();
+        expect(authClient.getSession).toHaveBeenCalledTimes(1);
+        window.dispatchEvent(
+            Object.assign(new Event('pageshow'), { persisted: true })
+        );
+        await flush();
+        expect(authClient.getSession).toHaveBeenCalledTimes(2);
+
         // The next record belongs to B: A's map is quarantined rather
         // than silently appended to under the stale tag.
         manager.goToScene('act2');

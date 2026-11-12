@@ -277,6 +277,42 @@ describe('syncStoryProgress', () => {
         expect(readProgress()).toEqual(local);
     });
 
+    it('returns an error for a null progress response', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(serverResponse(null)));
+
+        expect((await syncStoryProgress({ accountId: 'user-1' })).ok).toBe(
+            false
+        );
+    });
+
+    it('fails locally when the foreign map cannot be re-read after the response', async () => {
+        const initial = JSON.stringify({
+            v: 2,
+            owner: 'user-a',
+            progress: { the_seventh_mirror: record({ updatedAt: 10 }) },
+        });
+        const storage = memoryStorage({ [STORY_PROGRESS_KEY]: initial });
+        vi.stubGlobal('localStorage', storage);
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockImplementation(async () => {
+                // The post-response read fails — the commit cannot verify
+                // who owns the map, so nothing may be written over it.
+                storage.getItem = () => {
+                    throw new Error('SecurityError');
+                };
+                return serverResponse({
+                    progress: { train_adventure: record({ updatedAt: 30 }) },
+                });
+            })
+        );
+
+        expect(await syncStoryProgress({ accountId: 'user-b' })).toMatchObject({
+            ok: false,
+            local: true,
+        });
+    });
+
     it('bounds a hung fetch with the 1,500 ms timeout and aborts it', async () => {
         vi.useFakeTimers();
         fakeAbortSignalTimeout();

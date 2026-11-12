@@ -90,6 +90,9 @@ These are settled from the story text and hold in every image, acts 1-6:
 - **Lanterns:** unlit in act 3 (the text has no light outside the train) and glowing faintly from b1a_act4_lijie_stands on, when the text has them lighting the platform. The act 3 images reused at the start of act 4 still show them unlit, before Li Jie looks out.
 - **Expressions:** the portraits smile, so any prompt that passes Li Jie's or Emi's portrait states the wanted expression and says "not smiling" unless the beat is a happy one.
 - **Branch 1b seating after the station:** the Kobayashi family sits at the far end of the right bench, nearest the end wall, and Nakamura sits alone a few seats nearer the door (b1b_act5_half_empty, b1b_act5_relief).
+- **Moon order:** the large crescent is always left of the small one in the frame, whichever way the camera faces. Prompts say "the large one on the left"; the model swaps them otherwise.
+- **Glasses:** only Saito wears glasses. Edits tend to add them to Nakamura and Yamamoto, so prompts say "no glasses" for both. A close-up crop of the face, edited at 4x and pasted back, removed them where a full-frame edit would not (b1a_act4_lijie_stands, b1a_act4_door_call).
+- **Station sign glyphs:** the model garbles 寂海 at small sizes. act3_s3 reads correctly; the signs in act3_s4, act3_door_argument and b1a_act4_door_call were retouched by hand with its glyphs.
 - **Poles:** the image model often moves or drops a single pole. When one is wrong, remove it in an edit and paint the pole back by hand at the seat-front seam (b1a_act4_lingmo_gone and b1b_act5_ito_explain were done this way).
 
 ### Jishui station (branch 1a)

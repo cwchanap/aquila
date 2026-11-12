@@ -54,6 +54,13 @@ function progressCalls(
 const restoredPageShow = () =>
     Object.assign(new Event('pageshow'), { persisted: true });
 
+/** Flushes a settled request's whole callback chain — response parsing, the
+ *  local merge, the queued-rerun hook — so a follow-up request a bug would
+ *  fire has already happened. One microtask resolves before that chain
+ *  finishes and cannot prove a negative; timers are faked globally, so
+ *  advancing them is the task turn. */
+const taskTurn = () => vi.advanceTimersByTimeAsync(0);
+
 function cardLink(id: string): HTMLAnchorElement {
     const link = document.querySelector<HTMLAnchorElement>(
         `a.story-card[data-story-id="${id}"]`
@@ -460,8 +467,9 @@ describe('StorySelect', () => {
 
         resolveFirst(serverResponse({ progress: {} }));
         await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
-        // Both joins share the single queued pass — no third request fires.
-        await Promise.resolve();
+        // Both joins share the single queued pass — no third request fires
+        // once the second request's callbacks have all run.
+        await taskTurn();
         expect(progressCalls(fetchMock)).toHaveLength(2);
     });
 
@@ -503,7 +511,7 @@ describe('StorySelect', () => {
         );
 
         resolveFirst(serverResponse({ progress: {} }));
-        await Promise.resolve();
+        await taskTurn();
         expect(progressCalls(fetchMock)).toHaveLength(1);
     });
 
@@ -630,5 +638,49 @@ describe('StorySelect', () => {
         );
 
         expect(progressCalls(fetchMock)).toHaveLength(0);
+    });
+
+    it('ignores a slower session reply from an earlier restore', async () => {
+        let resolveSlow!: (response: Response) => void;
+        const sessionResponses = [
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveSlow = resolve;
+                }),
+            () => Promise.resolve(sessionResponse(null)),
+        ];
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? sessionResponses.shift()!()
+                : Promise.resolve(serverResponse({ progress: {} }))
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        saveProgress({
+            elevator_game: {
+                sceneId: 'b1a_act4',
+                dialogueIndex: 9,
+                updatedAt: 30,
+                finished: true,
+                endings: ['b1a_act4'],
+            },
+        });
+
+        renderSelect({ authState: 'signed-out' });
+        // The first restore's session request hangs; the second restore's
+        // answers signed-out first, and that newer answer is the one the
+        // page must keep.
+        window.dispatchEvent(restoredPageShow());
+        window.dispatchEvent(restoredPageShow());
+        await taskTurn();
+
+        resolveSlow(sessionResponse({ user: { id: 'user-1' } }));
+        await taskTurn();
+
+        // The stale reply is dropped: no sync fires and the status never
+        // flips to a signed-in line.
+        expect(progressCalls(fetchMock)).toHaveLength(0);
+        expect(screen.getByTestId('progress-sync-status')).toHaveTextContent(
+            'Progress is saved in this browser only.'
+        );
     });
 });

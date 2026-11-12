@@ -54,6 +54,12 @@ describe('normalizeStoryProgressMap', () => {
             negativeIndex: { ...progress(), dialogueIndex: -1 },
             infiniteIndex: { ...progress(), dialogueIndex: Number.NaN },
             stringDate: { ...progress(), updatedAt: '3' },
+            // JSON.parse can produce this from "1e999"; serialized back it
+            // becomes null, so the record must be dropped at the door.
+            infiniteDate: {
+                ...progress(),
+                updatedAt: Number.POSITIVE_INFINITY,
+            },
             missingEndings: {
                 sceneId: 'act1',
                 dialogueIndex: 0,

@@ -45,6 +45,10 @@
   // pass runs behind it; the running request still carries the pre-restore
   // account and progress.
   let syncRerunQueued = false;
+  // Persisted restores can overlap: each one re-reads the session, and only
+  // the newest may apply its answer — a slow earlier reply must not reinstate
+  // a stale sign-in over a newer sign-out (or the reverse).
+  let restoreSeq = 0;
   // Covers live on the R2 asset host — an <img> that 404s removes itself so
   // the accent-gradient + icon fallback underneath shows through.
   let failedCovers = new SvelteSet<string>();
@@ -166,8 +170,10 @@
     const onPageShow = (event: Event) => {
       if (!(event as Event & { persisted?: boolean }).persisted) return;
       refresh();
+      const restore = ++restoreSeq;
       void (async () => {
         const refreshed = await fetchAuthState();
+        if (restore !== restoreSeq) return;
         if (refreshed !== null) authState = refreshed;
         if (authState === 'signed-in') void runSync();
       })();

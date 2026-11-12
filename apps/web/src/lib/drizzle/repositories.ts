@@ -175,16 +175,14 @@ export class StoryRepository extends BaseRepository<typeof stories, Story> {
     }
 
     /** Deletes the story plus the rows the dropped story FKs used to
-     *  cascade: the owner's bookmarks and character setups keyed by this
-     *  story id. Compiled-story rows share the columns but can never carry a
-     *  Story Writer id, so the story-id scope reproduces the old cascade. */
+     *  cascade. Any signed-in user can bookmark any story id — the bookmark
+     *  API does not check story ownership — so bookmarks go by story id
+     *  alone, like the old cascade. Character setups keep the owner scope:
+     *  the setup API only accepts compiled story ids, so a setup can never
+     *  carry a Story Writer id anyway. */
     async deleteWithDependents(id: string, userId: string): Promise<boolean> {
         return await this.db.transaction(async tx => {
-            await tx
-                .delete(bookmarks)
-                .where(
-                    and(eq(bookmarks.userId, userId), eq(bookmarks.storyId, id))
-                );
+            await tx.delete(bookmarks).where(eq(bookmarks.storyId, id));
             await tx
                 .delete(characterSetups)
                 .where(

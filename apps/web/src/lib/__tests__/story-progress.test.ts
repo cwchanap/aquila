@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    boundStoryProgressMap,
     mergeStoryProgressMaps,
     normalizeStoryProgressMap,
     type StoryProgress,
@@ -318,5 +319,88 @@ describe('mergeStoryProgressMaps', () => {
         expect(Object.getPrototypeOf(merged)).toBe(Object.prototype);
         expect(merged.real.updatedAt).toBe(2);
         expect(Object.hasOwn(merged, '__proto__')).toBe(true);
+    });
+});
+
+describe('boundStoryProgressMap', () => {
+    const byteLength = (map: StoryProgressMap) =>
+        new TextEncoder().encode(JSON.stringify(map)).byteLength;
+
+    it('returns a fitting map unchanged', () => {
+        const fitting = map({
+            elevator_game: {
+                visited: ['act1', 'act2'],
+                endings: ['act2'],
+            },
+        });
+        expect(boundStoryProgressMap(fitting, byteLength(fitting))).toBe(
+            fitting
+        );
+        expect(boundStoryProgressMap(fitting, byteLength(fitting) + 10)).toBe(
+            fitting
+        );
+    });
+
+    it('drops visited lists oldest-first before touching endings', () => {
+        const big = map({
+            old_story: {
+                updatedAt: 1,
+                visited: Array.from({ length: 50 }, (_, i) => `s_${i}`),
+                endings: ['end_a'],
+            },
+            new_story: {
+                updatedAt: 2,
+                visited: ['n1', 'n2'],
+                endings: ['end_b'],
+            },
+        });
+        const bounded = boundStoryProgressMap(big, 512);
+        expect(byteLength(bounded)).toBeLessThanOrEqual(512);
+        // The oldest record's decoration went first; the newer one is whole.
+        expect('visited' in bounded.old_story).toBe(false);
+        expect(bounded.new_story).toEqual(big.new_story);
+    });
+
+    it('empties endings after visited lists are gone and drops records last', () => {
+        const big = map({
+            old_story: {
+                updatedAt: 1,
+                visited: ['v'],
+                endings: Array.from({ length: 40 }, (_, i) => `e_${i}`),
+            },
+            new_story: {
+                updatedAt: 2,
+                endings: ['keep_me'],
+            },
+        });
+        const bounded = boundStoryProgressMap(big, 300);
+        expect(byteLength(bounded)).toBeLessThanOrEqual(300);
+        expect('visited' in bounded.old_story).toBe(false);
+        expect(bounded.old_story.endings).toEqual([]);
+        expect(bounded.new_story.endings).toEqual(['keep_me']);
+        expect(bounded.new_story.sceneId).toBe(big.new_story.sceneId);
+    });
+
+    it('drops the oldest records when lists alone cannot fit the budget', () => {
+        const big = map({
+            old_story: { updatedAt: 1 },
+            mid_story: { updatedAt: 2 },
+            new_story: { updatedAt: 3 },
+        });
+        const bounded = boundStoryProgressMap(big, 140);
+        expect(byteLength(bounded)).toBeLessThanOrEqual(140);
+        expect(Object.keys(bounded)).toContain('new_story');
+        expect(Object.keys(bounded)).not.toContain('old_story');
+    });
+
+    it('never leaves a map over budget, even for one oversized record', () => {
+        const big = map({
+            only: {
+                visited: Array.from({ length: 100 }, (_, i) => `scene_${i}`),
+                endings: ['e'],
+            },
+        });
+        const bounded = boundStoryProgressMap(big, 128);
+        expect(byteLength(bounded)).toBeLessThanOrEqual(128);
     });
 });

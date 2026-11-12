@@ -97,6 +97,8 @@ describe('CharacterSetupManager', () => {
     afterEach(() => {
         vi.useRealTimers();
         vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+        localStorage.clear();
         document.body.innerHTML = '';
     });
 
@@ -107,6 +109,25 @@ describe('CharacterSetupManager', () => {
         );
         const { input } = managerFor();
         expect(input.value).toBe('Aria');
+    });
+
+    it('ignores a corrupt locally saved character name', () => {
+        storage.setItem('aquila:character:train_adventure', '{not json');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const { input } = managerFor();
+        expect(input.value).toBe('');
+        expect(warn).toHaveBeenCalled();
+    });
+
+    it('uses the browser storage and location by default', async () => {
+        const { input } = setupDom();
+        new CharacterSetupManager(
+            document.getElementById('setup-root') as HTMLElement
+        ).initialize();
+        await submit(input, 'Aria');
+        expect(localStorage.getItem('aquila:character:train_adventure')).toBe(
+            JSON.stringify({ characterName: 'Aria' })
+        );
     });
 
     it('saves locally and navigates for a signed-out visitor', async () => {
@@ -223,6 +244,22 @@ describe('CharacterSetupManager', () => {
         expect(navigate).not.toHaveBeenCalled();
         expect(button.disabled).toBe(false);
         expect(button.textContent).toBe('Start Adventure');
+    });
+
+    it('reports a failed save when the error body is not JSON', async () => {
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: false,
+            status: 500,
+            statusText: 'Internal Server Error',
+            text: async () => 'not json',
+        } as Response);
+        vi.stubGlobal('fetch', fetchMock);
+        const { input, button } = managerFor({ 'data-authed': 'true' });
+        await submit(input, 'Aria');
+
+        expect(alert).toHaveBeenCalled();
+        expect(navigate).not.toHaveBeenCalled();
+        expect(button.disabled).toBe(false);
     });
 
     it('blocks an empty name before any request', async () => {

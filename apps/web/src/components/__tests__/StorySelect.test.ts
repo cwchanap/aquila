@@ -409,6 +409,20 @@ describe('StorySelect', () => {
         expect(fetchMock).not.toHaveBeenCalled();
     });
 
+    it('reports a failed sync without a request when signed-in has no user id', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in', userId: null });
+
+        expect(
+            await screen.findByText(
+                "Couldn't reach your account. Progress is kept in this browser and syncs next time."
+            )
+        ).toBeInTheDocument();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it('shows the signed-out line when an unavailable SSR session re-reads as signed-out', async () => {
         const fetchMock = vi.fn();
         vi.stubGlobal('fetch', fetchMock);

@@ -27,6 +27,16 @@ export const POST: APIRoute = async ({ request }) => {
         );
         if (validationError) return validationError;
 
+        // The client binds each upload to the account it read for; a tab
+        // still holding the previous account's id after sign-out must not
+        // merge that map into the new session's row.
+        if (data.accountId !== session.user.id) {
+            return errorResponse(
+                'Progress account does not match the session',
+                409
+            );
+        }
+
         const repository = new ReadingProgressRepository();
         const progress = await repository.mergeForUser(
             session.user.id,

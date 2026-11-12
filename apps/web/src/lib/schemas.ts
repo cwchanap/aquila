@@ -137,6 +137,10 @@ export const ProgressSyncSchema = z.object({
     // Envelope shape only; individual records are sanitized by
     // normalizeStoryProgressMap so one bad story cannot fail the whole sync.
     progress: z.record(z.unknown()),
+    // The account the uploader believes it is writing to. Checked against
+    // the session server-side so a tab that outlived its sign-in cannot
+    // merge the previous account's map into the new session's row.
+    accountId: z.string().min(1),
 });
 
 export type ProgressSync = z.infer<typeof ProgressSyncSchema>;

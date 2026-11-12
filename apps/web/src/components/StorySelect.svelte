@@ -141,17 +141,16 @@
     }
   }
 
-  /** Applies a revalidated session; a recovered 'signed-in' also dismisses
-   *  the SSR degraded banner. */
+  /** Applies a revalidated session; any validated answer — signed-in or
+   *  signed-out — means auth is back, so the SSR degraded banner comes
+   *  down either way. */
   function applyAuthState(refreshed: {
     authState: AuthState;
     userId: string | null;
   }): void {
     authState = refreshed.authState;
     userId = refreshed.userId;
-    if (authState === 'signed-in') {
-      document.getElementById('auth-degraded-banner')?.remove();
-    }
+    document.getElementById('auth-degraded-banner')?.remove();
   }
 
   function runSync(): Promise<void> {
@@ -201,8 +200,11 @@
     // background session re-read decides whether this visit can sync.
     if (authState === 'unavailable') {
       void (async () => {
+        // Same guard as a persisted restore: a newer restore's answer must
+        // not be overwritten by this older mount-time reply.
+        const ticket = ++restoreSeq;
         const refreshed = await fetchAuthState();
-        if (refreshed === null) return;
+        if (ticket !== restoreSeq || refreshed === null) return;
         applyAuthState(refreshed);
         if (authState === 'signed-in') void runSync();
       })();
@@ -215,8 +217,11 @@
       const restore = ++restoreSeq;
       void (async () => {
         const refreshed = await fetchAuthState();
-        if (restore !== restoreSeq) return;
-        if (refreshed !== null) applyAuthState(refreshed);
+        // A failed revalidation keeps no state: the cached page's session
+        // may predate a sign-in or sign-out, so sync only after a
+        // validated answer.
+        if (restore !== restoreSeq || refreshed === null) return;
+        applyAuthState(refreshed);
         if (authState === 'signed-in') void runSync();
       })();
     };

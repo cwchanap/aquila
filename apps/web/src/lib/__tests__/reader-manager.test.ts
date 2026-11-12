@@ -1473,6 +1473,7 @@ describe('ReaderManager', () => {
             ).toBe('train_adventure');
             expect(
                 JSON.parse(saved.get('aquila:storyProgress:v1') ?? '{}')
+                    .progress
             ).toEqual({
                 the_seventh_mirror: expect.objectContaining({
                     sceneId: 'ch9_act3',
@@ -1556,13 +1557,13 @@ describe('ReaderManager', () => {
             const writes = mockStorage.setItem.mock.calls.filter(
                 ([key]) => key === 'aquila:storyProgress:v1'
             );
-            expect(JSON.parse(writes.at(-1)![1]).train_adventure).toMatchObject(
-                {
-                    dialogueIndex: 1,
-                    finished: true,
-                    endings: ['act2'],
-                }
-            );
+            expect(
+                JSON.parse(writes.at(-1)![1]).progress.train_adventure
+            ).toMatchObject({
+                dialogueIndex: 1,
+                finished: true,
+                endings: ['act2'],
+            });
         });
 
         it('keeps a per-story place and records the ending reached', async () => {
@@ -1586,7 +1587,10 @@ describe('ReaderManager', () => {
                         ([key]: [string, string]) =>
                             key === 'aquila:storyProgress:v1'
                     )
-                    .map(([, value]: [string, string]) => JSON.parse(value));
+                    .map(
+                        ([, value]: [string, string]) =>
+                            JSON.parse(value).progress
+                    );
 
             expect(progressWrites().at(-1)).toEqual({
                 the_seventh_mirror: expect.objectContaining({

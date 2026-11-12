@@ -21,7 +21,9 @@ export interface SyncStoryProgressOptions {
     timeoutMs?: number;
     /** Best-effort request during pagehide. */
     keepalive?: boolean;
-    /** Account the upload belongs to. A local map tagged for a different
+    /** Account the upload belongs to — also sent in the body so the
+     *  server can reject the merge when the session no longer matches (a
+     *  tab that outlived its sign-in). A local map tagged for a different
      *  account is never uploaded — sync downloads that account's map and
      *  replaces the local copy instead, so shared-browser progress cannot
      *  leak between accounts. */
@@ -54,7 +56,7 @@ async function postProgress(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ progress: local }),
+        body: JSON.stringify({ progress: local, accountId: options.accountId }),
         keepalive: options.keepalive,
     };
     if (!options.timeoutMs) {
@@ -101,7 +103,15 @@ export async function syncStoryProgress(
         const owner = store.getOwner();
         const foreignOwned = owner !== null && owner !== options.accountId;
         let upload: StoryProgressMap = {};
-        if (!foreignOwned) {
+        let preflight: StoryProgressMap | null = null;
+        if (foreignOwned) {
+            // Snapshot the foreign copy before the request so records that
+            // change while it is in flight can be told apart from the
+            // previous account's data being discarded.
+            preflight = store.getAllChecked();
+            if (!preflight)
+                return fail(true, new Error('Local progress is unavailable'));
+        } else {
             const local = store.getAllChecked();
             if (!local)
                 return fail(true, new Error('Local progress is unavailable'));
@@ -115,10 +125,29 @@ export async function syncStoryProgress(
             return fail(false, new Error('Invalid progress response'));
         }
         if (foreignOwned) {
-            // Discard the other account's copy: its data already lives in
-            // that account's cloud row, and the signed-in account's merged
-            // map takes its place here.
-            if (!store.replaceAll(stored, options.accountId)) {
+            const current = store.getAllChecked();
+            if (!current)
+                return fail(true, new Error('Could not save merged progress'));
+            // Discard the other account's copy — its data already lives in
+            // that account's cloud row — but keep records that changed
+            // while the request was in flight: a position recorded behind
+            // the pending sync is this account's reading, not the previous
+            // owner's, and the replacement must not erase it. Merging the
+            // whole pre-request map would re-seed the foreign copy instead.
+            const kept: StoryProgressMap = {};
+            for (const [id, record] of Object.entries(current)) {
+                if (
+                    JSON.stringify(preflight?.[id]) !== JSON.stringify(record)
+                ) {
+                    kept[id] = record;
+                }
+            }
+            if (
+                !store.replaceAll(
+                    mergeStoryProgressMaps(kept, stored),
+                    options.accountId
+                )
+            ) {
                 return fail(true, new Error('Could not save merged progress'));
             }
             return { ok: true };
@@ -126,11 +155,17 @@ export async function syncStoryProgress(
         // A line can be read while the request is in flight; merge into the
         // freshest local copy so a late response cannot erase it. update()
         // performs the whole read/merge/write in one store operation so a
-        // failed read is never mistaken for an empty map and committed.
-        if (!store.update(current => mergeStoryProgressMaps(current, stored))) {
+        // failed read is never mistaken for an empty map and committed —
+        // and the owner tag commits in the same write, so a stored map can
+        // never be left synced-but-untagged for the next account.
+        if (
+            !store.update(
+                current => mergeStoryProgressMaps(current, stored),
+                options.accountId
+            )
+        ) {
             return fail(true, new Error('Could not save merged progress'));
         }
-        store.setOwner(options.accountId);
         return { ok: true };
     } catch (error) {
         return fail(false, error);

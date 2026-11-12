@@ -108,9 +108,22 @@ describe('POST /api/progress', () => {
         }
     );
 
+    it('returns 409 when the upload names a different account than the session', async () => {
+        // A tab that outlived its sign-in still carries the previous
+        // account's id; its map must not merge into the new session's row.
+        const response = await post({
+            progress: { train_adventure: validRecord },
+            accountId: 'previous-account',
+        });
+
+        expect(response.status).toBe(409);
+        expect(mockMergeForUser).not.toHaveBeenCalled();
+    });
+
     it('returns 413 for a body over 48 KiB of UTF-8 bytes without Content-Length', async () => {
         const body = JSON.stringify({
             progress: { train_adventure: { note: 'é'.repeat(24 * 1024) } },
+            accountId: 'session-user',
         });
         // Under the cap as JavaScript characters, over it as UTF-8 bytes.
         expect(body.length).toBeLessThan(48 * 1024);
@@ -138,7 +151,7 @@ describe('POST /api/progress', () => {
 
         const response = await post({
             progress: { train_adventure: validRecord },
-            userId: 'client-supplied-user',
+            accountId: 'session-user',
         });
 
         expect(response.status).toBe(200);
@@ -158,6 +171,7 @@ describe('POST /api/progress', () => {
                 invalid: { sceneId: 42 },
                 empty: null,
             },
+            accountId: 'session-user',
         });
 
         expect(response.status).toBe(200);
@@ -169,7 +183,10 @@ describe('POST /api/progress', () => {
     it('returns 500 when the repository fails', async () => {
         mockMergeForUser.mockRejectedValue(new Error('Database failure'));
 
-        const response = await post({ progress: {} });
+        const response = await post({
+            progress: {},
+            accountId: 'session-user',
+        });
 
         expect(response.status).toBe(500);
         expect((await response.json()).error).toBe(

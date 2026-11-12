@@ -10,14 +10,28 @@ import {
 import '@testing-library/jest-dom';
 import type { Locale } from '@aquila/stories';
 import type { AuthState } from '../../lib/auth-utils';
+import { authClient } from '../../lib/auth-client';
 import StorySelect from '../StorySelect.svelte';
-import { STORY_PROGRESS_KEY } from '../../lib/story-progress-store';
+import {
+    STORY_PROGRESS_KEY,
+    StoryProgressStore,
+} from '../../lib/story-progress-store';
+import { STORY_SELECT_SYNC_TIMEOUT_MS } from '../../lib/story-progress-sync';
 
 function renderSelect(
-    props: { locale?: Locale; authState?: AuthState } = {}
+    props: {
+        locale?: Locale;
+        authState?: AuthState;
+        userId?: string | null;
+    } = {}
 ): ReturnType<typeof render> {
     return render(StorySelect, {
-        props: { locale: 'en', authState: 'signed-out', ...props },
+        props: {
+            locale: 'en',
+            authState: 'signed-out',
+            userId: 'user-1',
+            ...props,
+        },
     });
 }
 
@@ -33,14 +47,11 @@ function serverResponse(payload: unknown): Response {
     } as Response;
 }
 
-const SESSION_URL = '/api/auth/get-session';
-
-function sessionResponse(data: unknown): Response {
-    return {
-        ok: true,
-        status: 200,
-        json: async () => data,
-    } as Response;
+function stubSession(data: unknown): void {
+    vi.mocked(authClient.getSession).mockResolvedValue({
+        data,
+        error: null,
+    } as never);
 }
 
 /** Calls to the sync endpoint only; a persisted restore also re-reads the
@@ -49,6 +60,28 @@ function progressCalls(
     fetchMock: ReturnType<typeof vi.fn>
 ): Array<[unknown, RequestInit]> {
     return fetchMock.mock.calls.filter(([url]) => url === '/api/progress');
+}
+
+/** AbortSignal.timeout ignores fake timers; run it on the fake clock so a
+ *  timeout fires inside an advanceTimersByTime window. */
+function fakeAbortSignalTimeout(): void {
+    class FakeSignal extends EventTarget {
+        aborted = false;
+        reason: unknown;
+        static timeout(ms: number): FakeSignal {
+            const signal = new FakeSignal();
+            setTimeout(() => {
+                signal.aborted = true;
+                signal.reason = new DOMException(
+                    'The operation timed out.',
+                    'TimeoutError'
+                );
+                signal.dispatchEvent(new Event('abort'));
+            }, ms);
+            return signal;
+        }
+    }
+    vi.stubGlobal('AbortSignal', FakeSignal);
 }
 
 const restoredPageShow = () =>
@@ -73,12 +106,18 @@ describe('StorySelect', () => {
     beforeEach(() => {
         localStorage.clear();
         vi.stubEnv('PUBLIC_ASSET_BASE_URL', 'https://assets.example/');
+        // Session re-reads start signed-out; a test that wants a signed-in
+        // or sequenced answer stubs its own.
+        vi.mocked(authClient.getSession).mockReset();
+        stubSession(null);
     });
 
     afterEach(() => {
-        localStorage.clear();
+        // Unstub before clearing so a test that replaced localStorage
+        // cannot poison the next test's setup.
         vi.unstubAllEnvs();
         vi.unstubAllGlobals();
+        localStorage.clear();
     });
 
     it('puts short stories and sagas on separate shelves', () => {
@@ -230,10 +269,8 @@ describe('StorySelect', () => {
     });
 
     it('re-reads progress when the page returns from the back/forward cache', async () => {
-        vi.stubGlobal(
-            'fetch',
-            vi.fn().mockResolvedValue(sessionResponse(null))
-        );
+        stubSession(null);
+        vi.stubGlobal('fetch', vi.fn());
         renderSelect();
         expect(screen.queryByTestId('continue-reading')).toBeNull();
 
@@ -370,7 +407,7 @@ describe('StorySelect', () => {
         expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it('shows nothing and makes no requests when auth is unavailable', () => {
+    it('shows the signed-out line when an unavailable SSR session re-reads as signed-out', async () => {
         const fetchMock = vi.fn();
         vi.stubGlobal('fetch', fetchMock);
         saveProgress({
@@ -383,10 +420,139 @@ describe('StorySelect', () => {
             },
         });
 
-        renderSelect({ authState: 'unavailable' });
+        renderSelect({ authState: 'unavailable', userId: null });
+
+        // One background session re-read runs; a signed-out answer is then
+        // shown like any other signed-out page — no sync request fires.
+        expect(
+            await screen.findByText('Progress is saved in this browser only.')
+        ).toBeInTheDocument();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('shows nothing and makes no requests when the session re-read fails', async () => {
+        vi.mocked(authClient.getSession).mockRejectedValue(
+            new TypeError('Failed to fetch')
+        );
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        saveProgress({
+            the_seventh_mirror: {
+                sceneId: 'ch3_act2',
+                dialogueIndex: 4,
+                updatedAt: 20,
+                finished: false,
+                endings: [],
+            },
+        });
+
+        renderSelect({ authState: 'unavailable', userId: null });
+        await taskTurn();
 
         expect(screen.queryByTestId('progress-sync-status')).toBeNull();
         expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('recovers a signed-in session when SSR auth was unavailable', async () => {
+        stubSession({ user: { id: 'user-9' } });
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'unavailable', userId: null });
+
+        expect(
+            await screen.findByText('Your progress is saved to your account')
+        ).toBeInTheDocument();
+        expect(progressCalls(fetchMock)).toHaveLength(1);
+    });
+
+    it('reports a local storage failure instead of the network copy', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('localStorage', undefined);
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+
+        expect(
+            await screen.findByText(
+                "This browser couldn't read or save your progress, so nothing was sent to your account."
+            )
+        ).toBeInTheDocument();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('replaces a foreign-owned local map with the signed-in account copy', async () => {
+        saveProgress({
+            the_seventh_mirror: {
+                sceneId: 'ch3_act2',
+                dialogueIndex: 4,
+                updatedAt: 20,
+                finished: false,
+                endings: [],
+            },
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: {
+                    train_adventure: {
+                        sceneId: 'act2',
+                        dialogueIndex: 0,
+                        updatedAt: 30,
+                        finished: false,
+                        endings: [],
+                    },
+                },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in', userId: 'user-b' });
+
+        expect(
+            await screen.findByText('Your progress is saved to your account')
+        ).toBeInTheDocument();
+        // The other account's map is never uploaded — the request carries
+        // an empty upload and the download replaces local outright.
+        expect(progressCalls(fetchMock)).toHaveLength(1);
+        expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toEqual({
+            progress: {},
+        });
+        expect(
+            JSON.parse(localStorage.getItem(STORY_PROGRESS_KEY) ?? '{}')
+        ).not.toHaveProperty('the_seventh_mirror');
+        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+    });
+
+    it('bounds a hung sync request with the story-select timeout', async () => {
+        fakeAbortSignalTimeout();
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(
+                (_url: unknown, init?: RequestInit) =>
+                    new Promise<Response>((_resolve, reject) => {
+                        // Reject on abort the way a real fetch does.
+                        const signal = init?.signal;
+                        signal?.addEventListener('abort', () =>
+                            reject(signal.reason)
+                        );
+                    })
+            )
+        );
+
+        renderSelect({ authState: 'signed-in' });
+        expect(screen.getByTestId('progress-sync-status')).toHaveTextContent(
+            'Syncing your progress…'
+        );
+
+        await vi.advanceTimersByTimeAsync(STORY_SELECT_SYNC_TIMEOUT_MS);
+        expect(
+            await screen.findByText(
+                "Couldn't reach your account. Progress is kept in this browser and syncs next time."
+            )
+        ).toBeInTheDocument();
     });
 
     it('uses the current locale for the signed-out login link', () => {
@@ -419,11 +585,8 @@ describe('StorySelect', () => {
                 }),
             () => Promise.resolve(serverResponse({ progress: {} })),
         ];
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
-                : progressResponses.shift()!()
-        );
+        stubSession({ user: { id: 'user-1' } });
+        const fetchMock = vi.fn(() => progressResponses.shift()!());
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
@@ -451,11 +614,8 @@ describe('StorySelect', () => {
                 }),
             () => Promise.resolve(serverResponse({ progress: {} })),
         ];
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
-                : progressResponses.shift()!()
-        );
+        stubSession({ user: { id: 'user-1' } });
+        const fetchMock = vi.fn(() => progressResponses.shift()!());
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
@@ -481,15 +641,13 @@ describe('StorySelect', () => {
                     resolveFirst = resolve;
                 }),
         ];
-        const sessionResponses = [
-            () => Promise.resolve(sessionResponse({ user: { id: 'user-1' } })),
-            () => Promise.resolve(sessionResponse(null)),
-        ];
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? sessionResponses.shift()!()
-                : progressResponses.shift()!()
-        );
+        vi.mocked(authClient.getSession)
+            .mockResolvedValueOnce({
+                data: { user: { id: 'user-1' } },
+                error: null,
+            } as never)
+            .mockResolvedValue({ data: null, error: null } as never);
+        const fetchMock = vi.fn(() => progressResponses.shift()!());
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
@@ -498,9 +656,7 @@ describe('StorySelect', () => {
         // Still signed in: the join queues a follow-up behind the request.
         window.dispatchEvent(restoredPageShow());
         await waitFor(() =>
-            expect(
-                fetchMock.mock.calls.some(([url]) => url === SESSION_URL)
-            ).toBe(true)
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         );
         // The next restore revalidates to signed-out before the first
         // request settles, so the queued pass must not fire. The status
@@ -524,11 +680,8 @@ describe('StorySelect', () => {
                     resolveSecond = resolve;
                 }),
         ];
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
-                : progressResponses.shift()!()
-        );
+        stubSession({ user: { id: 'user-1' } });
+        const fetchMock = vi.fn(() => progressResponses.shift()!());
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
@@ -560,11 +713,8 @@ describe('StorySelect', () => {
                     resolveSecond = resolve;
                 }),
         ];
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
-                : progressResponses.shift()!()
-        );
+        stubSession({ user: { id: 'user-1' } });
+        const fetchMock = vi.fn(() => progressResponses.shift()!());
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
@@ -589,22 +739,21 @@ describe('StorySelect', () => {
     });
 
     it('revalidates the session and syncs when a signed-in visitor returns to a signed-out cached page', async () => {
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
-                : Promise.resolve(
-                      serverResponse({
-                          progress: {
-                              the_seventh_mirror: {
-                                  sceneId: 'ch2_act1',
-                                  dialogueIndex: 3,
-                                  updatedAt: 20,
-                                  finished: false,
-                                  endings: [],
-                              },
-                          },
-                      })
-                  )
+        stubSession({ user: { id: 'user-1' } });
+        const fetchMock = vi.fn(() =>
+            Promise.resolve(
+                serverResponse({
+                    progress: {
+                        the_seventh_mirror: {
+                            sceneId: 'ch2_act1',
+                            dialogueIndex: 3,
+                            updatedAt: 20,
+                            finished: false,
+                            endings: [],
+                        },
+                    },
+                })
+            )
         );
         vi.stubGlobal('fetch', fetchMock);
 
@@ -622,37 +771,33 @@ describe('StorySelect', () => {
     });
 
     it('stays local-only when the revalidated session is still signed out', async () => {
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? Promise.resolve(sessionResponse(null))
-                : Promise.resolve(serverResponse({ progress: {} }))
+        stubSession(null);
+        const fetchMock = vi.fn(() =>
+            Promise.resolve(serverResponse({ progress: {} }))
         );
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-out' });
         window.dispatchEvent(restoredPageShow());
         await waitFor(() =>
-            expect(
-                fetchMock.mock.calls.some(([url]) => url === SESSION_URL)
-            ).toBe(true)
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         );
 
         expect(progressCalls(fetchMock)).toHaveLength(0);
     });
 
     it('ignores a slower session reply from an earlier restore', async () => {
-        let resolveSlow!: (response: Response) => void;
-        const sessionResponses = [
-            () =>
-                new Promise<Response>(resolve => {
-                    resolveSlow = resolve;
-                }),
-            () => Promise.resolve(sessionResponse(null)),
-        ];
-        const fetchMock = vi.fn((input: unknown) =>
-            input === SESSION_URL
-                ? sessionResponses.shift()!()
-                : Promise.resolve(serverResponse({ progress: {} }))
+        let resolveSlow!: (value: unknown) => void;
+        vi.mocked(authClient.getSession)
+            .mockImplementationOnce(
+                () =>
+                    new Promise(resolve => {
+                        resolveSlow = resolve;
+                    })
+            )
+            .mockResolvedValue({ data: null, error: null } as never);
+        const fetchMock = vi.fn(() =>
+            Promise.resolve(serverResponse({ progress: {} }))
         );
         vi.stubGlobal('fetch', fetchMock);
         saveProgress({
@@ -673,7 +818,7 @@ describe('StorySelect', () => {
         window.dispatchEvent(restoredPageShow());
         await taskTurn();
 
-        resolveSlow(sessionResponse({ user: { id: 'user-1' } }));
+        resolveSlow({ data: { user: { id: 'user-1' } }, error: null });
         await taskTurn();
 
         // The stale reply is dropped: no sync fires and the status never

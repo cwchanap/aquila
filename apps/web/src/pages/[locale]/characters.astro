@@ -2,7 +2,7 @@
 import MainLayout from '../../layouts/main.astro';
 import UserStatus from '../../components/UserStatus.svelte';
 import AuthDegradedBanner from '../../components/AuthDegradedBanner.astro';
-import { getSessionUser } from '../../lib/auth-utils.js';
+import { getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '../../lib/auth-utils.js';
 import { CharacterSetupRepository } from '../../lib/drizzle/repositories.js';
 import type { CharacterSetup } from '../../lib/drizzle/schema.js';
 import { getTranslations } from '@aquila/stories/translations';
@@ -19,7 +19,7 @@ const locale = ((Astro.props.locale as string | undefined) || (Astro.params.loca
 const t = (key: string) => translate(locale, key);
 const translations = getTranslations(locale);
 
-const sessionResult = await getSessionUser(Astro.request);
+const sessionResult = await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS });
 const user = sessionResult.status === 'ok' ? sessionResult.user : null;
 const authFailed = sessionResult.status === 'error';
 let characterSetups: CharacterSetup[] = [];

@@ -33,6 +33,7 @@ import {
     type ReaderIntent,
 } from './reader-intent';
 import type { AuthState } from './auth-utils';
+import { authClient } from './auth-client';
 import {
     STORY_PROGRESS_SYNC_TIMEOUT_MS,
     syncStoryProgress,
@@ -49,6 +50,8 @@ export interface ReaderManagerDependencies {
     >;
     /** Server-derived auth state; an unwired caller can never sync. */
     authState?: AuthState;
+    /** The signed-in account's id; sync uploads nothing without it. */
+    userId?: string | null;
 }
 
 export class ReaderManager {
@@ -61,8 +64,11 @@ export class ReaderManager {
             typeof import('@/components/ReaderShell.svelte')
         >;
         defaultStoryId: string;
-        authState: AuthState;
     };
+    // Auth state is mutable: an SSR 'unavailable' is re-checked once in the
+    // background, and its answer decides whether this visit can sync.
+    private authState: AuthState;
+    private userId: string | null;
     private readonly localBookmarks: LocalBookmarksStore;
     private readonly storyProgress: StoryProgressStore;
     private activeStory: AsyncStoryLoaderResult | null = null;
@@ -86,11 +92,17 @@ export class ReaderManager {
     private replaceGen = 0;
     private persistTimer: ReturnType<typeof setTimeout> | null = null;
     // Cloud sync state. lastPushAt is the leading edge of the ordinary
-    // once-per-minute push (also set by a successful startup merge and a hide
-    // flush); keepaliveSent makes visibilitychange+pagehide produce one
-    // request per hide until the tab becomes visible again.
+    // once-per-minute push (performance.now, so wall-clock moves cannot
+    // stall or duplicate pushes); keepaliveSent makes
+    // visibilitychange+pagehide produce at most one request per hide.
+    // progressDirty tracks whether anything recorded locally is still
+    // waiting for its first successful upload — a hide with nothing new to
+    // send makes no request. recordSeq stamps each record() so a push
+    // settling mid-record cannot mark that new position as uploaded.
     private lastPushAt = 0;
     private keepaliveSent = false;
+    private progressDirty = true;
+    private recordSeq = 0;
     // The last position this tab recorded or restored. A lifecycle flush
     // that finds the position unchanged must not write again: record()
     // stamps a fresh updatedAt, and the keepalive upload would win the
@@ -127,8 +139,9 @@ export class ReaderManager {
                 dependencies.loadReaderShell ??
                 (() => import('@/components/ReaderShell.svelte')),
             defaultStoryId: defaultStoryId || 'the_seventh_mirror',
-            authState: dependencies.authState ?? 'signed-out',
         };
+        this.authState = dependencies.authState ?? 'signed-out';
+        this.userId = dependencies.userId ?? null;
 
         readerState.dialogue = [];
         readerState.choice = null;
@@ -425,22 +438,39 @@ export class ReaderManager {
 
     /** Leading-edge ordinary push: at most one request per minute, no timer. */
     private maybePushProgress(): void {
-        if (Date.now() - this.lastPushAt < CLOUD_PUSH_INTERVAL_MS) return;
+        if (performance.now() - this.lastPushAt < CLOUD_PUSH_INTERVAL_MS) {
+            return;
+        }
         this.pushProgress();
     }
 
-    /** Fire-and-forget cloud push; failures leave local progress untouched. */
+    /** Fire-and-forget cloud push; failures leave local progress untouched.
+     *  A successful reply clears the dirty flag only when no position was
+     *  recorded while the request was in flight — that position has not
+     *  reached the server yet. */
     private pushProgress(keepalive = false): void {
-        if (this.deps.authState !== 'signed-in' || this.destroyed) return;
-        this.lastPushAt = Date.now();
-        void syncStoryProgress(keepalive ? { keepalive: true } : {}).catch(
-            () => {}
-        );
+        if (
+            this.authState !== 'signed-in' ||
+            this.userId === null ||
+            this.destroyed
+        ) {
+            return;
+        }
+        this.lastPushAt = performance.now();
+        const seq = this.recordSeq;
+        void syncStoryProgress({ keepalive, accountId: this.userId })
+            .then(result => {
+                if (result.ok && this.recordSeq === seq) {
+                    this.progressDirty = false;
+                }
+            })
+            .catch(() => {});
     }
 
-    /** One best-effort final push per hide, after the local flush. */
+    /** One best-effort final push per hide, after the local flush — and none
+     *  when the server already holds everything this tab recorded. */
     private flushProgressKeepalive(): void {
-        if (this.keepaliveSent) return;
+        if (this.keepaliveSent || !this.progressDirty) return;
         this.keepaliveSent = true;
         this.pushProgress(true);
     }
@@ -448,7 +478,8 @@ export class ReaderManager {
     /** True only for a bare `?story=` link: explicit scene/dialogue/restart
      *  links must win over the merged account position. */
     private canResumeFromCloud(): boolean {
-        if (this.deps.authState !== 'signed-in') return false;
+        if (this.authState !== 'signed-in' || this.userId === null)
+            return false;
         const params = new URLSearchParams(window.location.search);
         return (
             params.has('story') &&
@@ -458,13 +489,20 @@ export class ReaderManager {
         );
     }
 
-    /** Bounded startup merge; failure or timeout starts from local progress. */
+    /** Bounded startup merge; failure or timeout starts from local progress.
+     *  The attempt stamps the throttle either way: a timed-out request may
+     *  still hold the server lock, and the persist that follows must not
+     *  queue a second POST behind it. */
     private async resumeFromCloud(): Promise<void> {
-        if (!this.canResumeFromCloud()) return;
+        const accountId = this.userId;
+        if (!this.canResumeFromCloud() || accountId === null) return;
+        this.lastPushAt = performance.now();
+        const seq = this.recordSeq;
         const result = await syncStoryProgress({
             timeoutMs: STORY_PROGRESS_SYNC_TIMEOUT_MS,
+            accountId,
         });
-        if (result.ok) this.lastPushAt = Date.now();
+        if (result.ok && this.recordSeq === seq) this.progressDirty = false;
     }
 
     /** Keep a per-story copy of the position (the session above holds only
@@ -505,6 +543,8 @@ export class ReaderManager {
                 dialogueIndex,
                 atEnding,
             };
+            this.recordSeq++;
+            this.progressDirty = true;
         }
     }
 
@@ -918,17 +958,36 @@ export class ReaderManager {
         document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
+    /** An SSR 'unavailable' is often a slow cold start, not an outage: one
+     *  background session re-read decides whether this visit can sync. A
+     *  late 'signed-in' only enables pushes — it never repositions an
+     *  already-open reader. */
+    private recheckUnavailableAuth(): void {
+        if (this.authState !== 'unavailable') return;
+        void authClient
+            .getSession()
+            .then(result => {
+                if (this.destroyed) return;
+                const user = result?.data?.user ?? null;
+                this.authState = user ? 'signed-in' : 'signed-out';
+                this.userId = user?.id ?? null;
+                if (user) {
+                    document.getElementById('auth-degraded-banner')?.remove();
+                }
+            })
+            .catch(() => {});
+    }
+
     async initialize(): Promise<void> {
         if (this.initialized) return;
         this.initialized = true;
         this.destroyed = false;
         this.addLifecycleListeners();
         const generation = ++this.loadGeneration;
-        await this.renderReader();
-        if (!this.isCurrent(generation)) return;
-        // Only a bare ?story= link can use the merged position in
-        // selectInitialIntent(); every other shape starts without waiting.
-        await this.resumeFromCloud();
+        this.recheckUnavailableAuth();
+        // Only a bare ?story= link waits on the cloud merge below, and that
+        // wait now overlaps the shell mount instead of following it.
+        await Promise.all([this.renderReader(), this.resumeFromCloud()]);
         if (!this.isCurrent(generation)) return;
         await this.loadIntent(
             this.selectInitialIntent(),

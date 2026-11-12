@@ -33,11 +33,16 @@ afterEach(() => {
 });
 
 describe('startReader', () => {
-    it('wires the container locale and auth state into ReaderManager', () => {
-        mountContainer({ 'data-locale': 'zh', 'data-auth-state': 'signed-in' });
+    it('wires the container locale, auth state, and user id into ReaderManager', () => {
+        mountContainer({
+            'data-locale': 'zh',
+            'data-auth-state': 'signed-in',
+            'data-user-id': 'user-1',
+        });
         startReader();
         expect(ReaderManagerMock).toHaveBeenCalledWith('zh', undefined, {
             authState: 'signed-in',
+            userId: 'user-1',
         });
         expect(initialize).toHaveBeenCalledOnce();
     });
@@ -52,6 +57,7 @@ describe('startReader', () => {
             startReader();
             expect(ReaderManagerMock).toHaveBeenCalledWith('en', undefined, {
                 authState: 'signed-out',
+                userId: null,
             });
         }
     );
@@ -61,6 +67,7 @@ describe('startReader', () => {
         startReader();
         expect(ReaderManagerMock).toHaveBeenCalledWith('en', undefined, {
             authState: 'signed-out',
+            userId: null,
         });
     });
 

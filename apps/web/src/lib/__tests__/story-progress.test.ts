@@ -112,6 +112,17 @@ describe('normalizeStoryProgressMap', () => {
         expect(normalized.real).toEqual(progress());
         expect(Object.hasOwn(normalized, '__proto__')).toBe(true);
     });
+
+    it('drops unknown fields so stored records cannot grow past the schema', () => {
+        const normalized = normalizeStoryProgressMap({
+            elevator_game: {
+                ...progress(),
+                note: 'x'.repeat(4096),
+                nested: { arbitrary: [1, 2, 3] },
+            },
+        });
+        expect(normalized.elevator_game).toEqual(progress());
+    });
 });
 
 describe('mergeStoryProgressMaps', () => {

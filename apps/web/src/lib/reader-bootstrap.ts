@@ -26,7 +26,11 @@ export function startReader(containerId = 'reader-container'): void {
     const authState = authStateFromAttr(
         container.getAttribute('data-auth-state')
     );
-    const manager = new ReaderManager(locale, undefined, { authState });
+    const userId = container.getAttribute('data-user-id');
+    const manager = new ReaderManager(locale, undefined, {
+        authState,
+        userId,
+    });
     void manager
         .initialize()
         .catch(error => console.error('Reader initialization failed', error));

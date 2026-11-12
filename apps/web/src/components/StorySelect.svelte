@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import {
     Building2,
@@ -16,30 +16,37 @@
   import { STORY_CATALOG, type StoryAccent } from '@aquila/stories/catalog';
   import { assetHostUrl } from '@/lib/asset-host';
   import type { AuthState } from '@/lib/auth-utils';
+  import { authClient } from '@/lib/auth-client';
   import { getBrowserStorage } from '@/lib/reader-mode';
   import {
     StoryProgressStore,
     importSavedSessions,
     type StoryProgressMap,
   } from '@/lib/story-progress-store';
-  import { syncStoryProgress } from '@/lib/story-progress-sync';
+  import {
+    STORY_SELECT_SYNC_TIMEOUT_MS,
+    syncStoryProgress,
+  } from '@/lib/story-progress-sync';
   import { buildCards, pickContinueCard } from '@/lib/story-select';
 
   let {
     locale,
     authState: serverAuthState,
-  }: { locale: Locale; authState: AuthState } = $props();
+    userId: serverUserId,
+  }: { locale: Locale; authState: AuthState; userId: string | null } = $props();
 
-  // The server render freezes authState at SSR time; a page restored from
-  // the back/forward cache can predate the visitor's last sign-in or
-  // sign-out, so a persisted restore revalidates before deciding to sync.
-  let authState = $state(serverAuthState);
+  // The server render freezes authState and userId at SSR time; a page
+  // restored from the back/forward cache can predate the visitor's last
+  // sign-in or sign-out, so a persisted restore revalidates before deciding
+  // to sync. untrack: the prop seeds a mutable copy the client re-checks.
+  let authState = $state(untrack(() => serverAuthState));
+  let userId = $state<string | null>(untrack(() => serverUserId));
 
   let t = $derived(getTranslations(locale).stories);
   // Server render (and the first client frame) shows every story as unread;
   // saved progress lives in this browser only and is applied on mount.
   let progress: StoryProgressMap = $state({});
-  let syncState: 'idle' | 'synced' | 'failed' = $state('idle');
+  let syncState: 'idle' | 'synced' | 'failed' | 'local-failed' = $state('idle');
   let syncInFlight: Promise<void> | null = null;
   // A join during an in-flight request sets this so exactly one follow-up
   // pass runs behind it; the running request still carries the pre-restore
@@ -58,7 +65,7 @@
   let sagas = $derived(cards.filter(c => c.entry.format === 'saga'));
   let continueCard = $derived(pickContinueCard(cards));
 
-  type SyncLine = 'syncing' | 'synced' | 'failed' | 'signed-out';
+  type SyncLine = 'syncing' | 'synced' | 'failed' | 'local-failed' | 'signed-out';
   let syncLine = $derived.by((): SyncLine | null => {
     if (authState === 'unavailable') return null;
     if (authState === 'signed-out') {
@@ -66,12 +73,13 @@
     }
     if (syncState === 'synced') return 'synced';
     if (syncState === 'failed') return 'failed';
+    if (syncState === 'local-failed') return 'local-failed';
     return 'syncing';
   });
   let syncDot = $derived(
     syncLine === 'synced'
       ? 'bg-emerald-300/80'
-      : syncLine === 'failed'
+      : syncLine === 'failed' || syncLine === 'local-failed'
         ? 'bg-amber-300/80'
         : syncLine === 'syncing'
           ? 'bg-cyan-300/70 motion-safe:animate-pulse'
@@ -117,15 +125,32 @@
     progress = store.getAll();
   }
 
-  /** Re-reads the session same-origin; null keeps the server-rendered state. */
-  async function fetchAuthState(): Promise<AuthState | null> {
+  /** Re-reads the session; null keeps the server-rendered state. */
+  async function fetchAuthState(): Promise<{
+    authState: AuthState;
+    userId: string | null;
+  } | null> {
     try {
-      const response = await fetch('/api/auth/get-session');
-      if (!response.ok) return null;
-      const data = (await response.json()) as { user?: unknown } | null;
-      return data?.user ? 'signed-in' : 'signed-out';
+      const { data, error } = await authClient.getSession();
+      if (error) return null;
+      return data?.user
+        ? { authState: 'signed-in', userId: data.user.id }
+        : { authState: 'signed-out', userId: null };
     } catch {
       return null;
+    }
+  }
+
+  /** Applies a revalidated session; a recovered 'signed-in' also dismisses
+   *  the SSR degraded banner. */
+  function applyAuthState(refreshed: {
+    authState: AuthState;
+    userId: string | null;
+  }): void {
+    authState = refreshed.authState;
+    userId = refreshed.userId;
+    if (authState === 'signed-in') {
+      document.getElementById('auth-degraded-banner')?.remove();
     }
   }
 
@@ -149,8 +174,15 @@
     syncState = 'idle';
     const run = (async () => {
       try {
-        const result = await syncStoryProgress();
-        syncState = result.ok ? 'synced' : 'failed';
+        if (!userId) {
+          syncState = 'failed';
+          return;
+        }
+        const result = await syncStoryProgress({
+          timeoutMs: STORY_SELECT_SYNC_TIMEOUT_MS,
+          accountId: userId,
+        });
+        syncState = result.ok ? 'synced' : result.local ? 'local-failed' : 'failed';
       } catch {
         syncState = 'failed';
       } finally {
@@ -165,6 +197,16 @@
   onMount(() => {
     refresh();
     if (authState === 'signed-in') void runSync();
+    // An SSR 'unavailable' is often a slow cold start, not an outage — one
+    // background session re-read decides whether this visit can sync.
+    if (authState === 'unavailable') {
+      void (async () => {
+        const refreshed = await fetchAuthState();
+        if (refreshed === null) return;
+        applyAuthState(refreshed);
+        if (authState === 'signed-in') void runSync();
+      })();
+    }
     // Returning with the Back button can restore this page from the
     // back/forward cache; re-read so the cards show the latest place.
     const onPageShow = (event: Event) => {
@@ -174,7 +216,7 @@
       void (async () => {
         const refreshed = await fetchAuthState();
         if (restore !== restoreSeq) return;
-        if (refreshed !== null) authState = refreshed;
+        if (refreshed !== null) applyAuthState(refreshed);
         if (authState === 'signed-in') void runSync();
       })();
     };
@@ -224,7 +266,7 @@
       {#if syncLine === 'signed-out'}
         <span>{t.syncLocalOnly} <a href={`/${locale}/login`} class="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white">{t.syncSignIn}</a></span>
       {:else}
-        <span>{syncLine === 'synced' ? t.syncSynced : syncLine === 'failed' ? t.syncFailed : t.syncSyncing}</span>
+        <span>{syncLine === 'synced' ? t.syncSynced : syncLine === 'local-failed' ? t.syncLocalFailed : syncLine === 'failed' ? t.syncFailed : t.syncSyncing}</span>
       {/if}
     </p>
   {/if}

@@ -106,6 +106,11 @@ export class ReaderManager {
     private keepaliveSent = false;
     private progressDirty = true;
     private recordSeq = 0;
+    // Session re-reads can overlap across a persisted pageshow and a
+    // visibility change, and replies may arrive out of order. Only the
+    // newest request may apply its answer — a stale reply must not put a
+    // previous account back over a newer sign-in.
+    private authCheckSeq = 0;
     // The last position this tab recorded or restored. A lifecycle flush
     // that finds the position unchanged must not write again: record()
     // stamps a fresh updatedAt, and the keepalive upload would win the
@@ -983,10 +988,16 @@ export class ReaderManager {
      *  account switch would otherwise keep tagging writes for the previous
      *  one. A failed re-read keeps the current state. */
     private revalidateAuth(): void {
+        const ticket = ++this.authCheckSeq;
         void authClient
             .getSession()
             .then(result => {
-                if (this.destroyed || result?.error) return;
+                if (
+                    this.destroyed ||
+                    ticket !== this.authCheckSeq ||
+                    result?.error
+                )
+                    return;
                 const user = result?.data?.user ?? null;
                 this.applySessionUser(user);
                 // Any validated answer means auth is back — the SSR
@@ -1014,10 +1025,16 @@ export class ReaderManager {
      *  already-open reader. */
     private recheckUnavailableAuth(): void {
         if (this.authState !== 'unavailable') return;
+        const ticket = ++this.authCheckSeq;
         void authClient
             .getSession()
             .then(result => {
-                if (this.destroyed || result?.error) return;
+                if (
+                    this.destroyed ||
+                    ticket !== this.authCheckSeq ||
+                    result?.error
+                )
+                    return;
                 this.applySessionUser(result?.data?.user ?? null);
                 document.getElementById('auth-degraded-banner')?.remove();
             })

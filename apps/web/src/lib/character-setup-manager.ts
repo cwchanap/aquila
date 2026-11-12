@@ -151,7 +151,13 @@ export class CharacterSetupManager {
                     this.navigate(this.storyUrl());
                     return;
                 }
-                if (probe.ok && (await probe.json())) {
+                // Any other probe failure leaves the question unanswered —
+                // the POST below could still rename a saved setup, so the
+                // submit stops instead of guessing.
+                if (!probe.ok) {
+                    throw await this.readError(probe);
+                }
+                if (await probe.json()) {
                     this.navigate(this.storyUrl());
                     return;
                 }

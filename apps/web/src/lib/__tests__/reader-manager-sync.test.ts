@@ -833,6 +833,55 @@ describe('ReaderManager account progress sync', () => {
         });
     });
 
+    it('applies only the newest session reply when revalidations overlap', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress({
+            train_adventure: progressRecord({
+                sceneId: 'act1',
+                dialogueIndex: 0,
+            }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        const first = deferred<unknown>();
+        const second = deferred<unknown>();
+        vi.mocked(authClient.getSession)
+            .mockImplementationOnce(() => first.promise as never)
+            .mockImplementationOnce(() => second.promise as never);
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        await manager.initialize();
+        await flush();
+
+        // A persisted restore starts a re-read while the session still
+        // shows A; a visibility resume starts a second one that sees B.
+        window.dispatchEvent(
+            Object.assign(new Event('pageshow'), { persisted: true })
+        );
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+        expect(authClient.getSession).toHaveBeenCalledTimes(2);
+
+        // The newer answer lands first; the delayed A reply is stale and
+        // must not put the previous account back.
+        second.resolve({ data: { user: { id: 'user-b' } }, error: null });
+        await flush();
+        first.resolve({ data: { user: { id: 'user-a' } }, error: null });
+        await flush();
+
+        // Past the minute throttle so this navigation's push fires.
+        await vi.advanceTimersByTimeAsync(60_001);
+        manager.goToScene('act2');
+        await flush();
+        const posts = progressPosts(fetchMock);
+        expect(posts.length).toBeGreaterThan(0);
+        expect(
+            JSON.parse(posts[posts.length - 1][1].body as string).accountId
+        ).toBe('user-b');
+        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+    });
+
     it('does not resume a signed-in reader from a foreign-owned map or session', async () => {
         setLocation('');
         saveProgress({

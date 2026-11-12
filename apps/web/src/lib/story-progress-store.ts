@@ -183,6 +183,13 @@ export class StoryProgressStore {
         }
     }
 
+    /** The copy sidelined for this account, if any. Its records are this
+     *  account's own even while the stored map belongs to someone else, so
+     *  a foreign-owned sync still owes them an upload. */
+    getSidelined(accountId: string): StoryProgressMap {
+        return this.readSidelined(accountId)?.map ?? {};
+    }
+
     /** Merges this account's sidelined copy back into the stored map when the
      *  map is the account's own (or unowned), then drops the copy. A map
      *  owned by someone else leaves the sidelined copy waiting — it is not

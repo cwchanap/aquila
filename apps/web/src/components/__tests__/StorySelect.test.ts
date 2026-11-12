@@ -332,9 +332,11 @@ describe('StorySelect', () => {
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toEqual({
             progress: {},
+            accountId: 'user-1',
         });
         expect(
             JSON.parse(localStorage.getItem(STORY_PROGRESS_KEY) ?? '{}')
+                .progress
         ).toHaveProperty('the_seventh_mirror');
     });
 
@@ -519,9 +521,11 @@ describe('StorySelect', () => {
         expect(progressCalls(fetchMock)).toHaveLength(1);
         expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toEqual({
             progress: {},
+            accountId: 'user-b',
         });
         expect(
             JSON.parse(localStorage.getItem(STORY_PROGRESS_KEY) ?? '{}')
+                .progress
         ).not.toHaveProperty('the_seventh_mirror');
         expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
     });
@@ -827,5 +831,100 @@ describe('StorySelect', () => {
         expect(screen.getByTestId('progress-sync-status')).toHaveTextContent(
             'Progress is saved in this browser only.'
         );
+    });
+
+    it('dismisses the degraded banner when an unavailable session re-reads as signed-out', async () => {
+        stubSession(null);
+        const banner = document.createElement('div');
+        banner.id = 'auth-degraded-banner';
+        document.body.appendChild(banner);
+        saveProgress({
+            elevator_game: {
+                sceneId: 'b1a_act4',
+                dialogueIndex: 9,
+                updatedAt: 30,
+                finished: true,
+                endings: ['b1a_act4'],
+            },
+        });
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'unavailable', userId: null });
+
+        // A validated signed-out answer still means auth recovered — the
+        // outage banner must not linger over a working session check.
+        await waitFor(() =>
+            expect(document.getElementById('auth-degraded-banner')).toBeNull()
+        );
+        expect(
+            await screen.findByText('Progress is saved in this browser only.')
+        ).toBeInTheDocument();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('ignores the mount recheck answer once a restore revalidates newer', async () => {
+        let resolveMount!: (value: unknown) => void;
+        vi.mocked(authClient.getSession)
+            .mockImplementationOnce(
+                () =>
+                    new Promise(resolve => {
+                        resolveMount = resolve;
+                    })
+            )
+            .mockResolvedValue({ data: null, error: null } as never);
+        const fetchMock = vi.fn(() =>
+            Promise.resolve(serverResponse({ progress: {} }))
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        saveProgress({
+            elevator_game: {
+                sceneId: 'b1a_act4',
+                dialogueIndex: 9,
+                updatedAt: 30,
+                finished: true,
+                endings: ['b1a_act4'],
+            },
+        });
+
+        renderSelect({ authState: 'unavailable', userId: null });
+        // The mount-time recheck hangs; a restore's revalidation answers
+        // signed-out first and that newer answer wins.
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() =>
+            expect(
+                screen.getByTestId('progress-sync-status')
+            ).toHaveTextContent('Progress is saved in this browser only.')
+        );
+
+        resolveMount({ data: { user: { id: 'user-1' } }, error: null });
+        await taskTurn();
+
+        expect(progressCalls(fetchMock)).toHaveLength(0);
+        expect(screen.getByTestId('progress-sync-status')).toHaveTextContent(
+            'Progress is saved in this browser only.'
+        );
+    });
+
+    it('does not sync a restored page when session revalidation fails', async () => {
+        stubSession({ user: { id: 'user-1' } });
+        const fetchMock = vi.fn(() =>
+            Promise.resolve(serverResponse({ progress: {} }))
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(1));
+        fetchMock.mockClear();
+
+        // The cached page may predate a sign-out or account switch: a
+        // failed revalidation must not sync on the stale signed-in state.
+        vi.mocked(authClient.getSession).mockRejectedValue(
+            new TypeError('Failed to fetch')
+        );
+        window.dispatchEvent(restoredPageShow());
+        await taskTurn();
+
+        expect(progressCalls(fetchMock)).toHaveLength(0);
     });
 });

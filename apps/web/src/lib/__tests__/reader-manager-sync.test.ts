@@ -300,6 +300,7 @@ describe('ReaderManager account progress sync', () => {
                     updatedAt: 10,
                 }),
             },
+            accountId: 'user-1',
         });
         expect(readerState).toMatchObject({
             storyId: 'train_adventure',
@@ -458,6 +459,7 @@ describe('ReaderManager account progress sync', () => {
                     dialogueIndex: 0,
                 }),
             },
+            accountId: 'user-1',
         });
         expect(
             JSON.parse(
@@ -719,6 +721,43 @@ describe('ReaderManager account progress sync', () => {
         // The persist inside loadIntent must see the attempt's throttle
         // stamp — the hung request may still hold the server lock.
         expect(progressPosts(vi.mocked(global.fetch))).toHaveLength(1);
+    });
+
+    it('quarantines a foreign-owned map before the first signed-in record', async () => {
+        // B signs in on a browser whose progress is still tagged for A and
+        // opens an explicit scene link — no startup sync runs, so the first
+        // record must not write into A's map for a later replaceAll to lose.
+        setLocation('?story=train_adventure&scene=act2');
+        saveProgress({
+            the_seventh_mirror: progressRecord({
+                sceneId: 'ch1_act1',
+                dialogueIndex: 2,
+                updatedAt: 10,
+            }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-b');
+
+        await manager.initialize();
+        await flush();
+
+        const stored = new StoryProgressStore(localStorage).getAll();
+        expect(Object.keys(stored)).toEqual(['train_adventure']);
+        expect(stored.train_adventure).toMatchObject({
+            sceneId: 'act2',
+            dialogueIndex: 0,
+        });
+        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+        // The quarantined record then uploads as this account's own map —
+        // not as an empty download that would drop it.
+        const posts = progressPosts(fetchMock);
+        expect(posts.length).toBeGreaterThan(0);
+        expect(JSON.parse(posts[0][1].body as string).progress).toHaveProperty(
+            'train_adventure'
+        );
     });
 
     it('makes no keepalive request when the account copy already covers the local map', async () => {

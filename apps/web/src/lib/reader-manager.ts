@@ -99,7 +99,10 @@ export class ReaderManager {
     // waiting for its first successful upload — a hide with nothing new to
     // send makes no request. recordSeq stamps each record() so a push
     // settling mid-record cannot mark that new position as uploaded.
-    private lastPushAt = 0;
+    // -Infinity rather than 0: performance.now() counts from navigation
+    // start, so a 0 stamp would throttle every push in the first minute of
+    // the visit — including the first one on links that never stamp it.
+    private lastPushAt = Number.NEGATIVE_INFINITY;
     private keepaliveSent = false;
     private progressDirty = true;
     private recordSeq = 0;
@@ -530,12 +533,17 @@ export class ReaderManager {
             return;
         }
         if (
-            this.storyProgress.record({
-                storyId,
-                sceneId: currentSceneId,
-                dialogueIndex,
-                atEnding,
-            })
+            this.storyProgress.record(
+                {
+                    storyId,
+                    sceneId: currentSceneId,
+                    dialogueIndex,
+                    atEnding,
+                },
+                // A signed-in reader's first record quarantines a map
+                // tagged for a previous account instead of writing into it.
+                this.userId
+            )
         ) {
             this.lastRecordedPosition = {
                 storyId,
@@ -967,13 +975,13 @@ export class ReaderManager {
         void authClient
             .getSession()
             .then(result => {
-                if (this.destroyed) return;
+                if (this.destroyed || result?.error) return;
                 const user = result?.data?.user ?? null;
                 this.authState = user ? 'signed-in' : 'signed-out';
                 this.userId = user?.id ?? null;
-                if (user) {
-                    document.getElementById('auth-degraded-banner')?.remove();
-                }
+                // Any validated answer means auth is back — the SSR
+                // degraded banner comes down for signed-out too.
+                document.getElementById('auth-degraded-banner')?.remove();
             })
             .catch(() => {});
     }

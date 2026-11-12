@@ -215,6 +215,26 @@ describe('CharacterSetupManager', () => {
         expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
     });
 
+    it('stops before the POST when the uncertain-auth probe fails', async () => {
+        const fetchMock = vi.fn().mockImplementation(async (url: unknown) => {
+            if (String(url).startsWith('/api/character-setup?')) {
+                return response(500, { error: 'boom' });
+            }
+            return response(200, { ok: true });
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        const { input, button } = managerFor({ 'data-auth-uncertain': 'true' });
+        await submit(input, 'Aria');
+
+        // A 500 cannot say whether a setup exists — the POST could rename a
+        // saved setup, so nothing is sent and the form re-enables instead.
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(alert).toHaveBeenCalled();
+        expect(navigate).not.toHaveBeenCalled();
+        expect(button.disabled).toBe(false);
+        expect(storage.getItem('aquila:character:train_adventure')).toBeNull();
+    });
+
     it('saves locally when the uncertain-auth POST recheck answers 401', async () => {
         const fetchMock = vi.fn().mockImplementation(async (url: unknown) => {
             if (String(url).startsWith('/api/character-setup?')) {

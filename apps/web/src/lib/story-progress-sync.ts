@@ -107,7 +107,15 @@ export async function syncStoryProgress(
         const owner = store.getOwner();
         const foreignOwned = owner !== null && owner !== options.accountId;
         let upload: StoryProgressMap = {};
-        if (!foreignOwned) {
+        if (foreignOwned) {
+            // The foreign map is downloaded, not uploaded — but a copy
+            // sidelined for this account is still its own data. It rides
+            // the request so the restore after the commit does not report
+            // success while leaving those records unuploaded.
+            upload = boundStoryProgressMap(
+                store.getSidelined(options.accountId)
+            );
+        } else {
             const local = store.getAllChecked();
             if (!local)
                 return fail(true, new Error('Local progress is unavailable'));

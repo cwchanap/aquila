@@ -878,6 +878,50 @@ describe('syncStoryProgress', () => {
         ).not.toBeNull();
     });
 
+    it('uploads a sidelined copy the foreign-owned sync cannot restore yet', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        localStorage.setItem(
+            'aquila:storyProgress:v1:sidelined:user-b',
+            JSON.stringify({
+                v: 2,
+                owner: 'user-b',
+                progress: { elevator_game: record({ updatedAt: 20 }) },
+            })
+        );
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: {
+                    train_adventure: record({ updatedAt: 30 }),
+                    elevator_game: record({ updatedAt: 20 }),
+                },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        expect(await syncStoryProgress({ accountId: 'user-b' })).toEqual({
+            ok: true,
+        });
+        // The foreign map is still downloaded rather than uploaded, but
+        // user-b's own sidelined records ride the request — reporting
+        // success no longer strands them locally.
+        expect(bodyOf(fetchMock)).toEqual({
+            progress: { elevator_game: record({ updatedAt: 20 }) },
+            accountId: 'user-b',
+        });
+        const stored = new StoryProgressStore(localStorage);
+        expect(Object.keys(stored.getAll()).sort()).toEqual([
+            'elevator_game',
+            'train_adventure',
+        ]);
+        expect(stored.getOwner()).toBe('user-b');
+        expect(
+            localStorage.getItem('aquila:storyProgress:v1:sidelined:user-b')
+        ).toBeNull();
+    });
+
     it('merges normally when the stored map is owned by this account', async () => {
         saveProgress({
             the_seventh_mirror: record({ updatedAt: 10 }),

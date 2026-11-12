@@ -12,6 +12,7 @@ import { SUPPORTED_LOCALES } from '@aquila/stories/translations';
 import { migratePersisted, READER_SESSION_KEY_PREFIX } from './reader-session';
 import {
     boundStoryProgressMap,
+    mergeStoryProgressMaps,
     normalizeStoryProgressMap,
     type StoryProgress,
     type StoryProgressMap,
@@ -27,6 +28,11 @@ export const STORY_PROGRESS_KEY = 'aquila:storyProgress:v1';
  *  always commit in one storage call and can never drift apart. */
 const LEGACY_OWNER_KEY = 'aquila:storyProgress:v1:owner';
 
+/** Sidelined copies live one-per-owner under `${SIDELINED_PREFIX}<ownerId>`:
+ *  a quarantined map is evicted here instead of deleted so its unsynced
+ *  records survive until their owner signs back in and claims them. */
+const SIDELINED_PREFIX = 'aquila:storyProgress:v1:sidelined:';
+
 export interface ProgressPosition {
     storyId: string;
     sceneId: string;
@@ -39,7 +45,7 @@ export interface ProgressPosition {
  *  last synced with. `owner` is null for a map that has never synced —
  *  anonymous progress uploads to the first account that signs in, while a
  *  map tagged for another account is quarantined instead of merged. */
-interface StoredProgress {
+export interface StoredProgress {
     map: StoryProgressMap;
     owner: string | null;
 }
@@ -69,16 +75,19 @@ export class StoryProgressStore {
     /** Reads map and owner together. A wrapped (`v: 2`) blob carries its
      *  owner inline; anything else is the pre-wrapper layout, whose owner
      *  tag — if any — still sits under the legacy sidecar key. Null only
-     *  when storage is unavailable or the blob cannot be parsed. */
-    private readStored(): StoredProgress | null {
+     *  when storage is unavailable or the blob cannot be parsed. The legacy
+     *  fallback applies to the main key only — sidelined copies are always
+     *  wrapped writes. */
+    private readBlob(key: string, legacy = false): StoredProgress | null {
         if (!this.storage) return null;
         let raw: string | null;
         try {
-            raw = this.storage.getItem(STORY_PROGRESS_KEY);
+            raw = this.storage.getItem(key);
         } catch {
             return null;
         }
-        if (raw === null) return { map: {}, owner: this.legacyOwner() };
+        const fallbackOwner = () => (legacy ? this.legacyOwner() : null);
+        if (raw === null) return { map: {}, owner: fallbackOwner() };
         try {
             const parsed: unknown = JSON.parse(raw);
             if (
@@ -98,11 +107,15 @@ export class StoryProgressStore {
             }
             return {
                 map: normalizeStoryProgressMap(parsed),
-                owner: this.legacyOwner(),
+                owner: fallbackOwner(),
             };
         } catch {
             return null;
         }
+    }
+
+    private readStored(): StoredProgress | null {
+        return this.readBlob(STORY_PROGRESS_KEY, true);
     }
 
     /** The pre-wrapper owner tag; kept readable so a map written before the
@@ -116,13 +129,16 @@ export class StoryProgressStore {
     }
 
     /** Serializes map and owner under the size budget and commits them in a
-     *  single storage call — the only write path, so a stored map can never
-     *  sit untagged beside a stale owner. Write failures stay nonfatal. */
-    private writeStored(map: StoryProgressMap, owner: string | null): boolean {
+     *  single storage call. Write failures stay nonfatal. */
+    private writeBlob(
+        key: string,
+        map: StoryProgressMap,
+        owner: string | null
+    ): boolean {
         if (!this.storage) return false;
         try {
             this.storage.setItem(
-                STORY_PROGRESS_KEY,
+                key,
                 JSON.stringify({
                     v: 2,
                     owner,
@@ -132,12 +148,76 @@ export class StoryProgressStore {
         } catch {
             return false;
         }
+        return true;
+    }
+
+    /** The only main-key write path, so a stored map can never sit untagged
+     *  beside a stale owner. */
+    private writeStored(map: StoryProgressMap, owner: string | null): boolean {
+        if (!this.writeBlob(STORY_PROGRESS_KEY, map, owner)) return false;
         try {
-            this.storage.removeItem(LEGACY_OWNER_KEY);
+            this.storage?.removeItem(LEGACY_OWNER_KEY);
         } catch {
             // A stale sidecar is harmless: reads prefer the wrapped owner.
         }
         return true;
+    }
+
+    /** Moves an evicted owner's map aside (best effort) instead of dropping
+     *  it — its records may never have synced, and deleting them would break
+     *  the local-first contract for that account's next sign-in. */
+    private sideline(owner: string, map: StoryProgressMap): void {
+        if (Object.keys(map).length === 0) return;
+        void this.writeBlob(SIDELINED_PREFIX + owner, map, owner);
+    }
+
+    private readSidelined(accountId: string): StoredProgress | null {
+        return this.readBlob(SIDELINED_PREFIX + accountId);
+    }
+
+    private dropSidelined(accountId: string): void {
+        try {
+            this.storage?.removeItem(SIDELINED_PREFIX + accountId);
+        } catch {
+            // A stuck copy is inert: it only merges for its own account.
+        }
+    }
+
+    /** Merges this account's sidelined copy back into the stored map when the
+     *  map is the account's own (or unowned), then drops the copy. A map
+     *  owned by someone else leaves the sidelined copy waiting — it is not
+     *  this call's to merge or to discard. */
+    restoreSidelined(accountId: string): void {
+        const sidelined = this.readSidelined(accountId);
+        if (!sidelined || Object.keys(sidelined.map).length === 0) return;
+        const stored = this.readStored();
+        if (!stored || (stored.owner !== null && stored.owner !== accountId)) {
+            return;
+        }
+        if (
+            this.writeStored(
+                mergeStoryProgressMaps(stored.map, sidelined.map),
+                accountId
+            )
+        ) {
+            this.dropSidelined(accountId);
+        }
+    }
+
+    /** Removes every locale's saved reader session. Called when a
+     *  foreign-owned map is quarantined: the sessions are the previous
+     *  account's local state and must not seed the new owner's map. */
+    dropReaderSessions(): void {
+        if (!this.storage) return;
+        for (const locale of SESSION_LOCALES) {
+            try {
+                this.storage.removeItem(
+                    `${READER_SESSION_KEY_PREFIX}:${locale}`
+                );
+            } catch {
+                // A stuck session can seed at most one stale record.
+            }
+        }
     }
 
     /** The account id the stored map last synced with; null when the map
@@ -152,18 +232,52 @@ export class StoryProgressStore {
     }
 
     /** Tags the stored map with the account that owns it, committed with
-     *  the map itself. False when the map cannot be re-read or the write
-     *  fails — a caller that reports sync success must not ignore this. */
-    setOwner(userId: string): boolean {
+     *  the map itself. `expectedOwner` claims the tag only while the stored
+     *  owner still matches — a tag that appears meanwhile belongs to a
+     *  different account and must not be overwritten. False when the map
+     *  cannot be re-read, the write fails, or the owner check fails — a
+     *  caller that reports sync success must not ignore this. */
+    setOwner(userId: string, expectedOwner?: string | null): boolean {
         const stored = this.readStored();
         if (!stored) return false;
+        if (expectedOwner !== undefined && stored.owner !== expectedOwner) {
+            return false;
+        }
         return this.writeStored(stored.map, userId);
     }
 
+    /** Map and owner in one read — the same failure contract as
+     *  getAllChecked. Sync needs the pair atomically: whose records the map
+     *  holds decides what a late response may commit. */
+    getWithOwnerChecked(): StoredProgress | null {
+        return this.readStored();
+    }
+
+    /** True when the stored map is tagged for a different account: a
+     *  signed-in caller must not read it as its own progress (card state,
+     *  resume position, session fallbacks). Sync uses getWithOwnerChecked
+     *  instead — it needs the foreign map to replace it. */
+    isForeignTo(accountId: string | null): boolean {
+        if (accountId === null) return false;
+        const owner = this.getOwner();
+        return owner !== null && owner !== accountId;
+    }
+
     /** Replaces the stored map outright and records the owning account in
-     *  the same write — the shared-browser path drops another user's local
-     *  copy this way instead of merging it into a different account. */
+     *  the same write — the shared-browser path evicts another user's local
+     *  copy this way instead of merging it into a different account. The
+     *  evicted copy is sidelined for its owner first: its unsynced records
+     *  must survive until that account returns. */
     replaceAll(map: StoryProgressMap, userId: string): boolean {
+        const stored = this.readStored();
+        if (
+            stored &&
+            stored.owner !== null &&
+            stored.owner !== userId &&
+            Object.keys(stored.map).length > 0
+        ) {
+            this.sideline(stored.owner, stored.map);
+        }
         return this.writeStored(map, userId);
     }
 
@@ -171,16 +285,23 @@ export class StoryProgressStore {
      *  record(): the merge runs against the freshest stored map, so a line
      *  read after the caller's last look is merged rather than overwritten.
      *  Passing `owner` retags the commit atomically — a successful merge
-     *  and its owner tag land or fail together. Returns false when storage
-     *  or the read fails. Note the read and the write are still two
+     *  and its owner tag land or fail together. `expectedOwner` rejects the
+     *  commit outright when the stored tag no longer matches: a map
+     *  retagged behind the caller's request belongs to a different account
+     *  and is left untouched. Returns false when storage, the read, or the
+     *  owner check fails. Note the read and the write are still two
      *  separate storage calls — localStorage offers no cross-tab lock, so
      *  a concurrent record() in another tab can be lost between them. */
     update(
         merge: (current: StoryProgressMap) => StoryProgressMap,
-        owner?: string
+        owner?: string,
+        expectedOwner?: string | null
     ): boolean {
         const stored = this.readStored();
         if (!stored) return false;
+        if (expectedOwner !== undefined && stored.owner !== expectedOwner) {
+            return false;
+        }
         return this.writeStored(merge(stored.map), owner ?? stored.owner);
     }
 
@@ -213,9 +334,11 @@ export class StoryProgressStore {
     /** Records the reader's position. Returns false when storage is
      *  unavailable. A signed-in reader (accountId) claims the map: an
      *  anonymous copy is tagged so its first-signer upload is bound to
-     *  this account, and a copy tagged for another account is quarantined
-     *  outright, so a later sync's replacement cannot discard this
-     *  account's reading. */
+     *  this account, and a copy tagged for another account is quarantined —
+     *  sidelined for that owner rather than deleted, so its unsynced
+     *  records can still be claimed the next time it signs in. The same
+     *  claim restores this account's own sidelined copy and clears the
+     *  evicted owner's reader sessions. */
     record(
         position: ProgressPosition,
         accountId: string | null = null
@@ -224,8 +347,19 @@ export class StoryProgressStore {
         const stored = this.readStored();
         let all = stored?.map ?? {};
         let owner = stored ? stored.owner : this.legacyOwner();
+        let quarantined = false;
+        let restoredSidelined = false;
         if (accountId !== null) {
-            if (owner !== null && owner !== accountId) all = {};
+            if (owner !== null && owner !== accountId) {
+                this.sideline(owner, all);
+                all = {};
+                quarantined = true;
+            }
+            const sidelined = this.readSidelined(accountId);
+            if (sidelined && Object.keys(sidelined.map).length > 0) {
+                all = mergeStoryProgressMaps(all, sidelined.map);
+                restoredSidelined = true;
+            }
             owner = accountId;
         }
         const previous = Object.hasOwn(all, position.storyId)
@@ -252,7 +386,14 @@ export class StoryProgressStore {
                 visited,
             },
         };
-        return this.writeStored(next, owner);
+        const committed = this.writeStored(next, owner);
+        if (committed) {
+            if (restoredSidelined) this.dropSidelined(accountId as string);
+            // The evicted owner's sessions go with its map — they cannot be
+            // allowed to seed this account's copy through a later import.
+            if (quarantined) this.dropReaderSessions();
+        }
+        return committed;
     }
 }
 

@@ -54,8 +54,12 @@
   let syncRerunQueued = false;
   // Persisted restores can overlap: each one re-reads the session, and only
   // the newest may apply its answer — a slow earlier reply must not reinstate
-  // a stale sign-in over a newer sign-out (or the reverse).
+  // a stale sign-in over a newer sign-out (or the reverse). validatedSeq marks
+  // the newest restore that produced a validated answer; a queued follow-up
+  // sync compares the two — a restore that began but never validated leaves
+  // the retained account unfit to sync on.
   let restoreSeq = 0;
+  let validatedSeq = 0;
   // Covers live on the R2 asset host — an <img> that 404s removes itself so
   // the accent-gradient + icon fallback underneath shows through.
   let failedCovers = new SvelteSet<string>();
@@ -122,7 +126,10 @@
     // reader's per-locale session; carry them over once so an existing
     // reader still sees Continue.
     importSavedSessions(store, storage, locale);
-    progress = store.getAll();
+    // A signed-in view shows only its own account's map: progress tagged
+    // for another account stays hidden until sync replaces it — the
+    // quarantined copy is the other user's data, not a preview of it.
+    progress = store.isForeignTo(userId) ? {} : store.getAll();
   }
 
   /** Re-reads the session; null keeps the server-rendered state. */
@@ -151,6 +158,22 @@
     authState = refreshed.authState;
     userId = refreshed.userId;
     document.getElementById('auth-degraded-banner')?.remove();
+    // The account answer changes which local map may be shown: cards
+    // refresh against the now-known owner before any sync runs.
+    refresh();
+  }
+
+  /** Re-reads the session for a cached or uncertain page and applies the
+   *  answer — signed-in or signed-out, a validated result means auth is
+   *  back. Only the newest restore may apply: a stale reply or a failed
+   *  re-read keeps no state. */
+  async function revalidateSession(): Promise<void> {
+    const ticket = ++restoreSeq;
+    const refreshed = await fetchAuthState();
+    if (ticket !== restoreSeq || refreshed === null) return;
+    validatedSeq = ticket;
+    applyAuthState(refreshed);
+    if (authState === 'signed-in') void runSync();
   }
 
   function runSync(): Promise<void> {
@@ -163,7 +186,11 @@
         syncRerunQueued = true;
         void syncInFlight.finally(() => {
           syncRerunQueued = false;
-          if (authState === 'signed-in') void runSync();
+          // The queued pass runs only when the newest restore produced a
+          // validated session — a restore whose revalidation failed leaves
+          // the retained account unfit to sync on.
+          if (validatedSeq === restoreSeq && authState === 'signed-in')
+            void runSync();
         });
       }
       return syncInFlight;
@@ -198,32 +225,13 @@
     if (authState === 'signed-in') void runSync();
     // An SSR 'unavailable' is often a slow cold start, not an outage — one
     // background session re-read decides whether this visit can sync.
-    if (authState === 'unavailable') {
-      void (async () => {
-        // Same guard as a persisted restore: a newer restore's answer must
-        // not be overwritten by this older mount-time reply.
-        const ticket = ++restoreSeq;
-        const refreshed = await fetchAuthState();
-        if (ticket !== restoreSeq || refreshed === null) return;
-        applyAuthState(refreshed);
-        if (authState === 'signed-in') void runSync();
-      })();
-    }
+    if (authState === 'unavailable') void revalidateSession();
     // Returning with the Back button can restore this page from the
     // back/forward cache; re-read so the cards show the latest place.
     const onPageShow = (event: Event) => {
       if (!(event as Event & { persisted?: boolean }).persisted) return;
       refresh();
-      const restore = ++restoreSeq;
-      void (async () => {
-        const refreshed = await fetchAuthState();
-        // A failed revalidation keeps no state: the cached page's session
-        // may predate a sign-in or sign-out, so sync only after a
-        // validated answer.
-        if (restore !== restoreSeq || refreshed === null) return;
-        applyAuthState(refreshed);
-        if (authState === 'signed-in') void runSync();
-      })();
+      void revalidateSession();
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);

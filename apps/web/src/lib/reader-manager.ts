@@ -216,11 +216,17 @@ export class ReaderManager {
     private selectInitialIntent(): IntentSelection {
         const params = new URLSearchParams(window.location.search);
         const storyId = params.get('story');
+        // A map tagged for another account is not this account's to resume
+        // from — the saved session beside it belongs to that account too,
+        // so both fallbacks stay unused until a sync or a record clears
+        // the foreign tag.
+        const foreign = this.storyProgress.isForeignTo(this.userId);
         if (
             storyId &&
             !params.has('scene') &&
             !params.has('dialogue') &&
-            params.get('restart') !== '1'
+            params.get('restart') !== '1' &&
+            !foreign
         ) {
             const progress = this.storyProgress.get(storyId);
             if (progress) {
@@ -228,7 +234,7 @@ export class ReaderManager {
                 params.set('dialogue', String(progress.dialogueIndex + 1));
             }
         }
-        const raw = localStorage.getItem(this.storageKey);
+        const raw = foreign ? null : localStorage.getItem(this.storageKey);
         let persisted: PersistedSession | null = null;
         if (raw) {
             try {
@@ -304,6 +310,7 @@ export class ReaderManager {
         dialogueIndex: number,
         atEnding: boolean
     ): boolean {
+        if (this.storyProgress.isForeignTo(this.userId)) return false;
         const stored = this.storyProgress.get(storyId);
         return (
             stored !== null &&
@@ -742,7 +749,9 @@ export class ReaderManager {
                 this.persist();
             }
         }
-        return this.storyProgress.get(readerState.storyId);
+        return this.storyProgress.isForeignTo(this.userId)
+            ? null
+            : this.storyProgress.get(readerState.storyId);
     };
 
     handleChoice = (nextScene: string): void => {
@@ -957,12 +966,45 @@ export class ReaderManager {
         } else {
             // Re-arm the one-keepalive-per-hide rule for the next hide.
             this.keepaliveSent = false;
+            this.revalidateAuth();
         }
     };
+
+    /** A back/forward-cached reader can predate a sign-out or an account
+     *  switch made in another tab — the userId captured at load must not
+     *  tag new writes for the account that used to be signed in. */
+    private onPageShow = (event: Event): void => {
+        if (!(event as Event & { persisted?: boolean }).persisted) return;
+        this.revalidateAuth();
+    };
+
+    /** Re-reads the session on resume so later records and pushes carry the
+     *  account that is actually signed in now — a tab kept open across an
+     *  account switch would otherwise keep tagging writes for the previous
+     *  one. A failed re-read keeps the current state. */
+    private revalidateAuth(): void {
+        void authClient
+            .getSession()
+            .then(result => {
+                if (this.destroyed || result?.error) return;
+                const user = result?.data?.user ?? null;
+                this.applySessionUser(user);
+                // Any validated answer means auth is back — the SSR
+                // degraded banner comes down for signed-out too.
+                document.getElementById('auth-degraded-banner')?.remove();
+            })
+            .catch(() => {});
+    }
+
+    private applySessionUser(user: { id: string } | null): void {
+        this.authState = user ? 'signed-in' : 'signed-out';
+        this.userId = user?.id ?? null;
+    }
 
     private addLifecycleListeners(): void {
         window.addEventListener('popstate', this.onPopState);
         window.addEventListener('pagehide', this.onPageHide);
+        window.addEventListener('pageshow', this.onPageShow);
         document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
@@ -976,11 +1018,7 @@ export class ReaderManager {
             .getSession()
             .then(result => {
                 if (this.destroyed || result?.error) return;
-                const user = result?.data?.user ?? null;
-                this.authState = user ? 'signed-in' : 'signed-out';
-                this.userId = user?.id ?? null;
-                // Any validated answer means auth is back — the SSR
-                // degraded banner comes down for signed-out too.
+                this.applySessionUser(result?.data?.user ?? null);
                 document.getElementById('auth-degraded-banner')?.remove();
             })
             .catch(() => {});
@@ -1019,6 +1057,7 @@ export class ReaderManager {
         this.loadGeneration++;
         window.removeEventListener('popstate', this.onPopState);
         window.removeEventListener('pagehide', this.onPageHide);
+        window.removeEventListener('pageshow', this.onPageShow);
         document.removeEventListener(
             'visibilitychange',
             this.onVisibilityChange

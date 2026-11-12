@@ -24,6 +24,7 @@ import {
     type Account,
 } from './schema.js';
 import {
+    boundStoryProgressMap,
     mergeStoryProgressMaps,
     normalizeStoryProgressMap,
     type StoryProgressMap,
@@ -175,13 +176,20 @@ export class StoryRepository extends BaseRepository<typeof stories, Story> {
     }
 
     /** Deletes the story plus the rows the dropped story FKs used to
-     *  cascade. Any signed-in user can bookmark any story id — the bookmark
-     *  API does not check story ownership — so bookmarks go by story id
-     *  alone, like the old cascade. Character setups keep the owner scope:
-     *  the setup API only accepts compiled story ids, so a setup can never
-     *  carry a Story Writer id anyway. */
+     *  cascade. The story delete runs first and the dependents only when it
+     *  removes a row: bookmarks go by story id alone (any signed-in user can
+     *  bookmark any story id — the bookmark API does not check story
+     *  ownership), so a no-op story delete must not wipe other users'
+     *  bookmarks. Character setups keep the owner scope: the setup API only
+     *  accepts compiled story ids, so a setup can never carry a Story Writer
+     *  id anyway. */
     async deleteWithDependents(id: string, userId: string): Promise<boolean> {
         return await this.db.transaction(async tx => {
+            const deleted = await tx
+                .delete(stories)
+                .where(and(eq(stories.id, id), eq(stories.userId, userId)))
+                .returning({ id: stories.id });
+            if (deleted.length === 0) return false;
             await tx.delete(bookmarks).where(eq(bookmarks.storyId, id));
             await tx
                 .delete(characterSetups)
@@ -191,11 +199,7 @@ export class StoryRepository extends BaseRepository<typeof stories, Story> {
                         eq(characterSetups.storyId, id)
                     )
                 );
-            const deleted = await tx
-                .delete(stories)
-                .where(and(eq(stories.id, id), eq(stories.userId, userId)))
-                .returning({ id: stories.id });
-            return deleted.length > 0;
+            return true;
         });
     }
 
@@ -497,9 +501,14 @@ export class ReadingProgressRepository extends BaseRepository<
                 .where(eq(readingProgress.userId, userId))
                 .limit(1);
 
-            const merged = mergeStoryProgressMaps(
-                localMap,
-                normalizeStoryProgressMap(stored?.data)
+            // Bound the stored map the same way the browser bounds its copy:
+            // the 48 KiB request cap limits a single POST, and only this
+            // bound stops the row from growing across POSTs.
+            const merged = boundStoryProgressMap(
+                mergeStoryProgressMaps(
+                    localMap,
+                    normalizeStoryProgressMap(stored?.data)
+                )
             );
             const updatedAt = new Date();
 

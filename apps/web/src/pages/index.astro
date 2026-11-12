@@ -2,7 +2,7 @@
 import MainLayout from '@/layouts/main.astro';
 import MainMenu from '@/components/MainMenu.svelte';
 import AuthDegradedBanner from '@/components/AuthDegradedBanner.astro';
-import { getSessionUser } from '@/lib/auth-utils.js';
+import { getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '@/lib/auth-utils.js';
 import { t as translate } from '@/lib/utils';
 
 const locale = Astro.currentLocale || 'en';
@@ -12,7 +12,7 @@ const t = (key: string) => translate(locale, key);
 // state before UserStatus would client-fetch the session. getSessionUser
 // never throws — it returns a discriminated union so we can distinguish
 // "auth system failed to boot" from "no session."
-const sessionResult = await getSessionUser(Astro.request);
+const sessionResult = await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS });
 const user = sessionResult.status === 'ok' ? sessionResult.user : null;
 const authFailed = sessionResult.status === 'error';
 ---

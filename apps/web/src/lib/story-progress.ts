@@ -65,7 +65,8 @@ function isStringList(value: unknown): value is string[] {
 
 /** Turns one untrusted entry into a progress record, or null when invalid.
  *  A malformed `visited` forfeits only itself: the saved position and
- *  reached endings still apply. */
+ *  reached endings still apply. Unknown keys are dropped so the record
+ *  stored per account holds only the fields this reader understands. */
 export function normalizeStoryProgress(value: unknown): StoryProgress | null {
     if (!value || typeof value !== 'object') return null;
     const v = value as Record<string, unknown>;
@@ -81,12 +82,14 @@ export function normalizeStoryProgress(value: unknown): StoryProgress | null {
     ) {
         return null;
     }
-    const { visited, ...rest } = v;
-    const record = {
-        ...rest,
-        endings: [...(v.endings as string[])],
-    } as StoryProgress;
-    if (isStringList(visited)) record.visited = [...visited];
+    const record: StoryProgress = {
+        sceneId: v.sceneId,
+        dialogueIndex: v.dialogueIndex,
+        updatedAt: v.updatedAt,
+        finished: v.finished,
+        endings: [...v.endings],
+    };
+    if (isStringList(v.visited)) record.visited = [...v.visited];
     return record;
 }
 

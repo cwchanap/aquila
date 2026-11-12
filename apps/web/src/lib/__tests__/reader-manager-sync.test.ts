@@ -4,6 +4,7 @@ import type { AsyncStoryLoaderResult } from '@aquila/stories/async';
 import { ReaderManager } from '../reader-manager';
 import { readerState } from '../reader-state.svelte';
 import type { AuthState } from '../auth-utils';
+import { authClient } from '../auth-client';
 import type { StoryProgress } from '../story-progress';
 import {
     STORY_PROGRESS_KEY,
@@ -136,6 +137,44 @@ function deferred<T>() {
     return { promise, resolve };
 }
 
+/** AbortSignal.timeout ignores fake timers; run it on the fake clock so a
+ *  timeout fires inside an advanceTimersByTime window. */
+function fakeAbortSignalTimeout(): void {
+    class FakeSignal extends EventTarget {
+        aborted = false;
+        reason: unknown;
+        static timeout(ms: number): FakeSignal {
+            const signal = new FakeSignal();
+            setTimeout(() => {
+                signal.aborted = true;
+                signal.reason = new DOMException(
+                    'The operation timed out.',
+                    'TimeoutError'
+                );
+                signal.dispatchEvent(new Event('abort'));
+            }, ms);
+            return signal;
+        }
+    }
+    vi.stubGlobal('AbortSignal', FakeSignal);
+}
+
+/** A fetch that never answers but rejects on abort the way a real fetch
+ *  does — plain hanging promises deadlock callers that pass a signal. */
+function hangingFetch() {
+    return vi.fn(
+        (_url: unknown, init?: RequestInit) =>
+            new Promise<Response>((_resolve, reject) => {
+                const signal = init?.signal;
+                if (signal?.aborted) {
+                    reject(signal.reason);
+                    return;
+                }
+                signal?.addEventListener('abort', () => reject(signal.reason));
+            })
+    );
+}
+
 /** Lets the fire-and-forget push helpers and dynamic imports settle. */
 async function flush(): Promise<void> {
     await vi.advanceTimersByTimeAsync(0);
@@ -145,9 +184,13 @@ describe('ReaderManager account progress sync', () => {
     let manager: ReaderManager | null = null;
     let loadStoryContent: ReturnType<typeof vi.fn>;
 
-    function createManager(authState: AuthState): ReaderManager {
+    function createManager(
+        authState: AuthState,
+        userId: string | null = 'user-1'
+    ): ReaderManager {
         return new ReaderManager('en', undefined, {
             authState,
+            userId,
             loadStoryContent: loadStoryContent as (
                 storyId: string,
                 locale: string
@@ -177,6 +220,12 @@ describe('ReaderManager account progress sync', () => {
         setLocation('');
         loadStoryContent = vi.fn().mockResolvedValue(storyPayload());
         global.fetch = vi.fn();
+        // Session re-reads start signed-out; a test that wants recovery
+        // stubs its own response.
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: null,
+            error: null,
+        } as never);
     });
 
     afterEach(() => {
@@ -184,6 +233,7 @@ describe('ReaderManager account progress sync', () => {
         manager = null;
         readerState.reset();
         document.body.replaceChildren();
+        vi.unstubAllGlobals();
         vi.restoreAllMocks();
     });
 
@@ -331,9 +381,9 @@ describe('ReaderManager account progress sync', () => {
                 dialogueIndex: 1,
             }),
         });
-        const response = deferred<Response>();
-        const fetchMock = vi.fn(() => response.promise);
+        const fetchMock = hangingFetch();
         global.fetch = fetchMock;
+        fakeAbortSignalTimeout();
         mountReaderContainer();
         manager = createManager('signed-in');
 
@@ -353,31 +403,12 @@ describe('ReaderManager account progress sync', () => {
             dialogueIndex: 1,
             loadStatus: 'ready',
         });
-
-        // A response that arrives after the deadline cannot reposition the
-        // already-started reader.
-        response.resolve(
-            serverResponse({
-                train_adventure: progressRecord({
-                    sceneId: 'act2',
-                    dialogueIndex: 0,
-                    updatedAt: 100,
-                    finished: true,
-                    endings: ['act2'],
-                }),
-            })
-        );
+        // The aborted request is discarded: the local copy stays in the
+        // store until a later sync reconciles it against the account.
         await flush();
-        expect(readerState).toMatchObject({
-            currentSceneId: 'act1',
-            dialogueIndex: 1,
-        });
-        // The store takes the merged map: the newer cloud record replaces the
-        // restored local position even though the reader keeps reading from
-        // act1 — the next local navigation wins the merge on timestamp.
         expect(readProgress('train_adventure')).toMatchObject({
-            sceneId: 'act2',
-            dialogueIndex: 0,
+            sceneId: 'act1',
+            dialogueIndex: 1,
         });
     });
 
@@ -458,6 +489,9 @@ describe('ReaderManager account progress sync', () => {
         const fetchMock = vi.fn(async () => serverResponse({}));
         global.fetch = fetchMock;
         mountReaderContainer();
+        // Past the minute throttle so the mount-time ordinary push definitely
+        // fires and marks the account copy current.
+        await vi.advanceTimersByTimeAsync(60_001);
         manager = createManager('signed-in');
         await manager.initialize();
         await flush();
@@ -473,14 +507,9 @@ describe('ReaderManager account progress sync', () => {
             dialogueIndex: 0,
             updatedAt: 10,
         });
-        // The keepalive still uploads — with the original timestamp.
-        const posts = progressPosts(fetchMock);
-        expect(posts).toHaveLength(1);
-        expect(JSON.parse(posts[0][1].body as string)).toEqual({
-            progress: {
-                train_adventure: expect.objectContaining({ updatedAt: 10 }),
-            },
-        });
+        // And nothing changed since the mount-time upload, so the hide
+        // flush makes no request at all.
+        expect(progressPosts(fetchMock)).toHaveLength(0);
     });
 
     it('records a restored position the store does not already hold', async () => {
@@ -534,16 +563,25 @@ describe('ReaderManager account progress sync', () => {
         const fetchMock = vi.fn(async () => serverResponse({}));
         global.fetch = fetchMock;
         mountReaderContainer();
+        // Past the minute throttle so the mount-time ordinary push fires
+        // and stamps lastPushAt — that keeps the scene changes below inside
+        // the window, so every request here is a keepalive.
+        await vi.advanceTimersByTimeAsync(60_001);
         manager = createManager('signed-in');
         await manager.initialize();
         await flush();
         fetchMock.mockClear();
 
+        // Each hide sends only when something new waits to upload.
+        manager.goToScene('act2');
         window.dispatchEvent(new Event('pagehide'));
         await flush();
-        expect(progressPosts(fetchMock)).toHaveLength(1);
+        const first = progressPosts(fetchMock);
+        expect(first).toHaveLength(1);
+        expect(first[0][1]).toMatchObject({ keepalive: true });
 
         document.dispatchEvent(new Event('visibilitychange'));
+        manager.goToScene('act1');
         Object.defineProperty(document, 'visibilityState', {
             value: 'hidden',
             writable: true,
@@ -551,7 +589,9 @@ describe('ReaderManager account progress sync', () => {
         });
         window.dispatchEvent(new Event('pagehide'));
         await flush();
-        expect(progressPosts(fetchMock)).toHaveLength(2);
+        const second = progressPosts(fetchMock);
+        expect(second).toHaveLength(2);
+        expect(second[1][1]).toMatchObject({ keepalive: true });
     });
 
     it('keeps a line read while the startup sync is in flight', async () => {
@@ -638,5 +678,70 @@ describe('ReaderManager account progress sync', () => {
         window.dispatchEvent(new Event('pagehide'));
         await flush();
         expect(global.fetch).toHaveBeenCalledOnce();
+    });
+
+    it('recovers sync for the visit when an unavailable SSR session re-reads as signed-in', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        const banner = document.createElement('div');
+        banner.id = 'auth-degraded-banner';
+        document.body.appendChild(banner);
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: 'user-9' } },
+            error: null,
+        } as never);
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('unavailable', null);
+
+        await manager.initialize();
+        await flush();
+
+        // The rechecked session enables pushes for the rest of the visit
+        // and dismisses the SSR degraded banner.
+        expect(document.getElementById('auth-degraded-banner')).toBeNull();
+        manager.goToScene('act2');
+        await flush();
+        expect(progressPosts(fetchMock)).toHaveLength(1);
+    });
+
+    it('does not queue a second POST behind a timed-out startup sync', async () => {
+        setLocation('?story=train_adventure');
+        global.fetch = hangingFetch();
+        fakeAbortSignalTimeout();
+        mountReaderContainer();
+        manager = createManager('signed-in');
+
+        const initializing = manager.initialize();
+        await vi.advanceTimersByTimeAsync(1_500);
+        await initializing;
+
+        // The persist inside loadIntent must see the attempt's throttle
+        // stamp — the hung request may still hold the server lock.
+        expect(progressPosts(vi.mocked(global.fetch))).toHaveLength(1);
+    });
+
+    it('makes no keepalive request when the account copy already covers the local map', async () => {
+        setLocation('?story=train_adventure');
+        saveProgress({
+            train_adventure: progressRecord({
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                updatedAt: 10,
+            }),
+        });
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in');
+        await manager.initialize();
+        expect(progressPosts(fetchMock)).toHaveLength(1);
+        fetchMock.mockClear();
+
+        // The merged position matches the store, so nothing new is waiting
+        // to upload — the hide flush sends nothing.
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+        expect(progressPosts(fetchMock)).toHaveLength(0);
     });
 });

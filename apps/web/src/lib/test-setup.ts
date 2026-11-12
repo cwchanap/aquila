@@ -106,6 +106,7 @@ vi.mock('better-auth/client', () => ({
         signIn: vi.fn(),
         signOut: vi.fn(),
         useSession: vi.fn(),
+        getSession: vi.fn(async () => ({ data: null, error: null })),
     })),
 }));
 

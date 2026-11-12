@@ -21,6 +21,11 @@ export type { StoryProgress, StoryProgressMap } from './story-progress';
 
 export const STORY_PROGRESS_KEY = 'aquila:storyProgress:v1';
 
+/** Companion to STORY_PROGRESS_KEY: the account id the stored map last
+ *  synced with. Survives sign-out so a different account signing in on a
+ *  shared browser can tell the local map belongs to someone else. */
+export const STORY_PROGRESS_OWNER_KEY = 'aquila:storyProgress:v1:owner';
+
 export interface ProgressPosition {
     storyId: string;
     sceneId: string;
@@ -71,6 +76,36 @@ export class StoryProgressStore {
         } catch {
             return false;
         }
+    }
+
+    /** The account id the stored map last synced with; null when the map
+     *  has never been pushed or the tag cannot be read. */
+    getOwner(): string | null {
+        if (!this.storage) return null;
+        try {
+            return this.storage.getItem(STORY_PROGRESS_OWNER_KEY);
+        } catch {
+            return null;
+        }
+    }
+
+    /** Tags the stored map with the account that owns it. A lost tag is
+     *  harmless: the map then reads as browser-local again. */
+    setOwner(userId: string): void {
+        try {
+            this.storage?.setItem(STORY_PROGRESS_OWNER_KEY, userId);
+        } catch {
+            // Nonfatal like every other write on this store.
+        }
+    }
+
+    /** Replaces the stored map outright and records the owning account —
+     *  the shared-browser path drops another user's local copy this way
+     *  instead of merging it into a different account. */
+    replaceAll(map: StoryProgressMap, userId: string): boolean {
+        if (!this.writeAll(map)) return false;
+        this.setOwner(userId);
+        return true;
     }
 
     /** Read-modify-write in one synchronous operation, the same shape as

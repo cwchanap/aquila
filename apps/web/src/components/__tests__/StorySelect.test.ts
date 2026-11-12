@@ -513,6 +513,9 @@ describe('StorySelect', () => {
 
         renderSelect({ authState: 'signed-in', userId: 'user-b' });
 
+        // A map tagged for user-a is not shown as user-b's local progress
+        // while the download is still out.
+        expect(screen.queryByTestId('continue-reading')).toBeNull();
         expect(
             await screen.findByText('Your progress is saved to your account')
         ).toBeInTheDocument();
@@ -669,6 +672,46 @@ describe('StorySelect', () => {
         await waitFor(() =>
             expect(screen.queryByTestId('progress-sync-status')).toBeNull()
         );
+
+        resolveFirst(serverResponse({ progress: {} }));
+        await taskTurn();
+        expect(progressCalls(fetchMock)).toHaveLength(1);
+    });
+
+    it('does not fire the queued follow-up when the latest restore fails to revalidate', async () => {
+        let resolveFirst!: (response: Response) => void;
+        const progressResponses = [
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFirst = resolve;
+                }),
+        ];
+        vi.mocked(authClient.getSession)
+            .mockResolvedValueOnce({
+                data: { user: { id: 'user-1' } },
+                error: null,
+            } as never)
+            .mockRejectedValue(new TypeError('Failed to fetch'));
+        const fetchMock = vi.fn(() => progressResponses.shift()!());
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        expect(progressCalls(fetchMock)).toHaveLength(1);
+
+        // The first restore validates the session and queues a follow-up
+        // behind the in-flight request.
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() =>
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalledTimes(1)
+        );
+        await taskTurn();
+        // A newer restore's revalidation fails — the retained signed-in
+        // answer is stale, so the queued pass must not run on it.
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() =>
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalledTimes(2)
+        );
+        await taskTurn();
 
         resolveFirst(serverResponse({ progress: {} }));
         await taskTurn();

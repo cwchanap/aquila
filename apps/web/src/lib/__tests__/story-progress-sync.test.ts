@@ -168,16 +168,25 @@ describe('syncStoryProgress', () => {
 
         const pending = syncStoryProgress({ accountId: 'user-1' });
 
-        // The reader records a newer place before the response arrives.
-        saveProgress({
-            the_seventh_mirror: record({
-                sceneId: 'ch5_act2',
-                dialogueIndex: 9,
-                updatedAt: 40,
-                endings: ['ch1_ending', 'ch5_ending'],
-                visited: ['ch5_act2'],
-            }),
-        });
+        // The reader records a newer place before the response arrives; the
+        // write carries the account tag the sync claimed before the request
+        // left.
+        localStorage.setItem(
+            STORY_PROGRESS_KEY,
+            JSON.stringify({
+                v: 2,
+                owner: 'user-1',
+                progress: {
+                    the_seventh_mirror: record({
+                        sceneId: 'ch5_act2',
+                        dialogueIndex: 9,
+                        updatedAt: 40,
+                        endings: ['ch1_ending', 'ch5_ending'],
+                        visited: ['ch5_act2'],
+                    }),
+                },
+            })
+        );
         resolveFetch(
             serverResponse({
                 progress: {
@@ -330,21 +339,29 @@ describe('syncStoryProgress', () => {
         const setItem = storage.setItem.bind(storage);
         storage.getItem = key => {
             if (key === STORY_PROGRESS_KEY) reads += 1;
-            // Read 1 is the owner check, read 2 the upload map — the
-            // failing read is the fresh re-read inside update()'s merge.
-            if (key === STORY_PROGRESS_KEY && reads === 3) {
+            // Reads 1-3 are the owner check, the upload map, and the
+            // claim's re-read — the failing read is the fresh re-read
+            // inside update()'s merge.
+            if (key === STORY_PROGRESS_KEY && reads === 4) {
                 throw new Error('storage read failed');
             }
             return getItem(key);
         };
         storage.setItem = (key, value) => {
-            writes += 1;
+            if (key === STORY_PROGRESS_KEY) writes += 1;
             setItem(key, value);
         };
         vi.stubGlobal('localStorage', storage);
         const advanced = JSON.stringify({
-            the_seventh_mirror: record({ sceneId: 'ch5_act2', updatedAt: 40 }),
-            elevator_game: record({ updatedAt: 30 }),
+            v: 2,
+            owner: 'user-1',
+            progress: {
+                the_seventh_mirror: record({
+                    sceneId: 'ch5_act2',
+                    updatedAt: 40,
+                }),
+                elevator_game: record({ updatedAt: 30 }),
+            },
         });
         vi.stubGlobal(
             'fetch',
@@ -366,11 +383,11 @@ describe('syncStoryProgress', () => {
         const result = await syncStoryProgress({ accountId: 'user-1' });
 
         expect(result.ok).toBe(false);
-        expect(writes).toBe(1);
+        expect(writes).toBe(2);
         expect(storage.getItem(STORY_PROGRESS_KEY)).toBe(advanced);
     });
 
-    it('returns failure when the merged map cannot be committed', async () => {
+    it('aborts the upload when an unowned map cannot be claimed', async () => {
         const original = JSON.stringify({
             the_seventh_mirror: record({ updatedAt: 10 }),
         });
@@ -379,21 +396,59 @@ describe('syncStoryProgress', () => {
             throw new Error('QuotaExceededError');
         };
         vi.stubGlobal('localStorage', storage);
-        vi.stubGlobal(
-            'fetch',
-            vi.fn().mockResolvedValue(
-                serverResponse({
-                    progress: {
-                        elevator_game: record({ updatedAt: 20 }),
-                    },
-                })
-            )
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: {
+                    elevator_game: record({ updatedAt: 20 }),
+                },
+            })
         );
+        vi.stubGlobal('fetch', fetchMock);
 
         const result = await syncStoryProgress({ accountId: 'user-1' });
 
-        expect(result.ok).toBe(false);
+        expect(result).toMatchObject({ ok: false, local: true });
+        expect(fetchMock).not.toHaveBeenCalled();
         expect(storage.getItem(STORY_PROGRESS_KEY)).toBe(original);
+    });
+
+    it('returns failure when the merged map cannot be committed', async () => {
+        const original = JSON.stringify({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        const storage = memoryStorage({ [STORY_PROGRESS_KEY]: original });
+        let writes = 0;
+        const setItem = storage.setItem.bind(storage);
+        storage.setItem = (key, value) => {
+            if (key === STORY_PROGRESS_KEY) {
+                writes += 1;
+                // Write 1 is the pre-upload claim; write 2 is the merge
+                // commit for the response.
+                if (writes === 2) throw new Error('QuotaExceededError');
+            }
+            setItem(key, value);
+        };
+        vi.stubGlobal('localStorage', storage);
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: {
+                    elevator_game: record({ updatedAt: 20 }),
+                },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const result = await syncStoryProgress({ accountId: 'user-1' });
+
+        expect(result).toMatchObject({ ok: false, local: true });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        // The claim write already landed: the map stays tagged so a later
+        // account cannot upload it as unowned progress.
+        const stored = new StoryProgressStore(storage).getWithOwnerChecked();
+        expect(stored?.owner).toBe('user-1');
+        expect(stored?.map).toEqual({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
     });
 
     it('returns failure without a request when local storage is unavailable', async () => {
@@ -496,14 +551,17 @@ describe('syncStoryProgress', () => {
 
         const pending = syncStoryProgress({ accountId: 'user-b' });
 
-        // A position lands behind the pending download — a quarantined
-        // reader tab's record, or an anonymous write from another tab.
-        new StoryProgressStore(localStorage).record({
-            storyId: 'elevator_game',
-            sceneId: 'b1a_act1',
-            dialogueIndex: 2,
-            atEnding: false,
-        });
+        // A position lands behind the pending download — the syncing
+        // account's own reader tab records while the request is out.
+        new StoryProgressStore(localStorage).record(
+            {
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act1',
+                dialogueIndex: 2,
+                atEnding: false,
+            },
+            'user-b'
+        );
         resolveFetch(
             serverResponse({
                 progress: {
@@ -523,6 +581,265 @@ describe('syncStoryProgress', () => {
         expect(stored.train_adventure).toEqual(record({ updatedAt: 30 }));
         expect(stored).not.toHaveProperty('the_seventh_mirror');
         expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+    });
+
+    it('sidelines in-flight records that cannot be attributed to the syncing account', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        let resolveFetch!: (response: Response) => void;
+        const fetchMock = vi.fn(
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFetch = resolve;
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const pending = syncStoryProgress({ accountId: 'user-b' });
+
+        // An anonymous write lands behind the pending download — nothing
+        // proves it belongs to user-b.
+        new StoryProgressStore(localStorage).record({
+            storyId: 'elevator_game',
+            sceneId: 'b1a_act1',
+            dialogueIndex: 2,
+            atEnding: false,
+        });
+        resolveFetch(
+            serverResponse({
+                progress: {
+                    train_adventure: record({ updatedAt: 30 }),
+                },
+            })
+        );
+
+        expect(await pending).toEqual({ ok: true });
+        const stored = readProgress();
+        // The download replaces the foreign map outright; the anonymous
+        // record is not adopted into user-b's copy.
+        expect(stored).toEqual({
+            train_adventure: record({ updatedAt: 30 }),
+        });
+        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+        // Everything that sat under the previous tag — including the
+        // unattributable write — waits sidelined for that owner's return.
+        const sidelined = JSON.parse(
+            localStorage.getItem(
+                'aquila:storyProgress:v1:sidelined:user-a'
+            ) as string
+        );
+        expect(Object.keys(sidelined.progress).sort()).toEqual([
+            'elevator_game',
+            'the_seventh_mirror',
+        ]);
+    });
+
+    it('leaves a map retagged by a third account behind the request untouched', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        let resolveFetch!: (response: Response) => void;
+        const fetchMock = vi.fn(
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFetch = resolve;
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const pending = syncStoryProgress({ accountId: 'user-b' });
+
+        // A third account claims the map while the download is out — its
+        // records are not this sync's to merge or to discard.
+        new StoryProgressStore(localStorage).record(
+            {
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act1',
+                dialogueIndex: 2,
+                atEnding: false,
+            },
+            'user-c'
+        );
+        resolveFetch(
+            serverResponse({
+                progress: {
+                    train_adventure: record({ updatedAt: 30 }),
+                },
+            })
+        );
+
+        expect(await pending).toMatchObject({ ok: false, local: true });
+        const stored = new StoryProgressStore(localStorage);
+        expect(stored.getOwner()).toBe('user-c');
+        expect(stored.getAll()).toEqual({
+            elevator_game: expect.objectContaining({
+                sceneId: 'b1a_act1',
+            }),
+        });
+    });
+
+    it('abandons the merge when the map changes hands behind the request', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-1');
+        let resolveFetch!: (response: Response) => void;
+        const fetchMock = vi.fn(
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFetch = resolve;
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const pending = syncStoryProgress({ accountId: 'user-1' });
+
+        // Another account's record retags the map mid-request — merging
+        // user-1's download into it would feed it to the wrong owner.
+        new StoryProgressStore(localStorage).record(
+            {
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act1',
+                dialogueIndex: 2,
+                atEnding: false,
+            },
+            'user-b'
+        );
+        resolveFetch(
+            serverResponse({
+                progress: {
+                    the_seventh_mirror: record({ updatedAt: 20 }),
+                },
+            })
+        );
+
+        expect(await pending).toMatchObject({ ok: false, local: true });
+        const stored = new StoryProgressStore(localStorage);
+        expect(stored.getOwner()).toBe('user-b');
+        expect(stored.getAll()).toEqual({
+            elevator_game: expect.objectContaining({
+                sceneId: 'b1a_act1',
+            }),
+        });
+    });
+
+    it('claims an unowned map before the upload leaves the browser', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        const fetchMock = vi.fn().mockImplementation(async () => {
+            // By the time the request goes out, the stored map already
+            // carries this account's tag.
+            expect(new StoryProgressStore(localStorage).getOwner()).toBe(
+                'user-1'
+            );
+            return serverResponse({ progress: {} });
+        });
+        vi.stubGlobal('fetch', fetchMock);
+
+        expect(await syncStoryProgress({ accountId: 'user-1' })).toEqual({
+            ok: true,
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the account tag when the request fails mid-flight', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+        );
+
+        const result = await syncStoryProgress({ accountId: 'user-1' });
+
+        // A lost request still leaves the copy claimed: the next account
+        // on this browser cannot re-upload it as anonymous progress.
+        expect(result.ok).toBe(false);
+        const stored = new StoryProgressStore(localStorage);
+        expect(stored.getOwner()).toBe('user-1');
+        expect(stored.getAll()).toEqual({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+    });
+
+    it('restores a sidelined copy into the upload for the returning account', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        localStorage.setItem(
+            'aquila:storyProgress:v1:sidelined:user-1',
+            JSON.stringify({
+                v: 2,
+                owner: 'user-1',
+                progress: { elevator_game: record({ updatedAt: 20 }) },
+            })
+        );
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        expect(await syncStoryProgress({ accountId: 'user-1' })).toEqual({
+            ok: true,
+        });
+        // The sidelined records are back in the active map and travel with
+        // the upload.
+        const body = bodyOf(fetchMock) as {
+            progress: Record<string, unknown>;
+        };
+        expect(Object.keys(body.progress).sort()).toEqual([
+            'elevator_game',
+            'the_seventh_mirror',
+        ]);
+        expect(
+            localStorage.getItem('aquila:storyProgress:v1:sidelined:user-1')
+        ).toBeNull();
+        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-1');
+    });
+
+    it('restores a sidelined copy after a foreign sync replaces the map', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        localStorage.setItem(
+            'aquila:storyProgress:v1:sidelined:user-b',
+            JSON.stringify({
+                v: 2,
+                owner: 'user-b',
+                progress: { elevator_game: record({ updatedAt: 20 }) },
+            })
+        );
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: { train_adventure: record({ updatedAt: 30 }) },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        expect(await syncStoryProgress({ accountId: 'user-b' })).toEqual({
+            ok: true,
+        });
+        const stored = new StoryProgressStore(localStorage);
+        // The download replaced the foreign map, then user-b's own
+        // sidelined copy merged back into it.
+        expect(Object.keys(stored.getAll()).sort()).toEqual([
+            'elevator_game',
+            'train_adventure',
+        ]);
+        expect(stored.getOwner()).toBe('user-b');
+        expect(
+            localStorage.getItem('aquila:storyProgress:v1:sidelined:user-b')
+        ).toBeNull();
+        // The evicted owner's copy still waits for its own sign-in.
+        expect(
+            localStorage.getItem('aquila:storyProgress:v1:sidelined:user-a')
+        ).not.toBeNull();
     });
 
     it('merges normally when the stored map is owned by this account', async () => {

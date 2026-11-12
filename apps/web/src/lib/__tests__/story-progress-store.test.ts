@@ -533,6 +533,14 @@ describe('StoryProgressStore', () => {
                         endings: [],
                     },
                 }),
+                // The evicted account's reader sessions leave with its map —
+                // a later session import must not seed them into this
+                // account's copy.
+                'aquila:readerState:en': session(
+                    'the_seventh_mirror',
+                    'ch9_act3',
+                    4
+                ),
             });
             const store = new StoryProgressStore(storage, () => 99);
             store.setOwner('user-a');
@@ -540,8 +548,8 @@ describe('StoryProgressStore', () => {
             expect(store.record(position, 'user-b')).toBe(true);
 
             // The new record lands in a fresh map under this account's tag:
-            // the previous owner's copy is gone before it can be merged or
-            // uploaded into the wrong row.
+            // the previous owner's copy is sidelined — not deleted, not
+            // merged — until that owner signs in again.
             expect(store.getAll()).toEqual({
                 elevator_game: {
                     sceneId: 'act1',
@@ -552,6 +560,86 @@ describe('StoryProgressStore', () => {
                     visited: ['act1'],
                 },
             });
+            expect(store.getOwner()).toBe('user-b');
+            expect(
+                JSON.parse(
+                    storage.getItem(
+                        'aquila:storyProgress:v1:sidelined:user-a'
+                    ) as string
+                )
+            ).toMatchObject({
+                v: 2,
+                owner: 'user-a',
+                progress: {
+                    the_seventh_mirror: { sceneId: 'ch1_act1' },
+                },
+            });
+            expect(storage.getItem('aquila:readerState:en')).toBeNull();
+        });
+
+        it('restores a sidelined copy when its owner records again', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 50);
+            store.setOwner('user-a');
+            store.record(
+                {
+                    storyId: 'the_seventh_mirror',
+                    sceneId: 'ch1_act1',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-a'
+            );
+            // user-b reads on the same browser — user-a's map is evicted.
+            expect(store.record(position, 'user-b')).toBe(true);
+
+            // user-a returns: its sidelined records merge back into the
+            // active map instead of being lost to user-b's takeover.
+            const back = {
+                storyId: 'the_seventh_mirror',
+                sceneId: 'ch5_act2',
+                dialogueIndex: 9,
+                atEnding: false,
+            };
+            expect(store.record(back, 'user-a')).toBe(true);
+
+            const all = store.getAll();
+            expect(Object.keys(all)).toEqual(['the_seventh_mirror']);
+            expect(all.the_seventh_mirror).toMatchObject({
+                sceneId: 'ch5_act2',
+                visited: expect.arrayContaining(['ch1_act1', 'ch5_act2']),
+            });
+            expect(store.getOwner()).toBe('user-a');
+            expect(
+                storage.getItem('aquila:storyProgress:v1:sidelined:user-a')
+            ).toBeNull();
+            // user-b's active map was itself sidelined for its return —
+            // each account's copy survives, isolated by owner.
+            expect(
+                storage.getItem('aquila:storyProgress:v1:sidelined:user-b')
+            ).not.toBeNull();
+        });
+
+        it('leaves a sidelined copy waiting while the map is foreign', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 50);
+            store.setOwner('user-a');
+            store.record(
+                {
+                    storyId: 'the_seventh_mirror',
+                    sceneId: 'ch1_act1',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-a'
+            );
+            store.record(position, 'user-b');
+            // user-b's map is active; user-a's sidelined copy stays put.
+            store.restoreSidelined('user-a');
+            expect(
+                storage.getItem('aquila:storyProgress:v1:sidelined:user-a')
+            ).not.toBeNull();
+            expect(store.get('the_seventh_mirror')).toBeNull();
             expect(store.getOwner()).toBe('user-b');
         });
 
@@ -592,6 +680,138 @@ describe('StoryProgressStore', () => {
             expect(store.get('the_seventh_mirror')).not.toBeNull();
             expect(store.get('elevator_game')).not.toBeNull();
             expect(store.getOwner()).toBe('user-b');
+        });
+    });
+
+    describe('owner-aware reads and commit guards', () => {
+        const position = {
+            storyId: 'elevator_game',
+            sceneId: 'act1',
+            dialogueIndex: 3,
+            atEnding: false,
+        };
+
+        it('reports map and owner together for sync', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 42);
+            store.record(position, 'user-1');
+            expect(store.getWithOwnerChecked()).toEqual({
+                map: {
+                    elevator_game: {
+                        sceneId: 'act1',
+                        dialogueIndex: 3,
+                        updatedAt: 42,
+                        finished: false,
+                        endings: [],
+                        visited: ['act1'],
+                    },
+                },
+                owner: 'user-1',
+            });
+            expect(
+                new StoryProgressStore(null).getWithOwnerChecked()
+            ).toBeNull();
+            const corrupt = memoryStorage({
+                [STORY_PROGRESS_KEY]: '{not json',
+            });
+            expect(
+                new StoryProgressStore(corrupt).getWithOwnerChecked()
+            ).toBeNull();
+        });
+
+        it('reports a map as foreign only to a different signed-in account', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 42);
+            store.record(position, 'user-a');
+            expect(store.isForeignTo('user-b')).toBe(true);
+            expect(store.isForeignTo('user-a')).toBe(false);
+            // A signed-out reader keeps the local map it shares the
+            // browser with — the tag only matters once an account is known.
+            expect(store.isForeignTo(null)).toBe(false);
+            expect(
+                new StoryProgressStore(memoryStorage()).isForeignTo('user-b')
+            ).toBe(false);
+        });
+
+        it('refuses an update commit when the stored owner changed', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 42);
+            store.record(position, 'user-1');
+            // The map was retagged mid-request — the merge must not land.
+            store.record(
+                {
+                    storyId: 'train_adventure',
+                    sceneId: 'act2',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-b'
+            );
+            expect(
+                store.update(
+                    current =>
+                        mergeStoryProgressMaps(current, {
+                            the_seventh_mirror: {
+                                sceneId: 'ch1_act1',
+                                dialogueIndex: 0,
+                                updatedAt: 10,
+                                finished: false,
+                                endings: [],
+                            },
+                        }),
+                    'user-1',
+                    'user-1'
+                )
+            ).toBe(false);
+            expect(store.get('the_seventh_mirror')).toBeNull();
+            expect(store.get('train_adventure')).not.toBeNull();
+            expect(store.getOwner()).toBe('user-b');
+        });
+
+        it('commits an update when the stored owner still matches', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 42);
+            store.record(position, 'user-1');
+            expect(store.update(current => current, 'user-1', 'user-1')).toBe(
+                true
+            );
+            expect(store.getOwner()).toBe('user-1');
+        });
+
+        it('claims a tag only while the map is still unowned', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage);
+            store.record(position);
+            expect(store.setOwner('user-1', null)).toBe(true);
+            expect(store.getOwner()).toBe('user-1');
+            // A second claim under a different account is refused — the
+            // tag already belongs to user-1.
+            expect(store.setOwner('user-b', null)).toBe(false);
+            expect(store.getOwner()).toBe('user-1');
+        });
+
+        it('sidelines the evicted map instead of deleting it on replaceAll', () => {
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 42);
+            store.record(position, 'user-a');
+            const download: StoryProgressMap = {
+                the_seventh_mirror: {
+                    sceneId: 'ch1_act1',
+                    dialogueIndex: 0,
+                    updatedAt: 10,
+                    finished: false,
+                    endings: [],
+                },
+            };
+            expect(store.replaceAll(download, 'user-b')).toBe(true);
+            expect(store.getAll()).toEqual(download);
+            expect(
+                JSON.parse(
+                    storage.getItem(
+                        'aquila:storyProgress:v1:sidelined:user-a'
+                    ) as string
+                ).progress
+            ).toHaveProperty('elevator_game');
         });
     });
 });

@@ -783,4 +783,81 @@ describe('ReaderManager account progress sync', () => {
         await flush();
         expect(progressPosts(fetchMock)).toHaveLength(0);
     });
+
+    it('revalidates the account when the tab becomes visible again', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress({
+            train_adventure: progressRecord({
+                sceneId: 'act1',
+                dialogueIndex: 0,
+            }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        await manager.initialize();
+        await flush();
+        expect(authClient.getSession).not.toHaveBeenCalled();
+
+        // The session moved to account B while the tab sat in the
+        // background — the resume must pick it up.
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: 'user-b' } },
+            error: null,
+        } as never);
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+        expect(authClient.getSession).toHaveBeenCalled();
+
+        // The next record belongs to B: A's map is quarantined rather
+        // than silently appended to under the stale tag.
+        manager.goToScene('act2');
+        await flush();
+        const store = new StoryProgressStore(localStorage);
+        expect(store.getOwner()).toBe('user-b');
+        expect(store.get('train_adventure')).toMatchObject({
+            sceneId: 'act2',
+        });
+    });
+
+    it('does not resume a signed-in reader from a foreign-owned map or session', async () => {
+        setLocation('');
+        saveProgress({
+            train_adventure: progressRecord({
+                sceneId: 'act2',
+                dialogueIndex: 0,
+            }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        // The legacy session key is A's too — importing it into B's reader
+        // would resume the wrong account's story.
+        localStorage.setItem(
+            `${READER_SESSION_KEY_PREFIX}:en`,
+            JSON.stringify({
+                storyId: 'train_adventure',
+                sceneId: 'act2',
+                dialogueIndex: 0,
+                locale: 'en',
+                version: 2,
+            })
+        );
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-b');
+
+        await manager.initialize();
+
+        // Neither fallback applies: B's reader opens at the default story
+        // start instead of A's saved place.
+        expect(readerState).toMatchObject({
+            storyId: 'the_seventh_mirror',
+            currentSceneId: 'act1',
+            dialogueIndex: 0,
+            loadStatus: 'ready',
+        });
+        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+    });
 });

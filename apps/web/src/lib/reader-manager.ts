@@ -91,6 +91,16 @@ export class ReaderManager {
     // request per hide until the tab becomes visible again.
     private lastPushAt = 0;
     private keepaliveSent = false;
+    // The last position this tab recorded or restored. A lifecycle flush
+    // that finds the position unchanged must not write again: record()
+    // stamps a fresh updatedAt, and the keepalive upload would win the
+    // server's timestamp merge over a newer position from another device.
+    private lastRecordedPosition: {
+        storyId: string;
+        sceneId: string;
+        dialogueIndex: number;
+        atEnding: boolean;
+    } | null = null;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
     // start a second initial load. renderReader has its own mount guard, but
@@ -244,6 +254,49 @@ export class ReaderManager {
         readerState.hasActivePayload = true;
         readerState.loadStatus = 'ready';
         readerState.loadError = null;
+        // A restored position counts as recorded only when the store already
+        // holds it. A back/forward destination that differs from the stored
+        // record must still be written by the persist() that follows.
+        const atEnding = isEndingPosition(
+            payload.flow,
+            state.sceneId,
+            state.dialogueIndex,
+            dialogue.length,
+            Boolean(choice)
+        );
+        this.lastRecordedPosition = this.recordMatchesStore(
+            state.storyId,
+            state.sceneId,
+            state.dialogueIndex,
+            atEnding
+        )
+            ? {
+                  storyId: state.storyId,
+                  sceneId: state.sceneId,
+                  dialogueIndex: state.dialogueIndex,
+                  atEnding,
+              }
+            : null;
+    }
+
+    /** True when the stored record already describes this position — the
+     *  same ending flag, the ending already collected, and the scene already
+     *  visited — so record() would only re-stamp updatedAt. */
+    private recordMatchesStore(
+        storyId: string,
+        sceneId: string,
+        dialogueIndex: number,
+        atEnding: boolean
+    ): boolean {
+        const stored = this.storyProgress.get(storyId);
+        return (
+            stored !== null &&
+            stored.sceneId === sceneId &&
+            stored.dialogueIndex === dialogueIndex &&
+            stored.finished === atEnding &&
+            (!atEnding || stored.endings.includes(sceneId)) &&
+            (stored.visited === undefined || stored.visited.includes(sceneId))
+        );
     }
 
     private isCurrent(generation: number): boolean {
@@ -428,12 +481,31 @@ export class ReaderManager {
             dialogue.length,
             Boolean(choice)
         );
-        this.storyProgress.record({
-            storyId,
-            sceneId: currentSceneId,
-            dialogueIndex,
-            atEnding,
-        });
+        const last = this.lastRecordedPosition;
+        if (
+            last &&
+            last.storyId === storyId &&
+            last.sceneId === currentSceneId &&
+            last.dialogueIndex === dialogueIndex &&
+            last.atEnding === atEnding
+        ) {
+            return;
+        }
+        if (
+            this.storyProgress.record({
+                storyId,
+                sceneId: currentSceneId,
+                dialogueIndex,
+                atEnding,
+            })
+        ) {
+            this.lastRecordedPosition = {
+                storyId,
+                sceneId: currentSceneId,
+                dialogueIndex,
+                atEnding,
+            };
+        }
     }
 
     /** Sync the URL query to the current progression. First restore uses

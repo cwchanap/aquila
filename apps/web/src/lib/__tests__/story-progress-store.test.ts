@@ -276,7 +276,7 @@ describe('StoryProgressStore', () => {
         ).toBe(false);
     });
 
-    it('commits an already merged map under the existing key', () => {
+    it('commits a map merged against the freshest stored copy', () => {
         const storage = memoryStorage();
         const store = new StoryProgressStore(storage);
         const merged: StoryProgressMap = {
@@ -289,11 +289,47 @@ describe('StoryProgressStore', () => {
                 visited: ['act1', 'act3'],
             },
         };
-        expect(store.replaceAll(merged)).toBe(true);
+        expect(store.update(() => merged)).toBe(true);
         expect(
             JSON.parse(storage.getItem(STORY_PROGRESS_KEY) as string)
         ).toEqual(merged);
         expect(store.getAll()).toEqual(merged);
+    });
+
+    it('merges into what another write left after the caller last read', () => {
+        const storage = memoryStorage();
+        const store = new StoryProgressStore(storage);
+        // A line recorded after the pre-request snapshot must survive the
+        // merge commit.
+        storage.setItem(
+            STORY_PROGRESS_KEY,
+            JSON.stringify({
+                elevator_game: {
+                    sceneId: 'act2',
+                    dialogueIndex: 3,
+                    updatedAt: 40,
+                    finished: false,
+                    endings: [],
+                },
+            })
+        );
+        expect(
+            store.update(current =>
+                mergeStoryProgressMaps(current, {
+                    elevator_game: {
+                        sceneId: 'act1',
+                        dialogueIndex: 0,
+                        updatedAt: 9,
+                        finished: false,
+                        endings: [],
+                    },
+                })
+            )
+        ).toBe(true);
+        expect(store.get('elevator_game')).toMatchObject({
+            sceneId: 'act2',
+            updatedAt: 40,
+        });
     });
 
     it('reports a failed commit without throwing', () => {
@@ -306,12 +342,21 @@ describe('StoryProgressStore', () => {
                 endings: [],
             },
         };
-        expect(new StoryProgressStore(null).replaceAll(merged)).toBe(false);
+        expect(new StoryProgressStore(null).update(() => merged)).toBe(false);
+        const unreadable = memoryStorage();
+        unreadable.getItem = () => {
+            throw new Error('SecurityError');
+        };
+        expect(new StoryProgressStore(unreadable).update(() => merged)).toBe(
+            false
+        );
         const throwing = memoryStorage();
         throwing.setItem = () => {
             throw new Error('QuotaExceededError');
         };
-        expect(new StoryProgressStore(throwing).replaceAll(merged)).toBe(false);
+        expect(new StoryProgressStore(throwing).update(() => merged)).toBe(
+            false
+        );
     });
 
     describe('getAllChecked', () => {
@@ -374,7 +419,7 @@ describe('StoryProgressStore', () => {
             },
         };
         expect(
-            store.replaceAll(mergeStoryProgressMaps(store.getAll(), remote))
+            store.update(current => mergeStoryProgressMaps(current, remote))
         ).toBe(true);
         expect(store.get('the_seventh_mirror')).toMatchObject({
             sceneId: 'ch9_act3',

@@ -174,6 +174,33 @@ export class StoryRepository extends BaseRepository<typeof stories, Story> {
             .orderBy(desc(stories.updatedAt));
     }
 
+    /** Deletes the story plus the rows the dropped story FKs used to
+     *  cascade: the owner's bookmarks and character setups keyed by this
+     *  story id. Compiled-story rows share the columns but can never carry a
+     *  Story Writer id, so the story-id scope reproduces the old cascade. */
+    async deleteWithDependents(id: string, userId: string): Promise<boolean> {
+        return await this.db.transaction(async tx => {
+            await tx
+                .delete(bookmarks)
+                .where(
+                    and(eq(bookmarks.userId, userId), eq(bookmarks.storyId, id))
+                );
+            await tx
+                .delete(characterSetups)
+                .where(
+                    and(
+                        eq(characterSetups.userId, userId),
+                        eq(characterSetups.storyId, id)
+                    )
+                );
+            const deleted = await tx
+                .delete(stories)
+                .where(and(eq(stories.id, id), eq(stories.userId, userId)))
+                .returning({ id: stories.id });
+            return deleted.length > 0;
+        });
+    }
+
     async update(
         id: string,
         data: Partial<Omit<Story, 'id' | 'createdAt' | 'userId'>>

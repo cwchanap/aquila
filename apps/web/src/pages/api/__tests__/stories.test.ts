@@ -40,6 +40,7 @@ const createMockStoryRepo = () => ({
     findById: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    deleteWithDependents: vi.fn(),
 });
 
 const mockAuthenticatedSession = (userId: string = 'user-1') => {
@@ -473,7 +474,7 @@ describe('Stories API', () => {
             title: 'Story One',
             userId: 'user-1',
         });
-        mockStoryRepo.delete.mockResolvedValue(true);
+        mockStoryRepo.deleteWithDependents.mockResolvedValue(true);
 
         const response = await itemDELETE({
             params: { id: 'story-1' },
@@ -485,7 +486,10 @@ describe('Stories API', () => {
         expect(response.status).toBe(200);
         const data = await response.json();
         expect(data.success).toBe(true);
-        expect(mockStoryRepo.delete).toHaveBeenCalledWith('story-1');
+        expect(mockStoryRepo.deleteWithDependents).toHaveBeenCalledWith(
+            'story-1',
+            'user-1'
+        );
     });
 
     it('returns 401 when DELETE item is called unauthenticated', async () => {

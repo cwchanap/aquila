@@ -103,7 +103,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
             return errorResponse('Story not found', 404);
         }
 
-        await storyRepo.delete(id);
+        await storyRepo.deleteWithDependents(id, session.user.id);
 
         return jsonResponse({ deleted: true, success: true });
     } catch (error) {

@@ -1,14 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
 import * as schema from '../schema';
-import { readingProgress, users } from '../schema';
+import { bookmarks, characterSetups, readingProgress, users } from '../schema';
 import {
     BookmarkRepository,
     CharacterSetupRepository,
     ReadingProgressRepository,
+    StoryRepository,
 } from '../repositories';
 import type { StoryProgressMap } from '../../story-progress';
 
@@ -99,6 +100,11 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
                 [userId]
             );
 
+            const { rows: pidRows } = await blocker.query(
+                'SELECT pg_backend_pid() AS pid'
+            );
+            const blockerPid = pidRows[0].pid as number;
+
             merge = repo
                 .mergeForUser(userId, progress('story_locked', 300))
                 .then(result => {
@@ -106,7 +112,25 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
                     return result;
                 });
 
-            await new Promise(resolve => setTimeout(resolve, 200));
+            // A fixed delay cannot prove contention: poll until PostgreSQL
+            // reports the merge connection blocked by the blocker connection
+            // before releasing the lock.
+            const deadline = Date.now() + 10_000;
+            let blocked = false;
+            while (Date.now() < deadline) {
+                const { rows } = await pool.query<{ pid: number }>(
+                    `SELECT pid FROM pg_stat_activity
+                     WHERE wait_event_type = 'Lock'
+                       AND $1 = ANY (pg_blocking_pids(pid))`,
+                    [blockerPid]
+                );
+                if (rows.length > 0) {
+                    blocked = true;
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 25));
+            }
+            expect(blocked).toBe(true);
             expect(settled).toBe(false);
 
             await blocker.query('COMMIT');
@@ -157,5 +181,87 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
             id: saved.id,
             characterName: 'Hana',
         });
+    }, 30_000);
+
+    it('deletes a story with its bookmarks and character setups', async () => {
+        // Fixture ids are explicit: the shared test setup stubs crypto, so
+        // every repo-generated id in this file is identical and would
+        // collide on the primary key.
+        const storyId = `del-${randomUUID()}`;
+        await database.insert(schema.stories).values({
+            id: storyId,
+            userId,
+            title: 'Story to delete',
+            status: 'draft',
+        });
+        await database.insert(bookmarks).values([
+            {
+                id: `del-bm-${randomUUID()}`,
+                userId,
+                storyId,
+                sceneId: 'scene-1',
+                bookmarkName: 'Story bookmark',
+                locale: 'en',
+            },
+            // A compiled-story row shares the columns but must survive: it
+            // can never carry a Story Writer id.
+            {
+                id: `del-bm-${randomUUID()}`,
+                userId,
+                storyId: 'train_adventure',
+                sceneId: 'act1',
+                bookmarkName: 'Compiled bookmark',
+                locale: 'en',
+            },
+        ]);
+        await database.insert(characterSetups).values({
+            id: `del-cs-${randomUUID()}`,
+            userId,
+            storyId,
+            characterName: 'Hana',
+        });
+
+        const storyRepo = new StoryRepository(database);
+        expect(await storyRepo.deleteWithDependents(storyId, userId)).toBe(
+            true
+        );
+
+        // Other tests leave compiled-story rows behind for this user, so
+        // assertions scope to the deleted story rather than the whole table.
+        expect(
+            await database
+                .select()
+                .from(bookmarks)
+                .where(
+                    and(
+                        eq(bookmarks.userId, userId),
+                        eq(bookmarks.storyId, storyId)
+                    )
+                )
+        ).toEqual([]);
+        expect(
+            await database
+                .select()
+                .from(characterSetups)
+                .where(
+                    and(
+                        eq(characterSetups.userId, userId),
+                        eq(characterSetups.storyId, storyId)
+                    )
+                )
+        ).toEqual([]);
+        const compiledBookmarks = await database
+            .select()
+            .from(bookmarks)
+            .where(
+                and(
+                    eq(bookmarks.userId, userId),
+                    eq(bookmarks.storyId, 'train_adventure')
+                )
+            );
+        expect(compiledBookmarks.map(b => b.bookmarkName)).toContain(
+            'Compiled bookmark'
+        );
+        expect(await storyRepo.findById(storyId)).toBeUndefined();
     }, 30_000);
 });

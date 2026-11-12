@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AsyncStoryLoaderResult } from '@aquila/stories/async';
 import { ReaderManager } from '../reader-manager';
@@ -46,16 +47,11 @@ vi.mock('@/components/ReaderShell.svelte', () => ({
     default: class MockReaderShell {},
 }));
 
+// jsdom forbids redefining window.location; navigating through the real
+// history API is the supported way to change the URL.
 function setLocation(search: string): void {
-    Object.defineProperty(window, 'location', {
-        value: {
-            search,
-            href: `http://localhost:3000/en/reader${search}`,
-            reload: vi.fn(),
-        },
-        writable: true,
-        configurable: true,
-    });
+    window.history.replaceState({}, '', `/en/reader${search}`);
+    vi.mocked(window.history.replaceState).mockClear();
 }
 
 function mountReaderContainer(): void {
@@ -173,15 +169,12 @@ describe('ReaderManager account progress sync', () => {
             writable: true,
             configurable: true,
         });
+        // Spy but call through: the reader's URL sync should update the real
+        // jsdom URL, and tests assert on call counts after setLocation clears
+        // the history.
+        vi.spyOn(window.history, 'replaceState');
+        vi.spyOn(window.history, 'pushState');
         setLocation('');
-        Object.defineProperty(window, 'history', {
-            value: {
-                pushState: vi.fn(),
-                replaceState: vi.fn(),
-            },
-            writable: true,
-            configurable: true,
-        });
         loadStoryContent = vi.fn().mockResolvedValue(storyPayload());
         global.fetch = vi.fn();
     });
@@ -379,9 +372,12 @@ describe('ReaderManager account progress sync', () => {
             currentSceneId: 'act1',
             dialogueIndex: 1,
         });
+        // The store takes the merged map: the newer cloud record replaces the
+        // restored local position even though the reader keeps reading from
+        // act1 — the next local navigation wins the merge on timestamp.
         expect(readProgress('train_adventure')).toMatchObject({
-            sceneId: 'act1',
-            dialogueIndex: 1,
+            sceneId: 'act2',
+            dialogueIndex: 0,
         });
     });
 
@@ -447,6 +443,71 @@ describe('ReaderManager account progress sync', () => {
         window.dispatchEvent(new Event('pagehide'));
         await flush();
         expect(progressPosts(fetchMock)).toHaveLength(1);
+    });
+
+    it('does not re-stamp an unchanged position on the hide flush', async () => {
+        setLocation('?story=train_adventure&scene=act1&dialogue=1');
+        saveProgress({
+            train_adventure: progressRecord({
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                updatedAt: 10,
+                visited: ['act1'],
+            }),
+        });
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in');
+        await manager.initialize();
+        await flush();
+        fetchMock.mockClear();
+
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+
+        // A stale updatedAt here would win the server's timestamp merge over
+        // a newer position recorded on another device.
+        expect(readProgress('train_adventure')).toMatchObject({
+            sceneId: 'act1',
+            dialogueIndex: 0,
+            updatedAt: 10,
+        });
+        // The keepalive still uploads — with the original timestamp.
+        const posts = progressPosts(fetchMock);
+        expect(posts).toHaveLength(1);
+        expect(JSON.parse(posts[0][1].body as string)).toEqual({
+            progress: {
+                train_adventure: expect.objectContaining({ updatedAt: 10 }),
+            },
+        });
+    });
+
+    it('records a restored position the store does not already hold', async () => {
+        setLocation('?story=train_adventure&scene=act2');
+        // The restored position differs from everything in the store, so the
+        // persist that follows applySession must write it — the unchanged
+        // guard must not suppress that first write.
+        saveProgress({
+            the_seventh_mirror: progressRecord({
+                sceneId: 'ch1',
+                dialogueIndex: 2,
+            }),
+        });
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in');
+        await manager.initialize();
+        await flush();
+
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+
+        expect(readProgress('train_adventure')).toMatchObject({
+            sceneId: 'act2',
+            dialogueIndex: 0,
+        });
     });
 
     it('sends one keepalive even while an ordinary push is in flight, deduplicated', async () => {

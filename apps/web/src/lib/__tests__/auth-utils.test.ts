@@ -149,6 +149,41 @@ describe('getSessionUser', () => {
             }
         });
     });
+
+    describe('timeout', () => {
+        it('resolves as error when the lookup exceeds timeoutMs', async () => {
+            mockGetSession.mockImplementation(() => new Promise(() => {}));
+
+            const promise = getSessionUser(makeRequest(), { timeoutMs: 50 });
+            await vi.advanceTimersByTimeAsync(50);
+            const result = await promise;
+
+            expect(result.status).toBe('error');
+            if (result.status === 'error') {
+                expect((result.error as Error).message).toBe(
+                    'Session lookup timed out'
+                );
+            }
+        });
+
+        it('returns the session when the lookup beats the timeout', async () => {
+            mockGetSession.mockResolvedValue({
+                user: { id: 'user-1' } as never,
+                session: null,
+            });
+
+            const result = await getSessionUser(makeRequest(), {
+                timeoutMs: 5_000,
+            });
+
+            expect(result).toMatchObject({
+                status: 'ok',
+                user: { id: 'user-1' },
+            });
+            // The cleared timer must not surface a late error.
+            await vi.advanceTimersByTimeAsync(10_000);
+        });
+    });
 });
 
 describe('authStateFromSession', () => {

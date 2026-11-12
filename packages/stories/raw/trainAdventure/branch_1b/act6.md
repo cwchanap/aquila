@@ -104,10 +104,6 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **旁白**：剛才還在規劃回家後要做什麼的人們,此刻全都崩潰了。虛假的希望破滅後,恐懼變得更加強烈。
 
-```bg
-reuse branch_1b/b1b_act5_lijie_sea
-```
-
 **李杰**：(內心,語氣充滿了厭煩)⋯⋯真吵。
 
 **旁白**：他看著這些陷入崩潰的成年人。剛才還信誓旦旦說要回家,現在卻哭得比孩子還慘。心中的恐懼反而被一股強烈的煩躁所取代。

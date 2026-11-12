@@ -75,6 +75,7 @@ export function normalizeStoryProgress(value: unknown): StoryProgress | null {
         !Number.isFinite(v.dialogueIndex) ||
         v.dialogueIndex < 0 ||
         typeof v.updatedAt !== 'number' ||
+        !Number.isFinite(v.updatedAt) ||
         typeof v.finished !== 'boolean' ||
         !isStringList(v.endings)
     ) {

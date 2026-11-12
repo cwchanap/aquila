@@ -11,6 +11,7 @@ import { isRegisteredStoryId } from '@aquila/stories/async';
 import { SUPPORTED_LOCALES } from '@aquila/stories/translations';
 import { migratePersisted, READER_SESSION_KEY_PREFIX } from './reader-session';
 import {
+    boundStoryProgressMap,
     normalizeStoryProgressMap,
     type StoryProgress,
     type StoryProgressMap,
@@ -57,27 +58,33 @@ export class StoryProgressStore {
         return Object.hasOwn(all, storyId) ? all[storyId] : null;
     }
 
-    /** Read-modify-write in one synchronous operation, the same shape as
-     *  record(): the merge runs against the freshest stored map, so a line
-     *  read after the caller's last look is merged rather than overwritten.
-     *  Returns false when storage or the read fails; storage write failures
-     *  stay nonfatal like the other writes. Note the read and the write are
-     *  still two separate storage calls — localStorage offers no cross-tab
-     *  lock, so a concurrent record() in another tab can be lost between
-     *  them. */
-    update(merge: (current: StoryProgressMap) => StoryProgressMap): boolean {
+    /** Serializes the map under its size budget and stores it; write
+     *  failures stay nonfatal like the other writes. */
+    private writeAll(map: StoryProgressMap): boolean {
         if (!this.storage) return false;
-        const current = this.getAllChecked();
-        if (!current) return false;
         try {
             this.storage.setItem(
                 STORY_PROGRESS_KEY,
-                JSON.stringify(merge(current))
+                JSON.stringify(boundStoryProgressMap(map))
             );
             return true;
         } catch {
             return false;
         }
+    }
+
+    /** Read-modify-write in one synchronous operation, the same shape as
+     *  record(): the merge runs against the freshest stored map, so a line
+     *  read after the caller's last look is merged rather than overwritten.
+     *  Returns false when storage or the read fails. Note the read and the
+     *  write are still two separate storage calls — localStorage offers no
+     *  cross-tab lock, so a concurrent record() in another tab can be lost
+     *  between them. */
+    update(merge: (current: StoryProgressMap) => StoryProgressMap): boolean {
+        if (!this.storage) return false;
+        const current = this.getAllChecked();
+        if (!current) return false;
+        return this.writeAll(merge(current));
     }
 
     /** Adds a record for a story that has none yet, from a place saved before
@@ -100,12 +107,7 @@ export class StoryProgressStore {
                 endings: [],
             },
         };
-        try {
-            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(next));
-            return true;
-        } catch {
-            return false;
-        }
+        return this.writeAll(next);
     }
 
     /** Records the reader's position. Returns false when storage is unavailable. */
@@ -136,12 +138,7 @@ export class StoryProgressStore {
                 visited,
             },
         };
-        try {
-            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(next));
-            return true;
-        } catch {
-            return false;
-        }
+        return this.writeAll(next);
     }
 }
 

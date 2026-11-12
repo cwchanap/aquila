@@ -403,7 +403,7 @@ describe('StorySelect', () => {
         ).toHaveAttribute('href', '/zh/login');
     });
 
-    it('syncs again when a cached page returns without overlapping requests', async () => {
+    it('queues a follow-up sync when a cached page returns mid-request', async () => {
         let resolveFirst!: (response: Response) => void;
         const progressResponses = [
             () =>
@@ -422,17 +422,89 @@ describe('StorySelect', () => {
         renderSelect({ authState: 'signed-in' });
         expect(progressCalls(fetchMock)).toHaveLength(1);
 
-        // The return event lands while the mount request is still in flight.
+        // The return lands while the mount request is still in flight: it
+        // joins that request and queues one more pass behind it, since the
+        // running request still carries the pre-restore state.
         window.dispatchEvent(restoredPageShow());
         expect(progressCalls(fetchMock)).toHaveLength(1);
 
         resolveFirst(serverResponse({ progress: {} }));
+        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
         expect(
             await screen.findByText('Your progress is saved to your account')
         ).toBeInTheDocument();
+    });
+
+    it('queues at most one follow-up for repeated restores during a request', async () => {
+        let resolveFirst!: (response: Response) => void;
+        const progressResponses = [
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFirst = resolve;
+                }),
+            () => Promise.resolve(serverResponse({ progress: {} })),
+        ];
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
+                : progressResponses.shift()!()
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        expect(progressCalls(fetchMock)).toHaveLength(1);
 
         window.dispatchEvent(restoredPageShow());
+        window.dispatchEvent(restoredPageShow());
+        expect(progressCalls(fetchMock)).toHaveLength(1);
+
+        resolveFirst(serverResponse({ progress: {} }));
         await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
+        // Both joins share the single queued pass — no third request fires.
+        await Promise.resolve();
+        expect(progressCalls(fetchMock)).toHaveLength(2);
+    });
+
+    it('skips the queued follow-up when auth is lost before the first request settles', async () => {
+        let resolveFirst!: (response: Response) => void;
+        const progressResponses = [
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFirst = resolve;
+                }),
+        ];
+        const sessionResponses = [
+            () => Promise.resolve(sessionResponse({ user: { id: 'user-1' } })),
+            () => Promise.resolve(sessionResponse(null)),
+        ];
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? sessionResponses.shift()!()
+                : progressResponses.shift()!()
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        expect(progressCalls(fetchMock)).toHaveLength(1);
+
+        // Still signed in: the join queues a follow-up behind the request.
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() =>
+            expect(
+                fetchMock.mock.calls.some(([url]) => url === SESSION_URL)
+            ).toBe(true)
+        );
+        // The next restore revalidates to signed-out before the first
+        // request settles, so the queued pass must not fire. The status
+        // line disappearing proves the new auth state was applied.
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() =>
+            expect(screen.queryByTestId('progress-sync-status')).toBeNull()
+        );
+
+        resolveFirst(serverResponse({ progress: {} }));
+        await Promise.resolve();
+        expect(progressCalls(fetchMock)).toHaveLength(1);
     });
 
     it('shows syncing again while a restored-page retry is still unseen', async () => {

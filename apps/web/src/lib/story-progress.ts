@@ -13,6 +13,52 @@ export interface StoryProgress {
 
 export type StoryProgressMap = Record<string, StoryProgress>;
 
+/**
+ * Largest stored map, in serialized bytes. POST /api/progress rejects
+ * bodies over 48 KiB and sync uploads the whole map, so writes keep the
+ * map under this budget with margin for the request envelope.
+ */
+export const STORY_PROGRESS_MAX_BYTES = 44 * 1024;
+
+/**
+ * Trims `map` until its serialized form fits `maxBytes`, so a stored map —
+ * and therefore every sync upload — can never outgrow the endpoint's body
+ * limit. Records are handled oldest `updatedAt` first: for each, `visited`
+ * (story-map decoration) goes before `endings` (completion badges), and the
+ * record itself — the position Continue depends on — is dropped last.
+ * Returns `map` unchanged when it already fits.
+ */
+export function boundStoryProgressMap(
+    map: StoryProgressMap,
+    maxBytes: number = STORY_PROGRESS_MAX_BYTES
+): StoryProgressMap {
+    const fits = (candidate: StoryProgressMap): boolean =>
+        new TextEncoder().encode(JSON.stringify(candidate)).byteLength <=
+        maxBytes;
+    if (fits(map)) return map;
+    const byAge = Object.keys(map).sort(
+        (a, b) => map[a].updatedAt - map[b].updatedAt
+    );
+    const bounded: StoryProgressMap = { ...map };
+    for (const id of byAge) {
+        const record = { ...bounded[id] };
+        if (record.visited === undefined) continue;
+        delete record.visited;
+        bounded[id] = record;
+        if (fits(bounded)) return bounded;
+    }
+    for (const id of byAge) {
+        if (bounded[id].endings.length === 0) continue;
+        bounded[id] = { ...bounded[id], endings: [] };
+        if (fits(bounded)) return bounded;
+    }
+    for (const id of byAge) {
+        delete bounded[id];
+        if (fits(bounded)) return bounded;
+    }
+    return bounded;
+}
+
 function isStringList(value: unknown): value is string[] {
     return Array.isArray(value) && value.every(e => typeof e === 'string');
 }

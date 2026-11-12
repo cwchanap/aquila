@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { and, eq } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, webcrypto } from 'node:crypto';
 import * as schema from '../schema';
 import { bookmarks, characterSetups, readingProgress, users } from '../schema';
 import {
@@ -35,11 +35,19 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
     let pool: Pool;
     let database: NodePgDatabase<typeof schema>;
     let userId: string;
+    let stubbedGetRandomValues: typeof crypto.getRandomValues;
 
     beforeAll(async () => {
         // The shared test setup installs fake timers for unit tests; real
         // network I/O needs real ones.
         vi.useRealTimers();
+        // It also stubs getRandomValues with fixed bytes, and vitest
+        // resolves nanoid's browser build — every repo-generated id would
+        // be identical without the real implementation restored here.
+        stubbedGetRandomValues = crypto.getRandomValues;
+        crypto.getRandomValues = webcrypto.getRandomValues.bind(
+            webcrypto
+        ) as typeof crypto.getRandomValues;
         const connectionString = process.env.DATABASE_URL;
         if (!connectionString) {
             throw new Error(
@@ -56,6 +64,7 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
     }, 30_000);
 
     afterAll(async () => {
+        crypto.getRandomValues = stubbedGetRandomValues;
         // Deleting the user cascades to reading_progress, bookmarks and
         // character_setups, so the disposable database keeps no test data.
         if (database && userId) {
@@ -184,84 +193,91 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
     }, 30_000);
 
     it('deletes a story with its bookmarks and character setups', async () => {
-        // Fixture ids are explicit: the shared test setup stubs crypto, so
-        // every repo-generated id in this file is identical and would
-        // collide on the primary key.
         const storyId = `del-${randomUUID()}`;
-        await database.insert(schema.stories).values({
-            id: storyId,
-            userId,
-            title: 'Story to delete',
-            status: 'draft',
+        const otherUserId = `hpa703-other-${randomUUID()}`;
+        await database.insert(users).values({
+            id: otherUserId,
+            email: `${otherUserId}@example.invalid`,
         });
-        await database.insert(bookmarks).values([
-            {
-                id: `del-bm-${randomUUID()}`,
+        try {
+            await database.insert(schema.stories).values({
+                id: storyId,
+                userId,
+                title: 'Story to delete',
+                status: 'draft',
+            });
+            const bookmarkRepo = new BookmarkRepository(database);
+            await bookmarkRepo.create({
                 userId,
                 storyId,
                 sceneId: 'scene-1',
                 bookmarkName: 'Story bookmark',
                 locale: 'en',
-            },
+            });
             // A compiled-story row shares the columns but must survive: it
             // can never carry a Story Writer id.
-            {
-                id: `del-bm-${randomUUID()}`,
+            await bookmarkRepo.create({
                 userId,
                 storyId: 'train_adventure',
                 sceneId: 'act1',
                 bookmarkName: 'Compiled bookmark',
                 locale: 'en',
-            },
-        ]);
-        await database.insert(characterSetups).values({
-            id: `del-cs-${randomUUID()}`,
-            userId,
-            storyId,
-            characterName: 'Hana',
-        });
+            });
+            // The bookmark API accepts any story id, so another user can
+            // hold one for this story; the delete must take it too.
+            await bookmarkRepo.create({
+                userId: otherUserId,
+                storyId,
+                sceneId: 'scene-9',
+                bookmarkName: 'Someone else bookmark',
+                locale: 'en',
+            });
+            await new CharacterSetupRepository(database).create({
+                userId,
+                storyId,
+                characterName: 'Hana',
+            });
 
-        const storyRepo = new StoryRepository(database);
-        expect(await storyRepo.deleteWithDependents(storyId, userId)).toBe(
-            true
-        );
+            const storyRepo = new StoryRepository(database);
+            expect(await storyRepo.deleteWithDependents(storyId, userId)).toBe(
+                true
+            );
 
-        // Other tests leave compiled-story rows behind for this user, so
-        // assertions scope to the deleted story rather than the whole table.
-        expect(
-            await database
+            // Every bookmark keyed by the story is gone, whichever user
+            // owned it — like the dropped story-FK cascade.
+            expect(
+                await database
+                    .select()
+                    .from(bookmarks)
+                    .where(eq(bookmarks.storyId, storyId))
+            ).toEqual([]);
+            expect(
+                await database
+                    .select()
+                    .from(characterSetups)
+                    .where(
+                        and(
+                            eq(characterSetups.userId, userId),
+                            eq(characterSetups.storyId, storyId)
+                        )
+                    )
+            ).toEqual([]);
+            const compiledBookmarks = await database
                 .select()
                 .from(bookmarks)
                 .where(
                     and(
                         eq(bookmarks.userId, userId),
-                        eq(bookmarks.storyId, storyId)
+                        eq(bookmarks.storyId, 'train_adventure')
                     )
-                )
-        ).toEqual([]);
-        expect(
-            await database
-                .select()
-                .from(characterSetups)
-                .where(
-                    and(
-                        eq(characterSetups.userId, userId),
-                        eq(characterSetups.storyId, storyId)
-                    )
-                )
-        ).toEqual([]);
-        const compiledBookmarks = await database
-            .select()
-            .from(bookmarks)
-            .where(
-                and(
-                    eq(bookmarks.userId, userId),
-                    eq(bookmarks.storyId, 'train_adventure')
-                )
+                );
+            expect(compiledBookmarks.map(b => b.bookmarkName)).toContain(
+                'Compiled bookmark'
             );
-        expect(compiledBookmarks.map(b => b.bookmarkName)).toContain(
-            'Compiled bookmark'
-        );
-        expect(await storyRepo.findById(storyId)).toBeUndefined();
+            expect(await storyRepo.findById(storyId)).toBeUndefined();
+        } finally {
+            // The second user's rows cascade on user delete.
+            await database.delete(users).where(eq(users.id, otherUserId));
+        }
     }, 30_000);
 });

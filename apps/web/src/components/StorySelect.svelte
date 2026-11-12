@@ -41,6 +41,10 @@
   let progress: StoryProgressMap = $state({});
   let syncState: 'idle' | 'synced' | 'failed' = $state('idle');
   let syncInFlight: Promise<void> | null = null;
+  // A join during an in-flight request sets this so exactly one follow-up
+  // pass runs behind it; the running request still carries the pre-restore
+  // account and progress.
+  let syncRerunQueued = false;
   // Covers live on the R2 asset host — an <img> that 404s removes itself so
   // the accent-gradient + icon fallback underneath shows through.
   let failedCovers = new SvelteSet<string>();
@@ -122,8 +126,20 @@
   }
 
   function runSync(): Promise<void> {
-    // A cached page returning mid-request joins the request already running.
-    if (syncInFlight) return syncInFlight;
+    // A cached page returning mid-request joins the request already
+    // running and queues one more pass behind it — the restore may have
+    // observed a different account or newer local progress than the
+    // running request carries.
+    if (syncInFlight) {
+      if (!syncRerunQueued) {
+        syncRerunQueued = true;
+        void syncInFlight.finally(() => {
+          syncRerunQueued = false;
+          if (authState === 'signed-in') void runSync();
+        });
+      }
+      return syncInFlight;
+    }
     // A retry starts from 'idle' so the previous answer is not shown as
     // current while the new request is unanswered.
     syncState = 'idle';

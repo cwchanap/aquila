@@ -2,7 +2,7 @@
 import MainLayout from '@/layouts/main.astro';
 import { getTranslations, isLocale } from '@aquila/stories/translations';
 import type { Locale } from '@aquila/stories';
-import { authStateFromSession, getSessionUser } from '@/lib/auth-utils';
+import { authStateFromSession, getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '@/lib/auth-utils';
 
 interface Props {
   locale?: string;
@@ -12,7 +12,9 @@ const rawLocale = (Astro.props.locale as string | undefined) || Astro.params.loc
 const locale: Locale = isLocale(rawLocale) ? rawLocale : 'en';
 const translations = getTranslations(locale);
 const title = translations.reader.title;
-const authState = authStateFromSession(await getSessionUser(Astro.request));
+const authState = authStateFromSession(
+  await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS })
+);
 ---
 
 <MainLayout title={title}>
@@ -21,28 +23,8 @@ const authState = authStateFromSession(await getSessionUser(Astro.request));
     </div>
 
     <script>
-        import { isLocale } from '@aquila/stories/translations';
-        import { ReaderManager } from '@/lib/reader-manager';
+        import { startReader } from '@/lib/reader-bootstrap';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('reader-container');
-            if (!container) {
-                console.warn('Reader container element not found');
-                return;
-            }
-            const attr = container.getAttribute('data-locale');
-            const locale = isLocale(attr) ? attr : 'en';
-            const authAttr = container.getAttribute('data-auth-state');
-            const authState =
-                authAttr === 'signed-in' ||
-                authAttr === 'signed-out' ||
-                authAttr === 'unavailable'
-                    ? authAttr
-                    : 'signed-out';
-            const manager = new ReaderManager(locale, undefined, { authState });
-            void manager.initialize().catch(error =>
-                console.error('Reader initialization failed', error)
-            );
-        });
+        document.addEventListener('DOMContentLoaded', () => startReader());
     </script>
 </MainLayout>

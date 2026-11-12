@@ -27,8 +27,13 @@
 
   let {
     locale,
-    authState,
+    authState: serverAuthState,
   }: { locale: Locale; authState: AuthState } = $props();
+
+  // The server render freezes authState at SSR time; a page restored from
+  // the back/forward cache can predate the visitor's last sign-in or
+  // sign-out, so a persisted restore revalidates before deciding to sync.
+  let authState = $state(serverAuthState);
 
   let t = $derived(getTranslations(locale).stories);
   // Server render (and the first client frame) shows every story as unread;
@@ -104,6 +109,18 @@
     progress = store.getAll();
   }
 
+  /** Re-reads the session same-origin; null keeps the server-rendered state. */
+  async function fetchAuthState(): Promise<AuthState | null> {
+    try {
+      const response = await fetch('/api/auth/get-session');
+      if (!response.ok) return null;
+      const data = (await response.json()) as { user?: unknown } | null;
+      return data?.user ? 'signed-in' : 'signed-out';
+    } catch {
+      return null;
+    }
+  }
+
   function runSync(): Promise<void> {
     // A cached page returning mid-request joins the request already running.
     if (syncInFlight) return syncInFlight;
@@ -133,7 +150,11 @@
     const onPageShow = (event: Event) => {
       if (!(event as Event & { persisted?: boolean }).persisted) return;
       refresh();
-      if (authState === 'signed-in') void runSync();
+      void (async () => {
+        const refreshed = await fetchAuthState();
+        if (refreshed !== null) authState = refreshed;
+        if (authState === 'signed-in') void runSync();
+      })();
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);

@@ -57,12 +57,23 @@ export class StoryProgressStore {
         return Object.hasOwn(all, storyId) ? all[storyId] : null;
     }
 
-    /** Commits a map already merged with the account copy. Storage failures
-     *  stay nonfatal, like the other writes. */
-    replaceAll(map: StoryProgressMap): boolean {
+    /** Read-modify-write in one synchronous operation, the same shape as
+     *  record(): the merge runs against the freshest stored map, so a line
+     *  read after the caller's last look is merged rather than overwritten.
+     *  Returns false when storage or the read fails; storage write failures
+     *  stay nonfatal like the other writes. Note the read and the write are
+     *  still two separate storage calls — localStorage offers no cross-tab
+     *  lock, so a concurrent record() in another tab can be lost between
+     *  them. */
+    update(merge: (current: StoryProgressMap) => StoryProgressMap): boolean {
         if (!this.storage) return false;
+        const current = this.getAllChecked();
+        if (!current) return false;
         try {
-            this.storage.setItem(STORY_PROGRESS_KEY, JSON.stringify(map));
+            this.storage.setItem(
+                STORY_PROGRESS_KEY,
+                JSON.stringify(merge(current))
+            );
             return true;
         } catch {
             return false;

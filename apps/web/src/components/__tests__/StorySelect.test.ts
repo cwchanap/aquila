@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     fireEvent,
@@ -30,6 +31,24 @@ function serverResponse(payload: unknown): Response {
         status: 200,
         json: async () => payload,
     } as Response;
+}
+
+const SESSION_URL = '/api/auth/get-session';
+
+function sessionResponse(data: unknown): Response {
+    return {
+        ok: true,
+        status: 200,
+        json: async () => data,
+    } as Response;
+}
+
+/** Calls to the sync endpoint only; a persisted restore also re-reads the
+ *  session, so bare call counts no longer measure progress requests. */
+function progressCalls(
+    fetchMock: ReturnType<typeof vi.fn>
+): Array<[unknown, RequestInit]> {
+    return fetchMock.mock.calls.filter(([url]) => url === '/api/progress');
 }
 
 const restoredPageShow = () =>
@@ -204,6 +223,10 @@ describe('StorySelect', () => {
     });
 
     it('re-reads progress when the page returns from the back/forward cache', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn().mockResolvedValue(sessionResponse(null))
+        );
         renderSelect();
         expect(screen.queryByTestId('continue-reading')).toBeNull();
 
@@ -382,23 +405,26 @@ describe('StorySelect', () => {
 
     it('syncs again when a cached page returns without overlapping requests', async () => {
         let resolveFirst!: (response: Response) => void;
-        const fetchMock = vi
-            .fn()
-            .mockImplementationOnce(
-                () =>
-                    new Promise<Response>(resolve => {
-                        resolveFirst = resolve;
-                    })
-            )
-            .mockResolvedValueOnce(serverResponse({ progress: {} }));
+        const progressResponses = [
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFirst = resolve;
+                }),
+            () => Promise.resolve(serverResponse({ progress: {} })),
+        ];
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
+                : progressResponses.shift()!()
+        );
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
-        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(progressCalls(fetchMock)).toHaveLength(1);
 
         // The return event lands while the mount request is still in flight.
         window.dispatchEvent(restoredPageShow());
-        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(progressCalls(fetchMock)).toHaveLength(1);
 
         resolveFirst(serverResponse({ progress: {} }));
         expect(
@@ -406,20 +432,23 @@ describe('StorySelect', () => {
         ).toBeInTheDocument();
 
         window.dispatchEvent(restoredPageShow());
-        await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
     });
 
     it('shows syncing again while a restored-page retry is still unseen', async () => {
         let resolveSecond!: (response: Response) => void;
-        const fetchMock = vi
-            .fn()
-            .mockResolvedValueOnce(serverResponse({ progress: {} }))
-            .mockImplementationOnce(
-                () =>
-                    new Promise<Response>(resolve => {
-                        resolveSecond = resolve;
-                    })
-            );
+        const progressResponses = [
+            () => Promise.resolve(serverResponse({ progress: {} })),
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveSecond = resolve;
+                }),
+        ];
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
+                : progressResponses.shift()!()
+        );
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
@@ -429,7 +458,7 @@ describe('StorySelect', () => {
 
         // The retry starts now; the previous result is no longer current.
         window.dispatchEvent(restoredPageShow());
-        expect(fetchMock).toHaveBeenCalledTimes(2);
+        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
         await waitFor(() =>
             expect(
                 screen.getByTestId('progress-sync-status')
@@ -444,15 +473,18 @@ describe('StorySelect', () => {
 
     it('shows syncing again while a retry follows a failed sync', async () => {
         let resolveSecond!: (response: Response) => void;
-        const fetchMock = vi
-            .fn()
-            .mockRejectedValueOnce(new TypeError('Failed to fetch'))
-            .mockImplementationOnce(
-                () =>
-                    new Promise<Response>(resolve => {
-                        resolveSecond = resolve;
-                    })
-            );
+        const progressResponses = [
+            () => Promise.reject(new TypeError('Failed to fetch')),
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveSecond = resolve;
+                }),
+        ];
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
+                : progressResponses.shift()!()
+        );
         vi.stubGlobal('fetch', fetchMock);
 
         renderSelect({ authState: 'signed-in' });
@@ -463,7 +495,7 @@ describe('StorySelect', () => {
         ).toBeInTheDocument();
 
         window.dispatchEvent(restoredPageShow());
-        expect(fetchMock).toHaveBeenCalledTimes(2);
+        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
         await waitFor(() =>
             expect(
                 screen.getByTestId('progress-sync-status')
@@ -474,5 +506,57 @@ describe('StorySelect', () => {
         expect(
             await screen.findByText('Your progress is saved to your account')
         ).toBeInTheDocument();
+    });
+
+    it('revalidates the session and syncs when a signed-in visitor returns to a signed-out cached page', async () => {
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? Promise.resolve(sessionResponse({ user: { id: 'user-1' } }))
+                : Promise.resolve(
+                      serverResponse({
+                          progress: {
+                              the_seventh_mirror: {
+                                  sceneId: 'ch2_act1',
+                                  dialogueIndex: 3,
+                                  updatedAt: 20,
+                                  finished: false,
+                                  endings: [],
+                              },
+                          },
+                      })
+                  )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-out' });
+        expect(screen.queryByTestId('progress-sync-status')).toBeNull();
+
+        window.dispatchEvent(restoredPageShow());
+
+        const strip = await screen.findByTestId('continue-reading');
+        expect(strip).toHaveAttribute(
+            'href',
+            '/en/reader?story=the_seventh_mirror&scene=ch2_act1&dialogue=4'
+        );
+        expect(progressCalls(fetchMock)).toHaveLength(1);
+    });
+
+    it('stays local-only when the revalidated session is still signed out', async () => {
+        const fetchMock = vi.fn((input: unknown) =>
+            input === SESSION_URL
+                ? Promise.resolve(sessionResponse(null))
+                : Promise.resolve(serverResponse({ progress: {} }))
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-out' });
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() =>
+            expect(
+                fetchMock.mock.calls.some(([url]) => url === SESSION_URL)
+            ).toBe(true)
+        );
+
+        expect(progressCalls(fetchMock)).toHaveLength(0);
     });
 });

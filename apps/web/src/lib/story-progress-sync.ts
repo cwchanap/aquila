@@ -96,11 +96,10 @@ export async function syncStoryProgress(
         const stored = serverProgress(payload);
         if (!stored) throw new Error('Invalid progress response');
         // A line can be read while the request is in flight; merge into the
-        // freshest local copy so a late response cannot erase it. A failed
-        // read must not be mistaken for an empty map and overwrite storage.
-        const freshLocal = store.getAllChecked();
-        if (!freshLocal) throw new Error('Local progress is unavailable');
-        if (!store.replaceAll(mergeStoryProgressMaps(freshLocal, stored))) {
+        // freshest local copy so a late response cannot erase it. update()
+        // performs the whole read/merge/write in one store operation so a
+        // failed read is never mistaken for an empty map and committed.
+        if (!store.update(current => mergeStoryProgressMaps(current, stored))) {
             throw new Error('Could not save merged progress');
         }
         return { ok: true };

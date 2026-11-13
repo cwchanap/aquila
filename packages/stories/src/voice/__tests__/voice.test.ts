@@ -375,10 +375,11 @@ describe('runVoiceCli', () => {
     });
 
     it('takes translated scenes from compiler provenance, not text equality', async () => {
-        // train_adventure's ja tree covers act1 and the b1b route only.
+        // train_adventure's ja tree covers act1, the b1b route and the first acts
+        // of b1a; the deep b1a routes are still zh.
         const translated = await translatedScenesIn('train_adventure', 'ja');
         expect(translated.has('act1')).toBe(true);
-        expect(translated.has('b1a_act4')).toBe(false);
+        expect(translated.has('b1a_b2b_b3b_b4b_b5a_b6d_act72')).toBe(false);
         // A story with no mirror tree has no translated scenes.
         expect(await translatedScenesIn('the_seventh_mirror', 'ja')).toEqual(
             new Set()
@@ -412,21 +413,28 @@ describe('runVoiceCli', () => {
                     '--story',
                     'train',
                     '--scene',
-                    'b1a_act4',
+                    'b1a_b2b_b3b_b4b_b5a_b6d_act72',
                     '--dry-run',
                 ],
                 { rawRoot, log: () => {} }
             );
         rawStory(rawRoot, 'train', 'train_adventure');
-        // train_adventure's ja tree is partial: b1a_act4's ja read is the zh
-        // source, which is not voice input — the scene needs the script.
-        await expect(run()).rejects.toThrow('no ja text for b1a_act4');
+        // train_adventure's ja tree is partial: the ja read of this late b1a
+        // scene is the zh source, which is not voice input — the scene needs
+        // the script.
+        await expect(run()).rejects.toThrow(
+            'no ja text for b1a_b2b_b3b_b4b_b5a_b6d_act72'
+        );
 
-        const act = getStoryContent('train_adventure', 'zh').dialogue.b1a_act4;
+        const act = getStoryContent('train_adventure', 'zh').dialogue
+            .b1a_b2b_b3b_b4b_b5a_b6d_act72;
         rawStory(rawRoot, 'train', 'train_adventure', {
             schemaVersion: 1,
             scenes: {
-                b1a_act4: act.map(entry => ({ zh: entry.dialogue, ja: 'あ' })),
+                b1a_b2b_b3b_b4b_b5a_b6d_act72: act.map(entry => ({
+                    zh: entry.dialogue,
+                    ja: 'あ',
+                })),
             },
         });
         await expect(run()).resolves.toBe(0);

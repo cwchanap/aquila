@@ -577,4 +577,4 @@
 ## 103. 聲音（Voice）
 
 - **ID**: `voice`
-- **Aliases**: Voice, 声
+- **Aliases**: Voice, 声, 謎の声

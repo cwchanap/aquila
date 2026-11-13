@@ -122,8 +122,10 @@ export class ReaderManager {
         atEnding: boolean;
     } | null = null;
     // The account whose map this tab's session position belongs to,
-    // bound when a restored position already matches the stored record
-    // (applySession) and refreshed by every committed record(). Reader
+    // bound when a stored position is chosen (selectInitialIntent — the
+    // story load can yield before applySession sees the map again), when
+    // a restored position already matches the stored record
+    // (applySession), and refreshed by every committed record(). Reader
     // sessions carry no owner tag, so the persist() write guard compares
     // this against the map's live owner: another tab can displace the
     // map — a sign-in quarantines it and drops the sessions that went
@@ -240,6 +242,7 @@ export class ReaderManager {
         // so both fallbacks stay unused until a sync or a record clears
         // the foreign tag.
         const foreign = this.storyProgress.isForeignTo(this.userId);
+        let restoredFromMap = false;
         if (
             storyId &&
             !params.has('scene') &&
@@ -251,6 +254,7 @@ export class ReaderManager {
             if (progress) {
                 params.set('scene', progress.sceneId);
                 params.set('dialogue', String(progress.dialogueIndex + 1));
+                restoredFromMap = true;
             }
         }
         const raw = foreign ? null : localStorage.getItem(this.storageKey);
@@ -265,12 +269,26 @@ export class ReaderManager {
                 console.error('Failed to parse saved state', e);
             }
         }
-        return this.deps.selectReaderIntent(
+        const selection = this.deps.selectReaderIntent(
             params,
             persisted,
             this.initialLocale,
             { defaultStoryId: this.deps.defaultStoryId }
         );
+        // A position read out of the stored map or the saved session
+        // belongs to that map's owner — bind it now, before the story
+        // load can yield. Another tab can displace the map during that
+        // load, and then applySession's store match never sees the old
+        // map: an unbound session would record the restored position
+        // under the new owner's tag. With the owner bound here, the
+        // record and session guards see the mismatch and refuse.
+        if (
+            selection.kind === 'load' &&
+            (restoredFromMap || selection.intent.source === 'persisted')
+        ) {
+            this.sessionOwner = this.storyProgress.getOwner();
+        }
+        return selection;
     }
 
     private applySession(

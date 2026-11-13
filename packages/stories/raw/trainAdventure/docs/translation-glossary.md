@@ -417,7 +417,7 @@ Used before a character is named. All are registered as aliases in
 - **Pronouns**: Emi わたし, calls Li Jie 李さん; he calls her 清水さん. Misaki
   and Asuka say あたし in every branch_1a line, voiced ones included (Hapadona's
   call, 2026-11-12). The 7 voiced lines in acts 4–6 that said わたし in the
-  recorded takes were switched, so they have no take until they are re-voiced.
+  first takes were switched and re-voiced (same voices, new takes).
   Saito Ren 僕, sarcastic です/ます, 李さん to Li Jie. Li Jie 俺, and 私（わたし）
   to Ailaru. Kobayashi family as in the pronoun list above; Yudai 俺, bare 智子
   to his wife. Li Jie says 陽菜ちゃん / 翔太くん, the kids say お兄ちゃん.

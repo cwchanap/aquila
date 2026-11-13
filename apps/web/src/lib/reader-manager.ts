@@ -575,6 +575,23 @@ export class ReaderManager {
         ) {
             return;
         }
+        // An unknown-account record lands under whatever owner the map
+        // currently carries — record(undefined) preserves the stored tag —
+        // so it is safe only while the map is still the one this session's
+        // position was bound to. A sign-in in another tab can retag the
+        // map to that account; writing this reader's position under the
+        // new tag would let that account's next sync upload it. Skipping
+        // leaves lastRecordedPosition stale, so the position records once
+        // the session re-read settles and record() gets a real account
+        // signal to claim or detach on. An unbound session has no owner
+        // to compare — its record keeps landing under the stored owner.
+        if (
+            this.authState === 'unavailable' &&
+            this.sessionOwner !== undefined &&
+            this.storyProgress.getOwner() !== this.sessionOwner
+        ) {
+            return;
+        }
         if (
             this.storyProgress.record(
                 {

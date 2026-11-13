@@ -194,6 +194,11 @@ Used before a character is named. All are registered as aliases in
 | 精靈女性 | Elf Woman | エルフの女性 | `elf` |
 | 年長精靈 | Elder Elf | 年長のエルフ | `elf` |
 | 精靈劍士 | Elf Swordsman | エルフの剣士 | `elf_guard` |
+| 精靈守衛 | Elf Guard | エルフの衛兵 | `elf_guard` |
+| 精靈幼童 | Elf Child | エルフの子ども | `elf` |
+| 精靈母親 | Elf Mother | エルフの母親 | `elf` |
+| 年輕精靈A / B / C | Young Elf A / B / C | 若いエルフA / B / C | `elf` |
+| 神秘聲音 | Mysterious Voice | 謎の声 | `voice` |
 | 張伯伯 | Uncle Zhang | 張おじさん | `man` |
 | 女將 | Innkeeper | 女将 | `inn_keeper` |
 
@@ -324,6 +329,12 @@ Used before a character is named. All are registered as aliases in
 | 阿姨 / 明日香阿姨 (*address*: Yui, Yuma; Asuka of herself) | Auntie / Aunt Asuka | おばちゃん / 明日香おばちゃん（あすかおばちゃん） |
 | 媽 / 媽媽 / 爸爸 (*address*) | Mom / Dad | お母さん / お父さん (the Suzukis); 母さん（かあさん） (Li Jie ↔ Lin Wanru); ママ / パパ (Kobayashi kids) |
 | 張伯伯 (*address*) | Uncle Zhang | 張おじさん（ちょうおじさん） |
+| 李桑 / 李先生 (*address*, branch_1a: Emi, Kenta, Saito Ren, Yamamoto) | Mr. Li | 李さん（りさん） |
+| 山本大叔 (narration and *address*, branch_1a) | Uncle Yamamoto | 山本さん（やまもとさん） |
+| 艾拉如先生 (*address*: Li Jie → Ailaru) / 艾拉如長老 | Mr. Ailaru / Elder Ailaru | アイラルさん / アイラル長老（ちょうろう） |
+| 星塵迴響 (the hit film Emi and Li Jie talk about, branch_4a act 14) | *Stardust Echoes* | 『星屑の残響（ほしくずのざんきょう）』 |
+| 永夜之地 | the Land of Eternal Night | 永夜の地（えいやのち） |
+| 空心磚 (the hollow brick in the guard room, branch_3b acts 11, 19) | the hollow brick | 空洞のレンガ（くうどうのレンガ） |
 
 ## Route notes: branch_1b → branch_2c
 
@@ -390,3 +401,32 @@ Used before a character is named. All are registered as aliases in
   雩膀 in act 27 is 肩膀 (shoulder).
 - **The final line** `**—— 全劇終 ——**` is a speakerless paragraph:
   `**— The End —**` / `**―― 完 ――**` — bold, no colon, no speaker.
+
+## Route notes: branch_1a (ja up to act 20 on every route)
+
+- **Coverage**: ja exists for the shared acts 4–6, route 2a (acts 7–8, then
+  3a acts 9–12, then 4a acts 13–20) and route 2b (act 7, then 3a acts 8–20 and
+  3b acts 8–20). The branch runs to act 72 in zh; everything past act 20 on a
+  route still reads zh until it is translated.
+- **Acts 4–6 are voiced**, and for a translated scene the ja reader text *is*
+  the spoken text. The 104 voiced lines there (act 4: 51, act 5: 30, act 6: 23)
+  keep the wording of `voice-script.ja.json` as the reader text, so the takes
+  on R2 stay valid. Change one of those lines only together with a re-voice.
+  The lines where a fresh translation would read differently are listed in the
+  translation hand-off report, not in this file.
+- **Pronouns**: Emi わたし, calls Li Jie 李さん; he calls her 清水さん. Misaki
+  uses わたし in branch_1a (the voiced lines set it, the rest follows), not the
+  あたし of acts 1–3 — a native reader should decide which one she keeps.
+  Saito Ren 僕, sarcastic です/ます, 李さん to Li Jie. Li Jie 俺, and 私（わたし）
+  to Ailaru. Kobayashi family as in the pronoun list above; Yudai 俺, bare 智子
+  to his wife. Li Jie says 陽菜ちゃん / 翔太くん, the kids say お兄ちゃん.
+- **Names are given late**: the guy in glasses stays 気弱な眼鏡の青年 until zh
+  switches to 斎藤蓮, as in the labels table; 山本浩二 likewise after he
+  introduces himself.
+- **The mysterious voice** (3b act 19) is labelled 謎の声, calls Li Jie
+  罪人 / おまえ, and speaks in the same plain archaic register as the Sacred
+  Tree in the other routes. The gray void it speaks from is 灰色の空間.
+- **Real-world names stay as zh has them**: 中森明菜, ZARD, 夏目漱石, 川端康成,
+  太宰治 and 『人間失格』 (4a act 14).
+- **zh slips kept and reported, not fixed**: 3b act 20 says Asuka is the injured
+  girl of Kenta's group, while 3b act 17 has Misaki shot in the leg.

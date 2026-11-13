@@ -70,6 +70,12 @@
       "voiceName": "Pipi",
       "notes": "12, Shota's sensible older sister (branch 1b act 6). Picked by Hapadona 2026-11-13."
     },
+    "shimizu_emi": {
+      "voiceId": "JTlYtJrcTzPC71hMLOxo",
+      "voiceName": "Yuki - Calm Anime Narrator",
+      "direction": "[shy]",
+      "notes": "20, the quiet university student with the sketchbook (branch 1a only). Hapadona's pick on 2026-11-13 after rejecting Sumire, Sameno and RENREN; same voice as Xu Nian in The Elevator Game."
+    },
     "announcement": {
       "voiceId": "1czwMoQxv9Ni4H7M5hXx",
       "voiceName": "みーこ - クリアな公共案内",

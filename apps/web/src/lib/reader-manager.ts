@@ -440,12 +440,14 @@ export class ReaderManager {
             locale: readerState.locale,
             version: STORAGE_VERSION,
         };
+        // Record first: quarantining a foreign map drops every reader
+        // session, so writing the session first would delete it again.
+        this.recordStoryProgress();
         try {
             localStorage.setItem(this.storageKey, JSON.stringify(data));
         } catch (e) {
             console.error('Failed to persist reader state', e);
         }
-        this.recordStoryProgress();
         // The hide flush persists locally, then sends its own keepalive; it
         // suppresses this ordinary push so one hide never sends twice.
         if (options.cloud !== false) this.maybePushProgress();

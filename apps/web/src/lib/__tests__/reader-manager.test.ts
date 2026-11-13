@@ -3204,8 +3204,12 @@ describe('ReaderManager', () => {
             const errorSpy = vi
                 .spyOn(console, 'error')
                 .mockImplementation(() => {});
-            mockStorage.setItem.mockImplementationOnce(() => {
-                throw new DOMException('QuotaExceededError');
+            mockStorage.setItem.mockImplementation((key: string) => {
+                // Only the session write throws — the progress record's
+                // own storage failure is swallowed inside the store.
+                if (key === 'aquila:readerState:en') {
+                    throw new DOMException('QuotaExceededError');
+                }
             });
 
             manager = new ReaderManager('en');

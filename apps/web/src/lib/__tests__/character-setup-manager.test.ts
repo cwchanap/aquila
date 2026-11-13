@@ -48,13 +48,27 @@ function setupDom(attrs: Record<string, string> = {}): {
 }
 
 function response(status: number, body: unknown = null): Response {
-    return {
-        ok: status >= 200 && status < 300,
+    // A real Response so json() derives from the body the way fetch
+    // does — a missing body must reject instead of resolving null.
+    return new Response(JSON.stringify(body), {
         status,
         statusText: `status ${status}`,
-        json: async () => body,
-        text: async () => (body === null ? '' : JSON.stringify(body)),
-    } as Response;
+    });
+}
+
+function denyLocalStorage(): () => void {
+    const original = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    Object.defineProperty(window, 'localStorage', {
+        configurable: true,
+        get() {
+            throw new Error('storage disabled');
+        },
+    });
+    return () => {
+        if (original) {
+            Object.defineProperty(window, 'localStorage', original);
+        }
+    };
 }
 
 describe('CharacterSetupManager', () => {
@@ -215,6 +229,25 @@ describe('CharacterSetupManager', () => {
         expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
     });
 
+    it('posts when the uncertain-auth probe answers an empty body', async () => {
+        const fetchMock = vi.fn().mockImplementation(async (url: unknown) => {
+            if (String(url).startsWith('/api/character-setup?')) {
+                // A missing setup once serialized to no body at all —
+                // an unparseable 200 must still reach the POST.
+                return new Response(null, { status: 200 });
+            }
+            return response(200, { ok: true });
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        const { input } = managerFor({ 'data-auth-uncertain': 'true' });
+        await submit(input, 'Aria');
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[1][0]).toBe('/api/character-setup');
+        expect(fetchMock.mock.calls[1][1].method).toBe('POST');
+        expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
+    });
+
     it('stops before the POST when the uncertain-auth probe fails', async () => {
         const fetchMock = vi.fn().mockImplementation(async (url: unknown) => {
             if (String(url).startsWith('/api/character-setup?')) {
@@ -280,6 +313,49 @@ describe('CharacterSetupManager', () => {
         expect(alert).toHaveBeenCalled();
         expect(navigate).not.toHaveBeenCalled();
         expect(button.disabled).toBe(false);
+    });
+
+    it('still saves to the account when storage access is denied', async () => {
+        const restoreStorage = denyLocalStorage();
+        try {
+            const fetchMock = vi
+                .fn()
+                .mockResolvedValue(response(200, { ok: true }));
+            vi.stubGlobal('fetch', fetchMock);
+            const dom = setupDom({ 'data-authed': 'true' });
+            new CharacterSetupManager(dom.root, {
+                navigate: url => navigate(url),
+            }).initialize();
+            await submit(dom.input, 'Aria');
+
+            // Denied storage access must not take the constructor down
+            // with it — the account save never needed local storage.
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+            expect(fetchMock.mock.calls[0][0]).toBe('/api/character-setup');
+            expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
+            expect(alert).not.toHaveBeenCalled();
+        } finally {
+            restoreStorage();
+        }
+    });
+
+    it('reports the failed save when storage is denied and signed out', async () => {
+        const restoreStorage = denyLocalStorage();
+        try {
+            const dom = setupDom();
+            new CharacterSetupManager(dom.root, {
+                navigate: url => navigate(url),
+            }).initialize();
+            await submit(dom.input, 'Aria');
+
+            // No account save exists to fall back on — the failed local
+            // save surfaces instead of navigating on unsaved.
+            expect(alert).toHaveBeenCalled();
+            expect(navigate).not.toHaveBeenCalled();
+            expect(dom.button.disabled).toBe(false);
+        } finally {
+            restoreStorage();
+        }
     });
 
     it('blocks an empty name before any request', async () => {

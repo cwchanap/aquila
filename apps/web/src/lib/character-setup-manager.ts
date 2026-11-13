@@ -3,11 +3,13 @@
  *  and re-checks for an existing setup when the SSR session lookup was
  *  uncertain — a session that recovers by submit time redirects to the
  *  story instead of overwriting the saved name. */
+import { getBrowserStorage } from './reader-mode';
 
 interface CharacterSetupDeps {
     /** Test seam; defaults to assigning window.location.href. */
     navigate?: (url: string) => void;
-    /** Test seam; defaults to window.localStorage. */
+    /** Test seam; defaults to getBrowserStorage(), which tolerates
+     *  denied storage access. */
     storage?: Storage | null;
 }
 
@@ -29,11 +31,7 @@ export class CharacterSetupManager {
                 window.location.href = url;
             });
         this.storage =
-            deps.storage === undefined
-                ? typeof localStorage === 'undefined'
-                    ? null
-                    : localStorage
-                : deps.storage;
+            deps.storage === undefined ? getBrowserStorage() : deps.storage;
         const urlParams = new URLSearchParams(window.location.search);
         this.story =
             root.getAttribute('data-story') ||
@@ -82,7 +80,12 @@ export class CharacterSetupManager {
     }
 
     private saveLocal(characterName: string): void {
-        this.storage?.setItem(
+        if (!this.storage) {
+            // A signed-out save has nowhere else to go — surface the
+            // failure instead of navigating on as if it landed.
+            throw new Error('Local storage is unavailable');
+        }
+        this.storage.setItem(
             `aquila:character:${this.story}`,
             JSON.stringify({ characterName })
         );
@@ -157,7 +160,10 @@ export class CharacterSetupManager {
                 if (!probe.ok) {
                     throw await this.readError(probe);
                 }
-                if (await probe.json()) {
+                // A 200 with an empty body cannot name a saved setup —
+                // parse only a real payload so json() cannot reject on it.
+                const probeBody = await probe.text();
+                if (probeBody && JSON.parse(probeBody)) {
                     this.navigate(this.storyUrl());
                     return;
                 }

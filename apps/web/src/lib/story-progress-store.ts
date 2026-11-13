@@ -318,8 +318,11 @@ export class StoryProgressStore {
      *  since. A saved session is unattributed, so it seeds only a map
      *  this account could own — a map tagged for a different account,
      *  or any tagged map while no account is known, is left for its
-     *  owner rather than seeded. (Unlike record(), a stale backfill is
-     *  not worth sidelining an account's copy over.) */
+     *  owner rather than seeded. An unreadable map is left alone too:
+     *  a failed read is not an empty map, and seeding over it would
+     *  replace the owner's whole copy — inline tag included — with
+     *  only the imported session. (Unlike record(), a stale backfill
+     *  is not worth sidelining an account's copy over.) */
     seed(
         position: {
             storyId: string;
@@ -330,11 +333,11 @@ export class StoryProgressStore {
     ): boolean {
         if (!this.storage || this.get(position.storyId)) return false;
         const stored = this.readStored();
-        if (stored && stored.owner !== null && stored.owner !== accountId) {
+        if (!stored || (stored.owner !== null && stored.owner !== accountId)) {
             return false;
         }
         const next: StoryProgressMap = {
-            ...(stored?.map ?? {}),
+            ...stored.map,
             [position.storyId]: {
                 sceneId: position.sceneId,
                 dialogueIndex: Math.trunc(position.dialogueIndex),
@@ -343,10 +346,7 @@ export class StoryProgressStore {
                 endings: [],
             },
         };
-        return this.writeStored(
-            next,
-            stored ? stored.owner : this.legacyOwner()
-        );
+        return this.writeStored(next, stored.owner);
     }
 
     /** Records the reader's position. Returns false when storage is

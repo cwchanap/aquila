@@ -894,6 +894,37 @@ describe('StoryProgressStore', () => {
             // a seed only backfills records.
             expect(store.getOwner()).toBeNull();
         });
+
+        it('refuses to seed when the stored map cannot be read', () => {
+            // A failed read is not an empty map: seeding blind would
+            // replace the owner's whole copy — inline tag included —
+            // with only the imported session.
+            const corrupt = memoryStorage({
+                [STORY_PROGRESS_KEY]: '{not json',
+            });
+            expect(
+                new StoryProgressStore(corrupt).seed(
+                    {
+                        storyId: 'the_seventh_mirror',
+                        sceneId: 'ch9_act3',
+                        dialogueIndex: 4,
+                    },
+                    'user-b'
+                )
+            ).toBe(false);
+            expect(corrupt.getItem(STORY_PROGRESS_KEY)).toBe('{not json');
+
+            const throwing = memoryStorage();
+            throwing.getItem = () => {
+                throw new Error('SecurityError');
+            };
+            expect(
+                new StoryProgressStore(throwing).seed(
+                    { storyId: 's', sceneId: 'act1', dialogueIndex: 0 },
+                    'user-b'
+                )
+            ).toBe(false);
+        });
     });
 
     describe('owner-aware reads and commit guards', () => {

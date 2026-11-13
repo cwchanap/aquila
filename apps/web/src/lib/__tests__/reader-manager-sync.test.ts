@@ -758,6 +758,15 @@ describe('ReaderManager account progress sync', () => {
         expect(JSON.parse(posts[0][1].body as string).progress).toHaveProperty(
             'train_adventure'
         );
+        // The session written by the same persist survives the quarantine
+        // cleanup — it belongs to the signing-in account, not the evicted
+        // one, so a bare reader link can still restore it.
+        expect(
+            JSON.parse(
+                localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`) ??
+                    'null'
+            )
+        ).toMatchObject({ storyId: 'train_adventure', sceneId: 'act2' });
     });
 
     it('makes no keepalive request when the account copy already covers the local map', async () => {

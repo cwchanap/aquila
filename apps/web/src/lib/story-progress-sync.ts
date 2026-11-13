@@ -120,8 +120,17 @@ export async function syncStoryProgress(
             if (!local)
                 return fail(true, new Error('Local progress is unavailable'));
             // Bounding happens on write too, but a map saved before the
-            // bound existed would otherwise 413 every sync.
-            upload = boundStoryProgressMap(local);
+            // bound existed would otherwise 413 every sync. A sidelined
+            // copy that failed to merge back is still this account's own
+            // data — it joins the upload directly so a restore landing
+            // after the commit cannot report success while leaving it
+            // unuploaded.
+            upload = boundStoryProgressMap(
+                mergeStoryProgressMaps(
+                    local,
+                    store.getSidelined(options.accountId)
+                )
+            );
             // An unowned map is claimed before it can upload: if the
             // request reaches the server but its response or the commit
             // is lost, the copy stays tagged for this account — untagged,
@@ -164,7 +173,13 @@ export async function syncStoryProgress(
             if (!committed) {
                 return fail(true, new Error('Could not save merged progress'));
             }
-            store.dropReaderSessions();
+            // Sessions leave only with a displaced foreign map — a
+            // same-account merge keeps the sessions that account wrote
+            // while the request was out (its record() already cleared
+            // the previous owner's).
+            if (current.owner === owner) {
+                store.dropReaderSessions();
+            }
             store.restoreSidelined(options.accountId);
             return { ok: true };
         }

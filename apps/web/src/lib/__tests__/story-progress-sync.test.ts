@@ -547,6 +547,11 @@ describe('syncStoryProgress', () => {
             the_seventh_mirror: record({ updatedAt: 10 }),
         });
         new StoryProgressStore(localStorage).setOwner('user-a');
+        // The previous owner's reader sessions go with its displaced map.
+        localStorage.setItem(
+            'aquila:readerState:en',
+            JSON.stringify({ storyId: 'the_seventh_mirror' })
+        );
         const fetchMock = vi.fn().mockResolvedValue(
             serverResponse({
                 progress: {
@@ -569,6 +574,54 @@ describe('syncStoryProgress', () => {
             elevator_game: record({ updatedAt: 30 }),
         });
         expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+        expect(localStorage.getItem('aquila:readerState:en')).toBeNull();
+    });
+
+    it('uploads sidelined records whose restore write failed', async () => {
+        const storage = memoryStorage({
+            [STORY_PROGRESS_KEY]: JSON.stringify({
+                the_seventh_mirror: record({ updatedAt: 10 }),
+            }),
+            'aquila:storyProgress:v1:sidelined:user-1': JSON.stringify({
+                v: 2,
+                owner: 'user-1',
+                progress: { elevator_game: record({ updatedAt: 20 }) },
+            }),
+        });
+        let writes = 0;
+        const setItem = storage.setItem.bind(storage);
+        storage.setItem = (key, value) => {
+            if (key === STORY_PROGRESS_KEY) {
+                writes += 1;
+                // Write 1 is the merge-back inside restoreSidelined —
+                // its failure leaves the sidelined copy waiting.
+                if (writes === 1) throw new Error('QuotaExceededError');
+            }
+            setItem(key, value);
+        };
+        vi.stubGlobal('localStorage', storage);
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        expect(await syncStoryProgress({ accountId: 'user-1' })).toEqual({
+            ok: true,
+        });
+        // The records are this account's own even while they could not
+        // merge back into the stored map — the upload carries them.
+        const body = bodyOf(fetchMock) as {
+            progress: Record<string, unknown>;
+        };
+        expect(Object.keys(body.progress).sort()).toEqual([
+            'elevator_game',
+            'the_seventh_mirror',
+        ]);
+        // The retry after the commit then restores the copy normally.
+        expect(
+            storage.getItem('aquila:storyProgress:v1:sidelined:user-1')
+        ).toBeNull();
+        expect(new StoryProgressStore(storage).getOwner()).toBe('user-1');
     });
 
     it('keeps records written while a foreign-owned sync is in flight', async () => {
@@ -617,6 +670,57 @@ describe('syncStoryProgress', () => {
         expect(stored.train_adventure).toEqual(record({ updatedAt: 30 }));
         expect(stored).not.toHaveProperty('the_seventh_mirror');
         expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+    });
+
+    it('keeps sessions the syncing account wrote while the request was out', async () => {
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        let resolveFetch!: (response: Response) => void;
+        const fetchMock = vi.fn(
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFetch = resolve;
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const pending = syncStoryProgress({ accountId: 'user-b' });
+
+        // The account's own record claims the map (clearing the previous
+        // owner's sessions); the persist that follows writes its own.
+        new StoryProgressStore(localStorage).record(
+            {
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act1',
+                dialogueIndex: 2,
+                atEnding: false,
+            },
+            'user-b'
+        );
+        localStorage.setItem(
+            'aquila:readerState:en',
+            JSON.stringify({
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act1',
+                dialogueIndex: 2,
+                locale: 'en',
+                version: 2,
+            })
+        );
+        resolveFetch(
+            serverResponse({
+                progress: {
+                    train_adventure: record({ updatedAt: 30 }),
+                },
+            })
+        );
+
+        expect(await pending).toEqual({ ok: true });
+        // The same-account merge branch must not clear a session written
+        // mid-flight — only a displaced foreign map takes sessions with it.
+        expect(localStorage.getItem('aquila:readerState:en')).not.toBeNull();
     });
 
     it('sidelines in-flight records that cannot be attributed to the syncing account', async () => {

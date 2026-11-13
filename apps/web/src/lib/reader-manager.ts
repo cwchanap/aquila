@@ -169,11 +169,14 @@ export class ReaderManager {
         this.storyProgress = new StoryProgressStore(getBrowserStorage());
         // The first persist() replaces this locale's session, which may be
         // the only copy of a place saved before per-story progress existed
-        // (for example when a direct link opens a different story).
+        // (for example when a direct link opens a different story). The
+        // sessions carry no owner tag, so they may only seed a map this
+        // visit's account could own.
         importSavedSessions(
             this.storyProgress,
             getBrowserStorage(),
-            this.initialLocale
+            this.initialLocale,
+            this.userId
         );
     }
 
@@ -443,10 +446,18 @@ export class ReaderManager {
         // Record first: quarantining a foreign map drops every reader
         // session, so writing the session first would delete it again.
         this.recordStoryProgress();
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(data));
-        } catch (e) {
-            console.error('Failed to persist reader state', e);
+        // A map still tagged for another account was displaced without
+        // this tab's record — an unchanged position takes the early
+        // return in recordStoryProgress, so record() never retagged it.
+        // The session belongs to that displaced account: writing it
+        // would let a later session import seed this tab's position
+        // into the new owner's map.
+        if (!this.storyProgress.isForeignTo(this.userId)) {
+            try {
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            } catch (e) {
+                console.error('Failed to persist reader state', e);
+            }
         }
         // The hide flush persists locally, then sends its own keepalive; it
         // suppresses this ordinary push so one hide never sends twice.
@@ -555,8 +566,13 @@ export class ReaderManager {
                     atEnding,
                 },
                 // A signed-in reader's first record quarantines a map
-                // tagged for a previous account instead of writing into it.
-                this.userId
+                // tagged for a previous account instead of writing into
+                // it; a confirmed sign-out detaches that map into an
+                // unowned copy. 'unavailable' is neither — its null
+                // userId is an unanswered lookup, not a sign-out, so the
+                // record must not sideline the stored account's map on
+                // a guess.
+                this.authState === 'unavailable' ? undefined : this.userId
             )
         ) {
             this.lastRecordedPosition = {

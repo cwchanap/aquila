@@ -182,7 +182,7 @@ describe('StoryProgressStore', () => {
             ),
         });
         const store = new StoryProgressStore(storage, () => 50);
-        importSavedSessions(store, storage, 'en');
+        importSavedSessions(store, storage, 'en', null);
 
         expect(store.getAll()).toEqual({
             the_seventh_mirror: {
@@ -208,7 +208,7 @@ describe('StoryProgressStore', () => {
             dialogueIndex: 0,
             atEnding: false,
         });
-        importSavedSessions(store, storage, 'en');
+        importSavedSessions(store, storage, 'en', null);
         expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch10_act1');
     });
 
@@ -227,7 +227,7 @@ describe('StoryProgressStore', () => {
             ),
         });
         const store = new StoryProgressStore(storage);
-        importSavedSessions(store, storage, 'zh');
+        importSavedSessions(store, storage, 'zh', null);
         expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch2_act1');
 
         for (const raw of [
@@ -238,13 +238,16 @@ describe('StoryProgressStore', () => {
         ]) {
             const other = memoryStorage({ 'aquila:readerState:en': raw });
             const fresh = new StoryProgressStore(other);
-            importSavedSessions(fresh, other, 'en');
+            importSavedSessions(fresh, other, 'en', null);
             expect(fresh.getAll()).toEqual({});
         }
         const empty = new StoryProgressStore(null);
-        importSavedSessions(empty, null, 'en');
+        importSavedSessions(empty, null, 'en', null);
         expect(
-            empty.seed({ storyId: 's', sceneId: 'act1', dialogueIndex: 0 })
+            empty.seed(
+                { storyId: 's', sceneId: 'act1', dialogueIndex: 0 },
+                null
+            )
         ).toBe(false);
     });
 
@@ -410,7 +413,7 @@ describe('StoryProgressStore', () => {
             ),
         });
         const store = new StoryProgressStore(storage, () => 50);
-        importSavedSessions(store, storage, 'en');
+        importSavedSessions(store, storage, 'en', null);
         const remote: StoryProgressMap = {
             elevator_game: {
                 sceneId: 'act1',
@@ -671,7 +674,7 @@ describe('StoryProgressStore', () => {
                 'user-a'
             );
 
-            expect(store.record(position)).toBe(true);
+            expect(store.record(position, null)).toBe(true);
 
             // The anonymous record starts a fresh unowned map; the
             // displaced account's copy is sidelined intact and its reader
@@ -717,7 +720,7 @@ describe('StoryProgressStore', () => {
                 },
                 'user-a'
             );
-            expect(store.record(position)).toBe(true);
+            expect(store.record(position, null)).toBe(true);
 
             expect(
                 store.record(
@@ -790,6 +793,106 @@ describe('StoryProgressStore', () => {
             expect(store.get('the_seventh_mirror')).not.toBeNull();
             expect(store.get('elevator_game')).not.toBeNull();
             expect(store.getOwner()).toBe('user-b');
+        });
+    });
+
+    describe('record with an unknown account', () => {
+        const position = {
+            storyId: 'elevator_game',
+            sceneId: 'act1',
+            dialogueIndex: 3,
+            atEnding: false,
+        };
+
+        it('appends under the stored owner instead of sidelining it', () => {
+            // A degraded session lookup answered nothing — that is not a
+            // sign-out. The record lands in the stored map under its
+            // owner: sidelining the account's copy on an unvalidated
+            // guess could move its data to a stranger.
+            const storage = memoryStorage({
+                'aquila:readerState:en': session(
+                    'the_seventh_mirror',
+                    'ch9_act3',
+                    4
+                ),
+            });
+            const store = new StoryProgressStore(storage, () => 99);
+            store.record(
+                {
+                    storyId: 'the_seventh_mirror',
+                    sceneId: 'ch1_act1',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-a'
+            );
+
+            expect(store.record(position, undefined)).toBe(true);
+
+            expect(store.getOwner()).toBe('user-a');
+            expect(store.get('elevator_game')).toMatchObject({
+                sceneId: 'act1',
+                dialogueIndex: 3,
+                updatedAt: 99,
+            });
+            expect(store.get('the_seventh_mirror')).not.toBeNull();
+            // Nothing was displaced: no sidelined copy, and the owner's
+            // reader sessions stay put.
+            expect(
+                storage.getItem('aquila:storyProgress:v1:sidelined:user-a')
+            ).toBeNull();
+            expect(storage.getItem('aquila:readerState:en')).not.toBeNull();
+        });
+    });
+
+    describe('saved-session seeding', () => {
+        it('seeds sessions only into a map their account could own', () => {
+            // Sessions carry no owner tag, so a map tagged for user-a is
+            // not theirs to write — not for another signed-in account,
+            // and not for a signed-out view either. A stale backfill is
+            // not worth sidelining the owner's copy over.
+            const storage = memoryStorage({
+                'aquila:readerState:en': session(
+                    'the_seventh_mirror',
+                    'ch9_act3',
+                    4
+                ),
+                'aquila:readerState:zh': session(
+                    'train_adventure',
+                    'act2',
+                    7,
+                    'zh'
+                ),
+            });
+            const store = new StoryProgressStore(storage, () => 50);
+            store.setOwner('user-a');
+
+            importSavedSessions(store, storage, 'en', 'user-b');
+            importSavedSessions(store, storage, 'en', null);
+            expect(store.getAll()).toEqual({});
+
+            // Its own account still gets the carry-over.
+            importSavedSessions(store, storage, 'en', 'user-a');
+            expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch9_act3');
+            expect(store.get('train_adventure')?.sceneId).toBe('act2');
+            expect(store.getOwner()).toBe('user-a');
+        });
+
+        it('seeds into an unowned map without retagging it', () => {
+            const storage = memoryStorage({
+                'aquila:readerState:en': session(
+                    'the_seventh_mirror',
+                    'ch9_act3',
+                    4
+                ),
+            });
+            const store = new StoryProgressStore(storage, () => 50);
+
+            importSavedSessions(store, storage, 'en', 'user-b');
+            expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch9_act3');
+            // Claiming an unowned map stays with record() and sync —
+            // a seed only backfills records.
+            expect(store.getOwner()).toBeNull();
         });
     });
 

@@ -417,7 +417,7 @@
 ## 71. 精靈（Elf）
 
 - **ID**: `elf`
-- **Aliases**: Elf, エルフ, Elf Woman, エルフの女性, Elder Elf, 年長のエルフ
+- **Aliases**: Elf, エルフ, Elf Woman, エルフの女性, Elder Elf, 年長のエルフ, エルフの子ども, エルフの母親, 若いエルフA, 若いエルフB, 若いエルフC
 
 ## 72. 士兵（Soldier）
 

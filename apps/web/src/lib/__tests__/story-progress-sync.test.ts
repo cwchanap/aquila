@@ -577,6 +577,50 @@ describe('syncStoryProgress', () => {
         expect(localStorage.getItem('aquila:readerState:en')).toBeNull();
     });
 
+    it('uploads records written while signed out to the next signed-in account', async () => {
+        // A synced and signed out; anonymous reading detached A's map into
+        // an unowned copy. B's first sync must claim that copy — the
+        // alternative would be sidelining anonymous progress under A.
+        saveProgress({
+            the_seventh_mirror: record({ updatedAt: 10 }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        new StoryProgressStore(localStorage).record({
+            storyId: 'elevator_game',
+            sceneId: 'b1a_act1',
+            dialogueIndex: 2,
+            atEnding: false,
+        });
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: { train_adventure: record({ updatedAt: 30 }) },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        expect(await syncStoryProgress({ accountId: 'user-b' })).toEqual({
+            ok: true,
+        });
+        // The unowned copy uploads as B's progress and the download
+        // merges into it — nothing of it is stranded under user-a.
+        const body = bodyOf(fetchMock) as {
+            progress: Record<string, unknown>;
+        };
+        expect(Object.keys(body.progress)).toEqual(['elevator_game']);
+        const stored = readProgress();
+        expect(Object.keys(stored).sort()).toEqual([
+            'elevator_game',
+            'train_adventure',
+        ]);
+        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+        const sidelined = JSON.parse(
+            localStorage.getItem(
+                'aquila:storyProgress:v1:sidelined:user-a'
+            ) as string
+        );
+        expect(Object.keys(sidelined.progress)).toEqual(['the_seventh_mirror']);
+    });
+
     it('uploads sidelined records whose restore write failed', async () => {
         const storage = memoryStorage({
             [STORY_PROGRESS_KEY]: JSON.stringify({
@@ -723,7 +767,7 @@ describe('syncStoryProgress', () => {
         expect(localStorage.getItem('aquila:readerState:en')).not.toBeNull();
     });
 
-    it('sidelines in-flight records that cannot be attributed to the syncing account', async () => {
+    it('claims an in-flight anonymous record when the download commits', async () => {
         saveProgress({
             the_seventh_mirror: record({ updatedAt: 10 }),
         });
@@ -739,8 +783,9 @@ describe('syncStoryProgress', () => {
 
         const pending = syncStoryProgress({ accountId: 'user-b' });
 
-        // An anonymous write lands behind the pending download — nothing
-        // proves it belongs to user-b.
+        // An anonymous write lands behind the pending download: it
+        // detaches the foreign map into an unowned copy — claimable by
+        // the next signed-in account, which is this sync.
         new StoryProgressStore(localStorage).record({
             storyId: 'elevator_game',
             sceneId: 'b1a_act1',
@@ -757,23 +802,26 @@ describe('syncStoryProgress', () => {
 
         expect(await pending).toEqual({ ok: true });
         const stored = readProgress();
-        // The download replaces the foreign map outright; the anonymous
-        // record is not adopted into user-b's copy.
-        expect(stored).toEqual({
-            train_adventure: record({ updatedAt: 30 }),
+        // The download merges into the unowned copy under this account's
+        // tag — the anonymous record is adopted instead of sidelined
+        // under the previous owner.
+        expect(Object.keys(stored).sort()).toEqual([
+            'elevator_game',
+            'train_adventure',
+        ]);
+        expect(stored.elevator_game).toMatchObject({
+            sceneId: 'b1a_act1',
+            dialogueIndex: 2,
         });
+        expect(stored.train_adventure).toEqual(record({ updatedAt: 30 }));
         expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
-        // Everything that sat under the previous tag — including the
-        // unattributable write — waits sidelined for that owner's return.
+        // Only the previous owner's own records wait sidelined for it.
         const sidelined = JSON.parse(
             localStorage.getItem(
                 'aquila:storyProgress:v1:sidelined:user-a'
             ) as string
         );
-        expect(Object.keys(sidelined.progress).sort()).toEqual([
-            'elevator_game',
-            'the_seventh_mirror',
-        ]);
+        expect(Object.keys(sidelined.progress)).toEqual(['the_seventh_mirror']);
     });
 
     it('leaves a map retagged by a third account behind the request untouched', async () => {

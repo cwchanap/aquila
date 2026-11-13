@@ -157,9 +157,13 @@ export async function syncStoryProgress(
             // are this account's and merges them with the response. The
             // previous owner's tag means everything in flight is still
             // theirs — the download replaces the map (their copy is
-            // sidelined, and their reader sessions go with it). Any other
-            // tag means a third account claimed the map behind the
-            // request; its data is not this sync's to merge or to discard.
+            // sidelined, and their reader sessions go with it). A null
+            // owner means a signed-out record detached the foreign map
+            // mid-request: the unowned copy is claimable anonymous data,
+            // so the download merges into it under this account's tag.
+            // Any other tag means a third account claimed the map behind
+            // the request; its data is not this sync's to merge or to
+            // discard.
             const committed =
                 current.owner === options.accountId
                     ? store.update(
@@ -169,7 +173,13 @@ export async function syncStoryProgress(
                       )
                     : current.owner === owner
                       ? store.replaceAll(stored, options.accountId)
-                      : false;
+                      : current.owner === null
+                        ? store.update(
+                              map => mergeStoryProgressMaps(map, stored),
+                              options.accountId,
+                              null
+                          )
+                        : false;
             if (!committed) {
                 return fail(true, new Error('Could not save merged progress'));
             }

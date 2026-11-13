@@ -345,7 +345,11 @@ export class StoryProgressStore {
      *  sidelined for that owner rather than deleted, so its unsynced
      *  records can still be claimed the next time it signs in. The same
      *  claim restores this account's own sidelined copy and clears the
-     *  evicted owner's reader sessions. */
+     *  evicted owner's reader sessions. A signed-out record never appends
+     *  to a tagged map either: the write carries no account attribution,
+     *  so the previous owner's copy is sidelined intact and the record
+     *  starts a fresh unowned map — claimable by the next signed-in
+     *  account like any anonymous progress. */
     record(
         position: ProgressPosition,
         accountId: string | null = null
@@ -368,6 +372,11 @@ export class StoryProgressStore {
                 restoredSidelined = true;
             }
             owner = accountId;
+        } else if (owner !== null) {
+            this.sideline(owner, all);
+            all = {};
+            owner = null;
+            quarantined = true;
         }
         const previous = Object.hasOwn(all, position.storyId)
             ? all[position.storyId]

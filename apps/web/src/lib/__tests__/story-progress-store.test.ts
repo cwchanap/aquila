@@ -449,12 +449,15 @@ describe('StoryProgressStore', () => {
             const storage = memoryStorage();
             const store = new StoryProgressStore(storage, () => 42);
             store.setOwner('user-1');
-            store.record({
-                storyId: 'elevator_game',
-                sceneId: 'act1',
-                dialogueIndex: 0,
-                atEnding: false,
-            });
+            store.record(
+                {
+                    storyId: 'elevator_game',
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-1'
+            );
             expect(store.getOwner()).toBe('user-1');
             store.update(current => current);
             expect(store.getOwner()).toBe('user-1');
@@ -498,12 +501,15 @@ describe('StoryProgressStore', () => {
             expect(store.getOwner()).toBe('user-a');
             expect(store.getAll()).toHaveProperty('elevator_game');
 
-            store.record({
-                storyId: 'train_adventure',
-                sceneId: 'act2',
-                dialogueIndex: 0,
-                atEnding: false,
-            });
+            store.record(
+                {
+                    storyId: 'train_adventure',
+                    sceneId: 'act2',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-a'
+            );
             // The write re-wraps the blob with its owner and clears the
             // sidecar so the two cannot disagree later.
             expect(storage.getItem(LEGACY_OWNER_KEY)).toBeNull();
@@ -643,22 +649,126 @@ describe('StoryProgressStore', () => {
             expect(store.getOwner()).toBe('user-b');
         });
 
-        it('records into a foreign map untouched when no account is known', () => {
-            const storage = memoryStorage();
-            const store = new StoryProgressStore(storage, () => 99);
-            store.record({
-                storyId: 'the_seventh_mirror',
-                sceneId: 'ch1_act1',
-                dialogueIndex: 0,
-                atEnding: false,
+        it('detaches a signed-out record from the previous account map', () => {
+            // A signed-out write is unattributable — landing it in a map
+            // still tagged for the last synced account would sideline it
+            // under the wrong owner at the next sign-in.
+            const storage = memoryStorage({
+                'aquila:readerState:en': session(
+                    'the_seventh_mirror',
+                    'ch9_act3',
+                    4
+                ),
             });
-            store.setOwner('user-a');
+            const store = new StoryProgressStore(storage, () => 99);
+            store.record(
+                {
+                    storyId: 'the_seventh_mirror',
+                    sceneId: 'ch1_act1',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-a'
+            );
 
             expect(store.record(position)).toBe(true);
-            expect(store.get('the_seventh_mirror')).not.toBeNull();
-            expect(store.get('elevator_game')).not.toBeNull();
-            // A signed-out write never claims the map either way.
+
+            // The anonymous record starts a fresh unowned map; the
+            // displaced account's copy is sidelined intact and its reader
+            // sessions leave with it, so they cannot seed the unowned copy.
+            expect(store.getAll()).toEqual({
+                elevator_game: {
+                    sceneId: 'act1',
+                    dialogueIndex: 3,
+                    updatedAt: 99,
+                    finished: false,
+                    endings: [],
+                    visited: ['act1'],
+                },
+            });
+            expect(store.getOwner()).toBeNull();
+            expect(store.get('the_seventh_mirror')).toBeNull();
+            expect(
+                JSON.parse(
+                    storage.getItem(
+                        'aquila:storyProgress:v1:sidelined:user-a'
+                    ) as string
+                )
+            ).toMatchObject({
+                v: 2,
+                owner: 'user-a',
+                progress: { the_seventh_mirror: { sceneId: 'ch1_act1' } },
+            });
+            expect(storage.getItem('aquila:readerState:en')).toBeNull();
+        });
+
+        it('lets the next signed-in account claim records written while signed out', () => {
+            // A synced on this browser and signed out; anonymous reading
+            // followed; B signs in — the anonymous records must land in
+            // B's account, not disappear into A's sidelined copy.
+            const storage = memoryStorage();
+            const store = new StoryProgressStore(storage, () => 50);
+            store.record(
+                {
+                    storyId: 'the_seventh_mirror',
+                    sceneId: 'ch1_act1',
+                    dialogueIndex: 0,
+                    atEnding: false,
+                },
+                'user-a'
+            );
+            expect(store.record(position)).toBe(true);
+
+            expect(
+                store.record(
+                    {
+                        storyId: 'train_adventure',
+                        sceneId: 'act2',
+                        dialogueIndex: 1,
+                        atEnding: false,
+                    },
+                    'user-b'
+                )
+            ).toBe(true);
+
+            // B claims the whole unowned copy; A's sidelined map waits.
+            expect(Object.keys(store.getAll()).sort()).toEqual([
+                'elevator_game',
+                'train_adventure',
+            ]);
+            expect(store.getOwner()).toBe('user-b');
+            expect(
+                JSON.parse(
+                    storage.getItem(
+                        'aquila:storyProgress:v1:sidelined:user-a'
+                    ) as string
+                )
+            ).toMatchObject({
+                progress: { the_seventh_mirror: { sceneId: 'ch1_act1' } },
+            });
+
+            // A signs back in: its preserved copy returns; the records B
+            // claimed stay sidelined for B's own return.
+            expect(
+                store.record(
+                    {
+                        storyId: 'the_seventh_mirror',
+                        sceneId: 'ch5_act2',
+                        dialogueIndex: 9,
+                        atEnding: false,
+                    },
+                    'user-a'
+                )
+            ).toBe(true);
             expect(store.getOwner()).toBe('user-a');
+            expect(store.get('the_seventh_mirror')).toMatchObject({
+                sceneId: 'ch5_act2',
+                visited: expect.arrayContaining(['ch1_act1', 'ch5_act2']),
+            });
+            expect(store.get('elevator_game')).toBeNull();
+            expect(
+                storage.getItem('aquila:storyProgress:v1:sidelined:user-b')
+            ).not.toBeNull();
         });
 
         it('claims an anonymous map for the signing account', () => {

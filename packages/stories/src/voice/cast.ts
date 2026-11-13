@@ -82,20 +82,25 @@ export function voiceLineId(voiceId: string, text: string): string {
         .padStart(14, '0');
 }
 
-const INNER_MARKER = /^\s*[（(]\s*[內内]心\s*[）)]\s*/;
-// The ja reader text marks inner monologue as （心の声）; never speak either marker.
-const SPOKEN_MARKER = /^\s*[（(]\s*(?:[內内]心|心の声)\s*[）)]\s*/;
+// Inner monologue is marked on the zh source: in the speaker label
+// (李杰（內心）) or in a leading stage direction ((內心), (猛然轉頭，內心)).
+const INNER_SPEAKER = /[（(]\s*[內内]心\s*[）)]\s*$/;
+const INNER_MARKER = /^\s*[（(][^（）()]*[內内]心[^（）()]*[）)]/;
+// Leading stage directions such as （警戒心をむき出しにして） or the ja inner
+// monologue marker （心の声） are shown in the reader but never spoken.
+const STAGE_DIRECTIONS = /^\s*(?:[（(][^（）()]*[）)]\s*)+/;
 const SPEAKABLE = /[\p{L}\p{N}]/u;
 
-/** The prompt sent to the TTS model for one line, or null if nothing to say.
- *  Inner monologue is marked on the zh source line. */
+/** The prompt sent to the TTS model for one line, or null if nothing to say. */
 export function spokenText(
-    source: Pick<DialogueEntry, 'dialogue'>,
+    source: Pick<DialogueEntry, 'dialogue' | 'character'>,
     spoken: string,
     role: VoiceRole
 ): string | null {
-    const inner = INNER_MARKER.test(source.dialogue);
-    const text = spoken.replace(SPOKEN_MARKER, '').replace(/⋯/g, '…').trim();
+    const inner =
+        INNER_SPEAKER.test(source.character ?? '') ||
+        INNER_MARKER.test(source.dialogue);
+    const text = spoken.replace(STAGE_DIRECTIONS, '').replace(/⋯/g, '…').trim();
     if (!SPEAKABLE.test(text)) return null;
     const direction = inner
         ? (role.innerDirection ?? role.direction)

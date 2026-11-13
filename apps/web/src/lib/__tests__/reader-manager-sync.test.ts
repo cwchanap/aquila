@@ -1039,6 +1039,77 @@ describe('ReaderManager account progress sync', () => {
         expect(store.get('train_adventure')).toBeNull();
     });
 
+    it('does not record into a displaced map while the account is unknown', async () => {
+        // The same A → B displacement as the unchanged-reader test above,
+        // but the reader then advances one line. The changed position
+        // passes the early return, and record(undefined) would preserve
+        // the *stored* owner — writing A's new position under B's tag for
+        // B's next sync to upload. The bound session owner must refuse
+        // the write before record() ever runs.
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress({
+            train_adventure: progressRecord({
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                updatedAt: 10,
+                visited: ['act1'],
+            }),
+        });
+        new StoryProgressStore(localStorage).setOwner('user-a');
+        // The background session re-read never answers, so 'unavailable'
+        // holds for the whole visit.
+        vi.mocked(authClient.getSession).mockReturnValue(
+            new Promise(() => {}) as never
+        );
+        global.fetch = vi.fn(() => new Promise<Response>(() => {}));
+        mountReaderContainer();
+        manager = createManager('unavailable', null);
+        await manager.initialize();
+        await flush();
+
+        // The other tab's sync displaced the map to B and dropped the
+        // sessions that went with A's copy.
+        new StoryProgressStore(localStorage).replaceAll(
+            {
+                elevator_game: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                    updatedAt: 20,
+                }),
+            },
+            'user-b'
+        );
+        new StoryProgressStore(localStorage).dropReaderSessions();
+
+        // One line forward: the changed position must not land in B's
+        // map, and the session must not be recreated under B's owner.
+        manager.onIndexChange(1);
+        await vi.advanceTimersByTimeAsync(500);
+        await flush();
+
+        const store = new StoryProgressStore(localStorage);
+        expect(store.getOwner()).toBe('user-b');
+        expect(store.get('train_adventure')).toBeNull();
+        expect(store.get('elevator_game')).toMatchObject({
+            sceneId: 'act1',
+            dialogueIndex: 0,
+        });
+        expect(
+            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
+        ).toBeNull();
+
+        // A hide flush afterward is just as quiet: the position is still
+        // unrecorded, so nothing is written or uploaded.
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+        expect(
+            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
+        ).toBeNull();
+        expect(
+            new StoryProgressStore(localStorage).get('train_adventure')
+        ).toBeNull();
+    });
+
     it('keeps the stored owner when an unavailable session still records', async () => {
         // A degraded session lookup is not a sign-out: 'unavailable'
         // also carries a null userId, but record() must not read it as

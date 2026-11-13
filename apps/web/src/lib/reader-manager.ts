@@ -121,6 +121,17 @@ export class ReaderManager {
         dialogueIndex: number;
         atEnding: boolean;
     } | null = null;
+    // The account whose map this tab's session position belongs to,
+    // bound when a restored position already matches the stored record
+    // (applySession) and refreshed by every committed record(). Reader
+    // sessions carry no owner tag, so the persist() write guard compares
+    // this against the map's live owner: another tab can displace the
+    // map — a sign-in quarantines it and drops the sessions that went
+    // with it — and rewriting this session under the new owner would
+    // let that account's next session import seed this tab's position
+    // into its own map. Undefined until the first position binds; an
+    // unbound session is never written.
+    private sessionOwner: string | null | undefined;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
     // start a second initial load. renderReader has its own mount guard, but
@@ -307,6 +318,11 @@ export class ReaderManager {
                   atEnding,
               }
             : null;
+        if (this.lastRecordedPosition) {
+            // The restored position already lives in the stored map, so
+            // the session that mirrors it belongs to that map's owner.
+            this.sessionOwner = this.storyProgress.getOwner();
+        }
     }
 
     /** True when the stored record already describes this position — the
@@ -446,13 +462,15 @@ export class ReaderManager {
         // Record first: quarantining a foreign map drops every reader
         // session, so writing the session first would delete it again.
         this.recordStoryProgress();
-        // A map still tagged for another account was displaced without
-        // this tab's record — an unchanged position takes the early
-        // return in recordStoryProgress, so record() never retagged it.
-        // The session belongs to that displaced account: writing it
-        // would let a later session import seed this tab's position
-        // into the new owner's map.
-        if (!this.storyProgress.isForeignTo(this.userId)) {
+        // A map displaced without this tab's record is caught by the
+        // session's bound owner, not the account lookup: an unchanged
+        // position takes the early return in recordStoryProgress, so
+        // record() never retagged the map — and an unavailable-auth
+        // reader has no userId for isForeignTo() to compare anyway.
+        // Recreating the session under a different owner would let a
+        // later session import seed this tab's position into that
+        // owner's map.
+        if (this.storyProgress.getOwner() === this.sessionOwner) {
             try {
                 localStorage.setItem(this.storageKey, JSON.stringify(data));
             } catch (e) {
@@ -581,6 +599,7 @@ export class ReaderManager {
                 dialogueIndex,
                 atEnding,
             };
+            this.sessionOwner = this.storyProgress.getOwner();
             this.recordSeq++;
             this.progressDirty = true;
         }

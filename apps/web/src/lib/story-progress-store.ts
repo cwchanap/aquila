@@ -312,16 +312,27 @@ export class StoryProgressStore {
         return this.writeStored(merge(stored.map), owner ?? stored.owner);
     }
 
-    /** Adds a record for a story that has none yet, from a place saved before
-     *  per-story progress existed. Never replaces an existing record; the
-     *  seeded record sorts as older than anything recorded since. */
-    seed(position: {
-        storyId: string;
-        sceneId: string;
-        dialogueIndex: number;
-    }): boolean {
+    /** Adds a record for a story that has none yet, from a place saved
+     *  before per-story progress existed. Never replaces an existing
+     *  record; the seeded record sorts as older than anything recorded
+     *  since. A saved session is unattributed, so it seeds only a map
+     *  this account could own — a map tagged for a different account,
+     *  or any tagged map while no account is known, is left for its
+     *  owner rather than seeded. (Unlike record(), a stale backfill is
+     *  not worth sidelining an account's copy over.) */
+    seed(
+        position: {
+            storyId: string;
+            sceneId: string;
+            dialogueIndex: number;
+        },
+        accountId: string | null
+    ): boolean {
         if (!this.storage || this.get(position.storyId)) return false;
         const stored = this.readStored();
+        if (stored && stored.owner !== null && stored.owner !== accountId) {
+            return false;
+        }
         const next: StoryProgressMap = {
             ...(stored?.map ?? {}),
             [position.storyId]: {
@@ -339,28 +350,30 @@ export class StoryProgressStore {
     }
 
     /** Records the reader's position. Returns false when storage is
-     *  unavailable. A signed-in reader (accountId) claims the map: an
-     *  anonymous copy is tagged so its first-signer upload is bound to
-     *  this account, and a copy tagged for another account is quarantined —
-     *  sidelined for that owner rather than deleted, so its unsynced
-     *  records can still be claimed the next time it signs in. The same
-     *  claim restores this account's own sidelined copy and clears the
-     *  evicted owner's reader sessions. A signed-out record never appends
-     *  to a tagged map either: the write carries no account attribution,
-     *  so the previous owner's copy is sidelined intact and the record
+     *  unavailable. The account signal has three states. A signed-in
+     *  reader (accountId) claims the map: an anonymous copy is tagged so
+     *  its first-signer upload is bound to this account, and a copy
+     *  tagged for another account is quarantined — sidelined for that
+     *  owner rather than deleted, so its unsynced records can still be
+     *  claimed the next time it signs in. The same claim restores this
+     *  account's own sidelined copy and clears the evicted owner's
+     *  reader sessions. A confirmed sign-out (null) never appends to a
+     *  tagged map either: the write carries no account attribution, so
+     *  the previous owner's copy is sidelined intact and the record
      *  starts a fresh unowned map — claimable by the next signed-in
-     *  account like any anonymous progress. */
-    record(
-        position: ProgressPosition,
-        accountId: string | null = null
-    ): boolean {
+     *  account like any anonymous progress. An unknown account
+     *  (undefined — a degraded session lookup answered nothing) is
+     *  neither signal: the record lands under the stored owner, because
+     *  sidelining an account's copy on an unvalidated guess could move
+     *  its data to a stranger. */
+    record(position: ProgressPosition, accountId?: string | null): boolean {
         if (!this.storage) return false;
         const stored = this.readStored();
         let all = stored?.map ?? {};
         let owner = stored ? stored.owner : this.legacyOwner();
         let quarantined = false;
         let restoredSidelined = false;
-        if (accountId !== null) {
+        if (typeof accountId === 'string') {
             if (owner !== null && owner !== accountId) {
                 this.sideline(owner, all);
                 all = {};
@@ -372,7 +385,7 @@ export class StoryProgressStore {
                 restoredSidelined = true;
             }
             owner = accountId;
-        } else if (owner !== null) {
+        } else if (accountId === null && owner !== null) {
             this.sideline(owner, all);
             all = {};
             owner = null;
@@ -418,11 +431,14 @@ const SESSION_LOCALES: readonly Locale[] = SUPPORTED_LOCALES;
 /** Carries each locale's last reader session (`aquila:readerState:<locale>`,
  *  the only place saved before this store existed) into the store, for
  *  stories that have no record yet. The `preferred` locale's session wins
- *  when two sessions name the same story. */
+ *  when two sessions name the same story. `accountId` says whose map the
+ *  sessions may seed — a map tagged for another account keeps its
+ *  contents for that owner (see seed). */
 export function importSavedSessions(
     store: StoryProgressStore,
     storage: Storage | null,
-    preferred: Locale
+    preferred: Locale,
+    accountId: string | null
 ): void {
     const locales = [
         preferred,
@@ -452,6 +468,6 @@ export function importSavedSessions(
         ) {
             continue;
         }
-        store.seed(session);
+        store.seed(session, accountId);
     }
 }

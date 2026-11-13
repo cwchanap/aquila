@@ -124,8 +124,9 @@
     const store = new StoryProgressStore(storage);
     // Places saved before per-story progress existed live only in the
     // reader's per-locale session; carry them over once so an existing
-    // reader still sees Continue.
-    importSavedSessions(store, storage, locale);
+    // reader still sees Continue. Sessions carry no owner tag, so they
+    // seed only a map this account could own.
+    importSavedSessions(store, storage, locale, userId);
     // A signed-in view shows only its own account's map: progress tagged
     // for another account stays hidden until sync replaces it — the
     // quarantined copy is the other user's data, not a preview of it.

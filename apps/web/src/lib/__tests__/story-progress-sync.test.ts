@@ -585,12 +585,15 @@ describe('syncStoryProgress', () => {
             the_seventh_mirror: record({ updatedAt: 10 }),
         });
         new StoryProgressStore(localStorage).setOwner('user-a');
-        new StoryProgressStore(localStorage).record({
-            storyId: 'elevator_game',
-            sceneId: 'b1a_act1',
-            dialogueIndex: 2,
-            atEnding: false,
-        });
+        new StoryProgressStore(localStorage).record(
+            {
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act1',
+                dialogueIndex: 2,
+                atEnding: false,
+            },
+            null
+        );
         const fetchMock = vi.fn().mockResolvedValue(
             serverResponse({
                 progress: { train_adventure: record({ updatedAt: 30 }) },
@@ -786,12 +789,15 @@ describe('syncStoryProgress', () => {
         // An anonymous write lands behind the pending download: it
         // detaches the foreign map into an unowned copy — claimable by
         // the next signed-in account, which is this sync.
-        new StoryProgressStore(localStorage).record({
-            storyId: 'elevator_game',
-            sceneId: 'b1a_act1',
-            dialogueIndex: 2,
-            atEnding: false,
-        });
+        new StoryProgressStore(localStorage).record(
+            {
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act1',
+                dialogueIndex: 2,
+                atEnding: false,
+            },
+            null
+        );
         resolveFetch(
             serverResponse({
                 progress: {

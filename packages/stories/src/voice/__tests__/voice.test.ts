@@ -65,6 +65,52 @@ describe('spokenText', () => {
         );
     });
 
+    it('takes inner monologue from the speaker label or a mixed direction', () => {
+        const inner = { ...role, innerDirection: '[softly]' };
+        expect(
+            spokenText(
+                { character: '李杰（內心）', dialogue: '嗯？那個人⋯⋯' },
+                'ん？あの人……',
+                inner
+            )
+        ).toBe('[softly] ん？あの人……');
+        expect(
+            spokenText(
+                { dialogue: '(猛然轉頭，內心)這是...車門的聲音！' },
+                'これは……ドアの音だ！',
+                inner
+            )
+        ).toBe('[softly] これは……ドアの音だ！');
+        expect(
+            spokenText(
+                { character: '李杰', dialogue: '走吧。' },
+                '行こう。',
+                inner
+            )
+        ).toBe('行こう。');
+    });
+
+    it('never speaks leading stage directions', () => {
+        const inner = { ...role, direction: '[smug]' };
+        expect(
+            spokenText(
+                { dialogue: '(推了推眼鏡,語帶嘲諷)哼。' },
+                '（眼鏡を押し上げ、皮肉っぽく）ふん。',
+                inner
+            )
+        ).toBe('[smug] ふん。');
+        expect(
+            spokenText(
+                { dialogue: '(小聲)欸欸。' },
+                '(小声で) ねえねえ。',
+                role
+            )
+        ).toBe('ねえねえ。');
+        expect(
+            spokenText({ dialogue: '（沉默）' }, '（黙り込む）', role)
+        ).toBeNull();
+    });
+
     it('never speaks the ja inner monologue marker', () => {
         const inner = { ...role, innerDirection: '[softly]' };
         expect(

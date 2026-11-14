@@ -1145,4 +1145,107 @@ describe('ReaderManager account progress sync', () => {
             sceneId: 'act2',
         });
     });
+
+    it('does not claim an auto-recorded fallback position on auth recovery', async () => {
+        setLocation('?story=train_adventure');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act2',
+                    dialogueIndex: 0,
+                    updatedAt: 10,
+                    visited: ['act1', 'act2'],
+                }),
+            },
+            'user-a'
+        );
+        // The client session recheck stays pending past the initial load.
+        const recheck = deferred<unknown>();
+        vi.mocked(authClient.getSession).mockImplementation(
+            () => recheck.promise as never
+        );
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('unavailable', null);
+
+        await manager.initialize();
+        await flush();
+
+        // The reader fell back to act 1 while auth was unknown: that
+        // passive position is not written to the anonymous map or session.
+        expect(readerState).toMatchObject({
+            storyId: 'train_adventure',
+            currentSceneId: 'act1',
+            dialogueIndex: 0,
+            loadStatus: 'ready',
+        });
+        expect(readProgress('train_adventure', null)).toBeNull();
+        expect(localStorage.getItem(readerSessionKey('en', null))).toBeNull();
+
+        // The delayed recheck resolves as account A; closing the reader
+        // then flushes the unchanged fallback position.
+        recheck.resolve({ data: { user: { id: 'user-a' } }, error: null });
+        await flush();
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+
+        // A's saved position survives: nothing claimed, recorded, or
+        // uploaded the auto-applied act-1 fallback over it.
+        expect(readProgress('train_adventure', 'user-a')).toMatchObject({
+            sceneId: 'act2',
+            dialogueIndex: 0,
+            updatedAt: 10,
+        });
+        expect(readProgress('train_adventure', null)).toBeNull();
+        expect(localStorage.getItem(readerSessionKey('en', null))).toBeNull();
+        expect(
+            localStorage.getItem(readerSessionKey('en', 'user-a'))
+        ).toBeNull();
+        for (const [, init] of progressPosts(fetchMock)) {
+            const body = JSON.parse(init.body as string);
+            expect(body.progress?.train_adventure?.sceneId).not.toBe('act1');
+        }
+    });
+
+    it('still claims deliberate navigation made while auth was unavailable', async () => {
+        setLocation('?story=train_adventure');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 1,
+                    updatedAt: 10,
+                }),
+            },
+            'user-a'
+        );
+        const recheck = deferred<unknown>();
+        vi.mocked(authClient.getSession).mockImplementation(
+            () => recheck.promise as never
+        );
+        global.fetch = vi.fn(async () => serverResponse({}));
+        mountReaderContainer();
+        manager = createManager('unavailable', null);
+        await manager.initialize();
+        await flush();
+
+        // A deliberate scene change while auth is unknown is genuine
+        // offline reading: it records under the anonymous key.
+        manager.goToScene('act2');
+        await flush();
+        expect(readProgress('train_adventure', null)).toMatchObject({
+            sceneId: 'act2',
+        });
+
+        recheck.resolve({ data: { user: { id: 'user-a' } }, error: null });
+        await flush();
+
+        // The claim moves that real progress into A's map and clears the
+        // anonymous copy so no later account can claim it again.
+        expect(readProgress('train_adventure', 'user-a')).toMatchObject({
+            sceneId: 'act2',
+        });
+        expect(readProgress('train_adventure', null)).toBeNull();
+    });
 });

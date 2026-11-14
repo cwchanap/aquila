@@ -62,7 +62,9 @@ file falls back to the zh scene, so a tree can be filled in route by route.
   and the `# ` title take no furigana.
 - Names and terms use the glossary's kanji and readings. Chinese names are
   katakana from the Mandarin reading, never kanji with on'yomi (李杰 →
-  リー・ジエ, 李先生 → リーさん), and take no furigana.
+  リー・ジエ, 李先生 → リーさん), and take no furigana. The exception is a
+  story whose names are kanji wordplay: One Pot Before Dawn keeps 小満, 沈硯,
+  陸遅 and 温伯 in kanji (Hapadona's call, 2026-11-14).
 
 ## Verify
 

@@ -60,7 +60,9 @@ file falls back to the zh scene, so a tree can be filled in route by route.
   hiragana only (no katakana, no spaces). Ruby only kanji (and 々); never wrap
   kana or punctuation: `｜食《た》べる`, not `｜食べる《たべる》`. Speaker labels
   and the `# ` title take no furigana.
-- Names and terms use the glossary's kanji and readings.
+- Names and terms use the glossary's kanji and readings. Chinese names are
+  katakana from the Mandarin reading, never kanji with on'yomi (李杰 →
+  リー・ジエ, 李先生 → リーさん), and take no furigana.
 
 ## Verify
 

@@ -43,7 +43,7 @@ export const trainAdventureChoiceTextJa: ChoiceText = {
         },
     },
     choice_b1a_b2b_b3a_act26: {
-        prompt: '｜残《のこ》って｜凌墨《りょうぼく》を｜食《く》い｜止《と》めるか、｜逃《に》げるか？',
+        prompt: '｜残《のこ》ってリン・モーを｜食《く》い｜止《と》めるか、｜逃《に》げるか？',
         labels: {
             b4a: 'アイラルと｜共《とも》に｜残《のこ》る',
             b4b: 'エルフたちと｜一緒《いっしょ》に｜避難《ひなん》する',
@@ -116,7 +116,7 @@ export const trainAdventureChoiceTextJa: ChoiceText = {
         },
     },
     choice_b1b_b2a_b3b_b4a_b5a_b6b_b7a_act69: {
-        prompt: '｜神剣《しんけん》を｜凌墨《りょうぼく》の｜胸《むね》に｜突《つ》き｜立《た》てるか？',
+        prompt: '｜神剣《しんけん》をリン・モーの｜胸《むね》に｜突《つ》き｜立《た》てるか？',
         labels: {
             b8a: '｜神剣《しんけん》を｜信《しん》じて｜賭《か》ける',
         },

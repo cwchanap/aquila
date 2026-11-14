@@ -13,8 +13,10 @@ later routes stay consistent. Mirror-tree rules live in the
   text uses: `健太` → Kenta / 健太, `田中` → Tanaka / 田中.
 - **Japanese names**: Japanese characters keep their kanji in modern Japanese
   forms (渡邊 → 渡辺, 佐佐木 → 佐々木, 繪 → 絵, 黑 → 黒, 惠 → 恵). Chinese
-  characters keep their kanji with on'yomi readings (李杰《りけつ》). Western and
-  elf names are katakana.
+  names are katakana from the Mandarin reading, never kanji: surname and given
+  name joined by ・ (李杰 → リー・ジエ, 凌墨 → リン・モー), a lone surname or given
+  name too (李先生 → リーさん, 張伯伯 → チャンおじさん, 婉如 → ワンルー), and no
+  furigana (Hapadona's call, 2026-11-14). Western and elf names are katakana.
 - **Furigana** follows the reading column below; every kanji name gets its
   reading every time it appears in dialogue or narration. Speaker labels carry
   no furigana.
@@ -43,17 +45,15 @@ later routes stay consistent. Mirror-tree rules live in the
     わたし, Shota ぼく; both kids say ママ / パパ, as in ja acts 2–3. Ito Makoto
     俺, Ito Nana 私（わたし）, Nakamura Hayato 俺, as in ja acts 2–3.
 - **Li Jie ↔ Asuka (branch_1b → branch_2c)**: Asuka calls him 李先生 → Mr. Li /
-  李さん（りさん） from act 10 until she asks to use his name near the end of act
-  30; from that line on she says 杰君 → Jie / ジエくん (katakana from the
-  Mandarin Jié, so the ja never reads 杰《けつ》くん, which sounds like "butt").
-  Introducing him to her family (actFinal) she says 李杰君 → Li Jie /
-  李杰くん（りけつくん）. Li Jie calls her 明日香 → Asuka in English throughout;
-  in Japanese 明日香さん until that act 30 exchange (his 明日香小姐 lines there
+  リーさん from act 10 until she asks to use his name near the end of act 30;
+  from that line on she says 杰君 → Jie / ジエくん. Introducing him to her
+  family (actFinal) she says 李杰君 → Li Jie / リー・ジエくん. Li Jie calls her
+  明日香 → Asuka in English throughout; in Japanese 明日香さん until that act 30 exchange (his 明日香小姐 lines there
   are 明日香さん too, and 「而不是鈴木小姐」 becomes さん付けじゃなくて), plain
-  明日香 after it. Narration always says 李杰 / 明日香. Other forms of address
+  明日香 after it. Narration always says リー・ジエ / 明日香. Other forms of address
   are rows in Places and terms, marked *address*.
 - **Elves' address**: elves, Lila included, use bare names with no honorific —
-  Li Jie / 李杰, Asuka / 明日香 — and keep their courtesy in the verbs. Their
+  Li Jie / リー・ジエ, Asuka / 明日香 — and keep their courtesy in the verbs. Their
   leader is 艾拉如大人 → Lord Ailaru / アイラル様.
 - **Stage directions**: `(內心)` → (thinking) / （心の声）; `(小聲)` →
   (whispering) / （小声で）.
@@ -63,7 +63,7 @@ later routes stay consistent. Mirror-tree rules live in the
 | ID | zh | en | ja (reading) |
 |---|---|---|---|
 | `narrator` | 旁白 | Narrator | ナレーション |
-| `li_jie` | 李杰 | Li Jie | 李杰（りけつ） |
+| `li_jie` | 李杰 | Li Jie | リー・ジエ |
 | `tanaka_kenta` | 田中健太 | Tanaka Kenta | 田中健太（たなかけんた） |
 | `suzuki_asuka` | 鈴木明日香 | Suzuki Asuka | 鈴木明日香（すずきあすか） |
 | `sato_takumi` | 佐藤拓海 | Sato Takumi | 佐藤拓海（さとうたくみ） |
@@ -78,7 +78,7 @@ later routes stay consistent. Mirror-tree rules live in the
 | `kobayashi_hina` | 小林陽菜 | Kobayashi Hina | 小林陽菜（こばやしひな） |
 | `nakamura_hayato` | 中村隼人 | Nakamura Hayato | 中村隼人（なかむらはやと） |
 | `shimizu_emi` | 清水恵美 | Shimizu Emi | 清水恵美（しみずえみ） |
-| `ling_mo` | 凌墨 | Ling Mo | 凌墨（りょうぼく） |
+| `ling_mo` | 凌墨 | Ling Mo | リン・モー |
 | `hasegawa_mio` | 長谷川澪 | Hasegawa Mio | 長谷川澪（はせがわみお） |
 | `harada_erika` | 原田繪里花 | Harada Erika | 原田絵里花（はらだえりか） |
 | `nakano_kaito` | 中野海斗 | Nakano Kaito | 中野海斗（なかのかいと） |
@@ -89,10 +89,10 @@ later routes stay consistent. Mirror-tree rules live in the
 | `takahashi_ayaka` | 高橋彩花 | Takahashi Ayaka | 高橋彩花（たかはしあやか） |
 | `takayama_sho` | 高山翔 | Takayama Sho | 高山翔（たかやましょう） |
 | `ito_riko` | 伊藤莉子 | Ito Riko | 伊藤莉子（いとうりこ） |
-| `chen_yu` | 陳宇 | Chen Yu | 陳宇（ちんう） |
+| `chen_yu` | 陳宇 | Chen Yu | チェン・ユー |
 | `kurosawa_ryuichi` | 黑澤龍一 | Kurosawa Ryuichi | 黒澤龍一（くろさわりゅういち） |
-| `zhang_wei` | 張偉 | Zhang Wei | 張偉（ちょうい） |
-| `wang_hao` | 王浩 | Wang Hao | 王浩（おうこう） |
+| `zhang_wei` | 張偉 | Zhang Wei | チャン・ウェイ |
+| `wang_hao` | 王浩 | Wang Hao | ワン・ハオ |
 | `yamada_yumi` | 山田由美 | Yamada Yumi | 山田由美（やまだゆみ） |
 | `yamada_manager` | 山田部長 | Manager Yamada | 山田部長（やまだぶちょう） |
 | `suzuki_taro` | 鈴木太郎 | Suzuki Taro | 鈴木太郎（すずきたろう） |
@@ -104,8 +104,8 @@ later routes stay consistent. Mirror-tree rules live in the
 | `shimizu_yukari` | 清水由香里 | Shimizu Yukari | 清水由香里（しみずゆかり） |
 | `sasaki_ai` | 佐佐木愛 | Sasaki Ai | 佐々木愛（ささきあい） |
 | `sasaki_yuko` | 佐佐木優子 | Sasaki Yuko | 佐々木優子（ささきゆうこ） |
-| `li_mingyuan` | 李明遠 | Li Mingyuan | 李明遠（りめいえん） |
-| `lin_wanru` | 林婉如 | Lin Wanru | 林婉如（りんえんじょ） |
+| `li_mingyuan` | 李明遠 | Li Mingyuan | リー・ミンユエン |
+| `lin_wanru` | 林婉如 | Lin Wanru | リン・ワンルー (narration's bare 婉如 → ワンルー) |
 | `saito_koichi` | 斎藤浩一 | Saito Koichi | 斎藤浩一（さいとうこういち） |
 | `saito_mika` | 斎藤美香 | Saito Mika | 斎藤美香（さいとうみか） |
 | `nathaniel_sterling` | 納撒尼爾·史特林 | Nathaniel Sterling | ナサニエル・スターリング |
@@ -199,7 +199,7 @@ Used before a character is named. All are registered as aliases in
 | 精靈母親 | Elf Mother | エルフの母親 | `elf` |
 | 年輕精靈A / B / C | Young Elf A / B / C | 若いエルフA / B / C | `elf` |
 | 神秘聲音 | Mysterious Voice | 謎の声 | `voice` |
-| 張伯伯 | Uncle Zhang | 張おじさん | `man` |
+| 張伯伯 | Uncle Zhang | チャンおじさん | `man` |
 | 女將 | Innkeeper | 女将 | `inn_keeper` |
 
 ## Places and terms
@@ -309,13 +309,13 @@ Used before a character is named. All are registered as aliases in
 | （膽小）眼鏡男（= 斎藤蓮） | the (timid) guy in glasses | （気弱な）眼鏡の青年（きよわなめがねのせいねん） |
 | 很膽小的叔叔 / 提出獻祭理論的男人（Hina's words = 自私中年男） | the scaredy-cat man / the man with the sacrifice theory | 臆病なおじさん（おくびょうなおじさん） / 生贄説を言い出した男（いけにえせつをいいだしたおとこ） |
 | 很兇的胖叔叔（Hina's words = 煩躁丈夫） | the scary fat man | 怖い太ったおじさん（こわいふとったおじさん） |
-| 李先生 (*address*: Asuka until act 30; Kosuke; Daiki, Taro, Keiko) | Mr. Li | 李さん（りさん） |
+| 李先生 (*address*: Asuka until act 30; Kosuke; Daiki, Taro, Keiko) | Mr. Li | リーさん |
 | 杰君 (*address*: Asuka from act 30) | Jie | ジエくん |
-| 李杰君 (*address*: Asuka introducing him, actFinal) | Li Jie | 李杰くん（りけつくん） |
+| 李杰君 (*address*: Asuka introducing him, actFinal) | Li Jie | リー・ジエくん |
 | 杰兒 (*address*: Lin Wanru, Uncle Zhang) | Jie | ジエ |
 | 明日香 / 明日香小姐 (*address*: Li Jie → Asuka) | Asuka | 明日香さん（あすかさん） until act 30's name exchange, then 明日香 |
 | 鈴木小姐 / 鈴木明日香小姐 (*address*) | Miss Suzuki / Miss Suzuki Asuka | 鈴木さん（すずきさん） / 鈴木明日香さん |
-| 李杰先生 (*address*: the soldier) | Mr. Li Jie | 李杰さん（りけつさん） |
+| 李杰先生 (*address*: the soldier) | Mr. Li Jie | リー・ジエさん |
 | 清水先生 / 清水小姐（Emi） (*address*) | Mr. Shimizu / Miss Shimizu | 清水さん（しみずさん） |
 | 清水長官 (*address*: the soldier → Kosuke) | Director Shimizu | 清水長官（しみずちょうかん） |
 | 姊姊 / 令姊 (*address*: Kosuke's Emi; Daiki's Asuka) | my sister / your sister | 姉（あね）, 姉さん（ねえさん） / お姉さん（おねえさん） |
@@ -328,8 +328,8 @@ Used before a character is named. All are registered as aliases in
 | 伯母 (*address*: Asuka → Lin Wanru) | your mom (act 29) / Auntie (actEpilogue) | お母さん（おかあさん） (act 29) / お義母さん（おかあさん） (actEpilogue, after the wedding) |
 | 阿姨 / 明日香阿姨 (*address*: Yui, Yuma; Asuka of herself) | Auntie / Aunt Asuka | おばちゃん / 明日香おばちゃん（あすかおばちゃん） |
 | 媽 / 媽媽 / 爸爸 (*address*) | Mom / Dad | お母さん / お父さん (the Suzukis); 母さん（かあさん） (Li Jie ↔ Lin Wanru); ママ / パパ (Kobayashi kids) |
-| 張伯伯 (*address*) | Uncle Zhang | 張おじさん（ちょうおじさん） |
-| 李桑 / 李先生 (*address*, branch_1a: Emi, Kenta, Saito Ren, Yamamoto) | Mr. Li | 李さん（りさん） |
+| 張伯伯 (*address*) | Uncle Zhang | チャンおじさん |
+| 李桑 / 李先生 (*address*, branch_1a: Emi, Kenta, Saito Ren, Yamamoto) | Mr. Li | リーさん |
 | 山本大叔 (narration and *address*, branch_1a) | Uncle Yamamoto | 山本さん（やまもとさん） |
 | 艾拉如先生 (*address*: Li Jie → Ailaru) / 艾拉如長老 | Mr. Ailaru / Elder Ailaru | アイラルさん / アイラル長老（ちょうろう） |
 | 星塵迴響 (the hit film Emi and Li Jie talk about, branch_4a act 14) | *Stardust Echoes* | 『星屑の残響（ほしくずのざんきょう）』 |
@@ -413,13 +413,15 @@ Used before a character is named. All are registered as aliases in
   the spoken text. The 104 voiced lines there (act 4: 51, act 5: 30, act 6: 23)
   keep the wording of `voice-script.ja.json` as the reader text, so the takes
   on R2 stay valid. Change one of those lines only together with a re-voice.
+  One of them still spells Li Jie's name the old way, to match its take: act
+  5's 「しみずさん、か。俺は、りけつだ。」 (it becomes リー・ジエ when re-voiced).
   The lines where a fresh translation would read differently are listed in the
   translation hand-off report, not in this file.
-- **Pronouns**: Emi わたし, calls Li Jie 李さん; he calls her 清水さん. Misaki
+- **Pronouns**: Emi わたし, calls Li Jie リーさん; he calls her 清水さん. Misaki
   and Asuka say あたし in every branch_1a line, voiced ones included (Hapadona's
   call, 2026-11-12). The 7 voiced lines in acts 4–6 that said わたし in the
   first takes were switched and re-voiced (same voices, new takes).
-  Saito Ren 僕, sarcastic です/ます, 李さん to Li Jie. Li Jie 俺, and 私（わたし）
+  Saito Ren 僕, sarcastic です/ます, リーさん to Li Jie. Li Jie 俺, and 私（わたし）
   to Ailaru. Kobayashi family as in the pronoun list above; Yudai 俺, bare 智子
   to his wife. Li Jie says 陽菜ちゃん / 翔太くん, the kids say お兄ちゃん.
 - **Names are given late**: the guy in glasses stays 気弱な眼鏡の青年 until zh

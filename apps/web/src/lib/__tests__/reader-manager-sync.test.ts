@@ -1082,4 +1082,67 @@ describe('ReaderManager account progress sync', () => {
             sceneId: 'act2',
         });
     });
+
+    it('records a history-navigated position under the switched-to account', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                }),
+            },
+            'user-a'
+        );
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        await manager.initialize();
+        await flush();
+
+        // A second history entry so Back has somewhere to land.
+        manager.goToScene('act2');
+        await flush();
+
+        // Another tab signs into account B; this tab's session is still
+        // bound to A.
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: 'user-b' } },
+            error: null,
+        } as never);
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+
+        // Back lands on a destination B's map does not hold: the
+        // user-driven position rebinds to B and must be saved. Past the
+        // minute throttle so the flush that follows also uploads.
+        await vi.advanceTimersByTimeAsync(60_001);
+        setLocation('?story=train_adventure&scene=act1');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        await flush();
+
+        expect(readProgress('train_adventure', 'user-b')).toMatchObject({
+            sceneId: 'act1',
+            dialogueIndex: 0,
+        });
+        expect(
+            JSON.parse(
+                localStorage.getItem(readerSessionKey('en', 'user-b')) ?? 'null'
+            )
+        ).toMatchObject({ storyId: 'train_adventure', sceneId: 'act1' });
+        // The switched-to account's next upload carries the position.
+        const posted = progressPosts(fetchMock).some(([, init]) => {
+            const body = JSON.parse(init.body as string);
+            return (
+                body.accountId === 'user-b' &&
+                body.progress?.train_adventure?.sceneId === 'act1'
+            );
+        });
+        expect(posted).toBe(true);
+        // A's map is untouched by the switch.
+        expect(readProgress('train_adventure', 'user-a')).toMatchObject({
+            sceneId: 'act2',
+        });
+    });
 });

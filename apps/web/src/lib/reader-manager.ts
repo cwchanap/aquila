@@ -126,13 +126,13 @@ export class ReaderManager {
     // The account the current session position belongs to, bound when a
     // stored position is chosen (selectInitialIntent — the story load can
     // yield across an account switch made in another tab), when a restored
-    // position already matches the stored record (applySession), and by
-    // every committed record() and reader navigation. An account switch
-    // leaves it on the previous owner: recording that position into the
-    // new account's map, or recreating the session under its key, would
-    // let a later session import or sync seed this tab's position into
-    // that account's progress. Undefined until a position binds; an
-    // unbound session is never written.
+    // position already matches the stored record or a history navigation
+    // applies (applySession), and by every committed record() and reader
+    // navigation. An account switch leaves it on the previous owner:
+    // recording that position into the new account's map, or recreating
+    // the session under its key, would let a later session import or sync
+    // seed this tab's position into that account's progress. Undefined
+    // until a position binds; an unbound session is never written.
     private sessionAccount: string | null | undefined;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
@@ -297,7 +297,8 @@ export class ReaderManager {
 
     private applySession(
         state: ReaderSessionState,
-        payload: AsyncStoryLoaderResult
+        payload: AsyncStoryLoaderResult,
+        phase: LoadedIntentPhase
     ): void {
         this.activeStory = payload;
         readerState.activeFlow = payload.flow;
@@ -340,9 +341,14 @@ export class ReaderManager {
                   atEnding,
               }
             : null;
-        if (this.lastRecordedPosition) {
-            // The restored position already lives in this account's map,
-            // so the session that mirrors it belongs to the same account.
+        // A Back/Forward destination is user-driven navigation: like
+        // goToScene and onIndexChange, the position the user chose belongs
+        // to the account signed in now even when it does not match that
+        // account's stored record — otherwise the foreign-owner guard
+        // would strand it. An initial apply re-binds only when the
+        // restored position already lives in this account's map; a
+        // foreign-bound session still refuses lifecycle writes.
+        if (phase === 'popstate' || this.lastRecordedPosition) {
             this.sessionAccount = this.activeAccountId();
         }
     }
@@ -453,7 +459,7 @@ export class ReaderManager {
             // URL canonicalization.
             const safeResult = validateLoadedIntent(intent, payload, 'initial');
             if (safeResult.kind === 'apply') {
-                this.applySession(safeResult.state, payload);
+                this.applySession(safeResult.state, payload, phase);
                 this.syncUrl(true);
                 this.persist();
                 return;
@@ -462,7 +468,7 @@ export class ReaderManager {
             return;
         }
 
-        this.applySession(result.state, payload);
+        this.applySession(result.state, payload, phase);
         this.pendingIntent = null;
         this.syncUrl(true);
         this.persist();

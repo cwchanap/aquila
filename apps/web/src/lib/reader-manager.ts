@@ -99,8 +99,11 @@ export class ReaderManager {
     // visibilitychange+pagehide produce at most one request per hide.
     // progressDirty tracks whether anything recorded locally is still
     // waiting for its first successful upload — a hide with nothing new to
-    // send makes no request. recordSeq stamps each record() so a push
-    // settling mid-record cannot mark that new position as uploaded.
+    // send makes no request; an account switch also marks it, since the
+    // new owner's local copy may hold progress no upload has covered.
+    // recordSeq stamps each record() and accountGeneration each account
+    // switch, so a reply settling after either cannot clear progress the
+    // request never carried.
     // -Infinity rather than 0: performance.now() counts from navigation
     // start, so a 0 stamp would throttle every push in the first minute of
     // the visit — including the first one on links that never stamp it.
@@ -108,6 +111,7 @@ export class ReaderManager {
     private keepaliveSent = false;
     private progressDirty = true;
     private recordSeq = 0;
+    private accountGeneration = 0;
     // Session re-reads can overlap across long-running checks, and replies may
     // arrive out of order. Only the newest request may apply its answer.
     // authCheckInFlight + lastRevalidateAt coalesce back-to-back bfcache
@@ -550,8 +554,8 @@ export class ReaderManager {
 
     /** Fire-and-forget cloud push; failures leave local progress untouched.
      *  A successful reply clears the dirty flag only when no position was
-     *  recorded while the request was in flight — that position has not
-     *  reached the server yet. */
+     *  recorded and no account switch happened while the request was in
+     *  flight — either one leaves progress the request never carried. */
     private pushProgress(keepalive = false): void {
         if (
             this.authState !== 'signed-in' ||
@@ -562,9 +566,14 @@ export class ReaderManager {
         }
         this.lastPushAt = performance.now();
         const seq = this.recordSeq;
+        const gen = this.accountGeneration;
         void syncStoryProgress({ keepalive, accountId: this.userId })
             .then(result => {
-                if (result.ok && this.recordSeq === seq) {
+                if (
+                    result.ok &&
+                    this.recordSeq === seq &&
+                    this.accountGeneration === gen
+                ) {
                     this.progressDirty = false;
                 }
             })
@@ -602,12 +611,19 @@ export class ReaderManager {
         if (!this.canResumeFromCloud() || accountId === null) return;
         this.lastPushAt = performance.now();
         const seq = this.recordSeq;
+        const gen = this.accountGeneration;
         const result = await syncStoryProgress({
             timeoutMs: STORY_PROGRESS_SYNC_TIMEOUT_MS,
             accountId,
             locale: this.initialLocale,
         });
-        if (result.ok && this.recordSeq === seq) this.progressDirty = false;
+        if (
+            result.ok &&
+            this.recordSeq === seq &&
+            this.accountGeneration === gen
+        ) {
+            this.progressDirty = false;
+        }
     }
 
     /** The on-screen position as a recordable position — including the
@@ -1148,6 +1164,12 @@ export class ReaderManager {
         this.userId = user?.id ?? null;
         const nextAccount = this.activeAccountId();
         if (prevAccount !== nextAccount) {
+            // The new owner's map may hold progress no upload has covered
+            // yet — claimed anonymous data, or records made before a
+            // sign-out — so it counts as pending; and a reply still in
+            // flight for the previous account must not clear that flag.
+            this.accountGeneration++;
+            this.progressDirty = true;
             this.storyProgress = new StoryProgressStore(
                 getBrowserStorage(),
                 Date.now,

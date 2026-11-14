@@ -1263,6 +1263,135 @@ describe('ReaderManager account progress sync', () => {
         }
     });
 
+    it("does not let an upload started under one account clear the next account's pending progress", async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        const response = deferred<Response>();
+        const fetchMock = vi.fn(() => response.promise);
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        await manager.initialize();
+        // The mount-time push for user-a is still in flight.
+        expect(progressPosts(fetchMock)).toHaveLength(1);
+
+        // Anonymous progress written while this tab ran waits to be
+        // claimed by whichever account signs in next.
+        saveProgress(
+            {
+                elevator_game: progressRecord({
+                    sceneId: 'b1',
+                    dialogueIndex: 0,
+                    updatedAt: 40,
+                }),
+            },
+            null
+        );
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: 'user-b' } },
+            error: null,
+        } as never);
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+        expect(readProgress('elevator_game', 'user-b')).toMatchObject({
+            sceneId: 'b1',
+        });
+
+        // A's upload settles ok — it covered A's map, not B's claimed
+        // data, so B's pending flag must survive.
+        response.resolve(serverResponse({}));
+        await flush();
+
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+
+        const posts = progressPosts(fetchMock);
+        const last = JSON.parse(posts[posts.length - 1][1].body as string);
+        expect(last).toMatchObject({
+            accountId: 'user-b',
+            progress: { elevator_game: { sceneId: 'b1' } },
+        });
+        expect(posts[posts.length - 1][1]).toMatchObject({
+            keepalive: true,
+        });
+    });
+
+    it("does not let a startup sync settling after an account switch clear the new account's pending progress", async () => {
+        setLocation('?story=train_adventure');
+        // Both accounts hold the same stored position, so the restore
+        // after the switch records nothing new.
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                    updatedAt: 10,
+                }),
+            },
+            'user-a'
+        );
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                    updatedAt: 10,
+                }),
+            },
+            'user-b'
+        );
+        const response = deferred<Response>();
+        const fetchMock = vi.fn(() => response.promise);
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        const initializing = manager.initialize();
+        await flush();
+        // The startup merge for user-a is still in flight.
+        expect(progressPosts(fetchMock)).toHaveLength(1);
+
+        // Seeded after A's claim already ran: only the next account can
+        // pick this up.
+        saveProgress(
+            {
+                elevator_game: progressRecord({
+                    sceneId: 'b1',
+                    dialogueIndex: 0,
+                    updatedAt: 40,
+                }),
+            },
+            null
+        );
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: 'user-b' } },
+            error: null,
+        } as never);
+        window.dispatchEvent(
+            Object.assign(new Event('pageshow'), { persisted: true })
+        );
+        await flush();
+        expect(readProgress('elevator_game', 'user-b')).toMatchObject({
+            sceneId: 'b1',
+        });
+
+        // The merge resolves against user-a's key; its ok reply must not
+        // mark user-b's claimed progress as uploaded.
+        response.resolve(serverResponse({}));
+        await initializing;
+
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+
+        const posts = progressPosts(fetchMock);
+        const last = JSON.parse(posts[posts.length - 1][1].body as string);
+        expect(last).toMatchObject({
+            accountId: 'user-b',
+            progress: { elevator_game: { sceneId: 'b1' } },
+        });
+        expect(posts[posts.length - 1][1]).toMatchObject({
+            keepalive: true,
+        });
+    });
+
     it('still claims deliberate navigation made while auth was unavailable', async () => {
         setLocation('?story=train_adventure');
         saveProgress(

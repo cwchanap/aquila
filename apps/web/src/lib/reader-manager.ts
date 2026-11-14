@@ -123,6 +123,17 @@ export class ReaderManager {
         dialogueIndex: number;
         atEnding: boolean;
     } | null = null;
+    // The account the current session position belongs to, bound when a
+    // stored position is chosen (selectInitialIntent — the story load can
+    // yield across an account switch made in another tab), when a restored
+    // position already matches the stored record (applySession), and by
+    // every committed record() and reader navigation. An account switch
+    // leaves it on the previous owner: recording that position into the
+    // new account's map, or recreating the session under its key, would
+    // let a later session import or sync seed this tab's position into
+    // that account's progress. Undefined until a position binds; an
+    // unbound session is never written.
+    private sessionAccount: string | null | undefined;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
     // start a second initial load. renderReader has its own mount guard, but
@@ -235,6 +246,7 @@ export class ReaderManager {
     private selectInitialIntent(): IntentSelection {
         const params = new URLSearchParams(window.location.search);
         const storyId = params.get('story');
+        let restoredFromMap = false;
         if (
             storyId &&
             !params.has('scene') &&
@@ -245,6 +257,7 @@ export class ReaderManager {
             if (progress) {
                 params.set('scene', progress.sceneId);
                 params.set('dialogue', String(progress.dialogueIndex + 1));
+                restoredFromMap = true;
             }
         }
         const raw = localStorage.getItem(this.storageKey);
@@ -259,12 +272,27 @@ export class ReaderManager {
                 console.error('Failed to parse saved state', e);
             }
         }
-        return this.deps.selectReaderIntent(
+        const selection = this.deps.selectReaderIntent(
             params,
             persisted,
             this.initialLocale,
             { defaultStoryId: this.deps.defaultStoryId }
         );
+        // A position read out of the stored map or the saved session
+        // belongs to the account whose data produced it — bind it now,
+        // before the story load can yield. Another tab can switch the
+        // session account during that load, and then applySession's store
+        // match never sees the old account's map: an unbound session
+        // would record the restored position under the new account's key.
+        // With the account bound here, the record and session guards see
+        // the mismatch and refuse.
+        if (
+            selection.kind === 'load' &&
+            (restoredFromMap || selection.intent.source === 'persisted')
+        ) {
+            this.sessionAccount = this.activeAccountId();
+        }
+        return selection;
     }
 
     private applySession(
@@ -312,6 +340,11 @@ export class ReaderManager {
                   atEnding,
               }
             : null;
+        if (this.lastRecordedPosition) {
+            // The restored position already lives in this account's map,
+            // so the session that mirrors it belongs to the same account.
+            this.sessionAccount = this.activeAccountId();
+        }
     }
 
     /** True when the stored record already describes this position — the
@@ -448,10 +481,19 @@ export class ReaderManager {
             version: STORAGE_VERSION,
         };
         this.recordStoryProgress();
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(data));
-        } catch (e) {
-            console.error('Failed to persist reader state', e);
+        // A session bound to another account is caught by sessionAccount,
+        // not the account lookup: an unchanged position takes the early
+        // return in recordStoryProgress, so record() never re-binds it —
+        // and an unavailable-auth reader has no account to compare anyway.
+        // Recreating the session under a different account's key would let
+        // a later session import seed this tab's position into that
+        // account's map.
+        if (this.sessionAccount === this.activeAccountId()) {
+            try {
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            } catch (e) {
+                console.error('Failed to persist reader state', e);
+            }
         }
         // The hide flush persists locally, then sends its own keepalive; it
         // suppresses this ordinary push so one hide never sends twice.
@@ -552,6 +594,20 @@ export class ReaderManager {
         ) {
             return;
         }
+        // A position still bound to another account must not be recorded:
+        // the account switch left sessionAccount on the previous owner,
+        // and writing here would land that owner's position in this
+        // account's map for its next sync to upload. Skipping leaves
+        // lastRecordedPosition stale, so the position records once
+        // navigation or a committed record re-binds the session. An
+        // unbound session has no owner to compare — its record keeps
+        // landing under the current account's key.
+        if (
+            this.sessionAccount !== undefined &&
+            this.sessionAccount !== this.activeAccountId()
+        ) {
+            return;
+        }
         if (
             this.storyProgress.record({
                 storyId,
@@ -566,6 +622,7 @@ export class ReaderManager {
                 dialogueIndex,
                 atEnding,
             };
+            this.sessionAccount = this.activeAccountId();
             this.recordSeq++;
             this.progressDirty = true;
         }
@@ -704,6 +761,9 @@ export class ReaderManager {
      *  rather than trusting every caller. */
     onIndexChange = (i: number): void => {
         readerState.dialogueIndex = clampIndex(i, readerState.dialogue.length);
+        // Moving to a new line re-binds the session to the account active
+        // now — continued reading belongs to whoever is signed in.
+        this.sessionAccount = this.activeAccountId();
         this.scheduleReplace();
         const atEnding = isEndingPosition(
             this.activeStory?.flow ?? null,
@@ -744,6 +804,9 @@ export class ReaderManager {
             dialogue.length
         );
         readerState.canGoNext = this.hasNextScene(sceneId);
+        // A scene the reader navigates to belongs to the account signed
+        // in now, not the account that produced the displayed position.
+        this.sessionAccount = this.activeAccountId();
         this.syncUrl(false); // pushState (new history entry)
         this.cancelPersistTimer();
         this.persist();
@@ -1037,8 +1100,17 @@ export class ReaderManager {
             );
             if (nextAccount) {
                 this.storyProgress.claimAnonymous(this.initialLocale);
+                // The claim moved anonymous progress — including the
+                // session this position was restored from — into this
+                // account's keys, so an anonymously bound session belongs
+                // to it now.
+                if (this.sessionAccount === null) {
+                    this.sessionAccount = nextAccount;
+                }
             }
-            this.lastRecordedPosition = null;
+            // Keep lastRecordedPosition and a foreign sessionAccount: the
+            // unchanged-position and session-write guards must still see
+            // the account this position was bound to.
         }
     }
 

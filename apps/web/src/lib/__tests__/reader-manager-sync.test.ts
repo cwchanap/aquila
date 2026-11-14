@@ -1026,4 +1026,60 @@ describe('ReaderManager account progress sync', () => {
         expect(readProgress('train_adventure', 'user-a')).toBeNull();
         expect(global.fetch).not.toHaveBeenCalled();
     });
+
+    it('does not write the displayed position into a switched account on lifecycle flush', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                }),
+            },
+            'user-a'
+        );
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        await manager.initialize();
+        await flush();
+
+        // Another tab signs into account B; this tab's reader still shows
+        // A's restored position and the user never navigates.
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: 'user-b' } },
+            error: null,
+        } as never);
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+
+        // Closing the reader flushes the unchanged position.
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+
+        // B's map and session key must not gain A's position, and no
+        // upload may carry it under B's account.
+        expect(readProgress('train_adventure', 'user-b')).toBeNull();
+        expect(
+            localStorage.getItem(readerSessionKey('en', 'user-b'))
+        ).toBeNull();
+        for (const [, init] of progressPosts(fetchMock)) {
+            const body = JSON.parse(init.body as string);
+            if (body.accountId === 'user-b') {
+                expect(body.progress).not.toHaveProperty('train_adventure');
+            }
+        }
+        expect(readProgress('train_adventure', 'user-a')).toMatchObject({
+            sceneId: 'act1',
+        });
+
+        // The guard is not a deadlock: real navigation still records
+        // under the account that is signed in now.
+        manager.goToScene('act2');
+        await flush();
+        expect(readProgress('train_adventure', 'user-b')).toMatchObject({
+            sceneId: 'act2',
+        });
+    });
 });

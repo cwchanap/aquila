@@ -56,6 +56,19 @@ function response(status: number, body: unknown = null): Response {
     });
 }
 
+/** A fetch that never answers but rejects on abort the way a real fetch
+ *  does — a plain hanging promise would deadlock the bounded submit. */
+function hangingResponse(init?: RequestInit): Promise<Response> {
+    return new Promise<Response>((_resolve, reject) => {
+        const signal = init?.signal;
+        if (signal?.aborted) {
+            reject(signal.reason);
+            return;
+        }
+        signal?.addEventListener('abort', () => reject(signal.reason));
+    });
+}
+
 function denyLocalStorage(): () => void {
     const original = Object.getOwnPropertyDescriptor(window, 'localStorage');
     Object.defineProperty(window, 'localStorage', {
@@ -276,6 +289,78 @@ describe('CharacterSetupManager', () => {
             );
             expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
         }
+    });
+
+    it('falls back to the local save when the uncertain-auth probe hangs', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockImplementation((_url: unknown, init?: RequestInit) =>
+                hangingResponse(init)
+            );
+        vi.stubGlobal('fetch', fetchMock);
+        const { input, button } = managerFor({ 'data-auth-uncertain': 'true' });
+        input.value = 'Aria';
+        document
+            .getElementById('setup-form')!
+            .dispatchEvent(new Event('submit', { cancelable: true }));
+
+        // The probe deadline frees the form into the local-save path.
+        await vi.advanceTimersByTimeAsync(5_000);
+        for (let i = 0; i < 6; i++) await vi.advanceTimersByTimeAsync(0);
+
+        expect(alert).not.toHaveBeenCalled();
+        expect(storage.getItem('aquila:character:train_adventure')).toBe(
+            JSON.stringify({ characterName: 'Aria' })
+        );
+        expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
+        expect(button.disabled).toBe(true); // navigated, not an error path
+    });
+
+    it('falls back to the local save when the uncertain-auth POST hangs', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockImplementation((url: unknown, init?: RequestInit) => {
+                if (String(url).startsWith('/api/character-setup?')) {
+                    return Promise.resolve(response(200, null));
+                }
+                return hangingResponse(init);
+            });
+        vi.stubGlobal('fetch', fetchMock);
+        const { input } = managerFor({ 'data-auth-uncertain': 'true' });
+        input.value = 'Aria';
+        document
+            .getElementById('setup-form')!
+            .dispatchEvent(new Event('submit', { cancelable: true }));
+
+        await vi.advanceTimersByTimeAsync(5_000);
+        for (let i = 0; i < 6; i++) await vi.advanceTimersByTimeAsync(0);
+
+        expect(alert).not.toHaveBeenCalled();
+        expect(storage.getItem('aquila:character:train_adventure')).toBe(
+            JSON.stringify({ characterName: 'Aria' })
+        );
+        expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
+    });
+
+    it('re-enables the form and alerts when the authed POST hangs past its deadline', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockImplementation((_url: unknown, init?: RequestInit) =>
+                hangingResponse(init)
+            );
+        vi.stubGlobal('fetch', fetchMock);
+        const { input, button } = managerFor({ 'data-authed': 'true' });
+        input.value = 'Aria';
+        document
+            .getElementById('setup-form')!
+            .dispatchEvent(new Event('submit', { cancelable: true }));
+
+        await vi.advanceTimersByTimeAsync(5_000);
+        for (let i = 0; i < 6; i++) await vi.advanceTimersByTimeAsync(0);
+
+        expect(alert).toHaveBeenCalled();
+        expect(navigate).not.toHaveBeenCalled();
+        expect(button.disabled).toBe(false);
     });
 
     it('falls back to the local save when the uncertain-auth POST fails with 503', async () => {

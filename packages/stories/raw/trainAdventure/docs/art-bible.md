@@ -1,4 +1,4 @@
-# Art bible, Shinjuku platform, train carriage and Jishui station (acts 1-6)
+# Art bible, Shinjuku platform, train carriage, Jishui station and 幽冥之都 (acts 1-8)
 
 The train carries exactly 16 passengers, the cast on the character sheet. No extras anywhere inside the train. A scene shows only the people its beat needs; nobody has to appear in every background. Ling Mo is gone from act 4 on in both branches; who else stays aboard depends on the branch (see Acts 4-6 below).
 
@@ -71,19 +71,21 @@ There is no exterior shot: an outside view of the train never matched the interi
 - Acts 1-2: Tokyo night city on both sides, then the black tunnel (windows act as mirrors), then the blue-black glow.
 - Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the forest (left) side, so the doors open on the left: a short platform of cracked grey-white stone slabs with moss; along its far side a real single-storey wooden station house (the waiting room of acts 4-6: plank walls with cracks and mould, glassless windows, a dark open doorway, rows of benches inside, a timetable board by the door, a few old paper lanterns under the eaves, unlit in act 3 and glowing faintly from act 4 on); a weathered wooden sign reading 寂海 with a worn line of small text beneath (act 6 reads it as ← 永恆之森 | 幽冥之都 →; keep it unreadable in act 3); the dark forest right behind, and a dirt path from the platform's right-hand end, seen facing the station house, into the trees (act 4 walks it; the left-hand end has no path). The sea and the two moons show only through the right windows; the left windows and the open door show no moon.
 
-## Acts 4-6
+## Acts 4-8
 
-After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui and the art moves to the platform and the waiting room; in branch 1b he stays aboard, the doors lock and the train runs on along the coast to 幽冥之都. The carriage, seating plan and window views above still hold inside the train.
+After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui and the art moves to the platform and the waiting room; in branch 1b he stays aboard, the doors lock and the train runs on along the coast to 幽冥之都, where he gets off in acts 7-8. The carriage, seating plan and window views above still hold inside the train.
 
 ### Who is where
 
 - **Act 4, both branches:** the 15 passengers left after Ling Mo, in their own seats. His far corner seat stays empty (b1a_act4_lingmo_gone).
 - **Branch 1a, from act 5 on:** on the platform, Li Jie, Emi, Yamamoto, Saito and the four students. Still aboard when the doors close, the Ito couple, Nakamura and the Kobayashi family; the train then leaves them out of the art for good. In act 6 the students head for the forest and Saito runs after them, while Li Jie, Emi and Yamamoto stay at the waiting room.
 - **Branch 1b, from act 5 on:** aboard, Li Jie, the Ito couple, Nakamura and the Kobayashi family, in their own seats. Everyone else got off while Li Jie was in the front cars, so the near half of the carriage is empty.
+- **Branch 1b, act 7:** Li Jie alone on the 幽冥之都 platform and in the station building. Still aboard, with the door open, the Ito couple, Nakamura and the Kobayashi family, fighting (b1b_act7_carriage_fight). Hina and Shota run out to him at the end of the act.
+- **Branch 1b, act 8:** the train leaves with Yudai, the Ito couple and Nakamura aboard; it is shown only from inside (b1b_act8_train_leaving) and as two red tail lights going away down the track (b1b_act8_mother_fallen), never as a train body. Tomoko, Hina, Shota and Li Jie stay on the platform.
 
 ### Continuity details
 
-These are settled from the story text and hold in every image, acts 1-6:
+These are settled from the story text and hold in every image, acts 1-8:
 
 - **Emi's shoes:** plain white canvas sneakers (act 1 describes 白色帆布鞋). Her portrait stops at the waist, so name them in any prompt that shows her feet.
 - **Yamamoto's bag:** a dark messenger bag on his shoulder. He grabs it when he rallies the carriage in act 5 and carries it on the platform; in act 6 he leaves it in the waiting room and picks it up again before he follows the students.
@@ -94,6 +96,8 @@ These are settled from the story text and hold in every image, acts 1-6:
 - **Glasses:** only Saito wears glasses. Edits tend to add them to Nakamura and Yamamoto, so prompts say "no glasses" for both. A close-up crop of the face, edited at 4x and pasted back, removed them where a full-frame edit would not (b1a_act4_lijie_stands, b1a_act4_door_call).
 - **Station sign glyphs:** the model garbles 寂海 at small sizes. act3_s3 reads correctly; the signs in act3_s4, act3_door_argument and b1a_act4_door_call were retouched by hand with its glyphs.
 - **Poles:** the image model often moves or drops a single pole. When one is wrong, remove it in an edit and paint the pole back by hand at the seat-front seam (b1a_act4_lingmo_gone and b1b_act5_ito_explain were done this way).
+- **Li Jie's sword (branch 1b):** from b1b_act7_sword on he carries a long straight sword, its blade pitted red-brown with rust and dull, a plain crossguard, the grip wrapped in rotting cloth strips. In act 8 he plants its point on the stones while he listens. The station map is folded in his pocket and never shown again.
+- **Tomoko's injury (branch 1b, act 8):** she falls on the platform as the doors close: her long skirt is torn at one knee, the knee scraped and bleeding with a line of blood down her shin, and there is dust and blood on her cardigan, in every act 8 shot.
 
 ### Jishui station (branch 1a)
 
@@ -103,9 +107,17 @@ The station is on the forest (left) side of the train. Seen from the platform: t
 - **Waiting-room reference** (`_reference/jishui_waiting_room.png`, empty): a long room with plank walls, a high open roof of cobwebbed wooden trusses and rows of slatted benches all facing one way. Its proportions match b1a_act6_through_window: the end wall, the map and the barred ticket window are the same size relative to the benches in both (Hapadona flagged the mismatch). The front-wall windows look out onto the platform, the empty track, the grassy cliff edge and the black sea far below, with the dark cliff face under the forest to one side and no moon in them. A torn parchment map of paths and forest hangs on the far end wall, and a barred ticket window sits in the corner. There are no lamps inside; moonlight falls in through the windows in pale shafts.
 - **Sign:** 寂海 large, with ← 永恆之森 ｜ 幽冥之都 → beneath. It is readable only in the act 6 close-up (b1a_act6_sign). The image model kept writing the variant 恒, so 恆 there was retouched by hand to match the story text.
 
-### 幽冥之都 (branch 1b, act 6)
+### 幽冥之都 (branch 1b, acts 6-8)
 
-A colossal ancient station, far larger than any normal one. Towering square stone pillars hold up a vast roof, and the dark stone walls are carved with symbols and totems that cannot be read. The platform is made of huge worn stone blocks. It has no lamps: only cold violet moonlight from the open side lights it. A huge stone sign board reads 幽冥之都. It is on the left side of the train like Jishui, so the right windows still show the sea and the two moons. b1b_act6_yomi_arrival fixes its look; pass it as a reference for any later shot there.
+A large, ancient, abandoned station: "much bigger" than the last stop (act 6), but still a railway station of human scale and open to the night, not a temple or a giant hall. Hapadona flagged the first version, which made it one colossal building. A long, wide open-air platform of huge worn stone blocks under a thick layer of dust, with no footprints but Li Jie's (act 7), runs under a heavy stone canopy on a row of tall square pillars, about two storeys high and carved with symbols and totem faces (act 6: 高聳的石柱支撐著巨大的屋頂). Behind it stands the main station building (車站的主建築, act 7), a long two-storey building of dark stone carved with unreadable symbols and totems, with tall grimy arched windows upstairs and steps up to an arched entrance in the middle. A smaller ruined outbuilding with a caved-in roof and a rusted railing sits at its left end (破敗不堪的建築, 鏽跡斑斑的設施, act 7), and the forest stands behind everything like a black wall (act 8). It has no lamps: only cold violet moonlight lights it. Like Jishui, the line runs along the top of a high sea cliff (act 6 has the train following the coast, and Hapadona asked for it): across the track a strip of bare rock and grass ends at the cliff edge, and the sea lies far below (act 8: 遠處,黑色的海洋). The station is on the left side of the train, so the right windows show the cliff edge, the sea below and the two moons. The two references below fix its look; pass them for every later shot there.
+
+As at Jishui, every platform shot that faces the station keeps the railway behind the camera, so the train is never seen from outside. Facing the sea, the track runs off to the LEFT, the way the train leaves for 亡者峽谷, with the sea and the moons beyond it; looking along the track that way, the sea is on the right and the forest stands like a black wall on the left (act 8's last image).
+
+- **Sign:** the board from act 6, a huge slab of dark weathered wood in a carved border, hanging from the canopy beams in the middle of the platform (月台中央, act 7), in front of the station building. 幽冥之都 in four large characters in a sharp, knife-cut ancient style, and along its bottom edge ← 寂海 ｜ 亡者峽谷 →, with 亡者峽谷 to the right like 幽冥之都 on the Jishui sign. The act 6 text calls it 巨大的站牌 and act 7 calls it black wood, so it is no longer described as stone.
+- **Timetable:** a smaller dark wooden board (同樣是用黑木雕刻而成, act 7) on the pillar beside the sign, three lines of unknown glyphs ending in 2005, —— and 2045 (b1b_act7_timetable).
+- **Station building:** broad stone steps under the sign lead up to a tall arched entrance in the middle of its front. Inside is the waiting hall, the one space the text calls huge (極其寬闊,天花板高得幾乎看不見頂端): a ceiling lost in darkness, grimy arched windows high up letting in violet shafts of moonlight, cobwebs, a long stone counter with an open ledger, and a row of rusted iron turnstiles, one of them smashed open. The stationmaster's office (where the map hangs behind cracked glass) is in one corner, and the guard room (where the sword leans behind a kicked-open locker) sits beside a passage to the exit sealed with an iron grille.
+- **Map:** a rough route map of the land near the station only (the forest's interior is left undrawn, 1b act 9). North is up. The railway runs straight up the map with the coast and sea to its right (east), and the station sits in the centre on the land side. Following the track north leads into the ravine of 亡者峽谷, the train's next stop (act 8); a footpath through woodland beside the track reaches the same ravine (act 9). A crossroads just outside the station (act 9) starts the paths south into the misty 迷霧之森 and west over rugged hills to 銀月湖, a lake in a valley a short way off (act 9). The track south, toward 寂海, is unlabelled.
+- **References:** `_reference/yomi_platform.png` (empty, from the platform's track edge facing the station: the canopy and pillars, the sign, the timetable, the station building with its steps and entrance, the ruined outbuilding and the forest behind) and `_reference/yomi_platform_sea.png` (empty, from beside the station building looking across to the track side: the pillars along the edge, the track curving away left along the cliff top into the forest, the sheer cliff face and surf below on the left, the sea far below and the two moons).
 
 ### Shot list, branch 1a
 
@@ -149,6 +161,32 @@ Shown again with a `reuse` bg block in branch 1a: act3_s4 and act3_door_argument
 | b1b_act6_lijie_steps_out | Li Jie steps out alone | low, close behind him in the doorway | Li Jie; Ito Makoto calling after him |
 
 Shown again in branch 1b: act3_s4 while nobody moves, b1a_act4_lijie_stands (from branch 1a) when he stands, empty_car on the walk back and into act 5, half_empty, relief and lijie_sea through act 6 until the station appears, and lijie_sea again for his last thought before he stands.
+
+### Shot list, branch 1b, acts 7-8
+
+| Background | Beat | Framing | Who is in view |
+| --- | --- | --- | --- |
+| b1b_act7_carriage_fight | The fight in the carriage behind him | C, three-quarter toward the far end of the right bench, seated eye level | Kobayashi family, Nakamura, Ito Makoto standing in the aisle |
+| b1b_act7_platform | Li Jie looks over the empty platform | wide and low from the track edge, railway behind the camera | Li Jie from behind, his footprints in the dust |
+| b1b_act7_sign | The 幽冥之都 sign and its directions | low, close over his shoulder | Li Jie, the sign |
+| b1b_act7_timetable | 2005, ——, 2045 | detail insert | the timetable board |
+| b1b_act7_hall | The waiting hall | extreme wide, low, from the entrance | Li Jie small, from behind |
+| b1b_act7_broken_gate | The smashed ticket gate | medium, three-quarter | Li Jie |
+| b1b_act7_office | The stationmaster's office | from the doorway, over his shoulder | Li Jie, the glass frame on the far wall |
+| b1b_act7_map | The map under the glass | detail insert | the map, his hand |
+| b1b_act7_sword | He finds the sword | medium, slightly low, three-quarter | Li Jie holding the sword, the kicked-open locker |
+| b1b_act7_kids_plead | Hina and Shota beg him to come | medium, side-on, low, station wall behind | Li Jie, Hina, Shota |
+| b1b_act8_train_leaving | The train pulls out with the father pounding on the glass | inside, close behind Yudai at the closed left door | Yudai; through the glass Tomoko on the platform, Li Jie and the children far off |
+| b1b_act8_mother_fallen | Tomoko reaches after the train | low, behind her at the track edge, looking down the track | Tomoko; two red tail lights going away |
+| b1b_act8_family_embrace | The children run to their mother | medium, eye level with them, the sea behind | Tomoko, Hina, Shota |
+| b1b_act8_hina_explains | Hina tells Li Jie what happened | over Li Jie's shoulder, sword planted | Li Jie from behind, Hina, Tomoko holding Shota |
+| b1b_act8_long_shadows | The crying echoes over the platform | high, extreme wide | the family huddled, Li Jie apart |
+| b1b_act8_lijie_counts | Li Jie works out the halving | close-up, slightly low, white knuckles on the sword | Li Jie |
+| b1b_act8_mother_resolve | We are going to find your father | medium, low, side-on | Tomoko crouched, pointing down the track; Hina, Shota |
+| b1b_act8_family_ready | She takes their hands and thanks him | low three-quarter from beside Li Jie | Li Jie in profile, Tomoko, Hina, Shota |
+| b1b_act8_final_wide | Two moons, the sea, the forest, the rails into the dark | extreme wide from high above the platform's end | the four, tiny |
+
+Shown again in acts 7-8: b1b_act6_lijie_steps_out as act 7 opens, platform when he looks round and heads for the building, kids_plead as act 8 opens, family_embrace while Tomoko explains, long_shadows when he clenches his fist and thinks of the dead stations, carriage_fight when he remembers the faces in the carriage, and lijie_counts for "幸好我下來了" and again while he weighs the choice.
 
 ## Portraits
 

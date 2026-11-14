@@ -753,6 +753,41 @@ describe('StoryProgressStore', () => {
             expect(userB.get('the_seventh_mirror')).toBeNull();
         });
 
+        it('blanks the anonymous map when removing it fails so a later account cannot claim it', () => {
+            const storage = memoryStorage({
+                [STORY_PROGRESS_KEY]: JSON.stringify({
+                    elevator_game: {
+                        sceneId: 'act3',
+                        dialogueIndex: 5,
+                        updatedAt: 50,
+                        finished: true,
+                        endings: ['act3'],
+                    },
+                }),
+            });
+            const origRemoveItem = storage.removeItem.bind(storage);
+            storage.removeItem = key => {
+                if (key === STORY_PROGRESS_KEY) {
+                    throw new Error('SecurityError');
+                }
+                origRemoveItem(key);
+            };
+
+            const userA = new StoryProgressStore(storage, () => 100, 'user-a');
+            expect(userA.claimAnonymous('en')).toBe(true);
+            // removeItem failed, but the overwrite left nothing to
+            // claim — the position already lives in user-a's map.
+            expect(storage.getItem(STORY_PROGRESS_KEY)).toBe('{}');
+            expect(userA.get('elevator_game')).toMatchObject({
+                sceneId: 'act3',
+                dialogueIndex: 5,
+            });
+
+            const userB = new StoryProgressStore(storage, () => 100, 'user-b');
+            expect(userB.claimAnonymous('en')).toBe(true);
+            expect(userB.get('elevator_game')).toBeNull();
+        });
+
         it('tolerates corrupt anonymous JSON without losing existing account progress', () => {
             const storage = memoryStorage({
                 [STORY_PROGRESS_KEY]: '{not valid json',

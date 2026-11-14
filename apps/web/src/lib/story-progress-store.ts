@@ -249,7 +249,15 @@ export class StoryProgressStore {
             try {
                 this.storage.removeItem(STORY_PROGRESS_KEY);
             } catch {
-                // Best-effort removal after durable write to account key.
+                // A stranded anonymous map could still be claimed by a
+                // later account on this browser — blank it instead.
+                // The merged copy is already durable under this
+                // account's key.
+                try {
+                    this.storage.setItem(STORY_PROGRESS_KEY, '{}');
+                } catch {
+                    // Best-effort cleanup; nothing left to reclaim with.
+                }
             }
         }
         return true;

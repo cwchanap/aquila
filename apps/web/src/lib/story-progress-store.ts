@@ -139,10 +139,13 @@ export class StoryProgressStore {
     }
 
     /** Records the reader's position under this store's owner key. Returns
-     *  false when storage is unavailable or the write fails. */
+     *  false when storage is unavailable, the stored map cannot be read —
+     *  writing a one-story map over it would destroy what could not be
+     *  loaded — or the write fails. A missing key reads as `{}`. */
     record(position: ProgressPosition): boolean {
         if (!this.storage) return false;
-        const all = this.readMap(this.key) ?? {};
+        const all = this.readMap(this.key);
+        if (!all) return false;
         const previous = Object.hasOwn(all, position.storyId)
             ? all[position.storyId]
             : null;
@@ -232,6 +235,10 @@ export class StoryProgressStore {
                         JSON.stringify(session)
                     );
                 }
+            } catch {
+                // The account map already holds this session's position.
+            }
+            try {
                 this.storage.removeItem(anonSessionKey);
             } catch {
                 // Best-effort cleanup of anonymous session keys.

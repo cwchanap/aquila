@@ -1083,6 +1083,61 @@ describe('ReaderManager account progress sync', () => {
         });
     });
 
+    it('records a deliberately reselected position under the switched-to account', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                    updatedAt: 10,
+                }),
+            },
+            'user-a'
+        );
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        await manager.initialize();
+        await flush();
+
+        // Another tab signs into account B; this tab's session stays
+        // bound to A until the user navigates.
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: 'user-b' } },
+            error: null,
+        } as never);
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+
+        // B deliberately navigates to the same position A displayed.
+        // The unchanged-position check must not suppress it: B's map
+        // and its next upload both need the record the session got.
+        // Past the minute throttle so the persist uploads too.
+        await vi.advanceTimersByTimeAsync(60_001);
+        manager.goToScene('act1');
+        await flush();
+
+        expect(readProgress('train_adventure', 'user-b')).toMatchObject({
+            sceneId: 'act1',
+            dialogueIndex: 0,
+        });
+        expect(
+            JSON.parse(
+                localStorage.getItem(readerSessionKey('en', 'user-b')) ?? 'null'
+            )
+        ).toMatchObject({ storyId: 'train_adventure', sceneId: 'act1' });
+        const posted = progressPosts(fetchMock).some(([, init]) => {
+            const body = JSON.parse(init.body as string);
+            return (
+                body.accountId === 'user-b' &&
+                body.progress?.train_adventure?.sceneId === 'act1'
+            );
+        });
+        expect(posted).toBe(true);
+    });
+
     it('records a history-navigated position under the switched-to account', async () => {
         setLocation('?story=train_adventure&scene=act1');
         saveProgress(

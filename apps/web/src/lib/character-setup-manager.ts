@@ -5,6 +5,12 @@
  *  story instead of overwriting the saved name. */
 import { getBrowserStorage } from './reader-mode';
 
+/** Bounds each submit-time request so a stalled endpoint cannot hold the
+ *  form hostage — the auth-uncertain paths exist for degraded answers,
+ *  and a never-settling request is the worst degradation. The timeout
+ *  routes through the same local-save fallback as a failed response. */
+const SUBMIT_REQUEST_TIMEOUT_MS = 5_000;
+
 interface CharacterSetupDeps {
     /** Test seam; defaults to assigning window.location.href. */
     navigate?: (url: string) => void;
@@ -114,6 +120,26 @@ export class CharacterSetupManager {
         return new Error(errorMsg);
     }
 
+    /** fetch bounded by SUBMIT_REQUEST_TIMEOUT_MS. AbortController +
+     *  setTimeout works on Safari < 16 where AbortSignal.timeout does
+     *  not exist, and integrates cleanly with fake timers in tests. */
+    private async fetchBounded(
+        url: string,
+        init: RequestInit
+    ): Promise<Response> {
+        const controller = new AbortController();
+        const timer = setTimeout(() => {
+            controller.abort(
+                new DOMException('The operation timed out.', 'TimeoutError')
+            );
+        }, SUBMIT_REQUEST_TIMEOUT_MS);
+        try {
+            return await fetch(url, { ...init, signal: controller.signal });
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
     private async onSubmit(
         form: HTMLFormElement,
         nameInput: HTMLInputElement,
@@ -148,7 +174,7 @@ export class CharacterSetupManager {
                 // never traps the visitor.
                 let probe: Response | null = null;
                 try {
-                    probe = await fetch(
+                    probe = await this.fetchBounded(
                         `/api/character-setup?storyId=${encodeURIComponent(this.story)}`,
                         { credentials: 'same-origin' }
                     );
@@ -176,7 +202,7 @@ export class CharacterSetupManager {
                 // storage so an outage does not block reading.
                 let response: Response | null = null;
                 try {
-                    response = await fetch('/api/character-setup', {
+                    response = await this.fetchBounded('/api/character-setup', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

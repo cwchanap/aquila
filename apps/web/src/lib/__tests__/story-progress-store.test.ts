@@ -278,6 +278,56 @@ describe('StoryProgressStore', () => {
         ).toBe(false);
     });
 
+    it('does not record over a stored map it cannot read', () => {
+        // A failed read is not an empty map: writing here would replace
+        // every other story's record with a one-story map.
+        const stored = {
+            the_seventh_mirror: {
+                sceneId: 'ch4_act1',
+                dialogueIndex: 2,
+                updatedAt: 10,
+                finished: false,
+                endings: [],
+            },
+        };
+        const storage = memoryStorage({
+            [storyProgressKey('user-a')]: JSON.stringify(stored),
+        });
+        const writes: string[] = [];
+        const origSetItem = storage.setItem.bind(storage);
+        storage.setItem = (key, value) => {
+            writes.push(key);
+            origSetItem(key, value);
+        };
+        storage.getItem = () => {
+            throw new Error('SecurityError');
+        };
+
+        const store = new StoryProgressStore(storage, () => 20, 'user-a');
+        expect(
+            store.record({
+                storyId: 'elevator_game',
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                atEnding: false,
+            })
+        ).toBe(false);
+        expect(writes).toEqual([]);
+
+        const corrupt = memoryStorage({
+            [storyProgressKey('user-a')]: '{not json',
+        });
+        expect(
+            new StoryProgressStore(corrupt, () => 20, 'user-a').record({
+                storyId: 'elevator_game',
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                atEnding: false,
+            })
+        ).toBe(false);
+        expect(corrupt.getItem(storyProgressKey('user-a'))).toBe('{not json');
+    });
+
     it('commits a map merged against the freshest stored copy', () => {
         const storage = memoryStorage();
         const store = new StoryProgressStore(storage);
@@ -665,6 +715,42 @@ describe('StoryProgressStore', () => {
             expect(
                 storage.getItem(readerSessionKey('en', null))
             ).not.toBeNull();
+        });
+
+        it('clears anonymous session keys even when copying to the account key fails', () => {
+            const storage = memoryStorage({
+                [readerSessionKey('en', null)]: session(
+                    'the_seventh_mirror',
+                    'ch3_act1',
+                    2,
+                    'en'
+                ),
+            });
+            const origSetItem = storage.setItem.bind(storage);
+            storage.setItem = (key, value) => {
+                if (key === readerSessionKey('en', 'user-a')) {
+                    throw new Error('QuotaExceededError');
+                }
+                origSetItem(key, value);
+            };
+
+            const userA = new StoryProgressStore(storage, () => 100, 'user-a');
+            expect(userA.claimAnonymous('en')).toBe(true);
+            // The account-session copy failed, but the anonymous session
+            // was still removed — a later account cannot claim it again.
+            expect(
+                storage.getItem(readerSessionKey('en', 'user-a'))
+            ).toBeNull();
+            expect(storage.getItem(readerSessionKey('en', null))).toBeNull();
+            // The position survives in user-a's map via the merge.
+            expect(userA.get('the_seventh_mirror')).toMatchObject({
+                sceneId: 'ch3_act1',
+                dialogueIndex: 2,
+            });
+
+            const userB = new StoryProgressStore(storage, () => 100, 'user-b');
+            expect(userB.claimAnonymous('en')).toBe(true);
+            expect(userB.get('the_seventh_mirror')).toBeNull();
         });
 
         it('tolerates corrupt anonymous JSON without losing existing account progress', () => {

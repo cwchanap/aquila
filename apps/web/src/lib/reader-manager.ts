@@ -11,6 +11,7 @@ import { LocalBookmarksStore } from './local-bookmarks-store';
 import {
     StoryProgressStore,
     importSavedSessions,
+    type ProgressPosition,
     type StoryProgress,
 } from './story-progress-store';
 import { getBrowserStorage } from './reader-mode';
@@ -114,16 +115,15 @@ export class ReaderManager {
     private authCheckSeq = 0;
     private authCheckInFlight = false;
     private lastRevalidateAt = Number.NEGATIVE_INFINITY;
-    // The last position this tab recorded or restored. A lifecycle flush
-    // that finds the position unchanged must not write again: record()
-    // stamps a fresh updatedAt, and the keepalive upload would win the
-    // server's timestamp merge over a newer position from another device.
-    private lastRecordedPosition: {
-        storyId: string;
-        sceneId: string;
-        dialogueIndex: number;
-        atEnding: boolean;
-    } | null = null;
+    // The last position this tab recorded or restored, as the current
+    // owner's map sees it. A lifecycle flush that finds the position
+    // unchanged must not write again: record() stamps a fresh updatedAt,
+    // and the keepalive upload would win the server's timestamp merge over
+    // a newer position from another device. Re-derived against the new
+    // account's map on an account switch — a stale entry would let the
+    // unchanged-position check swallow a deliberate same-position
+    // navigation under the new account.
+    private lastRecordedPosition: ProgressPosition | null = null;
     // The account the current session position belongs to, bound when a
     // stored position is chosen (selectInitialIntent — the story load can
     // yield across an account switch made in another tab), when a restored
@@ -610,27 +610,41 @@ export class ReaderManager {
         if (result.ok && this.recordSeq === seq) this.progressDirty = false;
     }
 
+    /** The on-screen position as a recordable position — including the
+     *  ending flag the record stamps — or null when no story payload is
+     *  active. Shared by the recorder and the account-switch cache
+     *  re-derivation. */
+    private displayedPosition(): ProgressPosition | null {
+        const { storyId, currentSceneId, dialogueIndex, dialogue, choice } =
+            readerState;
+        if (!storyId || !currentSceneId || !this.activeStory) return null;
+        return {
+            storyId,
+            sceneId: currentSceneId,
+            dialogueIndex,
+            atEnding: isEndingPosition(
+                this.activeStory.flow,
+                currentSceneId,
+                dialogueIndex,
+                dialogue.length,
+                Boolean(choice)
+            ),
+        };
+    }
+
     /** Keep a per-story copy of the position (the session above holds only
      *  the most recent story) and note when the reader has reached an ending:
      *  the last line of a scene with no next scene and no choice. */
     private recordStoryProgress(): void {
-        const { storyId, currentSceneId, dialogueIndex, dialogue, choice } =
-            readerState;
-        if (!storyId || !currentSceneId || !this.activeStory) return;
-        const atEnding = isEndingPosition(
-            this.activeStory.flow,
-            currentSceneId,
-            dialogueIndex,
-            dialogue.length,
-            Boolean(choice)
-        );
+        const position = this.displayedPosition();
+        if (!position) return;
         const last = this.lastRecordedPosition;
         if (
             last &&
-            last.storyId === storyId &&
-            last.sceneId === currentSceneId &&
-            last.dialogueIndex === dialogueIndex &&
-            last.atEnding === atEnding
+            last.storyId === position.storyId &&
+            last.sceneId === position.sceneId &&
+            last.dialogueIndex === position.dialogueIndex &&
+            last.atEnding === position.atEnding
         ) {
             return;
         }
@@ -661,20 +675,8 @@ export class ReaderManager {
         ) {
             return;
         }
-        if (
-            this.storyProgress.record({
-                storyId,
-                sceneId: currentSceneId,
-                dialogueIndex,
-                atEnding,
-            })
-        ) {
-            this.lastRecordedPosition = {
-                storyId,
-                sceneId: currentSceneId,
-                dialogueIndex,
-                atEnding,
-            };
+        if (this.storyProgress.record(position)) {
+            this.lastRecordedPosition = position;
             this.sessionAccount = this.activeAccountId();
             this.recordSeq++;
             this.progressDirty = true;
@@ -1153,13 +1155,33 @@ export class ReaderManager {
             );
             if (nextAccount) {
                 this.storyProgress.claimAnonymous(this.initialLocale);
-                // The claim moved anonymous progress — including the
-                // session this position was restored from — into this
-                // account's keys, so an anonymously bound session belongs
-                // to it now when its position actually moved with the
-                // claim. A bound-but-never-recorded position has nothing
-                // in the claimed data: it keeps its owner so later
-                // flushes cannot write it into the recovered account.
+            }
+            // Re-derive the recorded-position cache against the new
+            // owner's map: the displayed position counts as recorded only
+            // when this account's map already holds it — the claim above
+            // just moved any matching anonymous data into it. Keeping the
+            // stale cache would let the unchanged-position check swallow
+            // a deliberate same-position navigation under the new
+            // account, while a position the new map does not hold stays
+            // protected by the owner guard in recordStoryProgress.
+            const displayed = this.displayedPosition();
+            this.lastRecordedPosition =
+                displayed !== null &&
+                this.recordMatchesStore(
+                    displayed.storyId,
+                    displayed.sceneId,
+                    displayed.dialogueIndex,
+                    displayed.atEnding
+                )
+                    ? displayed
+                    : null;
+            if (nextAccount) {
+                // An anonymously bound session belongs to this account
+                // now — but only when its position actually landed in the
+                // claimed map. A bound-but-never-recorded position (or
+                // one the merge dropped for this account's newer record)
+                // keeps its owner so later flushes cannot write it into
+                // the recovered account.
                 if (
                     this.sessionAccount === null &&
                     this.lastRecordedPosition !== null
@@ -1175,9 +1197,9 @@ export class ReaderManager {
             if (this.sessionAccount === undefined) {
                 this.sessionAccount = prevAccount;
             }
-            // Keep lastRecordedPosition and a foreign sessionAccount: the
-            // unchanged-position and session-write guards must still see
-            // the account this position was bound to.
+            // A foreign sessionAccount keeps refusing writes: lifecycle
+            // flushes cannot copy the old owner's position into this
+            // account's map or session key.
         }
     }
 

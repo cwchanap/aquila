@@ -413,8 +413,8 @@ Used before a character is named. All are registered as aliases in
   the spoken text. The 104 voiced lines there (act 4: 51, act 5: 30, act 6: 23)
   keep the wording of `voice-script.ja.json` as the reader text, so the takes
   on R2 stay valid. Change one of those lines only together with a re-voice.
-  One of them still spells Li Jie's name the old way, to match its take: act
-  5's 「しみずさん、か。俺は、りけつだ。」 (it becomes リー・ジエ when re-voiced).
+  Act 5's 「しみずさん、か。俺は、リー・ジエだ。」 was re-voiced when names
+  became katakana (2026-11-14); しみずさん stays in kana to match its take.
   The lines where a fresh translation would read differently are listed in the
   translation hand-off report, not in this file.
 - **Pronouns**: Emi わたし, calls Li Jie リーさん; he calls her 清水さん. Misaki

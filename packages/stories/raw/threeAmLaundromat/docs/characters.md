@@ -16,7 +16,7 @@
 ## 2. 周以寧（Zhou Yining）
 
 - **ID**: `zhou_yining`
-- **Aliases**: 以寧, Yining, Zhou Yining
+- **Aliases**: 以寧, Yining, Zhou Yining, イーニン, チョウ・イーニン
 
 ### 基本資料
 

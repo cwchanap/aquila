@@ -105,7 +105,7 @@ export class CharacterSetupManager {
     private async readError(response: Response): Promise<Error> {
         let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
         try {
-            const bodyText = await response.text();
+            const bodyText = await this.readBodyBounded(response);
             if (bodyText) {
                 try {
                     const errorData = JSON.parse(bodyText);
@@ -120,13 +120,15 @@ export class CharacterSetupManager {
         return new Error(errorMsg);
     }
 
-    /** fetch bounded by SUBMIT_REQUEST_TIMEOUT_MS. AbortController +
-     *  setTimeout works on Safari < 16 where AbortSignal.timeout does
-     *  not exist, and integrates cleanly with fake timers in tests. */
-    private async fetchBounded(
-        url: string,
-        init: RequestInit
-    ): Promise<Response> {
+    /** Bounds a submit-time operation by SUBMIT_REQUEST_TIMEOUT_MS —
+     *  callers place the body read inside so the deadline stays armed
+     *  through it: a stalled body holds the form hostage exactly like
+     *  stalled headers. AbortController + setTimeout works on Safari
+     *  < 16 where AbortSignal.timeout does not exist, and integrates
+     *  cleanly with fake timers in tests. */
+    private async bounded<T>(
+        operation: (signal: AbortSignal) => Promise<T>
+    ): Promise<T> {
         const controller = new AbortController();
         const timer = setTimeout(() => {
             controller.abort(
@@ -134,9 +136,24 @@ export class CharacterSetupManager {
             );
         }, SUBMIT_REQUEST_TIMEOUT_MS);
         try {
-            return await fetch(url, { ...init, signal: controller.signal });
+            return await operation(controller.signal);
         } finally {
             clearTimeout(timer);
+        }
+    }
+
+    /** Reads a response body under the same deadline once the fetch has
+     *  already settled — its abort signal can no longer reach an
+     *  in-flight body read, so the deadline races the read instead.
+     *  Null on timeout or read failure; callers fall back. */
+    private async readBodyBounded(response: Response): Promise<string | null> {
+        const deadline = new Promise<null>(resolve =>
+            setTimeout(() => resolve(null), SUBMIT_REQUEST_TIMEOUT_MS)
+        );
+        try {
+            return await Promise.race([response.text(), deadline]);
+        } catch {
+            return null;
         }
     }
 
@@ -172,23 +189,25 @@ export class CharacterSetupManager {
                 // being renamed by the POST below. Any 401, 5xx, or network
                 // failure falls back to the local save so an auth outage
                 // never traps the visitor.
-                let probe: Response | null = null;
+                let probeBody: string | null = null;
                 try {
-                    probe = await this.fetchBounded(
-                        `/api/character-setup?storyId=${encodeURIComponent(this.story)}`,
-                        { credentials: 'same-origin' }
-                    );
+                    probeBody = await this.bounded(async signal => {
+                        const probe = await fetch(
+                            `/api/character-setup?storyId=${encodeURIComponent(this.story)}`,
+                            { credentials: 'same-origin', signal }
+                        );
+                        return probe.ok ? probe.text() : null;
+                    });
                 } catch {
-                    probe = null;
+                    probeBody = null;
                 }
-                if (!probe || !probe.ok) {
+                if (probeBody === null) {
                     this.saveLocal(name);
                     this.navigate(this.storyUrl());
                     return;
                 }
                 // A 200 with an empty body cannot name a saved setup —
                 // parse only a real payload so json() cannot reject on it.
-                const probeBody = await probe.text();
                 if (probeBody && JSON.parse(probeBody)) {
                     this.navigate(this.storyUrl());
                     return;
@@ -202,16 +221,19 @@ export class CharacterSetupManager {
                 // storage so an outage does not block reading.
                 let response: Response | null = null;
                 try {
-                    response = await this.fetchBounded('/api/character-setup', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            characterName: name,
-                            storyId: this.story,
-                        }),
-                    });
+                    response = await this.bounded(signal =>
+                        fetch('/api/character-setup', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                characterName: name,
+                                storyId: this.story,
+                            }),
+                            signal,
+                        })
+                    );
                 } catch (error) {
                     if (this.isAuthed) throw error;
                 }

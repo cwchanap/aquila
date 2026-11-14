@@ -316,6 +316,47 @@ describe('CharacterSetupManager', () => {
         expect(button.disabled).toBe(true); // navigated, not an error path
     });
 
+    it('falls back to the local save when the uncertain-auth probe body stalls', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockImplementation((_url: unknown, init?: RequestInit) =>
+                Promise.resolve({
+                    ok: true,
+                    status: 200,
+                    // Headers arrived on time but the body never does —
+                    // rejects on abort the way a real stalled body does.
+                    text: () =>
+                        new Promise<string>((_resolve, reject) => {
+                            const signal = init?.signal;
+                            if (signal?.aborted) {
+                                reject(signal.reason);
+                                return;
+                            }
+                            signal?.addEventListener('abort', () =>
+                                reject(signal.reason)
+                            );
+                        }),
+                } as Response)
+            );
+        vi.stubGlobal('fetch', fetchMock);
+        const { input } = managerFor({ 'data-auth-uncertain': 'true' });
+        input.value = 'Aria';
+        document
+            .getElementById('setup-form')!
+            .dispatchEvent(new Event('submit', { cancelable: true }));
+
+        // The deadline stays armed through the body read, so a stalled
+        // body frees the form into the local-save path.
+        await vi.advanceTimersByTimeAsync(5_000);
+        for (let i = 0; i < 6; i++) await vi.advanceTimersByTimeAsync(0);
+
+        expect(alert).not.toHaveBeenCalled();
+        expect(storage.getItem('aquila:character:train_adventure')).toBe(
+            JSON.stringify({ characterName: 'Aria' })
+        );
+        expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
+    });
+
     it('falls back to the local save when the uncertain-auth POST hangs', async () => {
         const fetchMock = vi
             .fn()
@@ -348,6 +389,30 @@ describe('CharacterSetupManager', () => {
             .mockImplementation((_url: unknown, init?: RequestInit) =>
                 hangingResponse(init)
             );
+        vi.stubGlobal('fetch', fetchMock);
+        const { input, button } = managerFor({ 'data-authed': 'true' });
+        input.value = 'Aria';
+        document
+            .getElementById('setup-form')!
+            .dispatchEvent(new Event('submit', { cancelable: true }));
+
+        await vi.advanceTimersByTimeAsync(5_000);
+        for (let i = 0; i < 6; i++) await vi.advanceTimersByTimeAsync(0);
+
+        expect(alert).toHaveBeenCalled();
+        expect(navigate).not.toHaveBeenCalled();
+        expect(button.disabled).toBe(false);
+    });
+
+    it('re-enables the form and alerts when the error response body stalls', async () => {
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: false,
+            status: 500,
+            statusText: 'Internal Server Error',
+            // The error body never arrives — the read races the same
+            // deadline since the settled fetch's signal no longer helps.
+            text: () => new Promise<string>(() => {}),
+        } as Response);
         vi.stubGlobal('fetch', fetchMock);
         const { input, button } = managerFor({ 'data-authed': 'true' });
         input.value = 'Aria';

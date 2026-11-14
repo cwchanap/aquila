@@ -127,9 +127,15 @@
     // Places saved before per-story progress existed live only in the
     // reader's per-locale session; carry them over once so an existing
     // reader still sees Continue. Signed-in visits also claim anonymous
-    // progress into the account's isolated key.
-    importSavedSessions(store, storage, locale, accountId);
-    if (accountId) store.claimAnonymous(locale);
+    // progress into the account's isolated key. Both write across keys,
+    // so they wait on a proven identity: a restore's retained account can
+    // be stale until its session re-read answers, and claiming under it
+    // would move anonymous progress to the wrong owner — deleting the
+    // anonymous copies before a sign-out is even discovered.
+    if (validatedSeq === restoreSeq) {
+      importSavedSessions(store, storage, locale, accountId);
+      if (accountId) store.claimAnonymous(locale);
+    }
     progress = store.getAll();
   }
 
@@ -238,8 +244,11 @@
     // back/forward cache; re-read so the cards show the latest place.
     const onPageShow = (event: Event) => {
       if (!(event as Event & { persisted?: boolean }).persisted) return;
-      refresh();
+      // The ticket bump marks the retained account unproven, so the
+      // refresh below re-reads cards without seeding or claiming under
+      // it — those writes resume once the session answer lands.
       void revalidateSession();
+      refresh();
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);

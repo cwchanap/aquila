@@ -1017,4 +1017,98 @@ describe('StorySelect', () => {
 
         expect(progressCalls(fetchMock)).toHaveLength(0);
     });
+
+    it('keeps anonymous progress anonymous when a cached signed-in page revalidates to signed-out', async () => {
+        // Rendered (and cached) under user-a, but the visitor has since
+        // signed out and read anonymously — the restore must not claim that
+        // anonymous place for the stale account before the sign-out is
+        // known.
+        stubSession(null);
+        const fetchMock = vi.fn(() =>
+            Promise.resolve(serverResponse({ progress: {} }))
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in', userId: 'user-a' });
+        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(1));
+
+        // Anonymous reading written while the page was away.
+        saveProgress({
+            train_adventure: {
+                sceneId: 'act2',
+                dialogueIndex: 3,
+                updatedAt: 50,
+                finished: false,
+                endings: [],
+            },
+        });
+        localStorage.setItem(
+            'aquila:readerState:en',
+            JSON.stringify({
+                storyId: 'elevator_game',
+                sceneId: 'b1a_act4',
+                dialogueIndex: 2,
+                locale: 'en',
+                version: 2,
+            })
+        );
+
+        window.dispatchEvent(restoredPageShow());
+        expect(
+            await screen.findByText('Progress is saved in this browser only.')
+        ).toBeInTheDocument();
+
+        // The anonymous copies must survive: claiming them for user-a before
+        // the sign-out was discovered would strand the Continue position
+        // under an account the visitor just left.
+        expect(
+            JSON.parse(localStorage.getItem(storyProgressKey(null)) ?? '{}')
+        ).toHaveProperty('train_adventure');
+        expect(
+            JSON.parse(localStorage.getItem(storyProgressKey('user-a')) ?? '{}')
+        ).not.toHaveProperty('train_adventure');
+        expect(localStorage.getItem('aquila:readerState:en')).not.toBeNull();
+        expect(localStorage.getItem('aquila:readerState:en:user-a')).toBeNull();
+        expect(screen.getByTestId('continue-reading')).toHaveAttribute(
+            'href',
+            '/en/reader?story=train_adventure&scene=act2&dialogue=4'
+        );
+    });
+
+    it('claims anonymous progress for the account a restore validates, not the cached one', async () => {
+        // Cached under user-a, restored after the visitor signed in as
+        // user-b: the anonymous place belongs to the validated account.
+        stubSession({ user: { id: 'user-b' } });
+        const fetchMock = vi.fn(() =>
+            Promise.resolve(serverResponse({ progress: {} }))
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in', userId: 'user-a' });
+        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(1));
+        fetchMock.mockClear();
+
+        saveProgress({
+            train_adventure: {
+                sceneId: 'act2',
+                dialogueIndex: 3,
+                updatedAt: 50,
+                finished: false,
+                endings: [],
+            },
+        });
+
+        window.dispatchEvent(restoredPageShow());
+        await waitFor(() =>
+            expect(progressCalls(fetchMock).length).toBeGreaterThan(0)
+        );
+
+        expect(
+            JSON.parse(localStorage.getItem(storyProgressKey('user-b')) ?? '{}')
+        ).toHaveProperty('train_adventure');
+        expect(
+            JSON.parse(localStorage.getItem(storyProgressKey('user-a')) ?? '{}')
+        ).not.toHaveProperty('train_adventure');
+        expect(localStorage.getItem(storyProgressKey(null)) ?? '{}').toBe('{}');
+    });
 });

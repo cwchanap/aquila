@@ -102,7 +102,7 @@ describe('encodeAsset', () => {
     it('reports the pinned encoder toolchain fingerprint', () => {
         expect(getEncoderFingerprint()).toMatchObject({
             schemaVersion: 1,
-            policyId: 'aquila-vn-encoder-v1',
+            policyId: 'aquila-vn-encoder-v2',
             sharpVersion: sharp.versions.sharp,
             libvipsVersion: sharp.versions.vips,
         });

@@ -240,7 +240,7 @@ describe('publisher reports', () => {
         unsafe.repositoryRoot = '/Users/alice/private/aquila';
         unsafe.encoderFingerprint = {
             schemaVersion: 1,
-            policyId: 'aquila-vn-encoder-v1',
+            policyId: 'aquila-vn-encoder-v2',
             sharpVersion: 'private-bucket',
             libvipsVersion: 'Authorization-secret',
             platform: 'private-provider' as NodeJS.Platform,

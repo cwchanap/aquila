@@ -578,7 +578,7 @@ function sanitizeFingerprint(
 ): EncoderFingerprintV1 {
     return {
         schemaVersion: 1,
-        policyId: 'aquila-vn-encoder-v1',
+        policyId: 'aquila-vn-encoder-v2',
         sharpVersion: SAFE_VERSION.test(fingerprint.sharpVersion)
             ? fingerprint.sharpVersion
             : '[redacted]',

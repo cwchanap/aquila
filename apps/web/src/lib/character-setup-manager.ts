@@ -143,22 +143,22 @@ export class CharacterSetupManager {
                 // The SSR session lookup failed, so the existing-setup
                 // redirect never ran — check now: a saved setup under a
                 // recovered session goes straight to the story instead of
-                // being renamed by the POST below. A 401 confirms
-                // signed-out and takes the local-save path unchanged.
-                const probe = await fetch(
-                    `/api/character-setup?storyId=${encodeURIComponent(this.story)}`,
-                    { credentials: 'same-origin' }
-                );
-                if (probe.status === 401) {
+                // being renamed by the POST below. Any 401, 5xx, or network
+                // failure falls back to the local save so an auth outage
+                // never traps the visitor.
+                let probe: Response | null = null;
+                try {
+                    probe = await fetch(
+                        `/api/character-setup?storyId=${encodeURIComponent(this.story)}`,
+                        { credentials: 'same-origin' }
+                    );
+                } catch {
+                    probe = null;
+                }
+                if (!probe || !probe.ok) {
                     this.saveLocal(name);
                     this.navigate(this.storyUrl());
                     return;
-                }
-                // Any other probe failure leaves the question unanswered —
-                // the POST below could still rename a saved setup, so the
-                // submit stops instead of guessing.
-                if (!probe.ok) {
-                    throw await this.readError(probe);
                 }
                 // A 200 with an empty body cannot name a saved setup —
                 // parse only a real payload so json() cannot reject on it.
@@ -172,24 +172,33 @@ export class CharacterSetupManager {
             if (this.isAuthed || this.authUncertain) {
                 // Save character setup to database. When auth was uncertain
                 // at render this POST is the recheck: a 401 confirms
-                // signed-out, anything else proves the account save
-                // belongs here.
-                const response = await fetch('/api/character-setup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        characterName: name,
-                        storyId: this.story,
-                    }),
-                });
+                // signed-out, and a 5xx/network failure falls back to local
+                // storage so an outage does not block reading.
+                let response: Response | null = null;
+                try {
+                    response = await fetch('/api/character-setup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            characterName: name,
+                            storyId: this.story,
+                        }),
+                    });
+                } catch (error) {
+                    if (this.isAuthed) throw error;
+                }
 
-                if (response.status === 401 && !this.isAuthed) {
-                    // The recheck found no session — signed-out save it is.
+                if (
+                    !this.isAuthed &&
+                    (!response ||
+                        response.status === 401 ||
+                        response.status >= 500)
+                ) {
                     this.saveLocal(name);
-                } else if (!response.ok) {
-                    throw await this.readError(response);
+                } else if (!response || !response.ok) {
+                    throw await this.readError(response!);
                 }
             } else {
                 // Save character setup locally

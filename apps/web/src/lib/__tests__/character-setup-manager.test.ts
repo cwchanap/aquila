@@ -248,24 +248,52 @@ describe('CharacterSetupManager', () => {
         expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
     });
 
-    it('stops before the POST when the uncertain-auth probe fails', async () => {
+    it('falls back to the local save when the uncertain-auth probe fails with 503/500 or network error', async () => {
+        for (const probeResult of [
+            () => Promise.resolve(response(503, { error: 'unavailable' })),
+            () => Promise.resolve(response(500, { error: 'boom' })),
+            () => Promise.reject(new TypeError('Failed to fetch')),
+        ]) {
+            storage.clear();
+            navigate.mockClear();
+            vi.mocked(alert).mockClear();
+            const fetchMock = vi
+                .fn()
+                .mockImplementation(async (url: unknown) => {
+                    if (String(url).startsWith('/api/character-setup?')) {
+                        return probeResult();
+                    }
+                    return response(200, { ok: true });
+                });
+            vi.stubGlobal('fetch', fetchMock);
+            const { input } = managerFor({ 'data-auth-uncertain': 'true' });
+            await submit(input, 'Aria');
+
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+            expect(alert).not.toHaveBeenCalled();
+            expect(storage.getItem('aquila:character:train_adventure')).toBe(
+                JSON.stringify({ characterName: 'Aria' })
+            );
+            expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
+        }
+    });
+
+    it('falls back to the local save when the uncertain-auth POST fails with 503', async () => {
         const fetchMock = vi.fn().mockImplementation(async (url: unknown) => {
             if (String(url).startsWith('/api/character-setup?')) {
-                return response(500, { error: 'boom' });
+                return response(200, null);
             }
-            return response(200, { ok: true });
+            return response(503, { error: 'unavailable' });
         });
         vi.stubGlobal('fetch', fetchMock);
-        const { input, button } = managerFor({ 'data-auth-uncertain': 'true' });
+        const { input } = managerFor({ 'data-auth-uncertain': 'true' });
         await submit(input, 'Aria');
 
-        // A 500 cannot say whether a setup exists — the POST could rename a
-        // saved setup, so nothing is sent and the form re-enables instead.
-        expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(alert).toHaveBeenCalled();
-        expect(navigate).not.toHaveBeenCalled();
-        expect(button.disabled).toBe(false);
-        expect(storage.getItem('aquila:character:train_adventure')).toBeNull();
+        expect(alert).not.toHaveBeenCalled();
+        expect(storage.getItem('aquila:character:train_adventure')).toBe(
+            JSON.stringify({ characterName: 'Aria' })
+        );
+        expect(navigate).toHaveBeenCalledWith('/en/story/train_adventure');
     });
 
     it('saves locally when the uncertain-auth POST recheck answers 401', async () => {

@@ -46,7 +46,7 @@
   // Server render (and the first client frame) shows every story as unread;
   // saved progress lives in this browser only and is applied on mount.
   let progress: StoryProgressMap = $state({});
-  let syncState: 'idle' | 'synced' | 'failed' | 'local-failed' = $state('idle');
+  let syncState: 'idle' | 'synced' | 'failed' | 'local-failed' | 'local-save-failed' = $state('idle');
   let syncInFlight: Promise<void> | null = null;
   // A join during an in-flight request sets this so exactly one follow-up
   // pass runs behind it; the running request still carries the pre-restore
@@ -69,7 +69,7 @@
   let sagas = $derived(cards.filter(c => c.entry.format === 'saga'));
   let continueCard = $derived(pickContinueCard(cards));
 
-  type SyncLine = 'syncing' | 'synced' | 'failed' | 'local-failed' | 'signed-out';
+  type SyncLine = 'syncing' | 'synced' | 'failed' | 'local-failed' | 'local-save-failed' | 'signed-out';
   let syncLine = $derived.by((): SyncLine | null => {
     if (authState === 'unavailable') return null;
     if (authState === 'signed-out') {
@@ -78,12 +78,13 @@
     if (syncState === 'synced') return 'synced';
     if (syncState === 'failed') return 'failed';
     if (syncState === 'local-failed') return 'local-failed';
+    if (syncState === 'local-save-failed') return 'local-save-failed';
     return 'syncing';
   });
   let syncDot = $derived(
     syncLine === 'synced'
       ? 'bg-emerald-300/80'
-      : syncLine === 'failed' || syncLine === 'local-failed'
+      : syncLine === 'failed' || syncLine === 'local-failed' || syncLine === 'local-save-failed'
         ? 'bg-amber-300/80'
         : syncLine === 'syncing'
           ? 'bg-cyan-300/70 motion-safe:animate-pulse'
@@ -121,16 +122,15 @@
 
   function refresh(): void {
     const storage = getBrowserStorage();
-    const store = new StoryProgressStore(storage);
+    const accountId = authState === 'signed-in' ? userId : null;
+    const store = new StoryProgressStore(storage, Date.now, accountId);
     // Places saved before per-story progress existed live only in the
     // reader's per-locale session; carry them over once so an existing
-    // reader still sees Continue. Sessions carry no owner tag, so they
-    // seed only a map this account could own.
-    importSavedSessions(store, storage, locale, userId);
-    // A signed-in view shows only its own account's map: progress tagged
-    // for another account stays hidden until sync replaces it — the
-    // quarantined copy is the other user's data, not a preview of it.
-    progress = store.isForeignTo(userId) ? {} : store.getAll();
+    // reader still sees Continue. Signed-in visits also claim anonymous
+    // progress into the account's isolated key.
+    importSavedSessions(store, storage, locale, accountId);
+    if (accountId) store.claimAnonymous(locale);
+    progress = store.getAll();
   }
 
   /** Re-reads the session; null keeps the server-rendered state. */
@@ -208,8 +208,15 @@
         const result = await syncStoryProgress({
           timeoutMs: STORY_SELECT_SYNC_TIMEOUT_MS,
           accountId: userId,
+          locale,
         });
-        syncState = result.ok ? 'synced' : result.local ? 'local-failed' : 'failed';
+        syncState = result.ok
+          ? 'synced'
+          : result.phase === 'local-read'
+            ? 'local-failed'
+            : result.phase === 'local-save'
+              ? 'local-save-failed'
+              : 'failed';
       } catch {
         syncState = 'failed';
       } finally {
@@ -280,7 +287,7 @@
       {#if syncLine === 'signed-out'}
         <span>{t.syncLocalOnly} <a href={`/${locale}/login`} class="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white">{t.syncSignIn}</a></span>
       {:else}
-        <span>{syncLine === 'synced' ? t.syncSynced : syncLine === 'local-failed' ? t.syncLocalFailed : syncLine === 'failed' ? t.syncFailed : t.syncSyncing}</span>
+        <span>{syncLine === 'synced' ? t.syncSynced : syncLine === 'local-failed' ? t.syncLocalFailed : syncLine === 'local-save-failed' ? t.syncLocalSaveFailed : syncLine === 'failed' ? t.syncFailed : t.syncSyncing}</span>
       {/if}
     </p>
   {/if}

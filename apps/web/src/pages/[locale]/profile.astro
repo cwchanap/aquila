@@ -1,5 +1,5 @@
 ---
-import { getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '../../lib/auth-utils.js'
+import { getSessionUser } from '../../lib/auth-utils.js'
 import MainLayout from '../../layouts/main.astro'
 import AuthDegradedBanner from '../../components/AuthDegradedBanner.astro'
 import { t as translate } from '../../lib/utils';
@@ -10,7 +10,7 @@ interface Props {
 
 const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
-const sessionResult = await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS });
+const sessionResult = await getSessionUser(Astro.request);
 const user = sessionResult.status === 'ok' ? sessionResult.user : null;
 const authFailed = sessionResult.status === 'error';
 

@@ -12,10 +12,7 @@ import type { Locale } from '@aquila/stories';
 import type { AuthState } from '../../lib/auth-utils';
 import { authClient } from '../../lib/auth-client';
 import StorySelect from '../StorySelect.svelte';
-import {
-    STORY_PROGRESS_KEY,
-    StoryProgressStore,
-} from '../../lib/story-progress-store';
+import { storyProgressKey } from '../../lib/story-progress-store';
 import { STORY_SELECT_SYNC_TIMEOUT_MS } from '../../lib/story-progress-sync';
 
 function renderSelect(
@@ -35,8 +32,11 @@ function renderSelect(
     });
 }
 
-function saveProgress(map: Record<string, unknown>): void {
-    localStorage.setItem(STORY_PROGRESS_KEY, JSON.stringify(map));
+function saveProgress(
+    map: Record<string, unknown>,
+    accountId: string | null = null
+): void {
+    localStorage.setItem(storyProgressKey(accountId), JSON.stringify(map));
 }
 
 function serverResponse(payload: unknown): Response {
@@ -60,28 +60,6 @@ function progressCalls(
     fetchMock: ReturnType<typeof vi.fn>
 ): Array<[unknown, RequestInit]> {
     return fetchMock.mock.calls.filter(([url]) => url === '/api/progress');
-}
-
-/** AbortSignal.timeout ignores fake timers; run it on the fake clock so a
- *  timeout fires inside an advanceTimersByTime window. */
-function fakeAbortSignalTimeout(): void {
-    class FakeSignal extends EventTarget {
-        aborted = false;
-        reason: unknown;
-        static timeout(ms: number): FakeSignal {
-            const signal = new FakeSignal();
-            setTimeout(() => {
-                signal.aborted = true;
-                signal.reason = new DOMException(
-                    'The operation timed out.',
-                    'TimeoutError'
-                );
-                signal.dispatchEvent(new Event('abort'));
-            }, ms);
-            return signal;
-        }
-    }
-    vi.stubGlobal('AbortSignal', FakeSignal);
 }
 
 const restoredPageShow = () =>
@@ -335,8 +313,7 @@ describe('StorySelect', () => {
             accountId: 'user-1',
         });
         expect(
-            JSON.parse(localStorage.getItem(STORY_PROGRESS_KEY) ?? '{}')
-                .progress
+            JSON.parse(localStorage.getItem(storyProgressKey('user-1')) ?? '{}')
         ).toHaveProperty('the_seventh_mirror');
     });
 
@@ -499,17 +476,75 @@ describe('StorySelect', () => {
         expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it('replaces a foreign-owned local map with the signed-in account copy', async () => {
-        saveProgress({
-            the_seventh_mirror: {
-                sceneId: 'ch3_act2',
-                dialogueIndex: 4,
-                updatedAt: 20,
-                finished: false,
-                endings: [],
+    it('reports local save failure distinctly when the server upload succeeded', async () => {
+        const accountKey = storyProgressKey('user-1');
+        saveProgress(
+            {
+                the_seventh_mirror: {
+                    sceneId: 'ch3_act2',
+                    dialogueIndex: 4,
+                    updatedAt: 20,
+                    finished: false,
+                    endings: [],
+                },
             },
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
+            'user-1'
+        );
+        const origSetItem = Storage.prototype.setItem;
+        const setSpy = vi
+            .spyOn(Storage.prototype, 'setItem')
+            .mockImplementation(function (
+                this: Storage,
+                key: string,
+                value: string
+            ) {
+                if (key === accountKey) {
+                    throw new Error('QuotaExceededError');
+                }
+                origSetItem.call(this, key, value);
+            });
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: {
+                    train_adventure: {
+                        sceneId: 'act2',
+                        dialogueIndex: 0,
+                        updatedAt: 30,
+                        finished: false,
+                        endings: [],
+                    },
+                },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        try {
+            renderSelect({ authState: 'signed-in' });
+
+            expect(
+                await screen.findByText(
+                    "Your progress was saved to your account, but this browser couldn't save the updated copy locally."
+                )
+            ).toBeInTheDocument();
+            expect(progressCalls(fetchMock)).toHaveLength(1);
+        } finally {
+            setSpy.mockRestore();
+        }
+    });
+
+    it('keeps another account progress separate from the signed-in account', async () => {
+        saveProgress(
+            {
+                the_seventh_mirror: {
+                    sceneId: 'ch3_act2',
+                    dialogueIndex: 4,
+                    updatedAt: 20,
+                    finished: false,
+                    endings: [],
+                },
+            },
+            'user-a'
+        );
         const fetchMock = vi.fn().mockResolvedValue(
             serverResponse({
                 progress: {
@@ -527,28 +562,26 @@ describe('StorySelect', () => {
 
         renderSelect({ authState: 'signed-in', userId: 'user-b' });
 
-        // A map tagged for user-a is not shown as user-b's local progress
+        // Progress under user-a's key is not shown as user-b's local progress
         // while the download is still out.
         expect(screen.queryByTestId('continue-reading')).toBeNull();
         expect(
             await screen.findByText('Your progress is saved to your account')
         ).toBeInTheDocument();
-        // The other account's map is never uploaded — the request carries
-        // an empty upload and the download replaces local outright.
         expect(progressCalls(fetchMock)).toHaveLength(1);
         expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toEqual({
             progress: {},
             accountId: 'user-b',
         });
         expect(
-            JSON.parse(localStorage.getItem(STORY_PROGRESS_KEY) ?? '{}')
-                .progress
-        ).not.toHaveProperty('the_seventh_mirror');
-        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+            JSON.parse(localStorage.getItem(storyProgressKey('user-b')) ?? '{}')
+        ).toHaveProperty('train_adventure');
+        expect(
+            JSON.parse(localStorage.getItem(storyProgressKey('user-a')) ?? '{}')
+        ).toHaveProperty('the_seventh_mirror');
     });
 
     it('bounds a hung sync request with the story-select timeout', async () => {
-        fakeAbortSignalTimeout();
         vi.stubGlobal(
             'fetch',
             vi.fn(

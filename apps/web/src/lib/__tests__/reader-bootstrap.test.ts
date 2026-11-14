@@ -48,7 +48,7 @@ describe('startReader', () => {
     });
 
     it.each([null, 'admin', ''])(
-        'reads a %s auth attribute as signed-out',
+        'reads a %s auth attribute as unavailable',
         value => {
             const container = mountContainer({ 'data-locale': 'en' });
             if (value !== null) {
@@ -56,7 +56,7 @@ describe('startReader', () => {
             }
             startReader();
             expect(ReaderManagerMock).toHaveBeenCalledWith('en', undefined, {
-                authState: 'signed-out',
+                authState: 'unavailable',
                 userId: null,
             });
         }
@@ -66,7 +66,7 @@ describe('startReader', () => {
         mountContainer({ 'data-locale': 'klingon' });
         startReader();
         expect(ReaderManagerMock).toHaveBeenCalledWith('en', undefined, {
-            authState: 'signed-out',
+            authState: 'unavailable',
             userId: null,
         });
     });

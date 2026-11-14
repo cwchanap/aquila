@@ -8,7 +8,7 @@
 ## 2. 李杰（Li Jie）
 
 - **ID**: `li_jie`
-- **Aliases**: 男主角, Li Jie
+- **Aliases**: 男主角, Li Jie, リー・ジエ
 
 ### Portrait Prompts
 
@@ -143,7 +143,7 @@
 ## 17. 凌墨（Ling Mo）
 
 - **ID**: `ling_mo`
-- **Aliases**: 神秘黑衣男, Ling Mo, Mysterious Man in Black, 黒衣の謎の男
+- **Aliases**: 神秘黑衣男, Ling Mo, Mysterious Man in Black, 黒衣の謎の男, リン・モー
 
 ### Portrait Prompts
 
@@ -282,7 +282,7 @@
 ## 44. 林婉如（Lin Wanru）
 
 - **ID**: `lin_wanru`
-- **Aliases**: Lin Wanru
+- **Aliases**: Lin Wanru, リン・ワンルー
 
 ## 45. 斎藤浩一（Saito Koichi）
 
@@ -547,7 +547,7 @@
 ## 97. 男子（Man）
 
 - **ID**: `man`
-- **Aliases**: Man, 男, Uncle Zhang, 張おじさん
+- **Aliases**: Man, 男, Uncle Zhang, チャンおじさん
 
 ## 98. 女子（Woman）
 

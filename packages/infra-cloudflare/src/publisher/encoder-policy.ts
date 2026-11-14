@@ -6,7 +6,7 @@ import { PublisherError } from './errors';
 import type { PublisherDiagnosticV1 } from './types';
 
 export const ENCODER_POLICY_V1 = {
-    id: 'aquila-vn-encoder-v1',
+    id: 'aquila-vn-encoder-v2',
     aspectWarningRelativeError: 0.005,
     background: {
         width: 1600,
@@ -27,7 +27,9 @@ export const ENCODER_POLICY_V1 = {
         preset: 'picture' as const,
     },
     avif: {
-        quality: 50,
+        // 50 smeared line art (eyes, lips, hair strands) in anime-style
+        // backgrounds; 75 keeps it close to the source at about 2x the bytes.
+        quality: 75,
         effort: 6,
         lossless: false,
         chromaSubsampling: '4:4:4' as const,

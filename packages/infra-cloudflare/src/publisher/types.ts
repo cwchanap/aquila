@@ -23,12 +23,11 @@ export type PublisherCommandName =
 export type PublisherMedia = 'visual' | 'audio';
 
 export type PublicationDestination =
-    | { kind: 'local'; root: string }
-    | { kind: 'r2' };
+    { kind: 'local'; root: string } | { kind: 'r2' };
 
 export interface EncoderFingerprintV1 {
     schemaVersion: 1;
-    policyId: 'aquila-vn-encoder-v1';
+    policyId: 'aquila-vn-encoder-v2';
     sharpVersion: string;
     libvipsVersion: string;
     platform: NodeJS.Platform;

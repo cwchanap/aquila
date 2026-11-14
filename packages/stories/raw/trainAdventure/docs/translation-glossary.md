@@ -335,6 +335,7 @@ Used before a character is named. All are registered as aliases in
 | 星塵迴響 (the hit film Emi and Li Jie talk about, branch_4a act 14) | *Stardust Echoes* | 『星屑の残響（ほしくずのざんきょう）』 |
 | 永夜之地 | the Land of Eternal Night | 永夜の地（えいやのち） |
 | 空心磚 (the hollow brick in the guard room, branch_3b acts 11, 19) | the hollow brick | 空洞のレンガ（くうどうのレンガ） |
+| 主幹道 (the wide main path in the forest, branch_2b) | the main road | 主要な道（しゅようなみち）, not 主幹道 (reads as untranslated Chinese) and not 本道; the narrow side path is 小径 / 小道 / 支道 |
 
 ## Route notes: branch_1b → branch_2c
 

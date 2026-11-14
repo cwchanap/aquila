@@ -16,7 +16,7 @@
 ## 2. 鄭以寧（Cheng Yi-ning）
 
 - **ID**: `cheng_yining`
-- **Aliases**: 以寧, Yi-ning, Cheng Yi-ning
+- **Aliases**: 以寧, Yi-ning, Cheng Yi-ning, イーニン, チェン・イーニン
 
 ### 基本資料
 
@@ -66,7 +66,7 @@
 ## 4. 周船長（Captain Chou）
 
 - **ID**: `captain_chou`
-- **Aliases**: 船長, 周文彥, Captain Chou
+- **Aliases**: 船長, 周文彥, Captain Chou, チョウ船長
 
 ### 基本資料
 

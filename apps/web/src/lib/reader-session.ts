@@ -19,8 +19,23 @@ export interface PersistedSession {
 export const STORAGE_VERSION = 2;
 
 /** localStorage key prefix for the latest session, one key per locale
- *  (`aquila:readerState:en`, `aquila:readerState:zh`). */
+ *  (`aquila:readerState:en`, `aquila:readerState:zh`) and per signed-in
+ *  account (`aquila:readerState:en:<accountId>`). */
 export const READER_SESSION_KEY_PREFIX = 'aquila:readerState';
+
+/** Key for a locale's reader session, scoped to the signed-in account so
+ *  two users on the same browser never read or overwrite each other's place.
+ *  Anonymous and unavailable states share the plain `aquila:readerState:<locale>`
+ *  key so rollback to `main` stays compatible. */
+export function readerSessionKey(
+    locale: Locale,
+    accountId?: string | null
+): string {
+    const base = `${READER_SESSION_KEY_PREFIX}:${locale}`;
+    return typeof accountId === 'string' && accountId.length > 0
+        ? `${base}:${accountId}`
+        : base;
+}
 
 /** Fallback scene id when a loaded flow has no `start` field. */
 export const DEFAULT_SCENE_ID = 'act1';

@@ -6,11 +6,8 @@ import { readerState } from '../reader-state.svelte';
 import type { AuthState } from '../auth-utils';
 import { authClient } from '../auth-client';
 import type { StoryProgress } from '../story-progress';
-import {
-    STORY_PROGRESS_KEY,
-    StoryProgressStore,
-} from '../story-progress-store';
-import { READER_SESSION_KEY_PREFIX } from '../reader-session';
+import { StoryProgressStore, storyProgressKey } from '../story-progress-store';
+import { readerSessionKey } from '../reader-session';
 
 vi.mock('@aquila/stories/translations', async importOriginal => ({
     ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
@@ -105,12 +102,20 @@ function progressRecord(overrides: Partial<StoryProgress> = {}): StoryProgress {
     };
 }
 
-function saveProgress(map: Record<string, StoryProgress>): void {
-    localStorage.setItem(STORY_PROGRESS_KEY, JSON.stringify(map));
+function saveProgress(
+    map: Record<string, StoryProgress>,
+    accountId: string | null = 'user-1'
+): void {
+    localStorage.setItem(storyProgressKey(accountId), JSON.stringify(map));
 }
 
-function readProgress(storyId: string): StoryProgress | null {
-    return new StoryProgressStore(localStorage).get(storyId);
+function readProgress(
+    storyId: string,
+    accountId: string | null = 'user-1'
+): StoryProgress | null {
+    return new StoryProgressStore(localStorage, Date.now, accountId).get(
+        storyId
+    );
 }
 
 function progressPosts(
@@ -135,28 +140,6 @@ function deferred<T>() {
         resolve = res;
     });
     return { promise, resolve };
-}
-
-/** AbortSignal.timeout ignores fake timers; run it on the fake clock so a
- *  timeout fires inside an advanceTimersByTime window. */
-function fakeAbortSignalTimeout(): void {
-    class FakeSignal extends EventTarget {
-        aborted = false;
-        reason: unknown;
-        static timeout(ms: number): FakeSignal {
-            const signal = new FakeSignal();
-            setTimeout(() => {
-                signal.aborted = true;
-                signal.reason = new DOMException(
-                    'The operation timed out.',
-                    'TimeoutError'
-                );
-                signal.dispatchEvent(new Event('abort'));
-            }, ms);
-            return signal;
-        }
-    }
-    vi.stubGlobal('AbortSignal', FakeSignal);
 }
 
 /** A fetch that never answers but rejects on abort the way a real fetch
@@ -241,12 +224,15 @@ describe('ReaderManager account progress sync', () => {
         'reads locally without a progress request when auth is %s',
         async authState => {
             setLocation('?story=train_adventure');
-            saveProgress({
-                train_adventure: progressRecord({
-                    sceneId: 'act1',
-                    dialogueIndex: 1,
-                }),
-            });
+            saveProgress(
+                {
+                    train_adventure: progressRecord({
+                        sceneId: 'act1',
+                        dialogueIndex: 1,
+                    }),
+                },
+                null
+            );
             mountReaderContainer();
             manager = createManager(authState);
 
@@ -384,7 +370,6 @@ describe('ReaderManager account progress sync', () => {
         });
         const fetchMock = hangingFetch();
         global.fetch = fetchMock;
-        fakeAbortSignalTimeout();
         mountReaderContainer();
         manager = createManager('signed-in');
 
@@ -463,7 +448,7 @@ describe('ReaderManager account progress sync', () => {
         });
         expect(
             JSON.parse(
-                localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`) ?? ''
+                localStorage.getItem(readerSessionKey('en', 'user-1')) ?? ''
             )
         ).toMatchObject({ storyId: 'train_adventure', sceneId: 'act2' });
 
@@ -710,7 +695,6 @@ describe('ReaderManager account progress sync', () => {
     it('does not queue a second POST behind a timed-out startup sync', async () => {
         setLocation('?story=train_adventure');
         global.fetch = hangingFetch();
-        fakeAbortSignalTimeout();
         mountReaderContainer();
         manager = createManager('signed-in');
 
@@ -723,19 +707,18 @@ describe('ReaderManager account progress sync', () => {
         expect(progressPosts(vi.mocked(global.fetch))).toHaveLength(1);
     });
 
-    it('quarantines a foreign-owned map before the first signed-in record', async () => {
-        // B signs in on a browser whose progress is still tagged for A and
-        // opens an explicit scene link — no startup sync runs, so the first
-        // record must not write into A's map for a later replaceAll to lose.
+    it('keeps another account key intact when signing in and opening an explicit scene', async () => {
         setLocation('?story=train_adventure&scene=act2');
-        saveProgress({
-            the_seventh_mirror: progressRecord({
-                sceneId: 'ch1_act1',
-                dialogueIndex: 2,
-                updatedAt: 10,
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
+        saveProgress(
+            {
+                the_seventh_mirror: progressRecord({
+                    sceneId: 'ch1_act1',
+                    dialogueIndex: 2,
+                    updatedAt: 10,
+                }),
+            },
+            'user-a'
+        );
         const fetchMock = vi.fn(async () => serverResponse({}));
         global.fetch = fetchMock;
         mountReaderContainer();
@@ -744,27 +727,22 @@ describe('ReaderManager account progress sync', () => {
         await manager.initialize();
         await flush();
 
-        const stored = new StoryProgressStore(localStorage).getAll();
-        expect(Object.keys(stored)).toEqual(['train_adventure']);
-        expect(stored.train_adventure).toMatchObject({
+        expect(readProgress('train_adventure', 'user-b')).toMatchObject({
             sceneId: 'act2',
             dialogueIndex: 0,
         });
-        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
-        // The quarantined record then uploads as this account's own map —
-        // not as an empty download that would drop it.
+        expect(readProgress('the_seventh_mirror', 'user-a')).toMatchObject({
+            sceneId: 'ch1_act1',
+            dialogueIndex: 2,
+        });
         const posts = progressPosts(fetchMock);
         expect(posts.length).toBeGreaterThan(0);
         expect(JSON.parse(posts[0][1].body as string).progress).toHaveProperty(
             'train_adventure'
         );
-        // The session written by the same persist survives the quarantine
-        // cleanup — it belongs to the signing-in account, not the evicted
-        // one, so a bare reader link can still restore it.
         expect(
             JSON.parse(
-                localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`) ??
-                    'null'
+                localStorage.getItem(readerSessionKey('en', 'user-b')) ?? 'null'
             )
         ).toMatchObject({ storyId: 'train_adventure', sceneId: 'act2' });
     });
@@ -786,22 +764,22 @@ describe('ReaderManager account progress sync', () => {
         expect(progressPosts(fetchMock)).toHaveLength(1);
         fetchMock.mockClear();
 
-        // The merged position matches the store, so nothing new is waiting
-        // to upload — the hide flush sends nothing.
         window.dispatchEvent(new Event('pagehide'));
         await flush();
         expect(progressPosts(fetchMock)).toHaveLength(0);
     });
 
-    it('revalidates the account when the tab becomes visible again', async () => {
+    it('revalidates the account when the tab becomes visible or resumes from bfcache', async () => {
         setLocation('?story=train_adventure&scene=act1');
-        saveProgress({
-            train_adventure: progressRecord({
-                sceneId: 'act1',
-                dialogueIndex: 0,
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                }),
+            },
+            'user-a'
+        );
         const fetchMock = vi.fn(async () => serverResponse({}));
         global.fetch = fetchMock;
         mountReaderContainer();
@@ -810,18 +788,17 @@ describe('ReaderManager account progress sync', () => {
         await flush();
         expect(authClient.getSession).not.toHaveBeenCalled();
 
-        // The session moved to account B while the tab sat in the
-        // background — the resume must pick it up.
+        // The session moved to account B while the tab sat in the background.
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: { user: { id: 'user-b' } },
             error: null,
         } as never);
         document.dispatchEvent(new Event('visibilitychange'));
         await flush();
-        expect(authClient.getSession).toHaveBeenCalled();
+        expect(authClient.getSession).toHaveBeenCalledTimes(1);
 
-        // A normal pageshow does not revalidate; a persisted (bfcache)
-        // restore does.
+        // Non-persisted pageshow does not revalidate; persisted (bfcache) does
+        // once the prior check settled.
         window.dispatchEvent(new Event('pageshow'));
         await flush();
         expect(authClient.getSession).toHaveBeenCalledTimes(1);
@@ -831,26 +808,66 @@ describe('ReaderManager account progress sync', () => {
         await flush();
         expect(authClient.getSession).toHaveBeenCalledTimes(2);
 
-        // The next record belongs to B: A's map is quarantined rather
-        // than silently appended to under the stale tag.
+        // Next record writes to user-b's isolated key, keeping user-a intact.
         manager.goToScene('act2');
         await flush();
-        const store = new StoryProgressStore(localStorage);
-        expect(store.getOwner()).toBe('user-b');
-        expect(store.get('train_adventure')).toMatchObject({
+        expect(readProgress('train_adventure', 'user-b')).toMatchObject({
             sceneId: 'act2',
+        });
+        expect(readProgress('train_adventure', 'user-a')).toMatchObject({
+            sceneId: 'act1',
         });
     });
 
-    it('applies only the newest session reply when revalidations overlap', async () => {
+    it('makes no getSession request on focus or bfcache restore when signed-out', async () => {
         setLocation('?story=train_adventure&scene=act1');
-        saveProgress({
-            train_adventure: progressRecord({
-                sceneId: 'act1',
-                dialogueIndex: 0,
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
+        mountReaderContainer();
+        manager = createManager('signed-out', null);
+        await manager.initialize();
+        await flush();
+
+        window.dispatchEvent(
+            Object.assign(new Event('pageshow'), { persisted: true })
+        );
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+
+        expect(authClient.getSession).not.toHaveBeenCalled();
+    });
+
+    it('coalesces rapid bfcache pageshow and visibilitychange events into one getSession call', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        const pending = deferred<unknown>();
+        vi.mocked(authClient.getSession).mockImplementation(
+            () => pending.promise as never
+        );
+        mountReaderContainer();
+        manager = createManager('signed-in', 'user-a');
+        await manager.initialize();
+        await flush();
+
+        window.dispatchEvent(
+            Object.assign(new Event('pageshow'), { persisted: true })
+        );
+        document.dispatchEvent(new Event('visibilitychange'));
+        await flush();
+
+        expect(authClient.getSession).toHaveBeenCalledTimes(1);
+        pending.resolve({ data: { user: { id: 'user-a' } }, error: null });
+        await flush();
+    });
+
+    it('applies only the newest session reply when delayed revalidations overlap', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                }),
+            },
+            'user-a'
+        );
         const first = deferred<unknown>();
         const second = deferred<unknown>();
         vi.mocked(authClient.getSession)
@@ -863,23 +880,21 @@ describe('ReaderManager account progress sync', () => {
         await manager.initialize();
         await flush();
 
-        // A persisted restore starts a re-read while the session still
-        // shows A; a visibility resume starts a second one that sees B.
         window.dispatchEvent(
             Object.assign(new Event('pageshow'), { persisted: true })
         );
+        // After the 5s coalescing window, a second slow revalidation goes out.
+        await vi.advanceTimersByTimeAsync(5_000);
         document.dispatchEvent(new Event('visibilitychange'));
         await flush();
         expect(authClient.getSession).toHaveBeenCalledTimes(2);
 
-        // The newer answer lands first; the delayed A reply is stale and
-        // must not put the previous account back.
+        // Newer answer resolves first; delayed A reply must not revert user-b.
         second.resolve({ data: { user: { id: 'user-b' } }, error: null });
         await flush();
         first.resolve({ data: { user: { id: 'user-a' } }, error: null });
         await flush();
 
-        // Past the minute throttle so this navigation's push fires.
         await vi.advanceTimersByTimeAsync(60_001);
         manager.goToScene('act2');
         await flush();
@@ -888,344 +903,127 @@ describe('ReaderManager account progress sync', () => {
         expect(
             JSON.parse(posts[posts.length - 1][1].body as string).accountId
         ).toBe('user-b');
-        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
+        expect(readProgress('train_adventure', 'user-b')).toMatchObject({
+            sceneId: 'act2',
+        });
     });
 
-    it('does not resume a signed-in reader from a foreign-owned map or session', async () => {
+    it('resumes each signed-in account from its own isolated map and session', async () => {
         setLocation('');
-        saveProgress({
-            train_adventure: progressRecord({
-                sceneId: 'act2',
-                dialogueIndex: 0,
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
-        // The legacy session key is A's too — importing it into B's reader
-        // would resume the wrong account's story.
+        saveProgress(
+            {
+                elevator_game: progressRecord({
+                    sceneId: 'b2_act4',
+                    dialogueIndex: 3,
+                    updatedAt: 50,
+                }),
+            },
+            'user-a'
+        );
         localStorage.setItem(
-            `${READER_SESSION_KEY_PREFIX}:en`,
+            readerSessionKey('en', 'user-a'),
             JSON.stringify({
-                storyId: 'train_adventure',
-                sceneId: 'act2',
-                dialogueIndex: 0,
+                storyId: 'elevator_game',
+                sceneId: 'b2_act4',
+                dialogueIndex: 3,
                 locale: 'en',
                 version: 2,
             })
         );
-        const fetchMock = vi.fn(async () => serverResponse({}));
-        global.fetch = fetchMock;
-        mountReaderContainer();
-        manager = createManager('signed-in', 'user-b');
-
-        await manager.initialize();
-
-        // Neither fallback applies: B's reader opens at the default story
-        // start instead of A's saved place.
-        expect(readerState).toMatchObject({
-            storyId: 'the_seventh_mirror',
-            currentSceneId: 'act1',
-            dialogueIndex: 0,
-            loadStatus: 'ready',
-        });
-        expect(new StoryProgressStore(localStorage).getOwner()).toBe('user-b');
-    });
-
-    it('does not recreate a displaced account session from an unchanged reader', async () => {
-        // A's reader sits on an already-recorded position while another
-        // tab signs into B: B's sync quarantines A's map and drops its
-        // sessions. A's hide flush takes the unchanged-position early
-        // return, so record() never retags the map — but the session
-        // write must still see the new owner. Recreating A's session
-        // would let a later session import seed that position into B's
-        // map.
-        setLocation('?story=train_adventure&scene=act1');
-        saveProgress({
-            train_adventure: progressRecord({
-                sceneId: 'act1',
-                dialogueIndex: 0,
-                updatedAt: 10,
-                visited: ['act1'],
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
-        // The hide keepalive fires but never answers, so the store is
-        // exactly what the persist left.
-        global.fetch = vi.fn(() => new Promise<Response>(() => {}));
-        mountReaderContainer();
-        manager = createManager('signed-in', 'user-a');
-        await manager.initialize();
-        await flush();
-
-        // The other tab's sync displaced the map to B and dropped the
-        // sessions that went with A's copy.
-        new StoryProgressStore(localStorage).replaceAll(
-            {
-                elevator_game: progressRecord({
-                    sceneId: 'act1',
-                    dialogueIndex: 0,
-                    updatedAt: 20,
-                }),
-            },
-            'user-b'
-        );
-        new StoryProgressStore(localStorage).dropReaderSessions();
-
-        window.dispatchEvent(new Event('pagehide'));
-        await flush();
-
-        expect(
-            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
-        ).toBeNull();
-        const store = new StoryProgressStore(localStorage);
-        expect(store.getOwner()).toBe('user-b');
-        expect(store.get('elevator_game')).not.toBeNull();
-        expect(store.get('train_adventure')).toBeNull();
-    });
-
-    it('does not recreate a displaced session while the account is unknown', async () => {
-        // The same displacement as the signed-in reader above, but an
-        // 'unavailable' reader has no userId — isForeignTo(null) is
-        // always false. The session write must come from the owner the
-        // restored position was bound to, not the account lookup.
-        setLocation('?story=train_adventure&scene=act1');
-        saveProgress({
-            train_adventure: progressRecord({
-                sceneId: 'act1',
-                dialogueIndex: 0,
-                updatedAt: 10,
-                visited: ['act1'],
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
-        // The background session re-read never answers, so 'unavailable'
-        // holds for the whole visit.
-        vi.mocked(authClient.getSession).mockReturnValue(
-            new Promise(() => {}) as never
-        );
-        global.fetch = vi.fn(() => new Promise<Response>(() => {}));
-        mountReaderContainer();
-        manager = createManager('unavailable', null);
-        await manager.initialize();
-        await flush();
-
-        // While A still owns the map, the restored position's session
-        // persists normally.
-        expect(
-            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
-        ).not.toBeNull();
-
-        // The other tab's sync displaced the map to B and dropped the
-        // sessions that went with A's copy.
-        new StoryProgressStore(localStorage).replaceAll(
-            {
-                elevator_game: progressRecord({
-                    sceneId: 'act1',
-                    dialogueIndex: 0,
-                    updatedAt: 20,
-                }),
-            },
-            'user-b'
-        );
-        new StoryProgressStore(localStorage).dropReaderSessions();
-
-        window.dispatchEvent(new Event('pagehide'));
-        await flush();
-
-        expect(
-            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
-        ).toBeNull();
-        const store = new StoryProgressStore(localStorage);
-        expect(store.getOwner()).toBe('user-b');
-        expect(store.get('train_adventure')).toBeNull();
-    });
-
-    it('does not record into a displaced map while the account is unknown', async () => {
-        // The same A → B displacement as the unchanged-reader test above,
-        // but the reader then advances one line. The changed position
-        // passes the early return, and record(undefined) would preserve
-        // the *stored* owner — writing A's new position under B's tag for
-        // B's next sync to upload. The bound session owner must refuse
-        // the write before record() ever runs.
-        setLocation('?story=train_adventure&scene=act1');
-        saveProgress({
-            train_adventure: progressRecord({
-                sceneId: 'act1',
-                dialogueIndex: 0,
-                updatedAt: 10,
-                visited: ['act1'],
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
-        // The background session re-read never answers, so 'unavailable'
-        // holds for the whole visit.
-        vi.mocked(authClient.getSession).mockReturnValue(
-            new Promise(() => {}) as never
-        );
-        global.fetch = vi.fn(() => new Promise<Response>(() => {}));
-        mountReaderContainer();
-        manager = createManager('unavailable', null);
-        await manager.initialize();
-        await flush();
-
-        // The other tab's sync displaced the map to B and dropped the
-        // sessions that went with A's copy.
-        new StoryProgressStore(localStorage).replaceAll(
-            {
-                elevator_game: progressRecord({
-                    sceneId: 'act1',
-                    dialogueIndex: 0,
-                    updatedAt: 20,
-                }),
-            },
-            'user-b'
-        );
-        new StoryProgressStore(localStorage).dropReaderSessions();
-
-        // One line forward: the changed position must not land in B's
-        // map, and the session must not be recreated under B's owner.
-        manager.onIndexChange(1);
-        await vi.advanceTimersByTimeAsync(500);
-        await flush();
-
-        const store = new StoryProgressStore(localStorage);
-        expect(store.getOwner()).toBe('user-b');
-        expect(store.get('train_adventure')).toBeNull();
-        expect(store.get('elevator_game')).toMatchObject({
-            sceneId: 'act1',
-            dialogueIndex: 0,
-        });
-        expect(
-            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
-        ).toBeNull();
-
-        // A hide flush afterward is just as quiet: the position is still
-        // unrecorded, so nothing is written or uploaded.
-        window.dispatchEvent(new Event('pagehide'));
-        await flush();
-        expect(
-            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
-        ).toBeNull();
-        expect(
-            new StoryProgressStore(localStorage).get('train_adventure')
-        ).toBeNull();
-    });
-
-    it('does not record a restored position after a mid-load displacement', async () => {
-        // A bare ?story link selects A's stored position, then yields in
-        // loadStoryContent — another tab's sign-in displaces the map to B
-        // before the payload arrives. applySession's store match then
-        // sees only B's map, so the binding must come from the selection
-        // itself: without it the persist writes A's restored position
-        // under B's owner for B's next sync to upload.
-        setLocation('?story=train_adventure');
-        saveProgress({
-            train_adventure: progressRecord({
-                sceneId: 'act1',
-                dialogueIndex: 1,
-                updatedAt: 10,
-                visited: ['act1'],
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
-        const loading = deferred<AsyncStoryLoaderResult>();
-        loadStoryContent.mockImplementation(() => loading.promise);
-        // The background session re-read never answers, so 'unavailable'
-        // holds for the whole visit.
-        vi.mocked(authClient.getSession).mockReturnValue(
-            new Promise(() => {}) as never
-        );
-        global.fetch = vi.fn(() => new Promise<Response>(() => {}));
-        mountReaderContainer();
-        manager = createManager('unavailable', null);
-        const initializing = manager.initialize();
-        // selectInitialIntent has run once the story load is awaiting.
-        await flush();
-        expect(loadStoryContent).toHaveBeenCalled();
-
-        // The other tab's sync displaced the map to B and dropped the
-        // sessions that went with A's copy — mid-load, before any
-        // binding from applySession could happen.
-        new StoryProgressStore(localStorage).replaceAll(
-            {
-                elevator_game: progressRecord({
-                    sceneId: 'act1',
-                    dialogueIndex: 0,
-                    updatedAt: 20,
-                }),
-            },
-            'user-b'
-        );
-        new StoryProgressStore(localStorage).dropReaderSessions();
-
-        loading.resolve(storyPayload());
-        await initializing;
-        await flush();
-
-        const store = new StoryProgressStore(localStorage);
-        expect(store.getOwner()).toBe('user-b');
-        expect(store.get('train_adventure')).toBeNull();
-        expect(store.get('elevator_game')).toMatchObject({
-            sceneId: 'act1',
-            dialogueIndex: 0,
-        });
-        expect(
-            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
-        ).toBeNull();
-        expect(readerState).toMatchObject({
-            storyId: 'train_adventure',
-            currentSceneId: 'act1',
-            dialogueIndex: 1,
-            loadStatus: 'ready',
-        });
-
-        // A hide flush afterward stays quiet too: the position is still
-        // unrecorded, so nothing is written or uploaded.
-        window.dispatchEvent(new Event('pagehide'));
-        await flush();
-        expect(
-            new StoryProgressStore(localStorage).get('train_adventure')
-        ).toBeNull();
-        expect(
-            localStorage.getItem(`${READER_SESSION_KEY_PREFIX}:en`)
-        ).toBeNull();
-    });
-
-    it('keeps the stored owner when an unavailable session still records', async () => {
-        // A degraded session lookup is not a sign-out: 'unavailable'
-        // also carries a null userId, but record() must not read it as
-        // a confirmed sign-out and sideline the stored account's map.
-        setLocation('?story=train_adventure&scene=act2');
-        saveProgress({
-            the_seventh_mirror: progressRecord({
-                sceneId: 'ch1_act1',
-                dialogueIndex: 2,
-                updatedAt: 10,
-            }),
-        });
-        new StoryProgressStore(localStorage).setOwner('user-a');
-        // The background session re-read never answers, so 'unavailable'
-        // holds for the whole visit.
-        vi.mocked(authClient.getSession).mockReturnValue(
-            new Promise(() => {}) as never
-        );
         global.fetch = vi.fn(async () => serverResponse({}));
         mountReaderContainer();
-        manager = createManager('unavailable', null);
-
+        manager = createManager('signed-in', 'user-b');
         await manager.initialize();
         await flush();
 
-        // The position landed under the still-stored owner: the map
-        // stays intact, not sidelined on an unvalidated guess.
-        const store = new StoryProgressStore(localStorage);
-        expect(store.getOwner()).toBe('user-a');
-        expect(store.get('the_seventh_mirror')).not.toBeNull();
-        expect(store.get('train_adventure')).toMatchObject({
+        // User B does not resume User A's elevator_game session.
+        expect(readerState.storyId).toBe('the_seventh_mirror');
+        expect(
+            JSON.parse(
+                localStorage.getItem(readerSessionKey('en', 'user-b')) ?? 'null'
+            )
+        ).toMatchObject({ storyId: 'the_seventh_mirror' });
+        expect(
+            JSON.parse(
+                localStorage.getItem(readerSessionKey('en', 'user-a')) ?? 'null'
+            )
+        ).toMatchObject({ storyId: 'elevator_game', sceneId: 'b2_act4' });
+        expect(readProgress('elevator_game', 'user-a')).toMatchObject({
+            sceneId: 'b2_act4',
+        });
+    });
+
+    it('still saves the reader session when writing the progress map fails', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        const accountProgressKey = storyProgressKey('user-1');
+        const origSetItem = Storage.prototype.setItem;
+        const setSpy = vi
+            .spyOn(Storage.prototype, 'setItem')
+            .mockImplementation(function (
+                this: Storage,
+                key: string,
+                value: string
+            ) {
+                if (key === accountProgressKey) {
+                    throw new Error('QuotaExceededError');
+                }
+                origSetItem.call(this, key, value);
+            });
+        global.fetch = vi.fn(async () => serverResponse({}));
+        mountReaderContainer();
+        try {
+            manager = createManager('signed-in', 'user-1');
+            await manager.initialize();
+            manager.goToScene('act2');
+            await flush();
+
+            expect(
+                JSON.parse(
+                    localStorage.getItem(readerSessionKey('en', 'user-1')) ??
+                        'null'
+                )
+            ).toMatchObject({ storyId: 'train_adventure', sceneId: 'act2' });
+        } finally {
+            setSpy.mockRestore();
+        }
+    });
+
+    it('keeps saving to anonymous keys while auth is unavailable without touching another account', async () => {
+        setLocation('?story=train_adventure&scene=act1');
+        saveProgress(
+            {
+                the_seventh_mirror: progressRecord({
+                    sceneId: 'ch4_act1',
+                    dialogueIndex: 2,
+                    updatedAt: 50,
+                }),
+            },
+            'user-a'
+        );
+        vi.mocked(authClient.getSession).mockRejectedValue(
+            new Error('auth outage')
+        );
+        mountReaderContainer();
+        manager = createManager('unavailable', null);
+        await manager.initialize();
+        await flush();
+
+        manager.goToScene('act2');
+        await flush();
+
+        expect(readProgress('train_adventure', null)).toMatchObject({
             sceneId: 'act2',
-            dialogueIndex: 0,
         });
         expect(
-            localStorage.getItem('aquila:storyProgress:v1:sidelined:user-a')
-        ).toBeNull();
+            JSON.parse(
+                localStorage.getItem(readerSessionKey('en', null)) ?? 'null'
+            )
+        ).toMatchObject({ storyId: 'train_adventure', sceneId: 'act2' });
+        // User A's map stays untouched and no account sync was sent.
+        expect(readProgress('the_seventh_mirror', 'user-a')).toMatchObject({
+            sceneId: 'ch4_act1',
+        });
+        expect(readProgress('train_adventure', 'user-a')).toBeNull();
+        expect(global.fetch).not.toHaveBeenCalled();
     });
 });

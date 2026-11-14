@@ -18,10 +18,10 @@ import { readerState } from './reader-state.svelte';
 import { isEndingPosition } from './reader-interaction';
 import {
     migratePersisted,
+    readerSessionKey,
     serializeSessionParams,
     clampIndex,
     STORAGE_VERSION,
-    READER_SESSION_KEY_PREFIX,
     type ReaderSessionState,
     type PersistedSession,
 } from './reader-session';
@@ -70,7 +70,7 @@ export class ReaderManager {
     private authState: AuthState;
     private userId: string | null;
     private readonly localBookmarks: LocalBookmarksStore;
-    private readonly storyProgress: StoryProgressStore;
+    private storyProgress: StoryProgressStore;
     private activeStory: AsyncStoryLoaderResult | null = null;
     private pendingIntent: ReaderIntent | null = null;
     private loadGeneration = 0;
@@ -106,11 +106,13 @@ export class ReaderManager {
     private keepaliveSent = false;
     private progressDirty = true;
     private recordSeq = 0;
-    // Session re-reads can overlap across a persisted pageshow and a
-    // visibility change, and replies may arrive out of order. Only the
-    // newest request may apply its answer — a stale reply must not put a
-    // previous account back over a newer sign-in.
+    // Session re-reads can overlap across long-running checks, and replies may
+    // arrive out of order. Only the newest request may apply its answer.
+    // authCheckInFlight + lastRevalidateAt coalesce back-to-back bfcache
+    // restore events (pageshow + visibilitychange) into a single request.
     private authCheckSeq = 0;
+    private authCheckInFlight = false;
+    private lastRevalidateAt = Number.NEGATIVE_INFINITY;
     // The last position this tab recorded or restored. A lifecycle flush
     // that finds the position unchanged must not write again: record()
     // stamps a fresh updatedAt, and the keepalive upload would win the
@@ -121,19 +123,6 @@ export class ReaderManager {
         dialogueIndex: number;
         atEnding: boolean;
     } | null = null;
-    // The account whose map this tab's session position belongs to,
-    // bound when a stored position is chosen (selectInitialIntent — the
-    // story load can yield before applySession sees the map again), when
-    // a restored position already matches the stored record
-    // (applySession), and refreshed by every committed record(). Reader
-    // sessions carry no owner tag, so the persist() write guard compares
-    // this against the map's live owner: another tab can displace the
-    // map — a sign-in quarantines it and drops the sessions that went
-    // with it — and rewriting this session under the new owner would
-    // let that account's next session import seed this tab's position
-    // into its own map. Undefined until the first position binds; an
-    // unbound session is never written.
-    private sessionOwner: string | null | undefined;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
     // start a second initial load. renderReader has its own mount guard, but
@@ -179,22 +168,31 @@ export class ReaderManager {
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
-        this.storyProgress = new StoryProgressStore(getBrowserStorage());
-        // The first persist() replaces this locale's session, which may be
-        // the only copy of a place saved before per-story progress existed
-        // (for example when a direct link opens a different story). The
-        // sessions carry no owner tag, so they may only seed a map this
-        // visit's account could own.
+        const accountId = this.activeAccountId();
+        this.storyProgress = new StoryProgressStore(
+            getBrowserStorage(),
+            Date.now,
+            accountId
+        );
         importSavedSessions(
             this.storyProgress,
             getBrowserStorage(),
             this.initialLocale,
-            this.userId
+            accountId
         );
+        if (accountId) {
+            this.storyProgress.claimAnonymous(this.initialLocale);
+        }
+    }
+
+    private activeAccountId(): string | null {
+        return this.authState === 'signed-in' && this.userId
+            ? this.userId
+            : null;
     }
 
     private get storageKey(): string {
-        return `${READER_SESSION_KEY_PREFIX}:${this.initialLocale}`;
+        return readerSessionKey(this.initialLocale, this.activeAccountId());
     }
 
     private purgeLegacyState(): void {
@@ -237,27 +235,19 @@ export class ReaderManager {
     private selectInitialIntent(): IntentSelection {
         const params = new URLSearchParams(window.location.search);
         const storyId = params.get('story');
-        // A map tagged for another account is not this account's to resume
-        // from — the saved session beside it belongs to that account too,
-        // so both fallbacks stay unused until a sync or a record clears
-        // the foreign tag.
-        const foreign = this.storyProgress.isForeignTo(this.userId);
-        let restoredFromMap = false;
         if (
             storyId &&
             !params.has('scene') &&
             !params.has('dialogue') &&
-            params.get('restart') !== '1' &&
-            !foreign
+            params.get('restart') !== '1'
         ) {
             const progress = this.storyProgress.get(storyId);
             if (progress) {
                 params.set('scene', progress.sceneId);
                 params.set('dialogue', String(progress.dialogueIndex + 1));
-                restoredFromMap = true;
             }
         }
-        const raw = foreign ? null : localStorage.getItem(this.storageKey);
+        const raw = localStorage.getItem(this.storageKey);
         let persisted: PersistedSession | null = null;
         if (raw) {
             try {
@@ -269,26 +259,12 @@ export class ReaderManager {
                 console.error('Failed to parse saved state', e);
             }
         }
-        const selection = this.deps.selectReaderIntent(
+        return this.deps.selectReaderIntent(
             params,
             persisted,
             this.initialLocale,
             { defaultStoryId: this.deps.defaultStoryId }
         );
-        // A position read out of the stored map or the saved session
-        // belongs to that map's owner — bind it now, before the story
-        // load can yield. Another tab can displace the map during that
-        // load, and then applySession's store match never sees the old
-        // map: an unbound session would record the restored position
-        // under the new owner's tag. With the owner bound here, the
-        // record and session guards see the mismatch and refuse.
-        if (
-            selection.kind === 'load' &&
-            (restoredFromMap || selection.intent.source === 'persisted')
-        ) {
-            this.sessionOwner = this.storyProgress.getOwner();
-        }
-        return selection;
     }
 
     private applySession(
@@ -336,11 +312,6 @@ export class ReaderManager {
                   atEnding,
               }
             : null;
-        if (this.lastRecordedPosition) {
-            // The restored position already lives in the stored map, so
-            // the session that mirrors it belongs to that map's owner.
-            this.sessionOwner = this.storyProgress.getOwner();
-        }
     }
 
     /** True when the stored record already describes this position — the
@@ -352,7 +323,6 @@ export class ReaderManager {
         dialogueIndex: number,
         atEnding: boolean
     ): boolean {
-        if (this.storyProgress.isForeignTo(this.userId)) return false;
         const stored = this.storyProgress.get(storyId);
         return (
             stored !== null &&
@@ -477,23 +447,11 @@ export class ReaderManager {
             locale: readerState.locale,
             version: STORAGE_VERSION,
         };
-        // Record first: quarantining a foreign map drops every reader
-        // session, so writing the session first would delete it again.
         this.recordStoryProgress();
-        // A map displaced without this tab's record is caught by the
-        // session's bound owner, not the account lookup: an unchanged
-        // position takes the early return in recordStoryProgress, so
-        // record() never retagged the map — and an unavailable-auth
-        // reader has no userId for isForeignTo() to compare anyway.
-        // Recreating the session under a different owner would let a
-        // later session import seed this tab's position into that
-        // owner's map.
-        if (this.storyProgress.getOwner() === this.sessionOwner) {
-            try {
-                localStorage.setItem(this.storageKey, JSON.stringify(data));
-            } catch (e) {
-                console.error('Failed to persist reader state', e);
-            }
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(data));
+        } catch (e) {
+            console.error('Failed to persist reader state', e);
         }
         // The hide flush persists locally, then sends its own keepalive; it
         // suppresses this ordinary push so one hide never sends twice.
@@ -565,6 +523,7 @@ export class ReaderManager {
         const result = await syncStoryProgress({
             timeoutMs: STORY_PROGRESS_SYNC_TIMEOUT_MS,
             accountId,
+            locale: this.initialLocale,
         });
         if (result.ok && this.recordSeq === seq) this.progressDirty = false;
     }
@@ -593,40 +552,13 @@ export class ReaderManager {
         ) {
             return;
         }
-        // An unknown-account record lands under whatever owner the map
-        // currently carries — record(undefined) preserves the stored tag —
-        // so it is safe only while the map is still the one this session's
-        // position was bound to. A sign-in in another tab can retag the
-        // map to that account; writing this reader's position under the
-        // new tag would let that account's next sync upload it. Skipping
-        // leaves lastRecordedPosition stale, so the position records once
-        // the session re-read settles and record() gets a real account
-        // signal to claim or detach on. An unbound session has no owner
-        // to compare — its record keeps landing under the stored owner.
         if (
-            this.authState === 'unavailable' &&
-            this.sessionOwner !== undefined &&
-            this.storyProgress.getOwner() !== this.sessionOwner
-        ) {
-            return;
-        }
-        if (
-            this.storyProgress.record(
-                {
-                    storyId,
-                    sceneId: currentSceneId,
-                    dialogueIndex,
-                    atEnding,
-                },
-                // A signed-in reader's first record quarantines a map
-                // tagged for a previous account instead of writing into
-                // it; a confirmed sign-out detaches that map into an
-                // unowned copy. 'unavailable' is neither — its null
-                // userId is an unanswered lookup, not a sign-out, so the
-                // record must not sideline the stored account's map on
-                // a guess.
-                this.authState === 'unavailable' ? undefined : this.userId
-            )
+            this.storyProgress.record({
+                storyId,
+                sceneId: currentSceneId,
+                dialogueIndex,
+                atEnding,
+            })
         ) {
             this.lastRecordedPosition = {
                 storyId,
@@ -634,7 +566,6 @@ export class ReaderManager {
                 dialogueIndex,
                 atEnding,
             };
-            this.sessionOwner = this.storyProgress.getOwner();
             this.recordSeq++;
             this.progressDirty = true;
         }
@@ -826,9 +757,7 @@ export class ReaderManager {
                 this.persist();
             }
         }
-        return this.storyProgress.isForeignTo(this.userId)
-            ? null
-            : this.storyProgress.get(readerState.storyId);
+        return this.storyProgress.get(readerState.storyId);
     };
 
     handleChoice = (nextScene: string): void => {
@@ -1043,23 +972,34 @@ export class ReaderManager {
         } else {
             // Re-arm the one-keepalive-per-hide rule for the next hide.
             this.keepaliveSent = false;
-            this.revalidateAuth();
+            if (this.authState !== 'signed-out') {
+                this.revalidateAuth();
+            }
         }
     };
 
     /** A back/forward-cached reader can predate a sign-out or an account
      *  switch made in another tab — the userId captured at load must not
-     *  tag new writes for the account that used to be signed in. */
+     *  keep routing writes to the account that used to be signed in.
+     *  Signed-out readers make no network requests. */
     private onPageShow = (event: Event): void => {
         if (!(event as Event & { persisted?: boolean }).persisted) return;
-        this.revalidateAuth();
+        if (this.authState !== 'signed-out') {
+            this.revalidateAuth();
+        }
     };
 
-    /** Re-reads the session on resume so later records and pushes carry the
-     *  account that is actually signed in now — a tab kept open across an
-     *  account switch would otherwise keep tagging writes for the previous
-     *  one. A failed re-read keeps the current state. */
+    /** Re-reads the session on resume or initial 'unavailable' recovery so
+     *  later records and pushes target the account that is actually signed
+     *  in now. Coalesces rapid bfcache events (`pageshow` + `visibilitychange`)
+     *  within 5s so a single restore never sends overlapping requests. */
     private revalidateAuth(): void {
+        const now = performance.now();
+        if (this.authCheckInFlight && now - this.lastRevalidateAt < 5000) {
+            return;
+        }
+        this.authCheckInFlight = true;
+        this.lastRevalidateAt = now;
         const ticket = ++this.authCheckSeq;
         void authClient
             .getSession()
@@ -1076,12 +1016,30 @@ export class ReaderManager {
                 // degraded banner comes down for signed-out too.
                 document.getElementById('auth-degraded-banner')?.remove();
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => {
+                if (ticket === this.authCheckSeq) {
+                    this.authCheckInFlight = false;
+                }
+            });
     }
 
     private applySessionUser(user: { id: string } | null): void {
+        const prevAccount = this.activeAccountId();
         this.authState = user ? 'signed-in' : 'signed-out';
         this.userId = user?.id ?? null;
+        const nextAccount = this.activeAccountId();
+        if (prevAccount !== nextAccount) {
+            this.storyProgress = new StoryProgressStore(
+                getBrowserStorage(),
+                Date.now,
+                nextAccount
+            );
+            if (nextAccount) {
+                this.storyProgress.claimAnonymous(this.initialLocale);
+            }
+            this.lastRecordedPosition = null;
+        }
     }
 
     private addLifecycleListeners(): void {
@@ -1091,35 +1049,15 @@ export class ReaderManager {
         document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
-    /** An SSR 'unavailable' is often a slow cold start, not an outage: one
-     *  background session re-read decides whether this visit can sync. A
-     *  late 'signed-in' only enables pushes — it never repositions an
-     *  already-open reader. */
-    private recheckUnavailableAuth(): void {
-        if (this.authState !== 'unavailable') return;
-        const ticket = ++this.authCheckSeq;
-        void authClient
-            .getSession()
-            .then(result => {
-                if (
-                    this.destroyed ||
-                    ticket !== this.authCheckSeq ||
-                    result?.error
-                )
-                    return;
-                this.applySessionUser(result?.data?.user ?? null);
-                document.getElementById('auth-degraded-banner')?.remove();
-            })
-            .catch(() => {});
-    }
-
     async initialize(): Promise<void> {
         if (this.initialized) return;
         this.initialized = true;
         this.destroyed = false;
         this.addLifecycleListeners();
         const generation = ++this.loadGeneration;
-        this.recheckUnavailableAuth();
+        if (this.authState === 'unavailable') {
+            this.revalidateAuth();
+        }
         // Only a bare ?story= link waits on the cloud merge below, and that
         // wait now overlaps the shell mount instead of following it.
         await Promise.all([this.renderReader(), this.resumeFromCloud()]);

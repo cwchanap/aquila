@@ -98,6 +98,7 @@
     "syncSignIn": "Sign in to pick it up on any device.",
     "syncFailed": "Couldn't reach your account. Progress is kept in this browser and syncs next time.",
     "syncLocalFailed": "This browser couldn't read or save your progress, so nothing was sent to your account.",
+    "syncLocalSaveFailed": "Your progress was saved to your account, but this browser couldn't save the updated copy locally.",
     "minutes": "{n} min",
     "hours": "~{n} h",
     "hoursRange": "~{min}–{max} h",

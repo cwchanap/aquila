@@ -23,7 +23,8 @@ export function authStateFromSession(result: SessionResult): AuthState {
     return result.user ? 'signed-in' : 'signed-out';
 }
 
-/** Bounds a page's wait for the session lookup before it renders degraded. */
+/** Bounds a page's wait for the session lookup when it has client-side
+ *  recheck recovery (reader and stories) before rendering degraded. */
 export const SESSION_LOOKUP_TIMEOUT_MS = 1500;
 
 export interface SessionLookupOptions {

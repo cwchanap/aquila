@@ -1,3 +1,4 @@
+import type { Locale } from '@aquila/stories';
 import { getBrowserStorage } from './reader-mode';
 import {
     boundStoryProgressMap,
@@ -23,21 +24,23 @@ export interface SyncStoryProgressOptions {
     keepalive?: boolean;
     /** Account the upload belongs to — also sent in the body so the
      *  server can reject the merge when the session no longer matches (a
-     *  tab that outlived its sign-in). A local map tagged for a different
-     *  account is never uploaded — sync downloads that account's map and
-     *  replaces the local copy instead, so shared-browser progress cannot
-     *  leak between accounts. */
+     *  tab that outlived its sign-in). */
     accountId: string;
+    /** Preferred locale when claiming anonymous legacy reader sessions. */
+    locale?: Locale;
 }
+
+export type StoryProgressSyncFailurePhase =
+    'local-read' | 'remote' | 'local-save';
 
 export type StoryProgressSyncResult =
     | { ok: true }
     | {
           ok: false;
-          /** True when the local store failed (unreadable map or
-           *  uncommittable merge) — the request may never have left this
-           *  browser. False when the request or its response failed. */
-          local: boolean;
+          /** Distinguishes pre-upload local failure (`local-read`, nothing
+           *  sent), network/server failure (`remote`), and post-upload local
+           *  write failure (`local-save`, server already updated). */
+          phase: StoryProgressSyncFailurePhase;
           error: unknown;
       };
 
@@ -63,12 +66,24 @@ async function postProgress(
         return readProgressResponse(await fetch(PROGRESS_ENDPOINT, init));
     }
 
-    return readProgressResponse(
-        await fetch(PROGRESS_ENDPOINT, {
-            ...init,
-            signal: AbortSignal.timeout(options.timeoutMs),
-        })
-    );
+    // AbortController + setTimeout works on Safari < 16 where AbortSignal.timeout
+    // does not exist, and integrates cleanly with fake timers in tests.
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+        controller.abort(
+            new DOMException('The operation timed out.', 'TimeoutError')
+        );
+    }, options.timeoutMs);
+    try {
+        return await readProgressResponse(
+            await fetch(PROGRESS_ENDPOINT, {
+                ...init,
+                signal: controller.signal,
+            })
+        );
+    } finally {
+        clearTimeout(timer);
+    }
 }
 
 /** Validates the raw `{ progress }` reply; null means unusable. */
@@ -84,134 +99,55 @@ function serverProgress(payload: unknown): StoryProgressMap | null {
 }
 
 /**
- * Pushes the browser's progress to the account and pulls the merged copy.
+ * Pushes the account's browser progress and pulls the merged copy.
  * Only a caller that already knows the visitor is signed in should invoke
- * it, and it must pass that account's id: a map tagged for a different
- * account is quarantined — replaced by the signed-in account's download
- * rather than uploaded — so one user's progress never enters another's row.
+ * it, and it must pass that account's id. Any anonymous local progress is
+ * claimed into this account's isolated key first so it rides the upload.
  */
 export async function syncStoryProgress(
     options: SyncStoryProgressOptions
 ): Promise<StoryProgressSyncResult> {
-    const store = new StoryProgressStore(getBrowserStorage());
-    const fail = (local: boolean, error: unknown): StoryProgressSyncResult => ({
+    const store = new StoryProgressStore(
+        getBrowserStorage(),
+        Date.now,
+        options.accountId
+    );
+    const fail = (
+        phase: StoryProgressSyncFailurePhase,
+        error: unknown
+    ): StoryProgressSyncResult => ({
         ok: false,
-        local,
+        phase,
         error,
     });
     try {
-        // A copy sidelined for this account merges back before anything
-        // else reads owner or map — it is this account's own data waiting
-        // to be claimed, so it belongs to the upload.
-        store.restoreSidelined(options.accountId);
-        const owner = store.getOwner();
-        const foreignOwned = owner !== null && owner !== options.accountId;
-        let upload: StoryProgressMap = {};
-        if (foreignOwned) {
-            // The foreign map is downloaded, not uploaded — but a copy
-            // sidelined for this account is still its own data. It rides
-            // the request so the restore after the commit does not report
-            // success while leaving those records unuploaded.
-            upload = boundStoryProgressMap(
-                store.getSidelined(options.accountId)
+        if (!store.claimAnonymous(options.locale)) {
+            return fail(
+                'local-read',
+                new Error('Local progress is unavailable')
             );
-        } else {
-            const local = store.getAllChecked();
-            if (!local)
-                return fail(true, new Error('Local progress is unavailable'));
-            // Bounding happens on write too, but a map saved before the
-            // bound existed would otherwise 413 every sync. A sidelined
-            // copy that failed to merge back is still this account's own
-            // data — it joins the upload directly so a restore landing
-            // after the commit cannot report success while leaving it
-            // unuploaded.
-            upload = boundStoryProgressMap(
-                mergeStoryProgressMaps(
-                    local,
-                    store.getSidelined(options.accountId)
-                )
-            );
-            // An unowned map is claimed before it can upload: if the
-            // request reaches the server but its response or the commit
-            // is lost, the copy stays tagged for this account — untagged,
-            // it would upload again under the next account to sign in on
-            // this browser. The claim only lands while the map is still
-            // unowned: a tag that appears meanwhile belongs to someone
-            // else and aborts the upload.
-            if (owner === null && !store.setOwner(options.accountId, null)) {
-                return fail(true, new Error('Local progress is unavailable'));
-            }
         }
+        const local = store.getAllChecked();
+        if (!local) {
+            return fail(
+                'local-read',
+                new Error('Local progress is unavailable')
+            );
+        }
+        const upload = boundStoryProgressMap(local);
         const payload = await postProgress(upload, options);
         const stored = serverProgress(payload);
         if (!stored) {
-            return fail(false, new Error('Invalid progress response'));
+            return fail('remote', new Error('Invalid progress response'));
         }
-        if (foreignOwned) {
-            const current = store.getWithOwnerChecked();
-            if (!current)
-                return fail(true, new Error('Could not save merged progress'));
-            // Whose records survive the download depends on who owns the
-            // map now: this account's own record() quarantines and retags
-            // the map, so owner === accountId proves the in-flight records
-            // are this account's and merges them with the response. The
-            // previous owner's tag means everything in flight is still
-            // theirs — the download replaces the map (their copy is
-            // sidelined, and their reader sessions go with it). A null
-            // owner means a signed-out record detached the foreign map
-            // mid-request: the unowned copy is claimable anonymous data,
-            // so the download merges into it under this account's tag.
-            // Any other tag means a third account claimed the map behind
-            // the request; its data is not this sync's to merge or to
-            // discard.
-            const committed =
-                current.owner === options.accountId
-                    ? store.update(
-                          map => mergeStoryProgressMaps(map, stored),
-                          options.accountId,
-                          options.accountId
-                      )
-                    : current.owner === owner
-                      ? store.replaceAll(stored, options.accountId)
-                      : current.owner === null
-                        ? store.update(
-                              map => mergeStoryProgressMaps(map, stored),
-                              options.accountId,
-                              null
-                          )
-                        : false;
-            if (!committed) {
-                return fail(true, new Error('Could not save merged progress'));
-            }
-            // Sessions leave only with a displaced foreign map — a
-            // same-account merge keeps the sessions that account wrote
-            // while the request was out (its record() already cleared
-            // the previous owner's).
-            if (current.owner === owner) {
-                store.dropReaderSessions();
-            }
-            store.restoreSidelined(options.accountId);
-            return { ok: true };
+        if (!store.update(current => mergeStoryProgressMaps(current, stored))) {
+            return fail(
+                'local-save',
+                new Error('Could not save merged progress')
+            );
         }
-        // A line can be read while the request is in flight; merge into the
-        // freshest local copy so a late response cannot erase it. update()
-        // performs the whole read/merge/write in one store operation so a
-        // failed read is never mistaken for an empty map and committed —
-        // the owner tag commits in the same write, and the expected-owner
-        // check refuses the merge if the map changed hands behind the
-        // request.
-        if (
-            !store.update(
-                current => mergeStoryProgressMaps(current, stored),
-                options.accountId,
-                options.accountId
-            )
-        ) {
-            return fail(true, new Error('Could not save merged progress'));
-        }
-        store.restoreSidelined(options.accountId);
         return { ok: true };
     } catch (error) {
-        return fail(false, error);
+        return fail('remote', error);
     }
 }

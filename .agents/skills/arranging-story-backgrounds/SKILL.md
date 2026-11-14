@@ -111,7 +111,7 @@ Pass the **current image first** and say "recreate image 1 exactly, change only 
 | Group order reversed (students, couple, family)                            | State the order near to far **and** on-screen left to right, with each person's look. Recreate with the current image first. |
 | People packed together, groups touching                                    | Add "at least three empty cushions between every pair of groups" and say it once more at the end of the prompt.              |
 | A named person missing, or a duplicate                                     | Spell out the headcount per bench and name the missing person with their look.                                               |
-| Ghost figures in window reflections                                        | Say "reflections show only these same people, no extra figures".                                                             |
+| Ghost figures in window reflections                                        | Say "the window glass shows no reflections of people and no glare". Asking for reflections of the cast paints see-through doubles. |
 | City skyline in a tunnel or fantasy window                                 | Say what the window shows and also what it must not show ("no city, no buildings, no lights").                               |
 | Full moon where the story has crescents, or a moon in a forest-only window | Describe the moon as a thin sickle, say the disc is dark, and say "no moon" for windows that shouldn't have one.             |
 | Close-up comes back as a wide shot                                         | Add "the camera angle and distance follow the prompt, not the reference".                                                    |

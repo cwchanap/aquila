@@ -133,6 +133,10 @@ export async function requireAuth(
  * Parse and validate request body against a Zod schema.
  * Returns validated data or an error response.
  *
+ * When `maxBytes` is set, the body is read once as text and rejected with 413
+ * if its UTF-8 size exceeds the cap (independent of Content-Length). Without
+ * it, behavior is unchanged.
+ *
  * @example
  * const { data, error } = await parseBody(request, StoryCreateSchema);
  * if (error) return error;
@@ -140,13 +144,34 @@ export async function requireAuth(
  */
 export async function parseBody<T>(
     request: Request,
-    schema: ZodSchema<T>
+    schema: ZodSchema<T>,
+    maxBytes?: number
 ): Promise<{ data: T; error: null } | { data: null; error: Response }> {
     let body: unknown;
-    try {
-        body = await request.json();
-    } catch {
-        return { data: null, error: errorResponse('Malformed JSON', 400) };
+    if (maxBytes === undefined) {
+        try {
+            body = await request.json();
+        } catch {
+            return { data: null, error: errorResponse('Malformed JSON', 400) };
+        }
+    } else {
+        let text: string;
+        try {
+            text = await request.text();
+        } catch {
+            return { data: null, error: errorResponse('Malformed JSON', 400) };
+        }
+        if (new TextEncoder().encode(text).byteLength > maxBytes) {
+            return {
+                data: null,
+                error: errorResponse('Payload too large', 413),
+            };
+        }
+        try {
+            body = JSON.parse(text);
+        } catch {
+            return { data: null, error: errorResponse('Malformed JSON', 400) };
+        }
     }
 
     const result = schema.safeParse(body);

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import {
     Building2,
@@ -15,20 +15,51 @@
   import { getTranslations } from '@aquila/stories/translations';
   import { STORY_CATALOG, type StoryAccent } from '@aquila/stories/catalog';
   import { assetHostUrl } from '@/lib/asset-host';
+  import type { AuthState } from '@/lib/auth-utils';
+  import { authClient } from '@/lib/auth-client';
   import { getBrowserStorage } from '@/lib/reader-mode';
   import {
     StoryProgressStore,
     importSavedSessions,
     type StoryProgressMap,
   } from '@/lib/story-progress-store';
+  import {
+    STORY_SELECT_SYNC_TIMEOUT_MS,
+    syncStoryProgress,
+  } from '@/lib/story-progress-sync';
   import { buildCards, pickContinueCard } from '@/lib/story-select';
 
-  let { locale }: { locale: Locale } = $props();
+  let {
+    locale,
+    authState: serverAuthState,
+    userId: serverUserId,
+  }: { locale: Locale; authState: AuthState; userId: string | null } = $props();
+
+  // The server render freezes authState and userId at SSR time; a page
+  // restored from the back/forward cache can predate the visitor's last
+  // sign-in or sign-out, so a persisted restore revalidates before deciding
+  // to sync. untrack: the prop seeds a mutable copy the client re-checks.
+  let authState = $state(untrack(() => serverAuthState));
+  let userId = $state<string | null>(untrack(() => serverUserId));
 
   let t = $derived(getTranslations(locale).stories);
   // Server render (and the first client frame) shows every story as unread;
   // saved progress lives in this browser only and is applied on mount.
   let progress: StoryProgressMap = $state({});
+  let syncState: 'idle' | 'synced' | 'failed' | 'local-failed' | 'local-save-failed' = $state('idle');
+  let syncInFlight: Promise<void> | null = null;
+  // A join during an in-flight request sets this so exactly one follow-up
+  // pass runs behind it; the running request still carries the pre-restore
+  // account and progress.
+  let syncRerunQueued = false;
+  // Persisted restores can overlap: each one re-reads the session, and only
+  // the newest may apply its answer — a slow earlier reply must not reinstate
+  // a stale sign-in over a newer sign-out (or the reverse). validatedSeq marks
+  // the newest restore that produced a validated answer; a queued follow-up
+  // sync compares the two — a restore that began but never validated leaves
+  // the retained account unfit to sync on.
+  let restoreSeq = 0;
+  let validatedSeq = 0;
   // Covers live on the R2 asset host — an <img> that 404s removes itself so
   // the accent-gradient + icon fallback underneath shows through.
   let failedCovers = new SvelteSet<string>();
@@ -37,6 +68,28 @@
   let shorts = $derived(cards.filter(c => c.entry.format === 'short'));
   let sagas = $derived(cards.filter(c => c.entry.format === 'saga'));
   let continueCard = $derived(pickContinueCard(cards));
+
+  type SyncLine = 'syncing' | 'synced' | 'failed' | 'local-failed' | 'local-save-failed' | 'signed-out';
+  let syncLine = $derived.by((): SyncLine | null => {
+    if (authState === 'unavailable') return null;
+    if (authState === 'signed-out') {
+      return Object.keys(progress).length > 0 ? 'signed-out' : null;
+    }
+    if (syncState === 'synced') return 'synced';
+    if (syncState === 'failed') return 'failed';
+    if (syncState === 'local-failed') return 'local-failed';
+    if (syncState === 'local-save-failed') return 'local-save-failed';
+    return 'syncing';
+  });
+  let syncDot = $derived(
+    syncLine === 'synced'
+      ? 'bg-emerald-300/80'
+      : syncLine === 'failed' || syncLine === 'local-failed' || syncLine === 'local-save-failed'
+        ? 'bg-amber-300/80'
+        : syncLine === 'syncing'
+          ? 'bg-cyan-300/70 motion-safe:animate-pulse'
+          : 'bg-white/40'
+  );
 
   const ACCENTS: Record<
     StoryAccent,
@@ -69,20 +122,133 @@
 
   function refresh(): void {
     const storage = getBrowserStorage();
-    const store = new StoryProgressStore(storage);
+    const accountId = authState === 'signed-in' ? userId : null;
+    const store = new StoryProgressStore(storage, Date.now, accountId);
     // Places saved before per-story progress existed live only in the
     // reader's per-locale session; carry them over once so an existing
-    // reader still sees Continue.
-    importSavedSessions(store, storage, locale);
+    // reader still sees Continue. Signed-in visits also claim anonymous
+    // progress into the account's isolated key. Both write across keys,
+    // so they wait on a proven identity: a restore's retained account can
+    // be stale until its session re-read answers, and claiming under it
+    // would move anonymous progress to the wrong owner — deleting the
+    // anonymous copies before a sign-out is even discovered.
+    if (validatedSeq === restoreSeq) {
+      importSavedSessions(store, storage, locale, accountId);
+      if (accountId) store.claimAnonymous(locale);
+    }
     progress = store.getAll();
+  }
+
+  /** Re-reads the session; null keeps the server-rendered state. */
+  async function fetchAuthState(): Promise<{
+    authState: AuthState;
+    userId: string | null;
+  } | null> {
+    try {
+      const { data, error } = await authClient.getSession();
+      if (error) return null;
+      return data?.user
+        ? { authState: 'signed-in', userId: data.user.id }
+        : { authState: 'signed-out', userId: null };
+    } catch {
+      return null;
+    }
+  }
+
+  /** Applies a revalidated session; any validated answer — signed-in or
+   *  signed-out — means auth is back, so the SSR degraded banner comes
+   *  down either way. */
+  function applyAuthState(refreshed: {
+    authState: AuthState;
+    userId: string | null;
+  }): void {
+    authState = refreshed.authState;
+    userId = refreshed.userId;
+    document.getElementById('auth-degraded-banner')?.remove();
+    // The account answer changes which local map may be shown: cards
+    // refresh against the now-known owner before any sync runs.
+    refresh();
+  }
+
+  /** Re-reads the session for a cached or uncertain page and applies the
+   *  answer — signed-in or signed-out, a validated result means auth is
+   *  back. Only the newest restore may apply: a stale reply or a failed
+   *  re-read keeps no state. */
+  async function revalidateSession(): Promise<void> {
+    const ticket = ++restoreSeq;
+    const refreshed = await fetchAuthState();
+    if (ticket !== restoreSeq || refreshed === null) return;
+    validatedSeq = ticket;
+    applyAuthState(refreshed);
+    if (authState === 'signed-in') void runSync();
+  }
+
+  function runSync(): Promise<void> {
+    // A cached page returning mid-request joins the request already
+    // running and queues one more pass behind it — the restore may have
+    // observed a different account or newer local progress than the
+    // running request carries.
+    if (syncInFlight) {
+      if (!syncRerunQueued) {
+        syncRerunQueued = true;
+        void syncInFlight.finally(() => {
+          syncRerunQueued = false;
+          // The queued pass runs only when the newest restore produced a
+          // validated session — a restore whose revalidation failed leaves
+          // the retained account unfit to sync on.
+          if (validatedSeq === restoreSeq && authState === 'signed-in')
+            void runSync();
+        });
+      }
+      return syncInFlight;
+    }
+    // A retry starts from 'idle' so the previous answer is not shown as
+    // current while the new request is unanswered.
+    syncState = 'idle';
+    const run = (async () => {
+      try {
+        if (!userId) {
+          syncState = 'failed';
+          return;
+        }
+        const result = await syncStoryProgress({
+          timeoutMs: STORY_SELECT_SYNC_TIMEOUT_MS,
+          accountId: userId,
+          locale,
+        });
+        syncState = result.ok
+          ? 'synced'
+          : result.phase === 'local-read'
+            ? 'local-failed'
+            : result.phase === 'local-save'
+              ? 'local-save-failed'
+              : 'failed';
+      } catch {
+        syncState = 'failed';
+      } finally {
+        syncInFlight = null;
+        refresh();
+      }
+    })();
+    syncInFlight = run;
+    return run;
   }
 
   onMount(() => {
     refresh();
+    if (authState === 'signed-in') void runSync();
+    // An SSR 'unavailable' is often a slow cold start, not an outage — one
+    // background session re-read decides whether this visit can sync.
+    if (authState === 'unavailable') void revalidateSession();
     // Returning with the Back button can restore this page from the
     // back/forward cache; re-read so the cards show the latest place.
     const onPageShow = (event: Event) => {
-      if ((event as Event & { persisted?: boolean }).persisted) refresh();
+      if (!(event as Event & { persisted?: boolean }).persisted) return;
+      // The ticket bump marks the retained account unproven, so the
+      // refresh below re-reads cards without seeding or claiming under
+      // it — those writes resume once the session answer lands.
+      void revalidateSession();
+      refresh();
     };
     window.addEventListener('pageshow', onPageShow);
     return () => window.removeEventListener('pageshow', onPageShow);
@@ -118,6 +284,21 @@
         </span>
       </a>
     </section>
+  {/if}
+
+  {#if syncLine}
+    <p
+      data-testid="progress-sync-status"
+      role={authState === 'signed-in' ? 'status' : undefined}
+      class="-my-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-white/70 drop-shadow-[0_1px_6px_rgba(15,23,42,0.6)]"
+    >
+      <span class="h-1.5 w-1.5 shrink-0 rounded-full {syncDot}" aria-hidden="true"></span>
+      {#if syncLine === 'signed-out'}
+        <span>{t.syncLocalOnly} <a href={`/${locale}/login`} class="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white">{t.syncSignIn}</a></span>
+      {:else}
+        <span>{syncLine === 'synced' ? t.syncSynced : syncLine === 'local-failed' ? t.syncLocalFailed : syncLine === 'local-save-failed' ? t.syncLocalSaveFailed : syncLine === 'failed' ? t.syncFailed : t.syncSyncing}</span>
+      {/if}
+    </p>
   {/if}
 
   <section aria-labelledby="quick-reads-heading" class="flex flex-col gap-4" data-testid="quick-reads">

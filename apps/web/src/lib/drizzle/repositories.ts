@@ -8,6 +8,7 @@ import {
     scenes,
     bookmarks,
     accounts,
+    readingProgress,
     type User,
     type NewUser,
     type CharacterSetup,
@@ -22,6 +23,12 @@ import {
     type NewBookmark,
     type Account,
 } from './schema.js';
+import {
+    boundStoryProgressMap,
+    mergeStoryProgressMaps,
+    normalizeStoryProgressMap,
+    type StoryProgressMap,
+} from '../story-progress.js';
 import { nanoid } from 'nanoid';
 
 // ============= User Repository =============
@@ -166,6 +173,34 @@ export class StoryRepository extends BaseRepository<typeof stories, Story> {
             .from(stories)
             .where(eq(stories.userId, userId))
             .orderBy(desc(stories.updatedAt));
+    }
+
+    /** Deletes the story plus the rows the dropped story FKs used to
+     *  cascade. The story delete runs first and the dependents only when it
+     *  removes a row: bookmarks go by story id alone (any signed-in user can
+     *  bookmark any story id — the bookmark API does not check story
+     *  ownership), so a no-op story delete must not wipe other users'
+     *  bookmarks. Character setups keep the owner scope: the setup API only
+     *  accepts compiled story ids, so a setup can never carry a Story Writer
+     *  id anyway. */
+    async deleteWithDependents(id: string, userId: string): Promise<boolean> {
+        return await this.db.transaction(async tx => {
+            const deleted = await tx
+                .delete(stories)
+                .where(and(eq(stories.id, id), eq(stories.userId, userId)))
+                .returning({ id: stories.id });
+            if (deleted.length === 0) return false;
+            await tx.delete(bookmarks).where(eq(bookmarks.storyId, id));
+            await tx
+                .delete(characterSetups)
+                .where(
+                    and(
+                        eq(characterSetups.userId, userId),
+                        eq(characterSetups.storyId, id)
+                    )
+                );
+            return true;
+        });
     }
 
     async update(
@@ -433,6 +468,63 @@ export class BookmarkRepository extends BaseRepository<
             .returning();
 
         return bookmark;
+    }
+}
+
+// ============= Reading Progress Repository =============
+export class ReadingProgressRepository extends BaseRepository<
+    typeof readingProgress,
+    typeof readingProgress.$inferSelect
+> {
+    protected table = readingProgress;
+    protected idColumn = readingProgress.userId;
+
+    /**
+     * Merge a client map into the account's stored map atomically. Locking the
+     * user row (rather than the progress row) serializes two first-time writes
+     * without blocking FK-checked session/bookmark/character inserts.
+     */
+    async mergeForUser(
+        userId: string,
+        localMap: StoryProgressMap
+    ): Promise<StoryProgressMap> {
+        return await this.db.transaction(async tx => {
+            await tx
+                .select({ id: users.id })
+                .from(users)
+                .where(eq(users.id, userId))
+                .for('no key update');
+
+            const [stored] = await tx
+                .select()
+                .from(readingProgress)
+                .where(eq(readingProgress.userId, userId))
+                .limit(1);
+
+            // Bound the stored map the same way the browser bounds its copy:
+            // the 48 KiB request cap limits a single POST, and only this
+            // bound stops the row from growing across POSTs.
+            const merged = boundStoryProgressMap(
+                mergeStoryProgressMaps(
+                    localMap,
+                    normalizeStoryProgressMap(stored?.data)
+                )
+            );
+            const updatedAt = new Date();
+
+            if (stored) {
+                await tx
+                    .update(readingProgress)
+                    .set({ data: merged, updatedAt })
+                    .where(eq(readingProgress.userId, userId));
+            } else {
+                await tx
+                    .insert(readingProgress)
+                    .values({ userId, data: merged, updatedAt });
+            }
+
+            return merged;
+        });
     }
 }
 

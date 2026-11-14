@@ -43,7 +43,7 @@ if (isAuthed && user?.id) {
 <MainLayout title={t("setup.title")}>
   {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
   <!-- Ocean Background with animated waves -->
-  <div id="setup-root" data-authed={isAuthed} data-story={storyId} data-locale={locale} data-saving-label={t("setup.saving")} data-start-label={t("setup.startAdventure")} class="min-h-screen relative overflow-hidden">
+  <div id="setup-root" data-authed={isAuthed} data-auth-uncertain={authFailed} data-story={storyId} data-locale={locale} data-saving-label={t("setup.saving")} data-start-label={t("setup.startAdventure")} class="min-h-screen relative overflow-hidden">
     <!-- Gradient Ocean Background -->
     <div class="absolute inset-0 bg-linear-to-b from-sky-200 via-sky-300 to-blue-400"></div>
 
@@ -182,94 +182,10 @@ if (isAuthed && user?.id) {
 </MainLayout>
 
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    const form = document.getElementById('setup-form');
+  import { CharacterSetupManager } from '@/lib/character-setup-manager';
+
+  document.addEventListener('DOMContentLoaded', () => {
     const root = document.getElementById('setup-root');
-    const urlParams = new URLSearchParams(window.location.search);
-    const story = (root?.getAttribute('data-story') || urlParams.get('story') || 'train_adventure');
-    const isAuthed = (root?.getAttribute('data-authed') === 'true');
-    const pageLocale = root?.getAttribute('data-locale') || 'en';
-
-    // If there's a saved local setup, prefill the input (do NOT auto-redirect)
-    try {
-      const local = localStorage.getItem(`aquila:character:${story}`);
-      if (local) {
-        const { characterName } = JSON.parse(local);
-        if (characterName && typeof characterName === 'string') {
-          const nameInput = document.getElementById('character-name');
-          if (nameInput && !(nameInput as HTMLInputElement).value) {
-            (nameInput as HTMLInputElement).value = characterName;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to read local character setup:', e);
-    }
-
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nameInput = document.getElementById('character-name') as HTMLInputElement;
-        const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-        const name = nameInput.value.trim();
-        
-        if (!name) {
-          alert('Please enter a character name');
-          return;
-        }
-
-        // Disable form during submission
-        const originalText = submitButton.textContent;
-        submitButton.disabled = true;
-        submitButton.textContent = root?.getAttribute('data-saving-label') || 'Saving...';
-
-        try {
-          if (isAuthed) {
-            // Save character setup to database
-            const response = await fetch('/api/character-setup', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                characterName: name,
-                storyId: story
-              })
-            });
-
-            if (!response.ok) {
-              let errorMsg = `HTTP ${response.status}: ${response.statusText}`;
-              try {
-                const bodyText = await response.text();
-                if (bodyText) {
-                  try {
-                    const errorData = JSON.parse(bodyText);
-                    errorMsg = errorData.error || errorMsg;
-                  } catch {
-                    errorMsg = bodyText;
-                  }
-                }
-              } catch {
-                // Body read failed, use default error message
-              }
-              throw new Error(errorMsg);
-            }
-          } else {
-            // Save character setup locally
-            localStorage.setItem(`aquila:character:${story}`, JSON.stringify({ characterName: name }));
-          }
-
-          // Redirect to story
-          window.location.href = `/${pageLocale}/story/${story}`;
-        } catch (error) {
-          console.error('Setup error:', error);
-          alert('Failed to save character setup. Please try again.');
-
-          // Re-enable form
-          submitButton.disabled = false;
-          submitButton.textContent = originalText || root?.getAttribute('data-start-label') || 'Start Adventure';
-        }
-      });
-    }
+    if (root) new CharacterSetupManager(root).initialize();
   });
 </script>

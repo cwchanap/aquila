@@ -1,7 +1,10 @@
 ---
 import MainLayout from '@/layouts/main.astro';
+import AuthDegradedBanner from '@/components/AuthDegradedBanner.astro';
 import { getTranslations, isLocale } from '@aquila/stories/translations';
 import type { Locale } from '@aquila/stories';
+import { authStateFromSession, getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '@/lib/auth-utils';
+import { t as translate } from '@/lib/utils';
 
 interface Props {
   locale?: string;
@@ -11,29 +14,21 @@ const rawLocale = (Astro.props.locale as string | undefined) || Astro.params.loc
 const locale: Locale = isLocale(rawLocale) ? rawLocale : 'en';
 const translations = getTranslations(locale);
 const title = translations.reader.title;
+const sessionResult = await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS });
+const authState = authStateFromSession(sessionResult);
+const authFailed = sessionResult.status === 'error';
+const userId = sessionResult.status === 'ok' ? (sessionResult.user?.id ?? null) : null;
 ---
 
 <MainLayout title={title}>
-    <div id="reader-container" class="min-h-screen" data-locale={translations.locale}>
+    {authFailed && <AuthDegradedBanner message={translate(locale, 'auth.degradedBanner')} />}
+    <div id="reader-container" class="min-h-screen" data-locale={translations.locale} data-auth-state={authState} data-user-id={userId}>
         <!-- Reader will be mounted here -->
     </div>
 
     <script>
-        import { isLocale } from '@aquila/stories/translations';
-        import { ReaderManager } from '@/lib/reader-manager';
+        import { startReader } from '@/lib/reader-bootstrap';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('reader-container');
-            if (!container) {
-                console.warn('Reader container element not found');
-                return;
-            }
-            const attr = container.getAttribute('data-locale');
-            const locale = isLocale(attr) ? attr : 'en';
-            const manager = new ReaderManager(locale);
-            void manager.initialize().catch(error =>
-                console.error('Reader initialization failed', error)
-            );
-        });
+        document.addEventListener('DOMContentLoaded', () => startReader());
     </script>
 </MainLayout>

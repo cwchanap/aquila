@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+    mergeStoryProgressMaps,
+    type StoryProgressMap,
+} from '../story-progress';
+import {
     STORY_PROGRESS_KEY,
     StoryProgressStore,
     importSavedSessions,
+    storyProgressKey,
 } from '../story-progress-store';
+import { readerSessionKey } from '../reader-session';
 
 function session(
     storyId: string,
@@ -178,7 +184,7 @@ describe('StoryProgressStore', () => {
             ),
         });
         const store = new StoryProgressStore(storage, () => 50);
-        importSavedSessions(store, storage, 'en');
+        importSavedSessions(store, storage, 'en', null);
 
         expect(store.getAll()).toEqual({
             the_seventh_mirror: {
@@ -204,7 +210,7 @@ describe('StoryProgressStore', () => {
             dialogueIndex: 0,
             atEnding: false,
         });
-        importSavedSessions(store, storage, 'en');
+        importSavedSessions(store, storage, 'en', null);
         expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch10_act1');
     });
 
@@ -223,7 +229,7 @@ describe('StoryProgressStore', () => {
             ),
         });
         const store = new StoryProgressStore(storage);
-        importSavedSessions(store, storage, 'zh');
+        importSavedSessions(store, storage, 'zh', null);
         expect(store.get('the_seventh_mirror')?.sceneId).toBe('ch2_act1');
 
         for (const raw of [
@@ -234,11 +240,11 @@ describe('StoryProgressStore', () => {
         ]) {
             const other = memoryStorage({ 'aquila:readerState:en': raw });
             const fresh = new StoryProgressStore(other);
-            importSavedSessions(fresh, other, 'en');
+            importSavedSessions(fresh, other, 'en', null);
             expect(fresh.getAll()).toEqual({});
         }
         const empty = new StoryProgressStore(null);
-        importSavedSessions(empty, null, 'en');
+        importSavedSessions(empty, null, 'en', null);
         expect(
             empty.seed({ storyId: 's', sceneId: 'act1', dialogueIndex: 0 })
         ).toBe(false);
@@ -270,5 +276,501 @@ describe('StoryProgressStore', () => {
                 atEnding: false,
             })
         ).toBe(false);
+    });
+
+    it('does not record over a stored map it cannot read', () => {
+        // A failed read is not an empty map: writing here would replace
+        // every other story's record with a one-story map.
+        const stored = {
+            the_seventh_mirror: {
+                sceneId: 'ch4_act1',
+                dialogueIndex: 2,
+                updatedAt: 10,
+                finished: false,
+                endings: [],
+            },
+        };
+        const storage = memoryStorage({
+            [storyProgressKey('user-a')]: JSON.stringify(stored),
+        });
+        const writes: string[] = [];
+        const origSetItem = storage.setItem.bind(storage);
+        storage.setItem = (key, value) => {
+            writes.push(key);
+            origSetItem(key, value);
+        };
+        storage.getItem = () => {
+            throw new Error('SecurityError');
+        };
+
+        const store = new StoryProgressStore(storage, () => 20, 'user-a');
+        expect(
+            store.record({
+                storyId: 'elevator_game',
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                atEnding: false,
+            })
+        ).toBe(false);
+        expect(writes).toEqual([]);
+
+        const corrupt = memoryStorage({
+            [storyProgressKey('user-a')]: '{not json',
+        });
+        expect(
+            new StoryProgressStore(corrupt, () => 20, 'user-a').record({
+                storyId: 'elevator_game',
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                atEnding: false,
+            })
+        ).toBe(false);
+        expect(corrupt.getItem(storyProgressKey('user-a'))).toBe('{not json');
+    });
+
+    it('commits a map merged against the freshest stored copy', () => {
+        const storage = memoryStorage();
+        const store = new StoryProgressStore(storage);
+        const merged: StoryProgressMap = {
+            elevator_game: {
+                sceneId: 'act3',
+                dialogueIndex: 4,
+                updatedAt: 9,
+                finished: true,
+                endings: ['act3'],
+                visited: ['act1', 'act3'],
+            },
+        };
+        expect(store.update(() => merged)).toBe(true);
+        // Stored value is a flat StoryProgressMap (rollback-compatible).
+        expect(
+            JSON.parse(storage.getItem(STORY_PROGRESS_KEY) as string)
+        ).toEqual(merged);
+        expect(store.getAll()).toEqual(merged);
+    });
+
+    it('merges into what another write left after the caller last read', () => {
+        const storage = memoryStorage();
+        const store = new StoryProgressStore(storage);
+        // A line recorded after the pre-request snapshot must survive the
+        // merge commit.
+        storage.setItem(
+            STORY_PROGRESS_KEY,
+            JSON.stringify({
+                elevator_game: {
+                    sceneId: 'act2',
+                    dialogueIndex: 3,
+                    updatedAt: 40,
+                    finished: false,
+                    endings: [],
+                },
+            })
+        );
+        expect(
+            store.update(current =>
+                mergeStoryProgressMaps(current, {
+                    elevator_game: {
+                        sceneId: 'act1',
+                        dialogueIndex: 0,
+                        updatedAt: 9,
+                        finished: false,
+                        endings: [],
+                    },
+                })
+            )
+        ).toBe(true);
+        expect(store.get('elevator_game')).toMatchObject({
+            sceneId: 'act2',
+            updatedAt: 40,
+        });
+    });
+
+    it('reports a failed commit without throwing', () => {
+        const merged: StoryProgressMap = {
+            elevator_game: {
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                updatedAt: 1,
+                finished: false,
+                endings: [],
+            },
+        };
+        expect(new StoryProgressStore(null).update(() => merged)).toBe(false);
+        const unreadable = memoryStorage();
+        unreadable.getItem = () => {
+            throw new Error('SecurityError');
+        };
+        expect(new StoryProgressStore(unreadable).update(() => merged)).toBe(
+            false
+        );
+        const throwing = memoryStorage();
+        throwing.setItem = () => {
+            throw new Error('QuotaExceededError');
+        };
+        expect(new StoryProgressStore(throwing).update(() => merged)).toBe(
+            false
+        );
+    });
+
+    describe('getAllChecked', () => {
+        it('returns the stored map, and an empty map when nothing is stored', () => {
+            const stored = {
+                elevator_game: {
+                    sceneId: 'act1',
+                    dialogueIndex: 2,
+                    updatedAt: 5,
+                    finished: false,
+                    endings: [],
+                },
+            };
+            const storage = memoryStorage({
+                [STORY_PROGRESS_KEY]: JSON.stringify(stored),
+            });
+            expect(new StoryProgressStore(storage).getAllChecked()).toEqual(
+                stored
+            );
+            expect(
+                new StoryProgressStore(memoryStorage()).getAllChecked()
+            ).toEqual({});
+        });
+
+        it('returns null when storage cannot be read, unlike getAll', () => {
+            expect(new StoryProgressStore(null).getAllChecked()).toBeNull();
+
+            const throwing = memoryStorage();
+            throwing.getItem = () => {
+                throw new Error('SecurityError');
+            };
+            expect(new StoryProgressStore(throwing).getAllChecked()).toBeNull();
+            expect(new StoryProgressStore(throwing).getAll()).toEqual({});
+
+            const corrupt = memoryStorage({
+                [STORY_PROGRESS_KEY]: '{not json',
+            });
+            expect(new StoryProgressStore(corrupt).getAllChecked()).toBeNull();
+            expect(new StoryProgressStore(corrupt).getAll()).toEqual({});
+        });
+    });
+
+    it('keeps a legacy-imported place when the account has none for it', () => {
+        const storage = memoryStorage({
+            'aquila:readerState:en': session(
+                'the_seventh_mirror',
+                'ch9_act3',
+                4
+            ),
+        });
+        const store = new StoryProgressStore(storage, () => 50);
+        importSavedSessions(store, storage, 'en', null);
+        const remote: StoryProgressMap = {
+            elevator_game: {
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                updatedAt: 900,
+                finished: false,
+                endings: [],
+            },
+        };
+        expect(
+            store.update(current => mergeStoryProgressMaps(current, remote))
+        ).toBe(true);
+        expect(store.get('the_seventh_mirror')).toMatchObject({
+            sceneId: 'ch9_act3',
+            dialogueIndex: 4,
+            updatedAt: 0,
+        });
+        expect(store.get('elevator_game')?.updatedAt).toBe(900);
+    });
+
+    describe('per-owner key isolation', () => {
+        it('stores anonymous and signed-in progress under distinct flat keys', () => {
+            expect(storyProgressKey(null)).toBe(STORY_PROGRESS_KEY);
+            expect(storyProgressKey('')).toBe(STORY_PROGRESS_KEY);
+            expect(storyProgressKey('user-a')).toBe(
+                `${STORY_PROGRESS_KEY}:user-a`
+            );
+
+            const storage = memoryStorage();
+            const anon = new StoryProgressStore(storage, () => 10, null);
+            const userA = new StoryProgressStore(storage, () => 20, 'user-a');
+            const userB = new StoryProgressStore(storage, () => 30, 'user-b');
+
+            anon.record({
+                storyId: 'elevator_game',
+                sceneId: 'act1',
+                dialogueIndex: 1,
+                atEnding: false,
+            });
+            userA.record({
+                storyId: 'the_seventh_mirror',
+                sceneId: 'ch2_act1',
+                dialogueIndex: 4,
+                atEnding: false,
+            });
+            userB.record({
+                storyId: 'train_adventure',
+                sceneId: 'act2',
+                dialogueIndex: 0,
+                atEnding: true,
+            });
+
+            expect(anon.get('elevator_game')?.sceneId).toBe('act1');
+            expect(anon.get('the_seventh_mirror')).toBeNull();
+            expect(userA.get('the_seventh_mirror')?.sceneId).toBe('ch2_act1');
+            expect(userA.get('elevator_game')).toBeNull();
+            expect(userB.get('train_adventure')?.endings).toEqual(['act2']);
+            expect(userB.get('the_seventh_mirror')).toBeNull();
+
+            // Stored blobs stay flat maps without wrapper metadata.
+            expect(
+                JSON.parse(
+                    storage.getItem(storyProgressKey('user-a')) as string
+                )
+            ).toMatchObject({
+                the_seventh_mirror: { sceneId: 'ch2_act1', dialogueIndex: 4 },
+            });
+        });
+
+        it('keeps an account map intact when reading or writing signed out', () => {
+            const storage = memoryStorage();
+            const userA = new StoryProgressStore(storage, () => 10, 'user-a');
+            userA.record({
+                storyId: 'the_seventh_mirror',
+                sceneId: 'ch4_act1',
+                dialogueIndex: 2,
+                atEnding: false,
+            });
+
+            const signedOut = new StoryProgressStore(storage, () => 20, null);
+            signedOut.record({
+                storyId: 'elevator_game',
+                sceneId: 'act1',
+                dialogueIndex: 0,
+                atEnding: false,
+            });
+
+            expect(userA.getAll()).toEqual({
+                the_seventh_mirror: {
+                    sceneId: 'ch4_act1',
+                    dialogueIndex: 2,
+                    updatedAt: 10,
+                    finished: false,
+                    endings: [],
+                    visited: ['ch4_act1'],
+                },
+            });
+        });
+
+        it('imports saved sessions only from the owner-scoped session keys', () => {
+            const storage = memoryStorage({
+                [readerSessionKey('en', null)]: session(
+                    'elevator_game',
+                    'act1',
+                    1,
+                    'en'
+                ),
+                [readerSessionKey('ja', 'user-a')]: session(
+                    'the_seventh_mirror',
+                    'ch2_act1',
+                    3,
+                    'ja'
+                ),
+            });
+            const userA = new StoryProgressStore(storage, () => 10, 'user-a');
+            importSavedSessions(userA, storage, 'en', 'user-a');
+
+            expect(userA.get('the_seventh_mirror')?.sceneId).toBe('ch2_act1');
+            expect(userA.get('elevator_game')).toBeNull();
+        });
+
+        it('refuses to seed when the stored map cannot be read', () => {
+            const corrupt = memoryStorage({
+                [storyProgressKey('user-a')]: '{not json',
+            });
+            expect(
+                new StoryProgressStore(corrupt, () => 10, 'user-a').seed({
+                    storyId: 'the_seventh_mirror',
+                    sceneId: 'ch9_act3',
+                    dialogueIndex: 4,
+                })
+            ).toBe(false);
+            expect(corrupt.getItem(storyProgressKey('user-a'))).toBe(
+                '{not json'
+            );
+
+            const throwing = memoryStorage();
+            throwing.getItem = () => {
+                throw new Error('SecurityError');
+            };
+            expect(
+                new StoryProgressStore(throwing, () => 10, 'user-a').seed({
+                    storyId: 's',
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                })
+            ).toBe(false);
+        });
+    });
+
+    describe('claimAnonymous', () => {
+        it('merges anonymous progress and sessions into the account key and deletes anonymous keys', () => {
+            const storage = memoryStorage({
+                [STORY_PROGRESS_KEY]: JSON.stringify({
+                    elevator_game: {
+                        sceneId: 'act3',
+                        dialogueIndex: 5,
+                        updatedAt: 50,
+                        finished: true,
+                        endings: ['act3'],
+                    },
+                    shared_story: {
+                        sceneId: 'act1',
+                        dialogueIndex: 1,
+                        updatedAt: 10,
+                        finished: false,
+                        endings: [],
+                    },
+                }),
+                [storyProgressKey('user-a')]: JSON.stringify({
+                    shared_story: {
+                        sceneId: 'act2',
+                        dialogueIndex: 4,
+                        updatedAt: 80,
+                        finished: false,
+                        endings: [],
+                    },
+                }),
+                [readerSessionKey('en', null)]: session(
+                    'the_seventh_mirror',
+                    'ch3_act1',
+                    2,
+                    'en'
+                ),
+            });
+
+            const userA = new StoryProgressStore(storage, () => 100, 'user-a');
+            expect(userA.claimAnonymous('en')).toBe(true);
+
+            expect(userA.get('elevator_game')).toMatchObject({
+                sceneId: 'act3',
+                dialogueIndex: 5,
+                updatedAt: 50,
+                finished: true,
+                endings: ['act3'],
+            });
+            expect(userA.get('shared_story')).toMatchObject({
+                sceneId: 'act2',
+                dialogueIndex: 4,
+                updatedAt: 80,
+            });
+            expect(userA.get('the_seventh_mirror')).toMatchObject({
+                sceneId: 'ch3_act1',
+                dialogueIndex: 2,
+                updatedAt: 0,
+            });
+            // Anonymous keys were removed so another account will not claim them.
+            expect(storage.getItem(STORY_PROGRESS_KEY)).toBeNull();
+            expect(storage.getItem(readerSessionKey('en', null))).toBeNull();
+            // Migrated session is saved under user-a's scoped session key.
+            expect(
+                JSON.parse(
+                    storage.getItem(readerSessionKey('en', 'user-a')) as string
+                )
+            ).toMatchObject({
+                storyId: 'the_seventh_mirror',
+                sceneId: 'ch3_act1',
+                dialogueIndex: 2,
+            });
+        });
+
+        it('keeps anonymous keys intact when writing the account key fails', () => {
+            const storage = memoryStorage({
+                [STORY_PROGRESS_KEY]: JSON.stringify({
+                    elevator_game: {
+                        sceneId: 'act2',
+                        dialogueIndex: 2,
+                        updatedAt: 25,
+                        finished: false,
+                        endings: [],
+                    },
+                }),
+                [readerSessionKey('en', null)]: session(
+                    'train_adventure',
+                    'act1',
+                    0,
+                    'en'
+                ),
+            });
+            const origSetItem = storage.setItem.bind(storage);
+            storage.setItem = (key, value) => {
+                if (key === storyProgressKey('user-a')) {
+                    throw new Error('QuotaExceededError');
+                }
+                origSetItem(key, value);
+            };
+
+            const userA = new StoryProgressStore(storage, () => 100, 'user-a');
+            expect(userA.claimAnonymous('en')).toBe(false);
+            expect(storage.getItem(STORY_PROGRESS_KEY)).not.toBeNull();
+            expect(
+                storage.getItem(readerSessionKey('en', null))
+            ).not.toBeNull();
+        });
+
+        it('clears anonymous session keys even when copying to the account key fails', () => {
+            const storage = memoryStorage({
+                [readerSessionKey('en', null)]: session(
+                    'the_seventh_mirror',
+                    'ch3_act1',
+                    2,
+                    'en'
+                ),
+            });
+            const origSetItem = storage.setItem.bind(storage);
+            storage.setItem = (key, value) => {
+                if (key === readerSessionKey('en', 'user-a')) {
+                    throw new Error('QuotaExceededError');
+                }
+                origSetItem(key, value);
+            };
+
+            const userA = new StoryProgressStore(storage, () => 100, 'user-a');
+            expect(userA.claimAnonymous('en')).toBe(true);
+            // The account-session copy failed, but the anonymous session
+            // was still removed — a later account cannot claim it again.
+            expect(
+                storage.getItem(readerSessionKey('en', 'user-a'))
+            ).toBeNull();
+            expect(storage.getItem(readerSessionKey('en', null))).toBeNull();
+            // The position survives in user-a's map via the merge.
+            expect(userA.get('the_seventh_mirror')).toMatchObject({
+                sceneId: 'ch3_act1',
+                dialogueIndex: 2,
+            });
+
+            const userB = new StoryProgressStore(storage, () => 100, 'user-b');
+            expect(userB.claimAnonymous('en')).toBe(true);
+            expect(userB.get('the_seventh_mirror')).toBeNull();
+        });
+
+        it('tolerates corrupt anonymous JSON without losing existing account progress', () => {
+            const storage = memoryStorage({
+                [STORY_PROGRESS_KEY]: '{not valid json',
+                [storyProgressKey('user-a')]: JSON.stringify({
+                    the_seventh_mirror: {
+                        sceneId: 'ch1_act1',
+                        dialogueIndex: 3,
+                        updatedAt: 15,
+                        finished: false,
+                        endings: [],
+                    },
+                }),
+            });
+
+            const userA = new StoryProgressStore(storage, () => 100, 'user-a');
+            expect(userA.claimAnonymous('en')).toBe(true);
+            expect(userA.get('the_seventh_mirror')?.sceneId).toBe('ch1_act1');
+            expect(storage.getItem(STORY_PROGRESS_KEY)).toBe('{not valid json');
+        });
     });
 });

@@ -6,7 +6,7 @@ import AuthDegradedBanner from '../../../components/AuthDegradedBanner.astro';
 import StorySelect from '../../../components/StorySelect.svelte';
 import type { Locale } from '@aquila/stories';
 import { isLocale } from '@aquila/stories/translations';
-import { getSessionUser } from '../../../lib/auth-utils.js';
+import { authStateFromSession, getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '../../../lib/auth-utils.js';
 import { t as translate } from '../../../lib/utils';
 
 interface Props {
@@ -17,9 +17,10 @@ const rawLocale = (Astro.props.locale as string | undefined) || Astro.params.loc
 const locale: Locale = isLocale(rawLocale) ? rawLocale : 'en';
 const t = (key: string) => translate(locale, key);
 
-const sessionResult = await getSessionUser(Astro.request);
+const sessionResult = await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS });
 const user = sessionResult.status === 'ok' ? sessionResult.user : null;
 const authFailed = sessionResult.status === 'error';
+const authState = authStateFromSession(sessionResult);
 ---
 
 <MainLayout title={t("stories.title")}>
@@ -62,7 +63,7 @@ const authFailed = sessionResult.status === 'error';
         </p>
       </div>
 
-      <StorySelect client:load locale={locale} />
+      <StorySelect client:load locale={locale} authState={authState} userId={user?.id ?? null} />
 
     </div>
 

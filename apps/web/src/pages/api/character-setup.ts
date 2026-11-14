@@ -102,7 +102,9 @@ export const GET: APIRoute = async ({ request, url }) => {
                     session.user.id,
                     storyId as StoryId
                 );
-                return jsonResponse(setup);
+                // undefined serializes to an empty body, which clients
+                // cannot parse — answer an explicit JSON null instead.
+                return jsonResponse(setup ?? null);
             } else {
                 // storyId is provided but invalid
                 return errorResponse('Invalid story ID', 400);

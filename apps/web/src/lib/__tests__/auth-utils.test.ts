@@ -23,7 +23,7 @@ vi.mock('../../constants/errorIds.js', () => ({
     ERROR_IDS: { AUTH_SESSION_GET_FAILED: 'AUTH_005' },
 }));
 
-import { getSessionUser } from '../auth-utils';
+import { authStateFromSession, getSessionUser } from '../auth-utils';
 import { auth } from '../auth.js';
 import { logger } from '../logger.js';
 import { ERROR_IDS } from '../../constants/errorIds.js';
@@ -148,5 +148,63 @@ describe('getSessionUser', () => {
                 expect(result.error).toBe('string error');
             }
         });
+    });
+
+    describe('timeout', () => {
+        it('resolves as error when the lookup exceeds timeoutMs', async () => {
+            mockGetSession.mockImplementation(() => new Promise(() => {}));
+
+            const promise = getSessionUser(makeRequest(), { timeoutMs: 50 });
+            await vi.advanceTimersByTimeAsync(50);
+            const result = await promise;
+
+            expect(result.status).toBe('error');
+            if (result.status === 'error') {
+                expect((result.error as Error).message).toBe(
+                    'Session lookup timed out'
+                );
+            }
+        });
+
+        it('returns the session when the lookup beats the timeout', async () => {
+            mockGetSession.mockResolvedValue({
+                user: { id: 'user-1' } as never,
+                session: null,
+            });
+
+            const result = await getSessionUser(makeRequest(), {
+                timeoutMs: 5_000,
+            });
+
+            expect(result).toMatchObject({
+                status: 'ok',
+                user: { id: 'user-1' },
+            });
+            // The cleared timer must not surface a late error.
+            await vi.advanceTimersByTimeAsync(10_000);
+        });
+    });
+});
+
+describe('authStateFromSession', () => {
+    it('reports signed-in when the session has a user', () => {
+        expect(
+            authStateFromSession({
+                status: 'ok',
+                user: { id: 'user-1' } as any,
+            })
+        ).toBe('signed-in');
+    });
+
+    it('reports signed-out when auth is healthy without a user', () => {
+        expect(authStateFromSession({ status: 'ok', user: null })).toBe(
+            'signed-out'
+        );
+    });
+
+    it('reports unavailable when the auth system failed', () => {
+        expect(
+            authStateFromSession({ status: 'error', error: new Error('down') })
+        ).toBe('unavailable');
     });
 });

@@ -251,6 +251,26 @@ describe('Character Setup API', () => {
         );
     });
 
+    it('returns JSON null when no setup exists for the story', async () => {
+        mockAuthenticatedSession('user-1');
+        isValidStoryIdMock.mockReturnValue(true);
+        mockRepo.findByUserAndStory.mockResolvedValue(undefined);
+
+        const response = await GET({
+            request: new Request(
+                'http://localhost/api/character-setup?storyId=train_adventure'
+            ),
+            url: new URL(
+                'http://localhost/api/character-setup?storyId=train_adventure'
+            ),
+        } as any);
+
+        expect(response.status).toBe(200);
+        // undefined once serialized to an empty body, which rejects in
+        // json() — clients need a parseable answer for "no setup".
+        expect(await response.json()).toBeNull();
+    });
+
     it('returns 400 when an invalid story id is provided', async () => {
         mockAuthenticatedSession('user-1');
         isValidStoryIdMock.mockReturnValue(false);

@@ -11,6 +11,7 @@ import { LocalBookmarksStore } from './local-bookmarks-store';
 import {
     StoryProgressStore,
     importSavedSessions,
+    type ProgressPosition,
     type StoryProgress,
 } from './story-progress-store';
 import { getBrowserStorage } from './reader-mode';
@@ -18,10 +19,11 @@ import { readerState } from './reader-state.svelte';
 import { isEndingPosition } from './reader-interaction';
 import {
     migratePersisted,
+    readerSessionKey,
     serializeSessionParams,
     clampIndex,
+    parseDialogueParam,
     STORAGE_VERSION,
-    READER_SESSION_KEY_PREFIX,
     type ReaderSessionState,
     type PersistedSession,
 } from './reader-session';
@@ -32,6 +34,15 @@ import {
     type LoadedIntentPhase,
     type ReaderIntent,
 } from './reader-intent';
+import type { AuthState } from './auth-utils';
+import { authClient } from './auth-client';
+import {
+    STORY_PROGRESS_SYNC_TIMEOUT_MS,
+    syncStoryProgress,
+} from './story-progress-sync';
+
+/** Minimum gap between ordinary cloud pushes while reading. */
+const CLOUD_PUSH_INTERVAL_MS = 60_000;
 
 export interface ReaderManagerDependencies {
     loadStoryContent?: typeof loadStoryContent;
@@ -39,6 +50,10 @@ export interface ReaderManagerDependencies {
     loadReaderShell?: () => Promise<
         typeof import('@/components/ReaderShell.svelte')
     >;
+    /** Server-derived auth state; an unwired caller can never sync. */
+    authState?: AuthState;
+    /** The signed-in account's id; sync uploads nothing without it. */
+    userId?: string | null;
 }
 
 export class ReaderManager {
@@ -52,8 +67,12 @@ export class ReaderManager {
         >;
         defaultStoryId: string;
     };
+    // Auth state is mutable: an SSR 'unavailable' is re-checked once in the
+    // background, and its answer decides whether this visit can sync.
+    private authState: AuthState;
+    private userId: string | null;
     private readonly localBookmarks: LocalBookmarksStore;
-    private readonly storyProgress: StoryProgressStore;
+    private storyProgress: StoryProgressStore;
     private activeStory: AsyncStoryLoaderResult | null = null;
     private pendingIntent: ReaderIntent | null = null;
     private loadGeneration = 0;
@@ -74,6 +93,48 @@ export class ReaderManager {
     // write.
     private replaceGen = 0;
     private persistTimer: ReturnType<typeof setTimeout> | null = null;
+    // Cloud sync state. lastPushAt is the leading edge of the ordinary
+    // once-per-minute push (performance.now, so wall-clock moves cannot
+    // stall or duplicate pushes); keepaliveSent makes
+    // visibilitychange+pagehide produce at most one request per hide.
+    // progressDirty tracks whether anything recorded locally is still
+    // waiting for its first successful upload — a hide with nothing new to
+    // send makes no request. recordSeq stamps each record() so a push
+    // settling mid-record cannot mark that new position as uploaded.
+    // -Infinity rather than 0: performance.now() counts from navigation
+    // start, so a 0 stamp would throttle every push in the first minute of
+    // the visit — including the first one on links that never stamp it.
+    private lastPushAt = Number.NEGATIVE_INFINITY;
+    private keepaliveSent = false;
+    private progressDirty = true;
+    private recordSeq = 0;
+    // Session re-reads can overlap across long-running checks, and replies may
+    // arrive out of order. Only the newest request may apply its answer.
+    // authCheckInFlight + lastRevalidateAt coalesce back-to-back bfcache
+    // restore events (pageshow + visibilitychange) into a single request.
+    private authCheckSeq = 0;
+    private authCheckInFlight = false;
+    private lastRevalidateAt = Number.NEGATIVE_INFINITY;
+    // The last position this tab recorded or restored, as the current
+    // owner's map sees it. A lifecycle flush that finds the position
+    // unchanged must not write again: record() stamps a fresh updatedAt,
+    // and the keepalive upload would win the server's timestamp merge over
+    // a newer position from another device. Re-derived against the new
+    // account's map on an account switch — a stale entry would let the
+    // unchanged-position check swallow a deliberate same-position
+    // navigation under the new account.
+    private lastRecordedPosition: ProgressPosition | null = null;
+    // The account the current session position belongs to, bound when a
+    // stored position is chosen (selectInitialIntent — the story load can
+    // yield across an account switch made in another tab), when a restored
+    // position already matches the stored record or a history navigation
+    // applies (applySession), and by every committed record() and reader
+    // navigation. An account switch leaves it on the previous owner:
+    // recording that position into the new account's map, or recreating
+    // the session under its key, would let a later session import or sync
+    // seed this tab's position into that account's progress. Undefined
+    // until a position binds; an unbound session is never written.
+    private sessionAccount: string | null | undefined;
     // Guard against double-invocation: a second initialize() would register
     // a duplicate set of popstate/pagehide/visibilitychange listeners and
     // start a second initial load. renderReader has its own mount guard, but
@@ -101,6 +162,8 @@ export class ReaderManager {
                 (() => import('@/components/ReaderShell.svelte')),
             defaultStoryId: defaultStoryId || 'the_seventh_mirror',
         };
+        this.authState = dependencies.authState ?? 'signed-out';
+        this.userId = dependencies.userId ?? null;
 
         readerState.dialogue = [];
         readerState.choice = null;
@@ -117,19 +180,31 @@ export class ReaderManager {
 
         this.purgeLegacyState();
         this.localBookmarks = new LocalBookmarksStore(locale);
-        this.storyProgress = new StoryProgressStore(getBrowserStorage());
-        // The first persist() replaces this locale's session, which may be
-        // the only copy of a place saved before per-story progress existed
-        // (for example when a direct link opens a different story).
+        const accountId = this.activeAccountId();
+        this.storyProgress = new StoryProgressStore(
+            getBrowserStorage(),
+            Date.now,
+            accountId
+        );
         importSavedSessions(
             this.storyProgress,
             getBrowserStorage(),
-            this.initialLocale
+            this.initialLocale,
+            accountId
         );
+        if (accountId) {
+            this.storyProgress.claimAnonymous(this.initialLocale);
+        }
+    }
+
+    private activeAccountId(): string | null {
+        return this.authState === 'signed-in' && this.userId
+            ? this.userId
+            : null;
     }
 
     private get storageKey(): string {
-        return `${READER_SESSION_KEY_PREFIX}:${this.initialLocale}`;
+        return readerSessionKey(this.initialLocale, this.activeAccountId());
     }
 
     private purgeLegacyState(): void {
@@ -172,6 +247,7 @@ export class ReaderManager {
     private selectInitialIntent(): IntentSelection {
         const params = new URLSearchParams(window.location.search);
         const storyId = params.get('story');
+        let restoredFromMap = false;
         if (
             storyId &&
             !params.has('scene') &&
@@ -182,6 +258,7 @@ export class ReaderManager {
             if (progress) {
                 params.set('scene', progress.sceneId);
                 params.set('dialogue', String(progress.dialogueIndex + 1));
+                restoredFromMap = true;
             }
         }
         const raw = localStorage.getItem(this.storageKey);
@@ -196,17 +273,33 @@ export class ReaderManager {
                 console.error('Failed to parse saved state', e);
             }
         }
-        return this.deps.selectReaderIntent(
+        const selection = this.deps.selectReaderIntent(
             params,
             persisted,
             this.initialLocale,
             { defaultStoryId: this.deps.defaultStoryId }
         );
+        // A position read out of the stored map or the saved session
+        // belongs to the account whose data produced it — bind it now,
+        // before the story load can yield. Another tab can switch the
+        // session account during that load, and then applySession's store
+        // match never sees the old account's map: an unbound session
+        // would record the restored position under the new account's key.
+        // With the account bound here, the record and session guards see
+        // the mismatch and refuse.
+        if (
+            selection.kind === 'load' &&
+            (restoredFromMap || selection.intent.source === 'persisted')
+        ) {
+            this.sessionAccount = this.activeAccountId();
+        }
+        return selection;
     }
 
     private applySession(
         state: ReaderSessionState,
-        payload: AsyncStoryLoaderResult
+        payload: AsyncStoryLoaderResult,
+        phase: LoadedIntentPhase
     ): void {
         this.activeStory = payload;
         readerState.activeFlow = payload.flow;
@@ -226,6 +319,92 @@ export class ReaderManager {
         readerState.hasActivePayload = true;
         readerState.loadStatus = 'ready';
         readerState.loadError = null;
+        // A restored position counts as recorded only when the store already
+        // holds it. A back/forward destination that differs from the stored
+        // record must still be written by the persist() that follows.
+        const atEnding = isEndingPosition(
+            payload.flow,
+            state.sceneId,
+            state.dialogueIndex,
+            dialogue.length,
+            Boolean(choice)
+        );
+        this.lastRecordedPosition = this.recordMatchesStore(
+            state.storyId,
+            state.sceneId,
+            state.dialogueIndex,
+            atEnding
+        )
+            ? {
+                  storyId: state.storyId,
+                  sceneId: state.sceneId,
+                  dialogueIndex: state.dialogueIndex,
+                  atEnding,
+              }
+            : null;
+        // A Back/Forward destination is user-driven navigation: like
+        // goToScene and onIndexChange, the position the user chose belongs
+        // to the account signed in now even when it does not match that
+        // account's stored record — otherwise the foreign-owner guard
+        // would strand it. An initial apply re-binds only when the
+        // restored position already lives in this account's map, or when
+        // the URL named this destination explicitly — a validated deep
+        // link is deliberate navigation, so it may still record under the
+        // anonymous key while auth is unknown, unlike a passive
+        // bare-story/default fallback. A foreign-bound session still
+        // refuses lifecycle writes.
+        if (
+            phase === 'popstate' ||
+            this.lastRecordedPosition ||
+            this.isExplicitInitialDestination(state, phase)
+        ) {
+            this.sessionAccount = this.activeAccountId();
+        }
+    }
+
+    /** True when an initial apply landed on a destination the URL named
+     *  explicitly — a `?scene=`/`?dialogue=`/`?restart=1` deep link whose
+     *  requested target actually applied — rather than a bare-story or
+     *  default fallback that only arrived at the story start. The raw URL
+     *  (not the intent) is the source of truth: selectInitialIntent
+     *  injects a stored position into its params copy before intent
+     *  selection, so intent fields cannot tell an explicit `?scene=`
+     *  apart from a bare-link map restore. Runs before the syncUrl that
+     *  follows applySession rewrites the entry URL. */
+    private isExplicitInitialDestination(
+        state: ReaderSessionState,
+        phase: LoadedIntentPhase
+    ): boolean {
+        if (phase !== 'initial') return false;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('story') !== state.storyId) return false;
+        if (params.get('restart') === '1') return true;
+        const scene = params.get('scene');
+        if (scene !== null) return scene === state.sceneId;
+        const rawDialogue = params.get('dialogue');
+        if (rawDialogue === null) return false;
+        const requested = parseDialogueParam(rawDialogue);
+        return requested !== null && requested === state.dialogueIndex;
+    }
+
+    /** True when the stored record already describes this position — the
+     *  same ending flag, the ending already collected, and the scene already
+     *  visited — so record() would only re-stamp updatedAt. */
+    private recordMatchesStore(
+        storyId: string,
+        sceneId: string,
+        dialogueIndex: number,
+        atEnding: boolean
+    ): boolean {
+        const stored = this.storyProgress.get(storyId);
+        return (
+            stored !== null &&
+            stored.sceneId === sceneId &&
+            stored.dialogueIndex === dialogueIndex &&
+            stored.finished === atEnding &&
+            (!atEnding || stored.endings.includes(sceneId)) &&
+            (stored.visited === undefined || stored.visited.includes(sceneId))
+        );
     }
 
     private isCurrent(generation: number): boolean {
@@ -314,7 +493,7 @@ export class ReaderManager {
             // URL canonicalization.
             const safeResult = validateLoadedIntent(intent, payload, 'initial');
             if (safeResult.kind === 'apply') {
-                this.applySession(safeResult.state, payload);
+                this.applySession(safeResult.state, payload, phase);
                 this.syncUrl(true);
                 this.persist();
                 return;
@@ -323,7 +502,7 @@ export class ReaderManager {
             return;
         }
 
-        this.applySession(result.state, payload);
+        this.applySession(result.state, payload, phase);
         this.pendingIntent = null;
         this.syncUrl(true);
         this.persist();
@@ -333,7 +512,7 @@ export class ReaderManager {
      *  errors (Safari private mode throws QuotaExceededError; quota-exceeded
      *  throws on other browsers) so the pagehide path and normal navigation
      *  do not propagate an uncaught throw out of the event handler. */
-    private persist(): void {
+    private persist(options: { cloud?: boolean } = {}): void {
         const data = {
             storyId: readerState.storyId,
             sceneId: readerState.currentSceneId,
@@ -341,34 +520,167 @@ export class ReaderManager {
             locale: readerState.locale,
             version: STORAGE_VERSION,
         };
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(data));
-        } catch (e) {
-            console.error('Failed to persist reader state', e);
-        }
         this.recordStoryProgress();
+        // A session bound to another account is caught by sessionAccount,
+        // not the account lookup: an unchanged position takes the early
+        // return in recordStoryProgress, so record() never re-binds it —
+        // and an unavailable-auth reader has no account to compare anyway.
+        // Recreating the session under a different account's key would let
+        // a later session import seed this tab's position into that
+        // account's map.
+        if (this.sessionAccount === this.activeAccountId()) {
+            try {
+                localStorage.setItem(this.storageKey, JSON.stringify(data));
+            } catch (e) {
+                console.error('Failed to persist reader state', e);
+            }
+        }
+        // The hide flush persists locally, then sends its own keepalive; it
+        // suppresses this ordinary push so one hide never sends twice.
+        if (options.cloud !== false) this.maybePushProgress();
+    }
+
+    /** Leading-edge ordinary push: at most one request per minute, no timer. */
+    private maybePushProgress(): void {
+        if (performance.now() - this.lastPushAt < CLOUD_PUSH_INTERVAL_MS) {
+            return;
+        }
+        this.pushProgress();
+    }
+
+    /** Fire-and-forget cloud push; failures leave local progress untouched.
+     *  A successful reply clears the dirty flag only when no position was
+     *  recorded while the request was in flight — that position has not
+     *  reached the server yet. */
+    private pushProgress(keepalive = false): void {
+        if (
+            this.authState !== 'signed-in' ||
+            this.userId === null ||
+            this.destroyed
+        ) {
+            return;
+        }
+        this.lastPushAt = performance.now();
+        const seq = this.recordSeq;
+        void syncStoryProgress({ keepalive, accountId: this.userId })
+            .then(result => {
+                if (result.ok && this.recordSeq === seq) {
+                    this.progressDirty = false;
+                }
+            })
+            .catch(() => {});
+    }
+
+    /** One best-effort final push per hide, after the local flush — and none
+     *  when the server already holds everything this tab recorded. */
+    private flushProgressKeepalive(): void {
+        if (this.keepaliveSent || !this.progressDirty) return;
+        this.keepaliveSent = true;
+        this.pushProgress(true);
+    }
+
+    /** True only for a bare `?story=` link: explicit scene/dialogue/restart
+     *  links must win over the merged account position. */
+    private canResumeFromCloud(): boolean {
+        if (this.authState !== 'signed-in' || this.userId === null)
+            return false;
+        const params = new URLSearchParams(window.location.search);
+        return (
+            params.has('story') &&
+            !params.has('scene') &&
+            !params.has('dialogue') &&
+            params.get('restart') !== '1'
+        );
+    }
+
+    /** Bounded startup merge; failure or timeout starts from local progress.
+     *  The attempt stamps the throttle either way: a timed-out request may
+     *  still hold the server lock, and the persist that follows must not
+     *  queue a second POST behind it. */
+    private async resumeFromCloud(): Promise<void> {
+        const accountId = this.userId;
+        if (!this.canResumeFromCloud() || accountId === null) return;
+        this.lastPushAt = performance.now();
+        const seq = this.recordSeq;
+        const result = await syncStoryProgress({
+            timeoutMs: STORY_PROGRESS_SYNC_TIMEOUT_MS,
+            accountId,
+            locale: this.initialLocale,
+        });
+        if (result.ok && this.recordSeq === seq) this.progressDirty = false;
+    }
+
+    /** The on-screen position as a recordable position — including the
+     *  ending flag the record stamps — or null when no story payload is
+     *  active. Shared by the recorder and the account-switch cache
+     *  re-derivation. */
+    private displayedPosition(): ProgressPosition | null {
+        const { storyId, currentSceneId, dialogueIndex, dialogue, choice } =
+            readerState;
+        if (!storyId || !currentSceneId || !this.activeStory) return null;
+        return {
+            storyId,
+            sceneId: currentSceneId,
+            dialogueIndex,
+            atEnding: isEndingPosition(
+                this.activeStory.flow,
+                currentSceneId,
+                dialogueIndex,
+                dialogue.length,
+                Boolean(choice)
+            ),
+        };
     }
 
     /** Keep a per-story copy of the position (the session above holds only
      *  the most recent story) and note when the reader has reached an ending:
      *  the last line of a scene with no next scene and no choice. */
     private recordStoryProgress(): void {
-        const { storyId, currentSceneId, dialogueIndex, dialogue, choice } =
-            readerState;
-        if (!storyId || !currentSceneId || !this.activeStory) return;
-        const atEnding = isEndingPosition(
-            this.activeStory.flow,
-            currentSceneId,
-            dialogueIndex,
-            dialogue.length,
-            Boolean(choice)
-        );
-        this.storyProgress.record({
-            storyId,
-            sceneId: currentSceneId,
-            dialogueIndex,
-            atEnding,
-        });
+        const position = this.displayedPosition();
+        if (!position) return;
+        const last = this.lastRecordedPosition;
+        if (
+            last &&
+            last.storyId === position.storyId &&
+            last.sceneId === position.sceneId &&
+            last.dialogueIndex === position.dialogueIndex &&
+            last.atEnding === position.atEnding
+        ) {
+            return;
+        }
+        // A position applied while auth is still unknown is not real
+        // reading: it stays unbound until the user deliberately
+        // navigates (goToScene, onIndexChange, or a popstate apply binds
+        // the session first, as does a stored-record restore). Recording
+        // the initial fallback under the anonymous key would let a later
+        // claimAnonymous() merge that auto-position over the recovered
+        // account's saved progress.
+        if (
+            this.authState === 'unavailable' &&
+            this.sessionAccount === undefined
+        ) {
+            return;
+        }
+        // A position still bound to another account must not be recorded:
+        // the account switch left sessionAccount on the previous owner,
+        // and writing here would land that owner's position in this
+        // account's map for its next sync to upload. Skipping leaves
+        // lastRecordedPosition stale, so the position records once
+        // navigation or a committed record re-binds the session. An
+        // unbound session has no owner to compare — its record keeps
+        // landing under the current account's key.
+        if (
+            this.sessionAccount !== undefined &&
+            this.sessionAccount !== this.activeAccountId()
+        ) {
+            return;
+        }
+        if (this.storyProgress.record(position)) {
+            this.lastRecordedPosition = position;
+            this.sessionAccount = this.activeAccountId();
+            this.recordSeq++;
+            this.progressDirty = true;
+        }
     }
 
     /** Sync the URL query to the current progression. First restore uses
@@ -504,6 +816,9 @@ export class ReaderManager {
      *  rather than trusting every caller. */
     onIndexChange = (i: number): void => {
         readerState.dialogueIndex = clampIndex(i, readerState.dialogue.length);
+        // Moving to a new line re-binds the session to the account active
+        // now — continued reading belongs to whoever is signed in.
+        this.sessionAccount = this.activeAccountId();
         this.scheduleReplace();
         const atEnding = isEndingPosition(
             this.activeStory?.flow ?? null,
@@ -544,6 +859,9 @@ export class ReaderManager {
             dialogue.length
         );
         readerState.canGoNext = this.hasNextScene(sceneId);
+        // A scene the reader navigates to belongs to the account signed
+        // in now, not the account that produced the displayed position.
+        this.sessionAccount = this.activeAccountId();
         this.syncUrl(false); // pushState (new history entry)
         this.cancelPersistTimer();
         this.persist();
@@ -760,18 +1078,135 @@ export class ReaderManager {
         if (!readerState.hasActivePayload) return;
         this.flushPendingReplace();
         this.cancelPersistTimer();
-        this.persist();
+        this.persist({ cloud: false });
+        this.flushProgressKeepalive();
     };
 
     /** Named visibilitychange handler so destroy() can remove the exact
      *  listener reference that initialize() registered. */
     private onVisibilityChange = (): void => {
-        if (document.visibilityState === 'hidden') this.onPageHide();
+        if (document.visibilityState === 'hidden') {
+            this.onPageHide();
+        } else {
+            // Re-arm the one-keepalive-per-hide rule for the next hide.
+            this.keepaliveSent = false;
+            if (this.authState !== 'signed-out') {
+                this.revalidateAuth();
+            }
+        }
     };
+
+    /** A back/forward-cached reader can predate a sign-out or an account
+     *  switch made in another tab — the userId captured at load must not
+     *  keep routing writes to the account that used to be signed in.
+     *  Signed-out readers make no network requests. */
+    private onPageShow = (event: Event): void => {
+        if (!(event as Event & { persisted?: boolean }).persisted) return;
+        if (this.authState !== 'signed-out') {
+            this.revalidateAuth();
+        }
+    };
+
+    /** Re-reads the session on resume or initial 'unavailable' recovery so
+     *  later records and pushes target the account that is actually signed
+     *  in now. Coalesces rapid bfcache events (`pageshow` + `visibilitychange`)
+     *  within 5s so a single restore never sends overlapping requests. */
+    private revalidateAuth(): void {
+        const now = performance.now();
+        if (this.authCheckInFlight && now - this.lastRevalidateAt < 5000) {
+            return;
+        }
+        this.authCheckInFlight = true;
+        this.lastRevalidateAt = now;
+        const ticket = ++this.authCheckSeq;
+        void authClient
+            .getSession()
+            .then(result => {
+                if (
+                    this.destroyed ||
+                    ticket !== this.authCheckSeq ||
+                    result?.error
+                )
+                    return;
+                const user = result?.data?.user ?? null;
+                this.applySessionUser(user);
+                // Any validated answer means auth is back — the SSR
+                // degraded banner comes down for signed-out too.
+                document.getElementById('auth-degraded-banner')?.remove();
+            })
+            .catch(() => {})
+            .finally(() => {
+                if (ticket === this.authCheckSeq) {
+                    this.authCheckInFlight = false;
+                }
+            });
+    }
+
+    private applySessionUser(user: { id: string } | null): void {
+        const prevAccount = this.activeAccountId();
+        this.authState = user ? 'signed-in' : 'signed-out';
+        this.userId = user?.id ?? null;
+        const nextAccount = this.activeAccountId();
+        if (prevAccount !== nextAccount) {
+            this.storyProgress = new StoryProgressStore(
+                getBrowserStorage(),
+                Date.now,
+                nextAccount
+            );
+            if (nextAccount) {
+                this.storyProgress.claimAnonymous(this.initialLocale);
+            }
+            // Re-derive the recorded-position cache against the new
+            // owner's map: the displayed position counts as recorded only
+            // when this account's map already holds it — the claim above
+            // just moved any matching anonymous data into it. Keeping the
+            // stale cache would let the unchanged-position check swallow
+            // a deliberate same-position navigation under the new
+            // account, while a position the new map does not hold stays
+            // protected by the owner guard in recordStoryProgress.
+            const displayed = this.displayedPosition();
+            this.lastRecordedPosition =
+                displayed !== null &&
+                this.recordMatchesStore(
+                    displayed.storyId,
+                    displayed.sceneId,
+                    displayed.dialogueIndex,
+                    displayed.atEnding
+                )
+                    ? displayed
+                    : null;
+            if (nextAccount) {
+                // An anonymously bound session belongs to this account
+                // now — but only when its position actually landed in the
+                // claimed map. A bound-but-never-recorded position (or
+                // one the merge dropped for this account's newer record)
+                // keeps its owner so later flushes cannot write it into
+                // the recovered account.
+                if (
+                    this.sessionAccount === null &&
+                    this.lastRecordedPosition !== null
+                ) {
+                    this.sessionAccount = nextAccount;
+                }
+            }
+            // A position applied while auth was still unknown never
+            // bound an owner — bind it to the account it was applied
+            // under (anonymous for a timed-out lookup) so the
+            // foreign-owner guard keeps refusing to write it into the
+            // account signed in now.
+            if (this.sessionAccount === undefined) {
+                this.sessionAccount = prevAccount;
+            }
+            // A foreign sessionAccount keeps refusing writes: lifecycle
+            // flushes cannot copy the old owner's position into this
+            // account's map or session key.
+        }
+    }
 
     private addLifecycleListeners(): void {
         window.addEventListener('popstate', this.onPopState);
         window.addEventListener('pagehide', this.onPageHide);
+        window.addEventListener('pageshow', this.onPageShow);
         document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
@@ -781,7 +1216,12 @@ export class ReaderManager {
         this.destroyed = false;
         this.addLifecycleListeners();
         const generation = ++this.loadGeneration;
-        await this.renderReader();
+        if (this.authState === 'unavailable') {
+            this.revalidateAuth();
+        }
+        // Only a bare ?story= link waits on the cloud merge below, and that
+        // wait now overlaps the shell mount instead of following it.
+        await Promise.all([this.renderReader(), this.resumeFromCloud()]);
         if (!this.isCurrent(generation)) return;
         await this.loadIntent(
             this.selectInitialIntent(),
@@ -805,6 +1245,7 @@ export class ReaderManager {
         this.loadGeneration++;
         window.removeEventListener('popstate', this.onPopState);
         window.removeEventListener('pagehide', this.onPageHide);
+        window.removeEventListener('pageshow', this.onPageShow);
         document.removeEventListener(
             'visibilitychange',
             this.onVisibilityChange

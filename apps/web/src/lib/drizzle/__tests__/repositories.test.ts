@@ -20,6 +20,7 @@ function createChain() {
     chain.orderBy = vi.fn(() => chain);
     chain.returning = vi.fn(() => chain);
     chain.onConflictDoUpdate = vi.fn(() => chain);
+    chain.for = vi.fn(() => chain);
     chain.transaction = vi.fn(async (callback: (tx: typeof chain) => unknown) =>
         callback(chain)
     );
@@ -45,7 +46,9 @@ import {
     ChapterRepository,
     SceneRepository,
     BookmarkRepository,
+    ReadingProgressRepository,
 } from '../repositories';
+import { bookmarks, characterSetups, stories } from '../schema';
 
 describe('Repositories', () => {
     beforeEach(() => {
@@ -67,6 +70,7 @@ describe('Repositories', () => {
             'orderBy',
             'returning',
             'onConflictDoUpdate',
+            'for',
             'transaction',
         ];
 
@@ -439,6 +443,43 @@ describe('Repositories', () => {
                 const result = await repo.findByUserId('user-no-stories');
 
                 expect(result).toEqual([]);
+            });
+        });
+
+        describe('deleteWithDependents()', () => {
+            it('deletes the story row first, then its dependents', async () => {
+                mockDb.returning.mockResolvedValue([{ id: 'story-1' }]);
+
+                const result = await repo.deleteWithDependents(
+                    'story-1',
+                    'user-1'
+                );
+
+                expect(result).toBe(true);
+                expect(mockDb.transaction).toHaveBeenCalledTimes(1);
+                // Bookmarks go by story id alone, so a story delete that
+                // removed nothing must never reach them — the order matters
+                // here, not just the count.
+                expect(mockDb.delete.mock.calls.map(c => c[0])).toEqual([
+                    stories,
+                    bookmarks,
+                    characterSetups,
+                ]);
+            });
+
+            it('leaves dependents untouched when the story delete removes no row', async () => {
+                mockDb.returning.mockResolvedValue([]);
+
+                const result = await repo.deleteWithDependents(
+                    'someone-elses-story',
+                    'user-1'
+                );
+
+                expect(result).toBe(false);
+                // Only the story delete ran: bookmarks other users filed on
+                // the same story id survive a no-op.
+                expect(mockDb.delete).toHaveBeenCalledTimes(1);
+                expect(mockDb.delete.mock.calls[0][0]).toBe(stories);
             });
         });
 
@@ -1000,6 +1041,122 @@ describe('Repositories', () => {
                 expect(set).toHaveProperty('locale', 'zh');
                 expect(set).toHaveProperty('updatedAt');
                 expect(set.updatedAt).toBeInstanceOf(Date);
+            });
+        });
+    });
+
+    describe('ReadingProgressRepository', () => {
+        let repo: ReadingProgressRepository;
+
+        const localRecord = {
+            sceneId: 'act1',
+            dialogueIndex: 2,
+            updatedAt: 100,
+            finished: false,
+            endings: [],
+        };
+
+        beforeEach(() => {
+            repo = new ReadingProgressRepository(mockDb as any);
+        });
+
+        describe('mergeForUser()', () => {
+            it('locks the user row and inserts merged progress on first write', async () => {
+                mockDb.for.mockResolvedValue([{ id: 'user-1' }]);
+                mockDb.limit.mockResolvedValue([]);
+
+                const result = await repo.mergeForUser('user-1', {
+                    story_a: localRecord,
+                });
+
+                expect(mockDb.transaction).toHaveBeenCalledTimes(1);
+                expect(mockDb.for).toHaveBeenCalledWith('no key update');
+                expect(result).toEqual({ story_a: localRecord });
+                expect(mockDb.values).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        userId: 'user-1',
+                        data: { story_a: localRecord },
+                    })
+                );
+                expect(mockDb.update).not.toHaveBeenCalled();
+            });
+
+            it('merges with the stored row and updates it', async () => {
+                const storedRecord = {
+                    sceneId: 'act2',
+                    dialogueIndex: 1,
+                    updatedAt: 50,
+                    finished: true,
+                    endings: ['ending_a'],
+                };
+                mockDb.for.mockResolvedValue([{ id: 'user-1' }]);
+                mockDb.limit.mockResolvedValue([
+                    { userId: 'user-1', data: { story_b: storedRecord } },
+                ]);
+
+                const result = await repo.mergeForUser('user-1', {
+                    story_a: localRecord,
+                });
+
+                expect(Object.keys(result).sort()).toEqual([
+                    'story_a',
+                    'story_b',
+                ]);
+                expect(mockDb.update).toHaveBeenCalled();
+                expect(mockDb.set.mock.calls[0][0].data).toEqual(result);
+                expect(mockDb.values).not.toHaveBeenCalled();
+            });
+
+            it('drops malformed stored records before merging', async () => {
+                mockDb.for.mockResolvedValue([{ id: 'user-1' }]);
+                mockDb.limit.mockResolvedValue([
+                    {
+                        userId: 'user-1',
+                        data: {
+                            story_b: localRecord,
+                            broken: { sceneId: 42 },
+                        },
+                    },
+                ]);
+
+                const result = await repo.mergeForUser('user-1', {
+                    story_a: localRecord,
+                });
+
+                expect(Object.keys(result).sort()).toEqual([
+                    'story_a',
+                    'story_b',
+                ]);
+            });
+
+            it('bounds the merged map before writing so the row cannot grow past the request cap', async () => {
+                const padded = {
+                    sceneId: 'act1',
+                    dialogueIndex: 0,
+                    updatedAt: 50,
+                    finished: false,
+                    endings: [],
+                    visited: ['x'.repeat(46 * 1024)],
+                };
+                mockDb.for.mockResolvedValue([{ id: 'user-1' }]);
+                mockDb.limit.mockResolvedValue([
+                    { userId: 'user-1', data: { story_b: padded } },
+                ]);
+
+                const result = await repo.mergeForUser('user-1', {
+                    story_a: localRecord,
+                });
+
+                // The stored map plus the upload exceed the stored-map
+                // budget; the bound strips `visited` first — the position
+                // itself always survives.
+                expect(result.story_b.visited).toBeUndefined();
+                expect(result.story_b.sceneId).toBe('act1');
+                const written = mockDb.set.mock.calls[0][0].data;
+                expect(written).toEqual(result);
+                expect(
+                    new TextEncoder().encode(JSON.stringify(written)).byteLength
+                ).toBeLessThanOrEqual(44 * 1024);
             });
         });
     });

@@ -600,6 +600,19 @@ export class ReaderManager {
         ) {
             return;
         }
+        // A position applied while auth is still unknown is not real
+        // reading: it stays unbound until the user deliberately
+        // navigates (goToScene, onIndexChange, or a popstate apply binds
+        // the session first, as does a stored-record restore). Recording
+        // the initial fallback under the anonymous key would let a later
+        // claimAnonymous() merge that auto-position over the recovered
+        // account's saved progress.
+        if (
+            this.authState === 'unavailable' &&
+            this.sessionAccount === undefined
+        ) {
+            return;
+        }
         // A position still bound to another account must not be recorded:
         // the account switch left sessionAccount on the previous owner,
         // and writing here would land that owner's position in this
@@ -1109,10 +1122,24 @@ export class ReaderManager {
                 // The claim moved anonymous progress — including the
                 // session this position was restored from — into this
                 // account's keys, so an anonymously bound session belongs
-                // to it now.
-                if (this.sessionAccount === null) {
+                // to it now when its position actually moved with the
+                // claim. A bound-but-never-recorded position has nothing
+                // in the claimed data: it keeps its owner so later
+                // flushes cannot write it into the recovered account.
+                if (
+                    this.sessionAccount === null &&
+                    this.lastRecordedPosition !== null
+                ) {
                     this.sessionAccount = nextAccount;
                 }
+            }
+            // A position applied while auth was still unknown never
+            // bound an owner — bind it to the account it was applied
+            // under (anonymous for a timed-out lookup) so the
+            // foreign-owner guard keeps refusing to write it into the
+            // account signed in now.
+            if (this.sessionAccount === undefined) {
+                this.sessionAccount = prevAccount;
             }
             // Keep lastRecordedPosition and a foreign sessionAccount: the
             // unchanged-position and session-write guards must still see

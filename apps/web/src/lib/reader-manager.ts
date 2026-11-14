@@ -21,6 +21,7 @@ import {
     readerSessionKey,
     serializeSessionParams,
     clampIndex,
+    parseDialogueParam,
     STORAGE_VERSION,
     type ReaderSessionState,
     type PersistedSession,
@@ -346,11 +347,44 @@ export class ReaderManager {
         // to the account signed in now even when it does not match that
         // account's stored record — otherwise the foreign-owner guard
         // would strand it. An initial apply re-binds only when the
-        // restored position already lives in this account's map; a
-        // foreign-bound session still refuses lifecycle writes.
-        if (phase === 'popstate' || this.lastRecordedPosition) {
+        // restored position already lives in this account's map, or when
+        // the URL named this destination explicitly — a validated deep
+        // link is deliberate navigation, so it may still record under the
+        // anonymous key while auth is unknown, unlike a passive
+        // bare-story/default fallback. A foreign-bound session still
+        // refuses lifecycle writes.
+        if (
+            phase === 'popstate' ||
+            this.lastRecordedPosition ||
+            this.isExplicitInitialDestination(state, phase)
+        ) {
             this.sessionAccount = this.activeAccountId();
         }
+    }
+
+    /** True when an initial apply landed on a destination the URL named
+     *  explicitly — a `?scene=`/`?dialogue=`/`?restart=1` deep link whose
+     *  requested target actually applied — rather than a bare-story or
+     *  default fallback that only arrived at the story start. The raw URL
+     *  (not the intent) is the source of truth: selectInitialIntent
+     *  injects a stored position into its params copy before intent
+     *  selection, so intent fields cannot tell an explicit `?scene=`
+     *  apart from a bare-link map restore. Runs before the syncUrl that
+     *  follows applySession rewrites the entry URL. */
+    private isExplicitInitialDestination(
+        state: ReaderSessionState,
+        phase: LoadedIntentPhase
+    ): boolean {
+        if (phase !== 'initial') return false;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('story') !== state.storyId) return false;
+        if (params.get('restart') === '1') return true;
+        const scene = params.get('scene');
+        if (scene !== null) return scene === state.sceneId;
+        const rawDialogue = params.get('dialogue');
+        if (rawDialogue === null) return false;
+        const requested = parseDialogueParam(rawDialogue);
+        return requested !== null && requested === state.dialogueIndex;
     }
 
     /** True when the stored record already describes this position — the

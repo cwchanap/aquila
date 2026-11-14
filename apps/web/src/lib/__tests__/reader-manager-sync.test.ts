@@ -1248,4 +1248,73 @@ describe('ReaderManager account progress sync', () => {
         });
         expect(readProgress('train_adventure', null)).toBeNull();
     });
+
+    it('preserves an explicit scene deep link while auth is unavailable', async () => {
+        setLocation('?story=train_adventure&scene=act2');
+        saveProgress(
+            {
+                train_adventure: progressRecord({
+                    sceneId: 'act1',
+                    dialogueIndex: 1,
+                    updatedAt: 10,
+                }),
+            },
+            'user-a'
+        );
+        // The client session recheck stays pending past the initial load.
+        const recheck = deferred<unknown>();
+        vi.mocked(authClient.getSession).mockImplementation(
+            () => recheck.promise as never
+        );
+        const fetchMock = vi.fn(async () => serverResponse({}));
+        global.fetch = fetchMock;
+        mountReaderContainer();
+        manager = createManager('unavailable', null);
+
+        await manager.initialize();
+        await flush();
+
+        // The URL named act2 explicitly — a deliberate destination, not
+        // a passive fallback — so it records under the anonymous key and
+        // the session is written even though auth is still unknown.
+        expect(readerState).toMatchObject({
+            storyId: 'train_adventure',
+            currentSceneId: 'act2',
+            dialogueIndex: 0,
+            loadStatus: 'ready',
+        });
+        expect(readProgress('train_adventure', null)).toMatchObject({
+            sceneId: 'act2',
+        });
+        expect(
+            localStorage.getItem(readerSessionKey('en', null))
+        ).not.toBeNull();
+
+        // A pagehide without further navigation keeps the saved link.
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+        expect(readProgress('train_adventure', null)).toMatchObject({
+            sceneId: 'act2',
+        });
+
+        // The delayed recheck resolves as account A; the claim moves the
+        // explicitly opened position into A's map, and the closing flush
+        // uploads it under A's account id.
+        recheck.resolve({ data: { user: { id: 'user-a' } }, error: null });
+        await flush();
+        // Re-arm the one-keepalive-per-hide rule consumed by the hide above.
+        document.dispatchEvent(new Event('visibilitychange'));
+        window.dispatchEvent(new Event('pagehide'));
+        await flush();
+
+        expect(readProgress('train_adventure', 'user-a')).toMatchObject({
+            sceneId: 'act2',
+        });
+        expect(readProgress('train_adventure', null)).toBeNull();
+        const posts = progressPosts(fetchMock);
+        expect(posts.length).toBeGreaterThan(0);
+        const body = JSON.parse(posts[posts.length - 1][1].body as string);
+        expect(body.accountId).toBe('user-a');
+        expect(body.progress?.train_adventure?.sceneId).toBe('act2');
+    });
 });

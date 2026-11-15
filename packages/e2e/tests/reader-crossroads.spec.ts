@@ -525,7 +525,16 @@ test.describe('Crossroads choice overlay', () => {
 
         await reader.menuButton.tap();
         await expect(reader.backToHomeLink).toBeVisible();
-        await page.getByRole('button', { name: 'Choose', exact: true }).tap();
+        const choose = page.getByRole('button', {
+            name: 'Choose',
+            exact: true,
+        });
+        const chooseBox = await choose.boundingBox();
+        expect(chooseBox, 'phone Choose control is measurable').not.toBeNull();
+        if (chooseBox) {
+            expect(chooseBox.height).toBeGreaterThanOrEqual(44);
+        }
+        await choose.tap();
         await expect(dialog).toBeVisible();
     });
 

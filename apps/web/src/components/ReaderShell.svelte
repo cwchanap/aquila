@@ -846,6 +846,7 @@
 
   function handleCrossroadsSelect(nextScene: string): void {
     crossroadsPositionKey = null;
+    activateBgm();
     onChoice(nextScene);
   }
 

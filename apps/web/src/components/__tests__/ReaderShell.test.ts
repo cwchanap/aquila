@@ -3135,15 +3135,52 @@ describe('ReaderShell', () => {
             await vi.advanceTimersByTimeAsync(1000);
             const choose = screen.getByRole('button', { name: 'Choose' });
             await fireEvent.click(choose);
+            const dialog = screen.getByRole('dialog', {
+                name: /Decision · Act 2/,
+            });
+            expect(dialog).toBeVisible();
+
+            const cards = within(dialog).getAllByTestId('crossroads-route');
+            await fireEvent.focus(cards[1]);
+            const lines = dialog.querySelectorAll('.route-line');
+            expect(lines[1]).toHaveClass('on');
+
+            // The disabled leaf swallows the second click inside handleNext
+            // before it can reach openCrossroads, so assert on what a reopen
+            // would disturb: the same dialog element stays mounted and the
+            // lit route line stays lit.
+            await fireEvent.click(choose);
+            expect(screen.getAllByRole('dialog')).toHaveLength(1);
+            expect(screen.getByRole('dialog')).toBe(dialog);
+            expect(lines[1]).toHaveClass('on');
+        });
+
+        it('restores focus to the mobile menu trigger when the opener unmounts at the breakpoint', async () => {
+            const mq = stubMatchMedia(false);
+            seedChoiceLine();
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            const choose = screen.getByRole('button', { name: 'Choose' });
+            choose.focus();
+            await fireEvent.click(choose);
             expect(
                 screen.getByRole('dialog', { name: /Decision · Act 2/ })
             ).toBeVisible();
 
-            // The leaf is inert under the dialog, but a raw DOM event still
-            // reaches onOpenChoice -> openCrossroads, which must refuse to
-            // reopen while the reader is disabled.
-            await fireEvent.click(choose);
-            expect(screen.getAllByRole('dialog')).toHaveLength(1);
+            // Crossing the breakpoint swaps NovelReader for MobileNovelReader,
+            // so the recorded opener is unmounted while the dialog stays open.
+            mq.setMatches(true);
+            await tick();
+            expect(choose.isConnected).toBe(false);
+
+            await fireEvent.keyDown(window, { key: 'Escape' });
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            await waitFor(() =>
+                expect(
+                    document.getElementById('mobile-reader-menu-trigger')
+                ).toHaveFocus()
+            );
         });
 
         it('opens the dialog without an act caption when the scene id has no act marker', async () => {

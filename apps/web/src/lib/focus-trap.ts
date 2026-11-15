@@ -137,15 +137,20 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
 
     function deactivate(): void {
         active = false;
-        // Prefer the explicit restoreFocus target when provided (the opener
-        // button may have been unmounted in the same batch as activation, in
-        // which case `previouslyFocused` points at a detached node and focusing
-        // it would strand focus on <body>). Fall back to the recorded element
-        // only when no explicit target was supplied.
-        const target =
-            restoreFocus && restoreFocus.isConnected
-                ? restoreFocus
-                : previouslyFocused;
+        // Restore to the recorded opener while it is still in the document.
+        // If it was unmounted while the trap was active (e.g. the reader
+        // swapped across the mobile breakpoint), or was never a real element
+        // (<body> when the opener detached before activation), fall back to
+        // the explicit restoreFocus target instead of stranding focus.
+        const doc = node.ownerDocument;
+        const opener =
+            previouslyFocused &&
+            previouslyFocused !== doc?.body &&
+            previouslyFocused !== doc?.documentElement &&
+            previouslyFocused.isConnected
+                ? previouslyFocused
+                : null;
+        const target = opener ?? restoreFocus ?? previouslyFocused;
         previouslyFocused = null;
         restoreFocusTo(target);
     }
@@ -157,17 +162,23 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
      * same flush as the overlay closing (MobileNovelReader inerts the whole
      * background wrapper while an overlay is open). Focusing an inert element
      * is a no-op, so without deferral focus would strand on <body>. Retry once
-     * the attribute has settled. The retry is bounded by `MAX_INERT_RETRIES`
-     * so an `inert` attribute that never clears cannot spin forever.
+     * the attribute has settled. A disabled restore target (e.g. a trigger
+     * marked unavailable while the overlay was open) blocks focus the same
+     * way and is cleared in the same flush, so it shares the retry. The retry
+     * is bounded by `MAX_INERT_RETRIES` so an `inert` attribute that never
+     * clears cannot spin forever.
      */
     function restoreFocusTo(target: HTMLElement | null): void {
         if (!target || typeof target.focus !== 'function') return;
-        if (target.closest('[inert]')) {
+        const blocked = (): boolean =>
+            target.closest('[inert]') !== null ||
+            (target as HTMLButtonElement).disabled === true;
+        if (blocked()) {
             let retries = 0;
             const retry = (): void => {
-                // Abandon if the target was removed before inert cleared.
+                // Abandon if the target was removed before it unblocked.
                 if (!target.isConnected) return;
-                if (target.closest('[inert]')) {
+                if (blocked()) {
                     if (retries < MAX_INERT_RETRIES) {
                         retries++;
                         queueMicrotask(retry);

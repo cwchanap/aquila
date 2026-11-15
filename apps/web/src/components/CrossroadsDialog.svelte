@@ -8,6 +8,7 @@
   import type { SecondChoiceLabels } from '@/lib/reader-second-language';
   import { actLabel } from '@/lib/act-navigation';
   import { focusTrap } from '@/lib/focus-trap';
+  import Button from '@/components/ui/Button.svelte';
   import RubyText from '@/components/RubyText.svelte';
 
   let {
@@ -19,6 +20,7 @@
     secondLang = undefined,
     furigana = true,
     t,
+    restoreFocus = null,
     onSelect,
     onClose,
   }: {
@@ -30,6 +32,7 @@
     secondLang?: string;
     furigana?: boolean;
     t: Translations;
+    restoreFocus?: HTMLElement | null;
     onSelect: (nextScene: string) => void;
     onClose: () => void;
   } = $props();
@@ -126,7 +129,11 @@
     aria-modal="true"
     aria-labelledby="crossroads-eyebrow crossroads-title"
     data-testid="crossroads-dialog"
-    use:focusTrap={{ enabled: true, initialFocus: () => headingEl }}
+    use:focusTrap={{
+      enabled: true,
+      restoreFocus,
+      initialFocus: () => headingEl,
+    }}
     class="pointer-events-none fixed inset-0 z-[96] flex flex-col text-slate-50"
   >
     <div
@@ -205,11 +212,14 @@
           >
             {#each options as option, i (option.id)}
               <li class="route-item relative min-w-0 sm:px-3">
-                <button
-                  type="button"
+                <!-- menu variant is the shared game-UI control; the extra
+                     utilities override its gradient/scale/uppercase/chrome so
+                     the route card keeps its own glass treatment -->
+                <Button
+                  variant="menu"
                   data-testid="crossroads-route"
                   aria-keyshortcuts={String(i + 1)}
-                  class="route-card relative flex min-h-11 w-full flex-col gap-1.5 rounded-2xl border border-white/20 bg-white/[0.07] px-4 py-3.5 text-left text-slate-50 backdrop-blur-md transition-[border-color,background-color,transform,box-shadow] duration-150 hover:-translate-y-[3px] hover:border-cyan-300 hover:bg-cyan-400/10 hover:shadow-[0_0_0_4px_rgba(34,211,238,0.12),0_20px_40px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:border-cyan-300 focus-visible:bg-cyan-400/10 focus-visible:ring-2 focus-visible:ring-cyan-300/70 sm:min-h-[132px] sm:gap-2.5 sm:rounded-[20px] sm:px-[22px] sm:pb-[18px] sm:pt-[22px]"
+                  className="route-card relative flex h-auto min-h-11 w-full flex-col gap-1.5 overflow-visible rounded-2xl border border-white/20 bg-white/[0.07] bg-none px-4 py-3.5 text-left text-base font-normal normal-case tracking-normal text-slate-50 shadow-none backdrop-blur-md transition-[border-color,background-color,transform,box-shadow] duration-150 hover:-translate-y-[3px] hover:scale-100 hover:border-cyan-300 hover:bg-cyan-400/10 hover:shadow-[0_0_0_4px_rgba(34,211,238,0.12),0_20px_40px_rgba(0,0,0,0.35)] focus:ring-0 focus:ring-opacity-100 focus-visible:outline-none focus-visible:border-cyan-300 focus-visible:bg-cyan-400/10 focus-visible:ring-2 focus-visible:ring-cyan-300/70 sm:min-h-[132px] sm:gap-2.5 sm:rounded-[20px] sm:px-[22px] sm:pb-[18px] sm:pt-[22px]"
                   onclick={() => select(option)}
                   onmouseenter={() => (activeRoute = i)}
                   onmouseleave={() => (activeRoute = null)}
@@ -249,7 +259,7 @@
                       />
                     </span>
                   {/if}
-                </button>
+                </Button>
               </li>
             {/each}
           </ul>
@@ -307,7 +317,8 @@
     .route-item:last-child::before {
       bottom: 50%;
     }
-    .route-card::before {
+    /* route-card lives inside Button.svelte, out of reach of scoped CSS */
+    :global(.route-card)::before {
       content: '';
       position: absolute;
       left: -24px;
@@ -315,7 +326,7 @@
       width: 22px;
       border-top: 2px dashed rgba(125, 211, 252, 0.45);
     }
-    .route-card::after {
+    :global(.route-card)::after {
       content: '';
       position: absolute;
       left: -28px;

@@ -7,6 +7,7 @@ import { scene as fourOptionDialogue } from '../../stories/src/generated/trainAd
 import { trainAdventureChoiceTextEn } from '../../stories/src/stories/trainAdventure/choices.en';
 import { buildChoiceMap } from '../../stories/src/stories/choice-utils';
 import {
+    chooseRoute,
     MobileReaderPage,
     openCrossroads,
     selectCrossroadsRoute,
@@ -660,6 +661,21 @@ test.describe('Crossroads choice overlay', () => {
             body: await page.screenshot(),
             contentType: 'image/png',
         });
+    });
+
+    test('selects the single route through the shared chooseRoute helper', async ({
+        page,
+    }) => {
+        const variant = VARIANTS.find(entry => entry.key === 'one-option');
+        expect(variant, 'one-option variant exists').toBeDefined();
+        if (!variant) return;
+        await page.goto(lastLineUrl(variant.sceneId, variant.lastLine), {
+            waitUntil: 'domcontentloaded',
+        });
+        const option = variant.choice.options[0];
+        await chooseRoute(page, option.label);
+        await expect(page).toHaveURL(sceneUrl(option.nextScene));
+        await expect(page).toHaveURL(dialogueUrl(1));
     });
 
     test('tap selection on a route card navigates once', async ({

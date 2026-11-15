@@ -535,4 +535,60 @@ describe('CrossroadsDialog', () => {
         expect(line).not.toBeNull();
         expect(line?.getAttribute('d')).toMatch(/C 0\.5 .* 0\.5 64$/);
     });
+
+    it('shows a bare decision eyebrow when the act name is empty', () => {
+        render(CrossroadsDialog, { props: baseProps({ actName: '' }) });
+        const dialog = screen.getByRole('dialog', {
+            name: /Decision/,
+        });
+        expect(dialog).toBeVisible();
+        expect(document.getElementById('crossroads-eyebrow')).toHaveTextContent(
+            /^Decision$/
+        );
+    });
+
+    it('numbers route labels beyond the lettered set', () => {
+        render(CrossroadsDialog, {
+            props: baseProps({
+                choice: {
+                    prompt: 'Pick one',
+                    options: makeOptions(['A', 'B', 'C', 'D', 'E']),
+                },
+            }),
+        });
+        expect(screen.getByText('Route 5')).toBeVisible();
+        expect(screen.getAllByTestId('crossroads-route')).toHaveLength(5);
+    });
+
+    it('lights the route line under the hovered or focused card', async () => {
+        const { container } = render(CrossroadsDialog, {
+            props: baseProps(),
+        });
+        const cards = screen.getAllByTestId('crossroads-route');
+        const lines = container.querySelectorAll('.route-line');
+        expect(lines[1]).not.toHaveClass('on');
+
+        await fireEvent.mouseEnter(cards[1]);
+        expect(lines[1]).toHaveClass('on');
+        await fireEvent.mouseLeave(cards[1]);
+        expect(lines[1]).not.toHaveClass('on');
+
+        await fireEvent.focus(cards[0]);
+        expect(lines[0]).toHaveClass('on');
+        await fireEvent.blur(cards[0]);
+        expect(lines[0]).not.toHaveClass('on');
+    });
+
+    it('renders when a locale string is missing', () => {
+        const sparse = {
+            ...t,
+            reader: {
+                ...t.reader,
+                crossroads: { ...t.reader.crossroads, back: undefined },
+            },
+        } as unknown as Translations;
+        render(CrossroadsDialog, { props: baseProps({ t: sparse }) });
+        expect(screen.getByRole('dialog')).toBeVisible();
+        expect(screen.getAllByTestId('crossroads-route')).toHaveLength(2);
+    });
 });

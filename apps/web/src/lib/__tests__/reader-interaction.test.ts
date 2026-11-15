@@ -120,6 +120,18 @@ describe('getReaderAdvanceDecision', () => {
         ).toBe('none');
     });
 
+    it('does not open the choice for an index past the final line', () => {
+        expect(
+            getReaderAdvanceDecision({
+                isTyping: false,
+                index: 5,
+                length: 3,
+                canGoNext: true,
+                hasChoice: true,
+            })
+        ).toBe('none');
+    });
+
     it.each([1, 2, 3, 4])(
         'returns open-choice on the final line for a %i-option choice',
         optionCount => {
@@ -220,7 +232,7 @@ describe('isChoicePosition', () => {
     it('is true only at the last line of a nonempty choice scene', () => {
         expect(isChoicePosition(0, 1, true)).toBe(true);
         expect(isChoicePosition(2, 3, true)).toBe(true);
-        expect(isChoicePosition(5, 3, true)).toBe(true);
+        expect(isChoicePosition(5, 3, true)).toBe(false);
         expect(isChoicePosition(0, 3, true)).toBe(false);
         expect(isChoicePosition(1, 3, true)).toBe(false);
         expect(isChoicePosition(2, 3, false)).toBe(false);

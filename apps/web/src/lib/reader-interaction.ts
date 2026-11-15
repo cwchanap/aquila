@@ -34,7 +34,7 @@ export function isChoicePosition(
     length: number,
     hasChoice: boolean
 ): boolean {
-    return hasChoice && length > 0 && index >= length - 1;
+    return hasChoice && length > 0 && index === length - 1;
 }
 
 export type ReaderAdvanceLabelKey =

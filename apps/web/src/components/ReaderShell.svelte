@@ -726,7 +726,10 @@
     }
   );
   let overlayFocusTarget = $derived.by((): HTMLElement | null => {
-    if (!(storyMapOpen || endingOpen) || typeof document === 'undefined') {
+    if (
+      !(storyMapOpen || endingOpen || crossroadsOpen) ||
+      typeof document === 'undefined'
+    ) {
       return null;
     }
     const id =
@@ -1302,6 +1305,7 @@
     {secondLang}
     {furigana}
     {t}
+    restoreFocus={overlayFocusTarget}
     onSelect={handleCrossroadsSelect}
     onClose={closeCrossroads}
   />

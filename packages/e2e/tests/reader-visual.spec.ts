@@ -599,6 +599,10 @@ test.describe('Visual novel reader', () => {
         await page.goto(
             '/en/reader?story=train_adventure&scene=act3&dialogue=47'
         );
+        // Astro's development toolbar covers the visual footer on mobile.
+        await page.addStyleTag({
+            content: 'astro-dev-toolbar { display: none !important; }',
+        });
         const visual = new VisualReaderPage(page);
         await expect(visual.root).toBeVisible();
         await expect(visual.root).toHaveCSS(
@@ -620,7 +624,7 @@ test.describe('Visual novel reader', () => {
         await expect(visual.root).toBeVisible();
     });
 
-    test('keeps History clear of long choice content on mobile portrait', async ({
+    test('keeps History clear of the terminal dialogue line on mobile portrait', async ({
         page,
     }) => {
         await page.setViewportSize({ width: 390, height: 844 });

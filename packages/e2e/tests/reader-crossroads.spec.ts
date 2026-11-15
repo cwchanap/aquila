@@ -80,8 +80,6 @@ const sceneUrl = (sceneId: string) => new RegExp(`[?&]scene=${sceneId}(?:&|$)`);
 
 const dialogueUrl = (line: number) => new RegExp(`[?&]dialogue=${line}(?:&|$)`);
 
-// The e2e tsconfig has no DOM lib, so browser globals inside evaluate are
-// reached through a globalThis cast (same convention as reader-lazy-loading).
 async function expectNoHorizontalOverflow(page: Page): Promise<void> {
     const { scrollWidth, innerWidth } = await page.evaluate(() => {
         const browser = globalThis as unknown as {
@@ -99,8 +97,6 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
     ).toBeLessThanOrEqual(innerWidth + 1);
 }
 
-// The compiled stylesheet keeps the env() rule even when the emulated inset
-// resolves to 0, so scan same-origin sheets for the token itself.
 async function expectSafeAreaRule(page: Page): Promise<void> {
     type StyleRule = { cssText: string; cssRules?: ArrayLike<StyleRule> };
     const found = await page.evaluate(() => {
@@ -122,7 +118,7 @@ async function expectSafeAreaRule(page: Page): Promise<void> {
             try {
                 if (scan(sheet.cssRules)) return true;
             } catch {
-                // Cross-origin sheets are skipped.
+                continue;
             }
         }
         return false;
@@ -147,11 +143,9 @@ test.describe('Crossroads choice overlay', () => {
         });
         const dialog = page.getByTestId('crossroads-dialog');
 
-        // One line before the end: desktop shows Continue, phones keep ▼.
         await page.goto(lastLineUrl(variant.sceneId, variant.lastLine - 1), {
             waitUntil: 'domcontentloaded',
         });
-        // Cold module-graph compiles can exceed the 5s expect default.
         await expect(page.getByTestId('reader-ready')).toBeVisible({
             timeout: 15_000,
         });
@@ -171,7 +165,6 @@ test.describe('Crossroads choice overlay', () => {
         await expect(choose).toBeVisible();
         await expect(dialog).toHaveCount(0);
 
-        // Reload and revisit the deep link: the overlay never opens itself.
         await page.reload({ waitUntil: 'domcontentloaded' });
         await expect(choose).toBeVisible();
         await expect(dialog).toHaveCount(0);
@@ -222,8 +215,6 @@ test.describe('Crossroads choice overlay', () => {
                 );
             }
 
-            // Option B geometry, independent of scroll position: the desktop
-            // fan keeps one row of cards, phones stack them down the trunk.
             const layout = await dialog
                 .locator('.route-item')
                 .evaluateAll(items =>
@@ -292,8 +283,6 @@ test.describe('Crossroads choice overlay', () => {
         let dialog = await openCrossroads(page);
         await expect(page.locator('#crossroads-title')).toBeFocused();
 
-        // Initial focus sits on the prompt heading, not a route button:
-        // pressing Enter must not pick a route.
         await page.keyboard.press('Enter');
         await page.keyboard.press('Enter');
         await expect(dialog).toBeVisible();
@@ -315,8 +304,6 @@ test.describe('Crossroads choice overlay', () => {
                 await page.goBack();
                 await expect(page).toHaveURL(sceneUrl(variant.sceneId));
                 await expect(page).toHaveURL(dialogueUrl(variant.lastLine));
-                // History navigation lands on the last line without
-                // reopening the overlay.
                 await expect(page.getByTestId('crossroads-dialog')).toHaveCount(
                     0
                 );
@@ -336,15 +323,12 @@ test.describe('Crossroads choice overlay', () => {
         await page.goto(lastLineUrl(variant.sceneId, variant.lastLine), {
             waitUntil: 'domcontentloaded',
         });
-        // The dev toolbar sits bottom-center over the Back control.
         await page.addStyleTag({ content: TOOLBAR_STYLE });
         const choose = page.getByRole('button', {
             name: 'Choose',
             exact: true,
         });
         const dialog = page.getByTestId('crossroads-dialog');
-        // Opening through the keyboard gives WebKit a focused opener to
-        // restore: tapping a button does not focus it there.
         const open = async (): Promise<Locator> => {
             await choose.press('Enter');
             await expect(dialog).toBeVisible();
@@ -352,7 +336,6 @@ test.describe('Crossroads choice overlay', () => {
         };
 
         await open();
-        // A click on non-interactive modal content does not dismiss it.
         await dialog.locator('#crossroads-title').click();
         await expect(dialog).toBeVisible();
         await page.keyboard.press('Escape');
@@ -391,7 +374,6 @@ test.describe('Crossroads choice overlay', () => {
         await expect(
             crossroads.getByRole('heading', { name: variant.choice.prompt })
         ).toBeVisible();
-        // Opening alone must not navigate or record a route.
         await expect(page).toHaveURL(sceneUrl(variant.sceneId));
         await expect(page).toHaveURL(dialogueUrl(variant.lastLine));
         await selectCrossroadsRoute(crossroads, taken.label);
@@ -498,14 +480,11 @@ test.describe('Crossroads choice overlay', () => {
         });
         const dialog = page.getByTestId('crossroads-dialog');
 
-        // A reading-area tap on the choice line opens the overlay too.
         await reader.tapToAdvance();
         await expect(dialog).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(dialog).toHaveCount(0);
 
-        // With the chrome bar still open, one tap on Choose dismisses it and
-        // opens the overlay (no chrome-dismiss-then-tap-again dance).
         await reader.openMenu();
         await expect(reader.backToHomeLink).toBeVisible();
         await page.getByRole('button', { name: 'Choose', exact: true }).click();
@@ -539,7 +518,6 @@ test.describe('Crossroads choice overlay', () => {
         const heading = dialog.locator('#crossroads-title');
         await expect(heading).toBeVisible();
         await expect(heading).toHaveAttribute('lang', 'ja');
-        // The ja prompt carries furigana: 親子《おやこ》 renders ruby markup.
         await expect(heading.locator('rt').first()).toHaveText('おやこ');
 
         const secondLines = dialog.getByTestId('second-line');

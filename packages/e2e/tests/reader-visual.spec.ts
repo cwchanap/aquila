@@ -599,7 +599,6 @@ test.describe('Visual novel reader', () => {
         await page.goto(
             '/en/reader?story=train_adventure&scene=act3&dialogue=47'
         );
-        // Astro's development toolbar covers the visual footer on mobile.
         await page.addStyleTag({
             content: 'astro-dev-toolbar { display: none !important; }',
         });

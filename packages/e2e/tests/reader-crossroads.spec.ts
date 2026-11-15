@@ -562,16 +562,6 @@ test.describe('Crossroads choice overlay', () => {
         const viewport = page.viewportSize();
         expect(viewport, 'viewport is measurable').not.toBeNull();
         if (!viewport) return;
-        for (let index = 0; index < 3; index += 1) {
-            const card = cards.nth(index);
-            await card.scrollIntoViewIfNeeded();
-            const box = await card.boundingBox();
-            expect(box, `route card ${index} is measurable`).not.toBeNull();
-            if (!box) continue;
-            expect(box.height).toBeGreaterThanOrEqual(44);
-            expect(box.x).toBeGreaterThanOrEqual(-1);
-            expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
-        }
 
         const scrollMetrics = await scrollport.evaluate(element => {
             const node = element as unknown as {
@@ -608,8 +598,16 @@ test.describe('Crossroads choice overlay', () => {
                 element =>
                     (element as unknown as { scrollTop: number }).scrollTop
             );
+        await scrollport.evaluate(element => {
+            (element as unknown as { scrollTop: number }).scrollTop = 0;
+        });
+        const startTop = await readScrollTop();
+        expect(startTop).toBeLessThanOrEqual(1);
+
         if (testInfo.project.name === 'mobile-safari') {
-            await cards.nth(2).focus();
+            await page.keyboard.press('Tab');
+            await page.keyboard.press('Tab');
+            await page.keyboard.press('Tab');
         } else {
             await page.mouse.move(
                 portBox.x + portBox.width / 2,
@@ -617,36 +615,20 @@ test.describe('Crossroads choice overlay', () => {
             );
             await page.mouse.wheel(0, 4000);
         }
-        await expect.poll(readScrollTop).toBeGreaterThan(0);
+        await expect.poll(readScrollTop).toBeGreaterThan(startTop);
         const lastCard = cards.nth(2);
         await expect(lastCard).toBeInViewport();
-        const lastBox = await lastCard.boundingBox();
-        expect(lastBox).not.toBeNull();
-        if (lastBox) {
-            expect(lastBox.y).toBeGreaterThanOrEqual(portBox.y - 1);
-            expect(lastBox.y + lastBox.height).toBeLessThanOrEqual(
-                portBox.y + portBox.height + 1
-            );
-            const lastLabelBox = await lastCard
-                .getByTestId('second-line')
-                .boundingBox();
-            if (lastLabelBox) {
-                expect(lastLabelBox.y).toBeGreaterThanOrEqual(lastBox.y - 1);
-                expect(
-                    lastLabelBox.y + lastLabelBox.height
-                ).toBeLessThanOrEqual(lastBox.y + lastBox.height + 1);
-                expect(
-                    lastLabelBox.y + lastLabelBox.height
-                ).toBeLessThanOrEqual(portBox.y + portBox.height + 1);
-            }
-        }
 
         if (testInfo.project.name === 'mobile-safari') {
-            await heading.focus();
+            await expect(lastCard).toBeFocused();
+            await scrollport.evaluate(element => {
+                (element as unknown as { scrollTop: number }).scrollTop = 0;
+            });
         } else {
             await page.mouse.wheel(0, -4000);
         }
         await expect.poll(readScrollTop).toBeLessThanOrEqual(1);
+
         const headingBox = await heading.boundingBox();
         expect(headingBox).not.toBeNull();
         if (headingBox) {
@@ -654,6 +636,43 @@ test.describe('Crossroads choice overlay', () => {
             expect(headingBox.y + headingBox.height).toBeLessThanOrEqual(
                 portBox.y + portBox.height + 1
             );
+        }
+
+        for (let index = 0; index < 3; index += 1) {
+            const card = cards.nth(index);
+            await card.scrollIntoViewIfNeeded();
+            const cardBox = await card.boundingBox();
+            expect(cardBox, `route card ${index} is measurable`).not.toBeNull();
+            if (!cardBox) continue;
+            expect(cardBox.height).toBeGreaterThanOrEqual(44);
+            expect(cardBox.x).toBeGreaterThanOrEqual(portBox.x - 1);
+            expect(cardBox.x + cardBox.width).toBeLessThanOrEqual(
+                portBox.x + portBox.width + 1
+            );
+            expect(cardBox.y).toBeGreaterThanOrEqual(portBox.y - 1);
+            expect(cardBox.y + cardBox.height).toBeLessThanOrEqual(
+                portBox.y + portBox.height + 1
+            );
+
+            for (const label of [
+                card.locator('span[lang="ja"]'),
+                card.getByTestId('second-line'),
+            ]) {
+                const labelBox = await label.boundingBox();
+                expect(labelBox).not.toBeNull();
+                if (!labelBox) continue;
+                expect(labelBox.x).toBeGreaterThanOrEqual(cardBox.x - 1);
+                expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(
+                    cardBox.x + cardBox.width + 1
+                );
+                expect(labelBox.y).toBeGreaterThanOrEqual(cardBox.y - 1);
+                expect(labelBox.y + labelBox.height).toBeLessThanOrEqual(
+                    cardBox.y + cardBox.height + 1
+                );
+                expect(labelBox.y + labelBox.height).toBeLessThanOrEqual(
+                    portBox.y + portBox.height + 1
+                );
+            }
         }
 
         await expectNoHorizontalOverflow(page);

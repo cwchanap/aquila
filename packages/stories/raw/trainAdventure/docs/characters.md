@@ -53,7 +53,7 @@
 ## 7. 斎藤蓮（Saito Ren）
 
 - **ID**: `saito_ren`
-- **Aliases**: 膽小眼鏡男, 眼鏡男, Saito Ren, Ren, Timid Guy in Glasses, 気弱な眼鏡の青年
+- **Aliases**: 膽小眼鏡男, 眼鏡男, Saito Ren, Ren, Timid Guy in Glasses, 気弱な眼鏡の青年, 眼鏡の青年
 
 ### Portrait Prompts
 
@@ -417,7 +417,7 @@
 ## 71. 精靈（Elf）
 
 - **ID**: `elf`
-- **Aliases**: Elf, エルフ, Elf Woman, エルフの女性, Elder Elf, 年長のエルフ, エルフの子ども, エルフの母親, 若いエルフA, 若いエルフB, 若いエルフC
+- **Aliases**: Elf, エルフ, Elf Woman, エルフの女性, Elder Elf, 年長のエルフ, エルフの子ども, エルフの母親, 若いエルフA, 若いエルフB, 若いエルフC, エルフの少女, エルフの老人, エルフの職人, エルフの露店主
 
 ## 72. 士兵（Soldier）
 
@@ -427,12 +427,12 @@
 ## 73. 守衛（Guard）
 
 - **ID**: `guard`
-- **Aliases**: Guard, 警備員
+- **Aliases**: Guard, 警備員, 若い女性の衛兵
 
 ## 74. 店員（Clerk）
 
 - **ID**: `clerk`
-- **Aliases**: Clerk
+- **Aliases**: Clerk, 係員
 
 ## 75. 女僕（Maid）
 
@@ -517,7 +517,7 @@
 ## 91. 中年男子（Middle-Aged Man）
 
 - **ID**: `middle_aged_man`
-- **Aliases**: Middle-Aged Man, 中年の男
+- **Aliases**: Middle-Aged Man, 中年の男, 太った中年男
 
 ## 92. 中年女人（Middle-Aged Woman）
 

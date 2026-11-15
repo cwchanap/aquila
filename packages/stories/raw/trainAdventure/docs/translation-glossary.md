@@ -201,6 +201,9 @@ Used before a character is named. All are registered as aliases in
 | 神秘聲音 | Mysterious Voice | 謎の声 | `voice` |
 | 張伯伯 | Uncle Zhang | チャンおじさん | `man` |
 | 女將 | Innkeeper | 女将 | `inn_keeper` |
+| 肥胖中年男 | Heavyset Middle-Aged Man | 太った中年男 | `middle_aged_man` |
+| 年輕女衛兵 | Young Female Guard | 若い女性の衛兵 | `guard` |
+| 服務人員 | Hotel Staff | 係員 | `clerk` |
 
 ## Places and terms
 
@@ -297,7 +300,17 @@ Used before a character is named. All are registered as aliases in
 | 懷石料理 | kaiseki dinner | 懐石料理（かいせきりょうり） |
 | 拉勾勾 | pinky promise | 指切り（ゆびきり） |
 | 生活補助（每月四十萬日圓） | living allowance (400,000 yen a month) | 生活補助金（せいかつほじょきん）、月四十万円（つきよんじゅうまんえん） |
-| GPhone 35 Pro Max / GPhone 16 | GPhone 35 Pro Max / GPhone 16 | GPhone 35 Pro Max / GPhone 16 |
+| GPhone 35 Pro Max / GPhone 16 / GPhone 42 Pro Max | same | same, with the spaces kept |
+| 精靈契約 / 建立契約 | the elven contract | エルフの契約（えるふのけいやく）, then 契約（けいやく） |
+| 符合資格 / 不符合資格 | eligible / not eligible | 資格に合う（しかくにあう） / 資格に合わない |
+| 冷卻期 | the waiting period | 待機期間（たいききかん） |
+| 精靈螢 | elf fireflies | エルフ蛍（えるふぼたる） |
+| 候車大廳 | the waiting hall | 待合ホール（まちあいホール） at the altar; the plain station one in 5b is 待合室（まちあいしつ） |
+| 夏威夷 | Hawaii | ハワイ; places in katakana (ワイキキビーチ, ダイヤモンドヘッド, パールハーバー) |
+| 長官 | the chief (Daisuke's title) | 長官（ちょうかん） |
+| 船橋 / 品川區 / 成田國際機場 / 上海 | Funabashi / Shinagawa / Narita Airport / Shanghai | 船橋（ふなばし） / 品川区（しながわく） / 成田国際空港（なりたこくさいくうこう） / 上海（しゃんはい） |
+| 李明遠 / 王美玲（Li Jie's parents） | Li Mingyuan / Wang Meiling | リー・ミンユエン / ワン・メイリン |
+| 美紀（Kosuke's wife） | Miki | 美紀（みき） |
 | 新千歲機場 / 札幌 | New Chitose Airport / Sapporo | 新千歳空港（しんちとせくうこう） / 札幌（さっぽろ） |
 | 福岡（機場） | Fukuoka (Airport) | 福岡（ふくおか）; 福岡空港（ふくおかくうこう） |
 | 東京 / 大阪 | Tokyo / Osaka | 東京（とうきょう） / 大阪（おおさか） |
@@ -403,12 +416,14 @@ Used before a character is named. All are registered as aliases in
 - **The final line** `**—— 全劇終 ——**` is a speakerless paragraph:
   `**— The End —**` / `**―― 完 ――**` — bold, no colon, no speaker.
 
-## Route notes: branch_1a (ja up to act 20 on every route)
+## Route notes: branch_1a (ja up to act 20 on every route; the cabin route 2a-3a-4a runs on to the endings)
 
 - **Coverage**: ja exists for the shared acts 4–6, route 2a (acts 7–8, then
   3a acts 9–12, then 4a acts 13–20) and route 2b (act 7, then 3a acts 8–20 and
-  3b acts 8–20). The branch runs to act 72 in zh; everything past act 20 on a
-  route still reads zh until it is translated.
+  3b acts 8–20). The cabin route (2a, 3a, 4a) goes on: 4a acts 21–35, then 5a
+  acts 36–48 (the Hawaii ending) and 5b acts 36–37 plus 終幕 (the dark ending).
+  The branch runs to act 72 in zh; everything else past act 20 still reads zh
+  until it is translated.
 - **Acts 4–6 are voiced**, and for a translated scene the ja reader text *is*
   the spoken text. The 104 voiced lines there (act 4: 51, act 5: 30, act 6: 23)
   keep the wording of `voice-script.ja.json` as the reader text, so the takes
@@ -424,6 +439,14 @@ Used before a character is named. All are registered as aliases in
   Saito Ren 僕, sarcastic です/ます, リーさん to Li Jie. Li Jie 俺, and 私（わたし）
   to Ailaru. Kobayashi family as in the pronoun list above; Yudai 俺, bare 智子
   to his wife. Li Jie says 陽菜ちゃん / 翔太くん, the kids say お兄ちゃん.
+- **Acts 21–48 cast**: Ailaru and Kelan are polite (私, ですます; Kelan calls
+  the others 恵美さん, Ailaru 様). Emi calls Sho 翔; Li Jie calls Saito 斎藤 and
+  addresses Emi as 清水さん or 君, never おまえ. Daisuke (the agency is only 組織 in this
+  route) speaks as a genial boss: 私, 〜かね, 〜だ,
+  and calls Li Jie リー・ジエくん. Riko says あたし and calls Daisuke 大輔おじさん.
+  Kosuke is sixty: 俺, calls Emi 姉さん and Li Jie リーさん (義兄さん as a joke).
+  Years and the phone model stay in Arabic digits as in zh (2050年, GPhone 42);
+  ruby goes on the counter kanji only.
 - **Names are given late**: the guy in glasses stays 気弱な眼鏡の青年 until zh
   switches to 斎藤蓮, as in the labels table; 山本浩二 likewise after he
   introduces himself.

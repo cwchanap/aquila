@@ -158,6 +158,54 @@ describe('CrossroadsDialog', () => {
         });
     });
 
+    it('wraps long unbroken labels instead of overflowing the card row', () => {
+        const longWord = 'Investigatethetransmission'.repeat(3);
+        render(CrossroadsDialog, {
+            props: baseProps({
+                secondChoice: {
+                    prompt: 'セカンドプロンプト'.repeat(8),
+                    labels: {
+                        o1: 'セカンドラベル'.repeat(8),
+                        o2: 'セカンドラベル'.repeat(8),
+                    },
+                },
+                secondLang: 'ja',
+                choice: {
+                    prompt: `${longWord}?`,
+                    options: makeOptions([
+                        longWord,
+                        longWord,
+                        longWord,
+                        longWord,
+                    ]),
+                },
+            }),
+        });
+        // overflow-wrap anywhere lets a single long word break inside its
+        // box instead of pushing the card past its grid track.
+        expect(screen.getByRole('heading').className).toContain(
+            'wrap-anywhere'
+        );
+        const cards = screen.getAllByTestId('crossroads-route');
+        expect(cards).toHaveLength(4);
+        for (const card of cards) {
+            // Each grid item may not exceed its 1fr track width.
+            expect(card.parentElement?.className).toContain('min-w-0');
+            // The lang'd spans are the main/secondary text containers.
+            const texts = card.querySelectorAll('[lang]');
+            expect(texts.length).toBeGreaterThan(0);
+            texts.forEach(span => {
+                expect(span.className).toContain('wrap-anywhere');
+            });
+        }
+        const seconds = screen.getAllByTestId('second-line');
+        expect(seconds.length).toBeGreaterThan(0);
+        seconds.forEach(el => expect(el.className).toContain('wrap-anywhere'));
+        // The desktop card row is retained.
+        const list = cards[0].closest('ul');
+        expect(list?.className).toContain('sm:grid-flow-col');
+    });
+
     it('keeps hit targets at least 44px tall', () => {
         render(CrossroadsDialog, { props: baseProps() });
         for (const card of screen.getAllByTestId('crossroads-route')) {

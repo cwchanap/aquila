@@ -610,8 +610,6 @@ test.describe('Visual novel reader', () => {
         await expect(visual.leftPortrait).not.toHaveAttribute('src');
         await expect(visual.rightPortrait).not.toHaveAttribute('src');
 
-        // The prompt and route cards live in the shared Crossroads overlay
-        // (HPA-961): the terminal line offers a single Choose affordance.
         const crossroads = await openCrossroads(page);
         await expect(
             crossroads.getByText('The doors are open. Do you step out?')

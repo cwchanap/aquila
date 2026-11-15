@@ -511,7 +511,6 @@ describe('MobileNovelReader', () => {
 
             const choose = screen.getByRole('button', { name: 'Choose' });
             expect(choose.className).toContain('pointer-events-auto');
-            // The last line stays on screen; the choice UI is not inline.
             expect(screen.getByText('First line.')).toBeInTheDocument();
             expect(screen.queryByText('Pick one?')).not.toBeInTheDocument();
             expect(
@@ -521,7 +520,6 @@ describe('MobileNovelReader', () => {
             await fireEvent.click(choose);
             expect(onOpenChoice).toHaveBeenCalledTimes(1);
             expect(onNext).not.toHaveBeenCalled();
-            // The button's click must not leak into the reading-area layer.
             expect(onIndexChange).not.toHaveBeenCalled();
         });
 
@@ -542,7 +540,6 @@ describe('MobileNovelReader', () => {
                 screen.getByRole('button', { name: 'Choose' })
             );
             expect(onOpenChoice).toHaveBeenCalledTimes(1);
-            // The terminal action dismisses the chrome as it opens.
             expect(
                 screen.queryByLabelText('Back to Home')
             ).not.toBeInTheDocument();

@@ -895,8 +895,6 @@ test.describe('Deployed visual-novel release gate', () => {
             )
         );
         await expect(visual.root).toBeVisible();
-        // The prompt and route cards live in the shared Crossroads overlay
-        // (HPA-961): the terminal line offers a single Choose affordance.
         const crossroads = await openCrossroads(page);
         await expect(
             crossroads.getByRole('heading', { name: choiceAnchors.prompt })

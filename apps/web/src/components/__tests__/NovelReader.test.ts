@@ -558,7 +558,6 @@ describe('NovelReader — choice handling', () => {
 
         const choose = screen.getByText('Choose');
         expect(choose.closest('button')).not.toBeNull();
-        // The last line stays on screen; the choice UI is not inline.
         expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
         expect(
             screen.queryByText('What do you want to do?')
@@ -576,7 +575,6 @@ describe('NovelReader — choice handling', () => {
         await vi.runAllTimersAsync();
 
         expect(screen.getByText('Continue')).toBeInTheDocument();
-        // No inline choice UI at any index.
         expect(
             screen.queryByText('What do you want to do?')
         ).not.toBeInTheDocument();

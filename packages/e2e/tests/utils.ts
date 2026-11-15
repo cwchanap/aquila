@@ -4,12 +4,6 @@ import type { Locator, Page } from '@playwright/test';
 export const uniqueEmail = (prefix: string) =>
     `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}@example.com`;
 
-/**
- * HPA-961 Crossroads helpers. A choice scene's final line offers one "Choose"
- * affordance; activating it opens the shared Crossroads overlay which owns the
- * localized prompt and the route cards. The dialog is located by testid (not
- * role) because mobile overlays keep an inert role="dialog" mounted.
- */
 export async function openCrossroads(page: Page): Promise<Locator> {
     await page.getByRole('button', { name: 'Choose', exact: true }).click();
     const dialog = page.getByTestId('crossroads-dialog');

@@ -147,8 +147,6 @@
   let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
   let hasOverlay = $derived(drawerOpen || backlogOpen);
-  // Terminal-line action label: 'choose' opens Crossroads, 'nextScene'/
-  // 'complete' advance. Non-terminal lines keep the ▼ cue instead.
   let terminalLabel = $derived.by(() => {
     const key = advanceLabelKey(
       getReaderAdvanceDecision({
@@ -296,10 +294,6 @@
     if (decision === 'advance-scene' || decision === 'complete') onNext();
   }
 
-  // The terminal action is a real button, so a single tap executes the
-  // decision — it bypasses only the reading-area's chrome-dismiss early
-  // return, not the overlay/disabled guards. stopPropagation keeps the click
-  // from also reaching the tap-to-advance layer below.
   function handleTerminalAdvance(event: MouseEvent): void {
     event.stopPropagation();
     if (interactionDisabled || hasOverlay) return;
@@ -564,8 +558,7 @@
   {/if}
 
   <!-- Bottom text panel. pointer-events-none lets taps fall through to the
-       advance layer; interactive children (back control, terminal action,
-       scrollable text) opt back in with pointer-events-auto. -->
+       advance layer except when choices need to be clickable. -->
   <div
     class="absolute inset-x-0 bottom-0 z-20 mx-auto max-w-2xl px-4 pb-4 pointer-events-none"
     style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));"

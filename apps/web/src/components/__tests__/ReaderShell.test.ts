@@ -2827,7 +2827,6 @@ describe('ReaderShell', () => {
                 await tick();
                 await vi.advanceTimersByTimeAsync(1000);
 
-                // Landing on the choice line never auto-opens the overlay.
                 expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
                 const choose = screen.getByRole('button', { name: 'Choose' });
                 await fireEvent.click(choose);
@@ -2840,12 +2839,9 @@ describe('ReaderShell', () => {
                 expect(screen.getAllByTestId('crossroads-route')).toHaveLength(
                     2
                 );
-                // The last line stays on screen behind the overlay.
                 expect(
                     screen.getByText('Final line at the fork.')
                 ).toBeInTheDocument();
-                // Shared gating: leaf inert + separately-rendered settings
-                // trigger unavailable.
                 expect(screen.getByTestId('reader-ready')).toHaveAttribute(
                     'inert'
                 );
@@ -2922,7 +2918,6 @@ describe('ReaderShell', () => {
             expect(
                 screen.getByRole('dialog', { name: /Decision · Act 2/ })
             ).toBeVisible();
-            // Initial focus is the non-button prompt heading.
             const heading = screen.getByRole('heading', {
                 name: 'Which fork?',
             });
@@ -2947,13 +2942,10 @@ describe('ReaderShell', () => {
                 screen.getByRole('dialog', { name: /Decision · Act 2/ })
             ).toBeVisible();
 
-            // Stepping back a line (e.g. history navigation) clears it.
             readerState.dialogueIndex = 0;
             await tick();
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-            // Returning to the choice line does not reopen it — the stored
-            // position key was cleared, not just hidden.
             readerState.dialogueIndex = 1;
             await tick();
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -2961,7 +2953,6 @@ describe('ReaderShell', () => {
                 screen.getByRole('button', { name: 'Choose' })
             ).toBeVisible();
 
-            // Reopening still works; a scene change clears it again.
             await fireEvent.click(
                 screen.getByRole('button', { name: 'Choose' })
             );
@@ -3194,7 +3185,6 @@ describe('ReaderShell second language', () => {
         const dialog = await screen.findByRole('dialog', {
             name: /Decision/,
         });
-        // The second-language payload loads asynchronously.
         await waitFor(() =>
             expect(within(dialog).getByText('どうする？')).toHaveAttribute(
                 'lang',

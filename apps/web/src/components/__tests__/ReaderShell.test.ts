@@ -3126,6 +3126,69 @@ describe('ReaderShell', () => {
             expect(bgm.player.play).toHaveBeenCalledTimes(1);
             expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
         });
+
+        it('ignores a second open request while the dialog is already open', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            const choose = screen.getByRole('button', { name: 'Choose' });
+            await fireEvent.click(choose);
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            // The leaf is inert under the dialog, but a raw DOM event still
+            // reaches onOpenChoice -> openCrossroads, which must refuse to
+            // reopen while the reader is disabled.
+            await fireEvent.click(choose);
+            expect(screen.getAllByRole('dialog')).toHaveLength(1);
+        });
+
+        it('opens the dialog without an act caption when the scene id has no act marker', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            readerState.currentSceneId = 'custom_ending';
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            const dialog = screen.getByRole('dialog', { name: /Decision/ });
+            expect(dialog).toBeVisible();
+            expect(
+                document.getElementById('crossroads-eyebrow')
+            ).toHaveTextContent(/^Decision$/);
+            expect(screen.getAllByTestId('crossroads-route')).toHaveLength(2);
+        });
+
+        it('marks the settings trigger unavailable while a visual overlay is open', async () => {
+            stubMatchMedia(false);
+            localStorage.setItem(READER_MODE_KEY, 'visual');
+            seedChoiceLine();
+            render(ReaderShell, {
+                props: {
+                    createVisualRuntime: () => createRuntimeHarness().runtime,
+                },
+            });
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+
+            const trigger = screen.getByRole('button', {
+                name: 'Open reader settings',
+            });
+            expect(trigger).not.toBeDisabled();
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open history' })
+            );
+            await tick();
+            expect(trigger).toBeDisabled();
+            expect(trigger).toHaveAttribute('tabindex', '-1');
+        });
     });
 });
 

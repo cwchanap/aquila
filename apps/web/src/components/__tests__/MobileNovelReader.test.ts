@@ -593,6 +593,43 @@ describe('MobileNovelReader', () => {
             expect(onNext).toHaveBeenCalledTimes(1);
         });
 
+        it('does nothing on a reading-area tap with no dialogue at all', async () => {
+            const onNext = vi.fn();
+            const onIndexChange = vi.fn();
+            const onOpenChoice = vi.fn();
+            renderReader({
+                dialogue: [],
+                dialogueIndex: 0,
+                canGoNext: false,
+                onNext,
+                onIndexChange,
+                onOpenChoice,
+            });
+            await vi.runAllTimersAsync();
+
+            await fireEvent.click(screen.getByLabelText('Tap to continue'));
+            expect(onNext).not.toHaveBeenCalled();
+            expect(onIndexChange).not.toHaveBeenCalled();
+            expect(onOpenChoice).not.toHaveBeenCalled();
+        });
+
+        it('ignores the terminal advance button while interaction is disabled', async () => {
+            const onNext = vi.fn();
+            renderReader({
+                dialogue: [mockDialogue[0]],
+                dialogueIndex: 0,
+                canGoNext: true,
+                interactionDisabled: true,
+                onNext,
+            });
+            await vi.runAllTimersAsync();
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Next Scene' })
+            );
+            expect(onNext).not.toHaveBeenCalled();
+        });
+
         it('bookmarks the current line number at index 0', async () => {
             const onBookmark = vi.fn();
             renderReader({

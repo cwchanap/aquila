@@ -217,6 +217,16 @@ describe('CrossroadsDialog', () => {
         expect(back.className).toMatch(/min-h-11/);
     });
 
+    it('applies the bottom safe-area inset to the dialog footer', () => {
+        render(CrossroadsDialog, { props: baseProps() });
+        const back = screen.getByRole('button', {
+            name: 'Back to the last line',
+        });
+        expect(back.parentElement?.className).toMatch(
+            /pb-\[max\(1\.5rem,env\(safe-area-inset-bottom\)\)\]/
+        );
+    });
+
     it('shows the second-language prompt and labels when enabled', () => {
         render(CrossroadsDialog, {
             props: baseProps({

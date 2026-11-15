@@ -3000,6 +3000,74 @@ describe('ReaderShell', () => {
             expect(onIndexChange).not.toHaveBeenCalled();
             expect(readerState.dialogueIndex).toBe(1);
         });
+
+        it('clears the key on a blocking load instead of resurrecting over Settings', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            readerState.loadStatus = 'loading';
+            await tick();
+            expect(
+                screen.queryByRole('dialog', { name: /Decision/ })
+            ).not.toBeInTheDocument();
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Open reader settings' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: 'Reader settings' })
+            ).toBeVisible();
+
+            readerState.loadStatus = 'ready';
+            await tick();
+            expect(
+                screen.queryByRole('dialog', { name: /Decision/ })
+            ).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('dialog', { name: 'Reader settings' })
+            ).toBeVisible();
+        });
+
+        it('clears the key when the choice position is lost and regained', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            readerState.choice = null;
+            await tick();
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+            readerState.choice = branchChoices.c1;
+            await tick();
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Choose' })
+            ).toBeVisible();
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+        });
     });
 });
 

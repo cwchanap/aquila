@@ -821,7 +821,9 @@
   $effect.pre(() => {
     if (
       crossroadsPositionKey !== null &&
-      crossroadsPositionKey !== crossroadsKey
+      (crossroadsPositionKey !== crossroadsKey ||
+        isBlocking ||
+        !isChoicePosition(dialogueIndex, dialogue.length, choice !== null))
     ) {
       crossroadsPositionKey = null;
     }

@@ -1,7 +1,12 @@
 import type { StoryFlowConfig, SceneNodeDefinition } from '@aquila/stories';
 
 export type ReaderAdvanceDecision =
-    'skip' | 'advance-line' | 'advance-scene' | 'complete' | 'none';
+    | 'skip'
+    | 'advance-line'
+    | 'open-choice'
+    | 'advance-scene'
+    | 'complete'
+    | 'none';
 
 export type ReaderAdvanceInput = {
     isTyping: boolean;
@@ -16,9 +21,40 @@ export function getReaderAdvanceDecision(
 ): ReaderAdvanceDecision {
     if (input.isTyping) return 'skip';
     if (input.index < input.length - 1) return 'advance-line';
+    if (isChoicePosition(input.index, input.length, input.hasChoice)) {
+        return 'open-choice';
+    }
     if (input.canGoNext && !input.hasChoice) return 'advance-scene';
     if (input.length > 0 && !input.hasChoice) return 'complete';
     return 'none';
+}
+
+export function isChoicePosition(
+    index: number,
+    length: number,
+    hasChoice: boolean
+): boolean {
+    return hasChoice && length > 0 && index >= length - 1;
+}
+
+export type ReaderAdvanceLabelKey =
+    'continue' | 'choose' | 'nextScene' | 'complete';
+
+export function advanceLabelKey(
+    decision: ReaderAdvanceDecision
+): ReaderAdvanceLabelKey | null {
+    switch (decision) {
+        case 'advance-line':
+            return 'continue';
+        case 'open-choice':
+            return 'choose';
+        case 'advance-scene':
+            return 'nextScene';
+        case 'complete':
+            return 'complete';
+        default:
+            return null;
+    }
 }
 
 export function isEndingPosition(

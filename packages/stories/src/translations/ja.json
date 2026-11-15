@@ -252,6 +252,7 @@
     "continue": "続ける",
     "nextScene": "次の場面",
     "complete": "完了",
+    "choose": "選ぶ",
     "bookmark": "📖 しおり",
     "pageDisplay": "{current} / {total} ページ",
     "unknown": "不明",
@@ -273,6 +274,11 @@
     "tapToContinue": "タップして続ける",
     "lineProgress": "{current} / {total} 行",
     "previousLine": "前の行",
+    "crossroads": {
+      "back": "最後の行に戻る",
+      "route": "ルート {letter}",
+      "keyHint": "{key} キーを押す"
+    },
     "storyMap": {
       "title": "ストーリーマップ",
       "open": "ストーリーマップを開く",

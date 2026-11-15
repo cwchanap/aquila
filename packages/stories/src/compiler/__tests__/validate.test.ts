@@ -67,6 +67,25 @@ describe('validateStory', () => {
         expect(() => validateStory(s)).toThrow(/missing scene/);
     });
 
+    it('rejects a choice scene with no dialogue entries', () => {
+        const s = baseStory();
+        s.scenes[0].entries = [];
+        s.scenes[0].next = 'choice:c1';
+        s.choices.push({
+            choiceId: 'c1',
+            fromSceneId: 'act1',
+            options: [{ optionId: 'a', nextScene: 'act2' }],
+        });
+        expect(() => validateStory(s)).toThrow(/no dialogue entries/);
+    });
+
+    it('still allows an empty scene that does not route to a choice', () => {
+        const s = baseStory();
+        s.scenes[1].entries = [];
+        s.scenes[1].next = null;
+        expect(() => validateStory(s)).not.toThrow();
+    });
+
     it('warns about missing portrait prompts for characters in the story', () => {
         const story: StoryIR = {
             storyId: 'demo',

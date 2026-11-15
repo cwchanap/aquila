@@ -26,6 +26,11 @@ export function validateStory(
                     `[story-compiler] scene "${scene.id}" has dangling next -> unknown choice "${choiceId}"`
                 );
             }
+            if (scene.entries.length === 0) {
+                throw new Error(
+                    `[story-compiler] scene "${scene.id}" routes to choice "${choiceId}" but has no dialogue entries`
+                );
+            }
         } else if (!sceneIds.has(scene.next)) {
             throw new Error(
                 `[story-compiler] scene "${scene.id}" has dangling next -> "${scene.next}"`

@@ -370,8 +370,7 @@
         </div>
       {/if}
 
-      <!-- Progression affordance: Continue on finished lines, Choose at the
-           final line of a choice scene, Next Scene / Complete at a scene's end. -->
+      <!-- Continue indicator -->
       {#if !isTyping}
         <div class="text-center">
           <button

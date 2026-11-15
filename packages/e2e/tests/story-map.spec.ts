@@ -93,8 +93,6 @@ async function openStoryMap(page: Page, projectName: string): Promise<Locator> {
 
 async function readThroughChoice(page: Page): Promise<void> {
     await page.goto(readerUrl(CHOICE_SCENE_ID, LAST_LINE));
-    // The terminal line offers one Choose affordance; the prompt and route
-    // cards live inside the shared Crossroads overlay (HPA-961).
     const crossroads = await openCrossroads(page);
     await expect(
         crossroads.getByRole('heading', { name: choice.prompt })
@@ -245,8 +243,6 @@ test.describe('Story map', () => {
                     : MENU_TRIGGER
             )
         ).toBeFocused();
-        // The terminal line offers the Choose affordance again (HPA-961);
-        // the prompt and both routes live inside the Crossroads overlay.
         await expect(
             page.getByRole('button', { name: 'Choose', exact: true })
         ).toBeVisible();
@@ -264,6 +260,19 @@ test.describe('Story map', () => {
                 .getByTestId('crossroads-route')
                 .filter({ hasText: unreadOption.label })
         ).toBeVisible();
+    });
+
+    test('cancelling Crossroads restores focus to Choose without navigating', async ({
+        page,
+    }) => {
+        await page.goto(readerUrl(CHOICE_SCENE_ID, LAST_LINE));
+        const crossroads = await openCrossroads(page);
+        await page.keyboard.press('Escape');
+        await expect(crossroads).not.toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Choose', exact: true })
+        ).toBeFocused();
+        await expect(page).toHaveURL(readerUrl(CHOICE_SCENE_ID, LAST_LINE));
     });
 
     test('centers a short graph and keeps its choice labels clear of the decision', async ({

@@ -690,13 +690,7 @@
   let settingsAvailable = $derived(
     readerMode === 'visual' || !isMobile || isBlocking
   );
-  // Crossroads (HPA-961): the shared choice overlay is keyed to the exact
-  // story/scene/line/locale/reader-mode position it was opened at. A position
-  // change while open clears the stored key (see $effect.pre below) rather
-  // than just hiding the dialog, so returning to the same line later does
-  // not silently reopen it.
   let crossroadsPositionKey = $state<string | null>(null);
-  let crossroadsOpener: HTMLElement | null = null;
   let crossroadsKey = $derived(
     `${storyId ?? ''}\n${currentSceneId ?? ''}\n${dialogueIndex}\n${locale}\n${readerMode}`
   );
@@ -824,10 +818,6 @@
     leafOverlayOpen = open;
   }
 
-  // Clear a stored Crossroads key the moment the reader position it was
-  // opened at no longer matches — before any rendering observes the stale
-  // combination. This is what stops the dialog from reappearing when the
-  // user navigates back onto the same choice line afterwards.
   $effect.pre(() => {
     if (
       crossroadsPositionKey !== null &&
@@ -844,26 +834,16 @@
     ) {
       return;
     }
-    crossroadsOpener = document.activeElement as HTMLElement | null;
     crossroadsPositionKey = crossroadsKey;
   }
 
   function closeCrossroads(): void {
     if (crossroadsPositionKey === null) return;
     crossroadsPositionKey = null;
-    // The dialog intentionally has no automatic restoreFocus target; the
-    // shell returns focus to the Choose opener once the leaf is interactive
-    // again (the inert attribute drops in the same flush).
-    const opener = crossroadsOpener;
-    crossroadsOpener = null;
-    void tick().then(() => {
-      if (opener?.isConnected) opener.focus();
-    });
   }
 
   function handleCrossroadsSelect(nextScene: string): void {
     crossroadsPositionKey = null;
-    crossroadsOpener = null;
     onChoice(nextScene);
   }
 
@@ -1309,8 +1289,7 @@
 {/if}
 
 {#if choice}
-  <!-- Crossroads lives outside `reader-ready` so the overlay is not itself
-       inerted while the leaf behind it is. -->
+  <!-- Choice options -->
   <CrossroadsDialog
     open={crossroadsOpen}
     {choice}

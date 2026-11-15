@@ -550,7 +550,6 @@ describe('VisualNovelReader', () => {
         await vi.runAllTimersAsync();
 
         const choose = screen.getByRole('button', { name: 'Choose' });
-        // The last line stays on screen; the choice UI is not inline.
         expect(screen.getByText('First visual line.')).toBeInTheDocument();
         expect(screen.queryByText('Choose a route')).not.toBeInTheDocument();
         expect(
@@ -944,8 +943,6 @@ describe('VisualNovelReader', () => {
 
     it('renders no choice UI for a choice-only scene with empty dialogue', async () => {
         setReducedMotion(false);
-        // An empty choice-origin scene is rejected by the compiler; the leaf
-        // must not surface stray choice chrome for that invalid payload.
         renderReader({
             dialogue: [],
             dialogueIndex: 0,

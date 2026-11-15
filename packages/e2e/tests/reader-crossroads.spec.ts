@@ -7,7 +7,6 @@ import { scene as fourOptionDialogue } from '../../stories/src/generated/trainAd
 import { trainAdventureChoiceTextEn } from '../../stories/src/stories/trainAdventure/choices.en';
 import { buildChoiceMap } from '../../stories/src/stories/choice-utils';
 import {
-    chooseRoute,
     MobileReaderPage,
     openCrossroads,
     selectCrossroadsRoute,
@@ -158,7 +157,7 @@ test.describe('Crossroads choice overlay', () => {
             await expect(choose).toHaveCount(0);
             await page
                 .getByRole('button', { name: 'Tap to continue', exact: true })
-                .click();
+                .tap();
         }
 
         await expect(page).toHaveURL(dialogueUrl(variant.lastLine));
@@ -171,6 +170,11 @@ test.describe('Crossroads choice overlay', () => {
         await page.goto(lastLineUrl(variant.sceneId, variant.lastLine), {
             waitUntil: 'domcontentloaded',
         });
+        await expect(choose).toBeVisible();
+        await expect(dialog).toHaveCount(0);
+
+        await openCrossroads(page);
+        await page.reload({ waitUntil: 'domcontentloaded' });
         await expect(choose).toBeVisible();
         await expect(dialog).toHaveCount(0);
     });
@@ -329,17 +333,31 @@ test.describe('Crossroads choice overlay', () => {
             exact: true,
         });
         const dialog = page.getByTestId('crossroads-dialog');
+        const readProgress = () =>
+            page.evaluate(key => {
+                const browser = globalThis as unknown as {
+                    localStorage: { getItem(name: string): string | null };
+                };
+                return browser.localStorage.getItem(key);
+            }, PROGRESS_KEY);
         const open = async (): Promise<Locator> => {
             await choose.press('Enter');
             await expect(dialog).toBeVisible();
             return dialog;
         };
 
+        await expect(choose).toBeVisible();
+        await expect.poll(readProgress, { timeout: 15_000 }).not.toBeNull();
+        await page.waitForTimeout(600);
+        const settled = await readProgress();
+
         await open();
+        expect(await readProgress()).toBe(settled);
         await dialog.locator('#crossroads-title').click();
         await expect(dialog).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(dialog).toHaveCount(0);
+        expect(await readProgress()).toBe(settled);
         await expect(choose).toBeFocused();
         await expect(page).toHaveURL(dialogueUrl(variant.lastLine));
 
@@ -348,6 +366,7 @@ test.describe('Crossroads choice overlay', () => {
             .getByTestId('crossroads-scrim')
             .click({ position: { x: 8, y: 8 } });
         await expect(dialog).toHaveCount(0);
+        expect(await readProgress()).toBe(settled);
         await expect(choose).toBeFocused();
 
         await open();
@@ -355,6 +374,7 @@ test.describe('Crossroads choice overlay', () => {
             .getByRole('button', { name: 'Back to the last line' })
             .click();
         await expect(dialog).toHaveCount(0);
+        expect(await readProgress()).toBe(settled);
         await expect(choose).toBeFocused();
         await expect(page).toHaveURL(dialogueUrl(variant.lastLine));
     });
@@ -480,14 +500,14 @@ test.describe('Crossroads choice overlay', () => {
         });
         const dialog = page.getByTestId('crossroads-dialog');
 
-        await reader.tapToAdvance();
+        await reader.tapLayer.tap();
         await expect(dialog).toBeVisible();
         await page.keyboard.press('Escape');
         await expect(dialog).toHaveCount(0);
 
-        await reader.openMenu();
+        await reader.menuButton.tap();
         await expect(reader.backToHomeLink).toBeVisible();
-        await page.getByRole('button', { name: 'Choose', exact: true }).click();
+        await page.getByRole('button', { name: 'Choose', exact: true }).tap();
         await expect(dialog).toBeVisible();
     });
 
@@ -506,12 +526,13 @@ test.describe('Crossroads choice overlay', () => {
             }
         );
         await page.addStyleTag({ content: TOOLBAR_STYLE });
+        await page.setViewportSize({ width: 390, height: 480 });
         await expect(page.getByTestId('reader-ready')).toBeVisible({
             timeout: 15_000,
         });
 
-        await page.getByRole('button', { name: 'メニューを開く' }).click();
-        await page.getByRole('button', { name: '選ぶ', exact: true }).click();
+        await page.getByRole('button', { name: 'メニューを開く' }).tap();
+        await page.getByRole('button', { name: '選ぶ', exact: true }).tap();
         const dialog = page.getByTestId('crossroads-dialog');
         await expect(dialog).toBeVisible();
 
@@ -533,6 +554,10 @@ test.describe('Crossroads choice overlay', () => {
 
         const cards = dialog.getByTestId('crossroads-route');
         await expect(cards).toHaveCount(3);
+        const scrollport = dialog.locator('.overflow-y-auto');
+        const portBox = await scrollport.boundingBox();
+        expect(portBox, 'scrollport is measurable').not.toBeNull();
+        if (!portBox) return;
         const viewport = page.viewportSize();
         expect(viewport, 'viewport is measurable').not.toBeNull();
         if (!viewport) return;
@@ -545,6 +570,89 @@ test.describe('Crossroads choice overlay', () => {
             expect(box.height).toBeGreaterThanOrEqual(44);
             expect(box.x).toBeGreaterThanOrEqual(-1);
             expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+        }
+
+        const scrollMetrics = await scrollport.evaluate(element => {
+            const node = element as unknown as {
+                scrollHeight: number;
+                clientHeight: number;
+                scrollWidth: number;
+                clientWidth: number;
+                scrollTop: number;
+            };
+            return {
+                scrollHeight: node.scrollHeight,
+                clientHeight: node.clientHeight,
+                scrollWidth: node.scrollWidth,
+                clientWidth: node.clientWidth,
+                scrollTop: node.scrollTop,
+            };
+        });
+        expect(scrollMetrics.scrollHeight).toBeGreaterThan(
+            scrollMetrics.clientHeight
+        );
+        expect(scrollMetrics.scrollWidth).toBeLessThanOrEqual(
+            scrollMetrics.clientWidth + 1
+        );
+        const overflowY = await scrollport.evaluate(element => {
+            const browser = globalThis as unknown as {
+                getComputedStyle(el: unknown): { overflowY: string };
+            };
+            return browser.getComputedStyle(element).overflowY;
+        });
+        expect(overflowY).toMatch(/^(auto|scroll)$/);
+
+        const readScrollTop = () =>
+            scrollport.evaluate(
+                element =>
+                    (element as unknown as { scrollTop: number }).scrollTop
+            );
+        if (testInfo.project.name === 'mobile-safari') {
+            await cards.nth(2).focus();
+        } else {
+            await page.mouse.move(
+                portBox.x + portBox.width / 2,
+                portBox.y + portBox.height / 2
+            );
+            await page.mouse.wheel(0, 4000);
+        }
+        await expect.poll(readScrollTop).toBeGreaterThan(0);
+        const lastCard = cards.nth(2);
+        await expect(lastCard).toBeInViewport();
+        const lastBox = await lastCard.boundingBox();
+        expect(lastBox).not.toBeNull();
+        if (lastBox) {
+            expect(lastBox.y).toBeGreaterThanOrEqual(portBox.y - 1);
+            expect(lastBox.y + lastBox.height).toBeLessThanOrEqual(
+                portBox.y + portBox.height + 1
+            );
+            const lastLabelBox = await lastCard
+                .getByTestId('second-line')
+                .boundingBox();
+            if (lastLabelBox) {
+                expect(lastLabelBox.y).toBeGreaterThanOrEqual(lastBox.y - 1);
+                expect(
+                    lastLabelBox.y + lastLabelBox.height
+                ).toBeLessThanOrEqual(lastBox.y + lastBox.height + 1);
+                expect(
+                    lastLabelBox.y + lastLabelBox.height
+                ).toBeLessThanOrEqual(portBox.y + portBox.height + 1);
+            }
+        }
+
+        if (testInfo.project.name === 'mobile-safari') {
+            await heading.focus();
+        } else {
+            await page.mouse.wheel(0, -4000);
+        }
+        await expect.poll(readScrollTop).toBeLessThanOrEqual(1);
+        const headingBox = await heading.boundingBox();
+        expect(headingBox).not.toBeNull();
+        if (headingBox) {
+            expect(headingBox.y).toBeGreaterThanOrEqual(portBox.y - 1);
+            expect(headingBox.y + headingBox.height).toBeLessThanOrEqual(
+                portBox.y + portBox.height + 1
+            );
         }
 
         await expectNoHorizontalOverflow(page);
@@ -565,8 +673,23 @@ test.describe('Crossroads choice overlay', () => {
             waitUntil: 'domcontentloaded',
         });
         const option = variant.choice.options[1];
-        await chooseRoute(page, option.label);
+        const historyLength = () =>
+            page.evaluate(
+                () =>
+                    (globalThis as unknown as { history: { length: number } })
+                        .history.length
+            );
+        const before = await historyLength();
+        await page.getByRole('button', { name: 'Choose', exact: true }).tap();
+        const dialog = page.getByTestId('crossroads-dialog');
+        await expect(dialog).toBeVisible();
+        await dialog
+            .getByTestId('crossroads-route')
+            .filter({ hasText: option.label })
+            .tap();
+        await expect(dialog).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(option.nextScene));
         await expect(page).toHaveURL(dialogueUrl(1));
+        expect(await historyLength()).toBe(before + 1);
     });
 });

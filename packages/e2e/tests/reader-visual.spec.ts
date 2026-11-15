@@ -689,8 +689,12 @@ test.describe('Visual novel reader', () => {
         await page.addInitScript(() => {
             localStorage.setItem('aquila:reader-mode:v1', 'visual');
         });
+        // Line 4 overflows the 390px dialogue body by a wide margin; the
+        // branch-choice line (47) only barely overflows and cannot scroll
+        // reliably across environments now that choices live in the
+        // Crossroads dialog instead of the body.
         await page.goto(
-            '/en/reader?story=train_adventure&scene=act3&dialogue=47'
+            '/en/reader?story=train_adventure&scene=act3&dialogue=4'
         );
         const visual = new VisualReaderPage(page);
         const body = visual.dialogueBody;
@@ -699,6 +703,12 @@ test.describe('Visual novel reader', () => {
         await expect(body).toHaveAttribute('aria-label', 'Dialogue content');
         await expect(body).toHaveAttribute('tabindex', '0');
         await expect(body).not.toHaveAttribute('data-reader-interactive');
+
+        // Wait out the typewriter so the body holds its full scrollable
+        // height and the captured line cannot still be growing.
+        await expect(
+            page.getByTestId('visual-typewriter-cursor')
+        ).not.toBeAttached();
 
         const beforeUrl = page.url();
         const beforeDialogue = await body.locator('.dialogue-text').innerText();

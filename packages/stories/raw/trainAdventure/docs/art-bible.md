@@ -1,4 +1,4 @@
-# Art bible, Shinjuku platform, train carriage, Jishui station and 幽冥之都 (acts 1-8)
+# Art bible, Shinjuku platform, train carriage, Jishui station, 幽冥之都 and 迷霧之森 (acts 1-8)
 
 The train carries exactly 16 passengers, the cast on the character sheet. No extras anywhere inside the train. A scene shows only the people its beat needs; nobody has to appear in every background. Ling Mo is gone from act 4 on in both branches; who else stays aboard depends on the branch (see Acts 4-6 below).
 
@@ -81,6 +81,7 @@ After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui 
 - **Branch 1a, from act 5 on:** on the platform, Li Jie, Emi, Yamamoto, Saito and the four students. Still aboard when the doors close, the Ito couple, Nakamura and the Kobayashi family; the train then leaves them out of the art for good. In act 6 the students head for the forest and Saito runs after them, while Li Jie, Emi and Yamamoto stay at the waiting room.
 - **Branch 1b, from act 5 on:** aboard, Li Jie, the Ito couple, Nakamura and the Kobayashi family, in their own seats. Everyone else got off while Li Jie was in the front cars, so the near half of the carriage is empty.
 - **Branch 1b, act 7:** Li Jie alone on the 幽冥之都 platform and in the station building. Still aboard, with the door open, the Ito couple, Nakamura and the Kobayashi family, fighting (b1b_act7_carriage_fight). Hina and Shota run out to him at the end of the act.
+- **Branch 1a/2a, acts 7-8:** Li Jie stays to search the waiting room and Emi stays with him. Yamamoto, his messenger bag on his shoulder, leaves for the forest at the start of act 7 (b1a_b2a_act7_yamamoto_leaves) and is not seen again in these acts. From then on only Li Jie and Emi are in the picture: in the waiting room, on the platform's right-hand end where the dirt path starts, and in 迷霧之森 up to the four-way fork.
 - **Branch 1b, act 8:** the train leaves with Yudai, the Ito couple and Nakamura aboard; it is shown only from inside (b1b_act8_train_leaving) and as two red tail lights going away down the track (b1b_act8_mother_fallen), never as a train body. Tomoko, Hina, Shota and Li Jie stay on the platform.
 
 ### Continuity details
@@ -97,6 +98,8 @@ These are settled from the story text and hold in every image, acts 1-8:
 - **Station sign glyphs:** the model garbles 寂海 at small sizes. act3_s3 reads correctly; the signs in act3_s4, act3_door_argument and b1a_act4_door_call were retouched by hand with its glyphs.
 - **Poles:** the image model often moves or drops a single pole. When one is wrong, remove it in an edit and paint the pole back by hand at the seat-front seam (b1a_act4_lingmo_gone and b1b_act5_ito_explain were done this way).
 - **Li Jie's sword (branch 1b):** from b1b_act7_sword on he carries a long straight sword, its blade pitted red-brown with rust and dull, a plain crossguard, the grip wrapped in rotting cloth strips. In act 8 he plants its point on the stones while he listens. The station map is folded in his pocket and never shown again.
+- **The waiting-room map (branch 1a/2a):** it hangs on the far end wall until Li Jie tears it down in act 7 (b1a_b2a_act7_map_taken); a paler patch of wood shows where it was. From then on it is folded in his pocket, and he unfolds it at the fork in act 8. It keeps the look it has on the wall in b1a_act6_waiting_room: yellowed parchment, torn edges, faint brown ink paths and little drawn trees, labels too small and faded to read.
+- **Li Jie's phone torch (branch 1a/2a):** on in the waiting room in act 7 until he takes the map down, off on the platform and on the first stretch of forest path, and on again from act 8's "霧越來越濃了" (b1a_b2a_act8_torch_fog) to the end of the act.
 - **Tomoko's injury (branch 1b, act 8):** she falls on the platform as the doors close: her long skirt is torn at one knee, the knee scraped and bleeding with a line of blood down her shin, and there is dust and blood on her cardigan, in every act 8 shot.
 
 ### Jishui station (branch 1a)
@@ -118,6 +121,17 @@ As at Jishui, every platform shot that faces the station keeps the railway behin
 - **Station building:** broad stone steps under the sign lead up to a tall arched entrance in the middle of its front. Inside is the waiting hall, the one space the text calls huge (極其寬闊,天花板高得幾乎看不見頂端): a ceiling lost in darkness, grimy arched windows high up letting in violet shafts of moonlight, cobwebs, a long stone counter with an open ledger, and a row of rusted iron turnstiles, one of them smashed open. The stationmaster's office (where the map hangs behind cracked glass) is in one corner, and the guard room (where the sword leans behind a kicked-open locker) sits beside a passage to the exit sealed with an iron grille.
 - **Map:** a rough route map of the land near the station only (the forest's interior is left undrawn, 1b act 9). North is up. The railway runs straight up the map with the coast and sea to its right (east), and the station sits in the centre on the land side. Following the track north leads into the ravine of 亡者峽谷, the train's next stop (act 8); a footpath through woodland beside the track reaches the same ravine (act 9). A crossroads just outside the station (act 9) starts the paths south into the misty 迷霧之森 and west over rugged hills to 銀月湖, a lake in a valley a short way off (act 9). The track south, toward 寂海, is unlabelled.
 - **References:** `_reference/yomi_platform.png` (empty, from the platform's track edge facing the station: the canopy and pillars, the sign, the timetable, the station building with its steps and entrance, the ruined outbuilding and the forest behind) and `_reference/yomi_platform_sea.png` (empty, from beside the station building looking across to the track side: the pillars along the edge, the track curving away left along the cliff top into the forest, the sheer cliff face and surf below on the left, the sea far below and the two moons).
+
+### 迷霧之森 (branch 1a/2a, act 8 on)
+
+The forest the dirt path from Jishui's platform runs into (act 8: 奇形怪狀的樹木高聳入雲). Every forest prompt starts with this sentence:
+
+the 迷霧之森 (Misty Forest) inland from Jishui station: a narrow path of dark packed earth strewn with dead leaves winds between colossal, strangely twisted ancient trees, their gnarled black trunks and contorted branches rising up out of sight, thick roots breaking through the ground, ferns and moss at their feet; a dense canopy hides the sky and the two moons; only thin threads of eerie violet moonlight slip through gaps in the leaves into drifting white mist; no lamps, no buildings, no signposts, no fences.
+
+- **Fog:** act 8 thickens it on purpose, shot by shot: a thin haze at the forest's edge (forest_entry), a white wall a few metres off once Li Jie needs the torch (torch_fog), then only the path at their feet (lost_shout, hurrying). At the fork it is still thick but the clearing feels a little more open.
+- **No moon** shows anywhere under the canopy, and the sea and the station are never in view.
+- **The four-way fork** (act 8, again at the start of act 9): seen from the path they arrive on, the main path goes straight on, the widest and most obvious; two narrower trails of about the same size leave on the left, a little apart; one narrower trail leaves on the right. All four vanish into fog within a few metres. There is no signpost or marker. By the map, the right-hand trail is the branch to 幽冥之都 and straight on is the main path deeper into the forest; the two left-hand trails are not on the map.
+- **References:** `_reference/mist_forest_path.png` (empty, the path through the trees in thin mist) and `_reference/mist_forest_crossroads.png` (empty, the fork from the path they arrive on). Pass the path reference for every shot on the path and the fork reference for every shot at the fork.
 
 ### Shot list, branch 1a
 
@@ -187,6 +201,27 @@ Shown again in branch 1b: act3_s4 while nobody moves, b1a_act4_lijie_stands (fro
 | b1b_act8_final_wide | Two moons, the sea, the forest, the rails into the dark | extreme wide from high above the platform's end | the four, tiny |
 
 Shown again in acts 7-8: b1b_act6_lijie_steps_out as act 7 opens, platform when he looks round and heads for the building, kids_plead as act 8 opens, family_embrace while Tomoko explains, long_shadows when he clenches his fist and thinks of the dead stations, carriage_fight when he remembers the faces in the carriage, and lijie_counts for "幸好我下來了" and again while he weighs the choice.
+
+### Shot list, branch 1a/2a, acts 7-8
+
+| Background | Beat | Framing | Who is in view |
+| --- | --- | --- | --- |
+| b1a_b2a_act7_yamamoto_leaves | Li Jie stays to search, Emi stays with him, Yamamoto goes | medium-wide inside the waiting room toward the map wall, open doorway in the left foreground | Yamamoto in the doorway with his bag; Li Jie and Emi by the map |
+| b1a_b2a_act7_alone | Only the two of them are left | high, extreme wide from the roof beams | Li Jie and Emi small at the map, torch on |
+| b1a_b2a_act7_emi_uneasy | "只剩下我們兩個人了...好黑...好冷" | medium two-shot, side-on, at the map wall | Li Jie turned to her; Emi glancing at the dark platform |
+| b1a_b2a_act7_emi_calm | Her fear sounds like an act | close-up over Li Jie's shoulder | Emi frightened in the brows, calm in the eyes |
+| b1a_b2a_act7_map_taken | He tears the map off the wall | medium, slightly low, three-quarter at the end wall | Li Jie with the map; Emi watching behind him |
+| b1a_b2a_act7_forest_path | They step onto the dirt path into the forest | wide, from behind them at the platform's right-hand end, facing the forest | Li Jie and Emi from behind, long shadows ahead |
+| b1a_b2a_act8_forest_entry | Into 迷霧之森, thin mist | wide, low, on the path | Li Jie and Emi small, walking toward the camera |
+| b1a_b2a_act8_torch_fog | The fog thickens, phone torch on | medium, side-on | Li Jie with the torch, Emi close behind |
+| b1a_b2a_act8_lost_shout | They have lost the others and shout | close-medium, low, three-quarter front | Li Jie shouting, Emi calling too |
+| b1a_b2a_act8_hurrying | Half-running through the thickest fog | medium-wide, from behind and above | Li Jie and Emi from behind |
+| b1a_b2a_act8_crossroads | The four-way fork | wide, from behind them at the junction | Li Jie and Emi from behind, small |
+| b1a_b2a_act8_map_check | The map shows only one branch | close, over Li Jie's shoulder | the map in his hands, the fork out of focus |
+| b1a_b2a_act8_emi_suggests | "清水，妳怎麼看？" | medium two-shot, side-on | Li Jie with the map, Emi looking toward the main path |
+| b1a_b2a_act8_main_path | Following her gaze down the main path | point of view, down the main path | no people |
+
+Shown again with a `reuse` bg block: crossroads for the last lines of act 8, while Li Jie looks over the four ways with Emi beside him (act 9 opens on the same beat).
 
 ## Portraits
 

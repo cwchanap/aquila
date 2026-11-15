@@ -55,6 +55,7 @@
     nextBgmSelection,
   } from '@/lib/audio/bgm-transition';
   import {
+    isChoicePosition,
     isReaderInteractiveTarget,
     isReaderProgressionTarget,
   } from '@/lib/reader-interaction';
@@ -76,6 +77,7 @@
     visibleSceneIds,
   } from '@/lib/story-map';
   import NovelReader from '@/components/NovelReader.svelte';
+  import CrossroadsDialog from '@/components/CrossroadsDialog.svelte';
   import MobileNovelReader from '@/components/MobileNovelReader.svelte';
   import ReaderSettingsMenu from '@/components/ReaderSettingsMenu.svelte';
   import StoryMapSheet from '@/components/StoryMapSheet.svelte';
@@ -688,8 +690,28 @@
   let settingsAvailable = $derived(
     readerMode === 'visual' || !isMobile || isBlocking
   );
+  // Crossroads (HPA-961): the shared choice overlay is keyed to the exact
+  // story/scene/line/locale/reader-mode position it was opened at. A position
+  // change while open clears the stored key (see $effect.pre below) rather
+  // than just hiding the dialog, so returning to the same line later does
+  // not silently reopen it.
+  let crossroadsPositionKey = $state<string | null>(null);
+  let crossroadsOpener: HTMLElement | null = null;
+  let crossroadsKey = $derived(
+    `${storyId ?? ''}\n${currentSceneId ?? ''}\n${dialogueIndex}\n${locale}\n${readerMode}`
+  );
+  let crossroadsOpen = $derived(
+    crossroadsPositionKey !== null &&
+      crossroadsPositionKey === crossroadsKey &&
+      !isBlocking &&
+      isChoicePosition(dialogueIndex, dialogue.length, choice !== null)
+  );
   let leafDisabled = $derived(
-    isBlocking || settingsOpen || storyMapOpen || endingOpen
+    isBlocking ||
+      settingsOpen ||
+      storyMapOpen ||
+      endingOpen ||
+      crossroadsOpen
   );
   let activeChoices = $derived(readerState.activeChoices);
   let storyMapAvailable = $derived(
@@ -800,6 +822,49 @@
 
   function handleVisualOverlayChange(open: boolean): void {
     leafOverlayOpen = open;
+  }
+
+  // Clear a stored Crossroads key the moment the reader position it was
+  // opened at no longer matches — before any rendering observes the stale
+  // combination. This is what stops the dialog from reappearing when the
+  // user navigates back onto the same choice line afterwards.
+  $effect.pre(() => {
+    if (
+      crossroadsPositionKey !== null &&
+      crossroadsPositionKey !== crossroadsKey
+    ) {
+      crossroadsPositionKey = null;
+    }
+  });
+
+  function openCrossroads(): void {
+    if (
+      leafDisabled ||
+      !isChoicePosition(dialogueIndex, dialogue.length, choice !== null)
+    ) {
+      return;
+    }
+    crossroadsOpener = document.activeElement as HTMLElement | null;
+    crossroadsPositionKey = crossroadsKey;
+  }
+
+  function closeCrossroads(): void {
+    if (crossroadsPositionKey === null) return;
+    crossroadsPositionKey = null;
+    // The dialog intentionally has no automatic restoreFocus target; the
+    // shell returns focus to the Choose opener once the leaf is interactive
+    // again (the inert attribute drops in the same flush).
+    const opener = crossroadsOpener;
+    crossroadsOpener = null;
+    void tick().then(() => {
+      if (opener?.isConnected) opener.focus();
+    });
+  }
+
+  function handleCrossroadsSelect(nextScene: string): void {
+    crossroadsPositionKey = null;
+    crossroadsOpener = null;
+    onChoice(nextScene);
   }
 
   $effect.pre(() => {
@@ -1039,7 +1104,7 @@
     {showBookmarkButton}
     {backUrl}
     bookmarkDisabled={isBlocking}
-    triggerUnavailable={endingOpen || storyMapOpen || (leafOverlayOpen && !isBlocking)}
+    triggerUnavailable={endingOpen || storyMapOpen || crossroadsOpen || (leafOverlayOpen && !isBlocking)}
     {storyMapAvailable}
     storyMapDisabled={isBlocking}
     onOpenStoryMap={openStoryMap}
@@ -1073,12 +1138,11 @@
       data-audio-release-id={audioReleaseIdentity?.releaseId}
       data-audio-manifest-sha256={audioReleaseIdentity?.manifestSha256}
       aria-hidden={leafDisabled ? 'true' : undefined}
-      inert={endingOpen}
+      inert={leafDisabled}
     >
       {#if readerMode === 'visual'}
         <VisualNovelReader
           {secondDialogue}
-          {secondChoice}
           {textLang}
           {secondLang}
           {furigana}
@@ -1094,7 +1158,7 @@
           {currentSceneId}
           {canGoNext}
           {locale}
-          {onChoice}
+          onOpenChoice={openCrossroads}
           onNext={handleNext}
           {onNavigate}
           onVisualStatusChange={handleVisualStatusChange}
@@ -1106,7 +1170,6 @@
       {:else if isMobile}
         <MobileNovelReader
           {secondDialogue}
-          {secondChoice}
           {textLang}
           {secondLang}
           {furigana}
@@ -1119,7 +1182,7 @@
           {currentSceneId}
           {canGoNext}
           {locale}
-          {onChoice}
+          onOpenChoice={openCrossroads}
           {onBookmark}
           onNext={handleNext}
           {onNavigate}
@@ -1141,7 +1204,6 @@
       {:else}
         <NovelReader
           {secondDialogue}
-          {secondChoice}
           {textLang}
           {secondLang}
           {furigana}
@@ -1154,7 +1216,7 @@
           {currentSceneId}
           {canGoNext}
           {locale}
-          {onChoice}
+          onOpenChoice={openCrossroads}
           onNext={handleNext}
           {onNavigate}
           {isInitialMount}
@@ -1244,6 +1306,23 @@
       </div>
     </div>
   </div>
+{/if}
+
+{#if choice}
+  <!-- Crossroads lives outside `reader-ready` so the overlay is not itself
+       inerted while the leaf behind it is. -->
+  <CrossroadsDialog
+    open={crossroadsOpen}
+    {choice}
+    {secondChoice}
+    actName={extractActName(currentSceneId ?? '')}
+    {textLang}
+    {secondLang}
+    {furigana}
+    {t}
+    onSelect={handleCrossroadsSelect}
+    onClose={closeCrossroads}
+  />
 {/if}
 
 {#if hasActivePayload && activeFlow && activeChoices}

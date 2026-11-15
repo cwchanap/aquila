@@ -38,6 +38,7 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
         reader: {
             unknown: 'Unknown',
             continue: 'Continue',
+            choose: 'Choose',
             nextScene: 'Next Scene',
             complete: 'Complete',
             endOfStory: 'End of story!',
@@ -91,6 +92,11 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             furigana: 'Furigana',
             furiganaOn: 'On',
             furiganaOff: 'Off',
+            crossroads: {
+                back: 'Back to the last line',
+                route: 'Route {letter}',
+                keyHint: 'Press {key}',
+            },
             storyMap: {
                 title: 'Story map',
                 open: 'Open story map',
@@ -1813,7 +1819,7 @@ describe('ReaderShell', () => {
         expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
     });
 
-    it('activates BGM when a choice button is clicked', async () => {
+    it('activates BGM when the Choose button is clicked', async () => {
         stubMatchMedia(false);
         readerState.dialogue = [
             {
@@ -1835,8 +1841,8 @@ describe('ReaderShell', () => {
         renderVisualWithBgm(bgm);
         await vi.runAllTimersAsync();
 
-        const choiceButton = screen.getByRole('button', { name: 'Go left' });
-        await fireEvent.pointerDown(choiceButton);
+        const chooseButton = screen.getByRole('button', { name: 'Choose' });
+        await fireEvent.pointerDown(chooseButton);
         expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
     });
 
@@ -2789,6 +2795,221 @@ describe('ReaderShell', () => {
         // The visual runtime factory must not have been called.
         expect(defaultFactory).not.toHaveBeenCalled();
     });
+
+    describe('Crossroads', () => {
+        function seedChoiceLine(): void {
+            readerState.storyId = 'elevator_game';
+            readerState.activeFlow = branchFlow;
+            readerState.activeChoices = branchChoices;
+            readerState.currentSceneId = 'act2';
+            readerState.dialogue = [
+                { dialogue: 'Line before the fork.' },
+                { dialogue: 'Final line at the fork.' },
+            ];
+            readerState.dialogueIndex = 1;
+            readerState.choice = branchChoices.c1;
+            readerState.canGoNext = false;
+        }
+
+        it.each(['desktop', 'mobile', 'visual'])(
+            'opens the shared Crossroads dialog from Choose in %s mode',
+            async mode => {
+                stubMatchMedia(mode === 'mobile');
+                if (mode === 'visual')
+                    localStorage.setItem(READER_MODE_KEY, 'visual');
+                seedChoiceLine();
+                render(ReaderShell, {
+                    props: {
+                        createVisualRuntime: () =>
+                            createRuntimeHarness().runtime,
+                    },
+                });
+                await tick();
+                await vi.advanceTimersByTimeAsync(1000);
+
+                // Landing on the choice line never auto-opens the overlay.
+                expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+                const choose = screen.getByRole('button', { name: 'Choose' });
+                await fireEvent.click(choose);
+
+                const dialog = screen.getByRole('dialog', {
+                    name: /Decision · Act 2/,
+                });
+                expect(dialog).toBeVisible();
+                expect(within(dialog).getByText('Which fork?')).toBeVisible();
+                expect(screen.getAllByTestId('crossroads-route')).toHaveLength(
+                    2
+                );
+                // The last line stays on screen behind the overlay.
+                expect(
+                    screen.getByText('Final line at the fork.')
+                ).toBeInTheDocument();
+                // Shared gating: leaf inert + separately-rendered settings
+                // trigger unavailable.
+                expect(screen.getByTestId('reader-ready')).toHaveAttribute(
+                    'inert'
+                );
+                expect(screen.getByTestId('reader-ready')).toHaveAttribute(
+                    'aria-hidden',
+                    'true'
+                );
+                if (mode !== 'mobile') {
+                    const trigger = screen.getByRole('button', {
+                        name: 'Open reader settings',
+                    });
+                    expect(trigger).toBeDisabled();
+                    expect(trigger).toHaveAttribute('tabindex', '-1');
+                }
+            }
+        );
+
+        it('delegates the selected route to onChoice exactly once and closes', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            const onChoice = vi.fn();
+            render(ReaderShell, { props: { onChoice } });
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            const dialog = screen.getByRole('dialog', {
+                name: /Decision · Act 2/,
+            });
+
+            await fireEvent.click(
+                within(dialog).getAllByTestId('crossroads-route')[0]
+            );
+
+            expect(onChoice).toHaveBeenCalledTimes(1);
+            expect(onChoice).toHaveBeenCalledWith('b1a_act3');
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            expect(screen.getByTestId('reader-ready')).not.toHaveAttribute(
+                'inert'
+            );
+        });
+
+        it('selects a route with a digit key while open', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            const onChoice = vi.fn();
+            render(ReaderShell, { props: { onChoice } });
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            await fireEvent.keyDown(window, { key: '2' });
+            expect(onChoice).toHaveBeenCalledTimes(1);
+            expect(onChoice).toHaveBeenCalledWith('b1b_act3');
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('closes on Escape and restores focus to the Choose button', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            const onChoice = vi.fn();
+            render(ReaderShell, { props: { onChoice } });
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            const choose = screen.getByRole('button', { name: 'Choose' });
+            choose.focus();
+            await fireEvent.click(choose);
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+            // Initial focus is the non-button prompt heading.
+            const heading = screen.getByRole('heading', {
+                name: 'Which fork?',
+            });
+            expect(document.activeElement).toBe(heading);
+
+            await fireEvent.keyDown(window, { key: 'Escape' });
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            expect(onChoice).not.toHaveBeenCalled();
+            await waitFor(() => expect(choose).toHaveFocus());
+        });
+
+        it('clears the dialog on line, scene, or locale change and does not reopen on return', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            // Stepping back a line (e.g. history navigation) clears it.
+            readerState.dialogueIndex = 0;
+            await tick();
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+            // Returning to the choice line does not reopen it — the stored
+            // position key was cleared, not just hidden.
+            readerState.dialogueIndex = 1;
+            await tick();
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Choose' })
+            ).toBeVisible();
+
+            // Reopening still works; a scene change clears it again.
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+            readerState.currentSceneId = 'b1a_act3';
+            await tick();
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('clears the dialog when the locale changes', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            readerState.locale = 'zh';
+            await tick();
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        });
+
+        it('keeps the reader advance path inert while the dialog is open', async () => {
+            stubMatchMedia(false);
+            seedChoiceLine();
+            const onIndexChange = vi.fn();
+            render(ReaderShell, { props: { onIndexChange } });
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            await fireEvent.keyDown(window, { key: 'Enter' });
+            expect(onIndexChange).not.toHaveBeenCalled();
+            expect(readerState.dialogueIndex).toBe(1);
+        });
+    });
 });
 
 describe('ReaderShell second language', () => {
@@ -2954,7 +3175,7 @@ describe('ReaderShell second language', () => {
         warn.mockRestore();
     });
 
-    it('shows the translated choice prompt and labels', async () => {
+    it('shows the translated choice prompt and labels inside Crossroads', async () => {
         localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
         readerState.activeFlow = choiceFlow;
         readerState.dialogueIndex = 2;
@@ -2967,12 +3188,21 @@ describe('ReaderShell second language', () => {
         };
         const load = vi.fn(async () => secondPayload());
         render(ReaderShell, { props: { loadSecondLanguageContent: load } });
+        await vi.runAllTimersAsync();
 
+        await fireEvent.click(screen.getByRole('button', { name: 'Choose' }));
+        const dialog = await screen.findByRole('dialog', {
+            name: /Decision/,
+        });
+        // The second-language payload loads asynchronously.
         await waitFor(() =>
-            expect(screen.getByText('どうする？')).toBeInTheDocument()
+            expect(within(dialog).getByText('どうする？')).toHaveAttribute(
+                'lang',
+                'ja'
+            )
         );
-        expect(screen.getByText('進む')).toHaveAttribute('lang', 'ja');
-        expect(screen.getByText('戻る')).toBeInTheDocument();
+        expect(within(dialog).getByText('進む')).toHaveAttribute('lang', 'ja');
+        expect(within(dialog).getByText('戻る')).toBeInTheDocument();
     });
 });
 

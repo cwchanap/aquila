@@ -7,11 +7,11 @@
     StoryFlowConfig,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
-  import type { SecondChoiceLabels } from '@/lib/reader-second-language';
   import ActPanel from '@/components/ActPanel.svelte';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { resolveCharacterName } from '@/lib/character-name';
   import {
+    advanceLabelKey,
     getReaderAdvanceDecision,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
@@ -29,13 +29,12 @@
     currentSceneId,
     canGoNext = false,
     locale = 'en',
-    onChoice = () => {},
+    onOpenChoice = () => {},
     onNext = () => {},
     onNavigate = () => {},
     isInitialMount = true,
     interactionDisabled = false,
     secondDialogue = null,
-    secondChoice = null,
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
@@ -50,14 +49,13 @@
     currentSceneId?: string;
     canGoNext?: boolean;
     locale?: Locale;
-    onChoice?: (nextScene: string) => void;
+    onOpenChoice?: () => void;
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
     isInitialMount?: boolean;
     interactionDisabled?: boolean;
     /** Second-language lines aligned 1:1 with `dialogue`, or null when off. */
     secondDialogue?: DialogueEntry[] | null;
-    secondChoice?: SecondChoiceLabels | null;
     textLang?: string;
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
@@ -70,7 +68,18 @@
   // Derived view state — the visible reader is a pure function of the index.
   let completedDialogues = $derived(dialogue.slice(0, dialogueIndex));
   let currentDialogue = $derived(dialogue[dialogueIndex]);
-  let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
+  let advanceLabel = $derived.by(() => {
+    const key = advanceLabelKey(
+      getReaderAdvanceDecision({
+        isTyping: false,
+        index: dialogueIndex,
+        length: dialogue.length,
+        canGoNext,
+        hasChoice: !!choice,
+      })
+    );
+    return key === null ? t.reader.complete : t.reader[key];
+  });
 
   // Component-local presentation state only.
   let isTyping = $state(false);
@@ -231,11 +240,11 @@
       onIndexChange(dialogueIndex + 1);
       return;
     }
+    if (decision === 'open-choice') {
+      onOpenChoice();
+      return;
+    }
     if (decision === 'advance-scene' || decision === 'complete') onNext();
-  }
-
-  function handleChoice(nextScene: string) {
-    onChoice(nextScene);
   }
 
   function handleKeyPress(event: globalThis.KeyboardEvent) {
@@ -361,56 +370,16 @@
         </div>
       {/if}
 
-      <!-- Continue indicator -->
-      {#if !isTyping && !choice}
+      <!-- Progression affordance: Continue on finished lines, Choose at the
+           final line of a choice scene, Next Scene / Complete at a scene's end. -->
+      {#if !isTyping}
         <div class="text-center">
           <button
             onclick={handleNext}
             class="group px-8 py-3 bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
-            {#if isLastDialogue && canGoNext}
-              {t.reader.nextScene}
-            {:else if isLastDialogue}
-              {t.reader.complete}
-            {:else}
-              {t.reader.continue}
-            {/if}
+            {advanceLabel}
           </button>
-        </div>
-      {/if}
-
-      <!-- Choice options -->
-      {#if choice && !isTyping && isLastDialogue}
-        <div class="mt-6 space-y-4">
-          <p class="text-lg font-semibold text-slate-700 mb-4">
-            <span lang={textLang}><RubyText text={choice.prompt} ruby={choice.promptRuby} show={furigana} /></span>
-            {#if secondChoice}
-              <span
-                class="second-line mt-1 block text-base font-normal text-slate-500"
-                lang={secondLang}
-                data-testid="second-line"
-              >
-                <RubyText text={secondChoice.prompt} ruby={secondChoice.promptRuby} show={furigana} />
-              </span>
-            {/if}
-          </p>
-          {#each choice.options as option (option.id)}
-            <button
-              onclick={() => handleChoice(option.nextScene)}
-              class="w-full p-4 bg-linear-to-r from-slate-100 to-white hover:from-blue-100 hover:to-cyan-50 text-slate-800 hover:text-blue-600 font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] border-2 border-slate-200 hover:border-blue-300 text-left"
-            >
-              <span lang={textLang}><RubyText text={option.label} ruby={option.labelRuby} show={furigana} /></span>
-              {#if secondChoice?.labels[option.id]}
-                <span
-                  class="second-line mt-1 block text-sm font-normal text-slate-500"
-                  lang={secondLang}
-                  data-testid="second-line"
-                >
-                  <RubyText text={secondChoice.labels[option.id]} ruby={secondChoice.labelRuby?.[option.id]} show={furigana} />
-                </span>
-              {/if}
-            </button>
-          {/each}
         </div>
       {/if}
     </div>

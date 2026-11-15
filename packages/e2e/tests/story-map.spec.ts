@@ -4,7 +4,11 @@ import { scene as act3Dialogue } from '../../stories/src/generated/elevatorGame/
 import { scene as endingDialogue } from '../../stories/src/generated/elevatorGame/scenes/en/b1a_act4';
 import { elevatorGameChoiceTextEn } from '../../stories/src/stories/elevatorGame/choices.en';
 import { buildChoiceMap } from '../../stories/src/stories/choice-utils';
-import { MobileReaderPage } from './utils';
+import {
+    MobileReaderPage,
+    openCrossroads,
+    selectCrossroadsRoute,
+} from './utils';
 
 const STORY_ID = 'elevator_game';
 const CHOICE_SCENE_ID = 'act3';
@@ -89,10 +93,13 @@ async function openStoryMap(page: Page, projectName: string): Promise<Locator> {
 
 async function readThroughChoice(page: Page): Promise<void> {
     await page.goto(readerUrl(CHOICE_SCENE_ID, LAST_LINE));
-    await expect(page.getByText(choice.prompt)).toBeVisible();
-    await page
-        .getByRole('button', { name: takenOption.label, exact: true })
-        .click();
+    // The terminal line offers one Choose affordance; the prompt and route
+    // cards live inside the shared Crossroads overlay (HPA-961).
+    const crossroads = await openCrossroads(page);
+    await expect(
+        crossroads.getByRole('heading', { name: choice.prompt })
+    ).toBeVisible();
+    await selectCrossroadsRoute(crossroads, takenOption.label);
     await expect(page).toHaveURL(sceneUrl(takenOption.nextScene));
 }
 
@@ -231,13 +238,6 @@ test.describe('Story map', () => {
         await expect(page).toHaveURL(
             new RegExp(`[?&]dialogue=${LAST_LINE}(?:&|$)`)
         );
-        await expect(page.getByText(choice.prompt)).toBeVisible();
-        await expect(
-            page.getByRole('button', { name: takenOption.label, exact: true })
-        ).toBeVisible();
-        await expect(
-            page.getByRole('button', { name: unreadOption.label, exact: true })
-        ).toBeVisible();
         await expect(
             page.locator(
                 isDesktop(testInfo.project.name)
@@ -245,6 +245,25 @@ test.describe('Story map', () => {
                     : MENU_TRIGGER
             )
         ).toBeFocused();
+        // The terminal line offers the Choose affordance again (HPA-961);
+        // the prompt and both routes live inside the Crossroads overlay.
+        await expect(
+            page.getByRole('button', { name: 'Choose', exact: true })
+        ).toBeVisible();
+        const crossroads = await openCrossroads(page);
+        await expect(
+            crossroads.getByRole('heading', { name: choice.prompt })
+        ).toBeVisible();
+        await expect(
+            crossroads
+                .getByTestId('crossroads-route')
+                .filter({ hasText: takenOption.label })
+        ).toBeVisible();
+        await expect(
+            crossroads
+                .getByTestId('crossroads-route')
+                .filter({ hasText: unreadOption.label })
+        ).toBeVisible();
     });
 
     test('centers a short graph and keeps its choice labels clear of the decision', async ({
@@ -417,7 +436,9 @@ test.describe('Story map', () => {
             'the sheet fills the phone viewport, leaving no visible backdrop'
         );
         await page.goto(readerUrl(CHOICE_SCENE_ID, LAST_LINE));
-        await expect(page.getByText(choice.prompt)).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Choose', exact: true })
+        ).toBeVisible();
         const sheet = await openStoryMap(page, testInfo.project.name);
 
         const box = await sheet.boundingBox();
@@ -515,7 +536,9 @@ test.describe('Story map', () => {
             'the phone chrome opener only exists on mobile projects'
         );
         await page.goto(readerUrl(CHOICE_SCENE_ID, LAST_LINE));
-        await expect(page.getByText(choice.prompt)).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Choose', exact: true })
+        ).toBeVisible();
         const sheet = await openStoryMap(page, testInfo.project.name);
 
         const focusInsideDialog = () =>

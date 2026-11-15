@@ -12,11 +12,11 @@
   import Button from '@/components/ui/Button.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import {
+    advanceLabelKey,
     getReaderAdvanceDecision,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
   import { typeText } from '@/lib/typewriter';
-  import type { SecondChoiceLabels } from '@/lib/reader-second-language';
   import type {
     VisualSnapshot,
     VisualStateController,
@@ -33,7 +33,7 @@
     canGoNext: boolean;
     choice: ChoiceDefinition | null;
     locale: Locale;
-    onChoice: (nextScene: string) => void;
+    onOpenChoice?: () => void;
     onNext: () => void;
     onNavigate: (sceneId: string) => void;
     onIndexChange: (index: number) => void;
@@ -43,7 +43,6 @@
     interactionDisabled: boolean;
     /** Second-language lines aligned 1:1 with `dialogue`, or null when off. */
     secondDialogue?: DialogueEntry[] | null;
-    secondChoice?: SecondChoiceLabels | null;
     textLang?: string;
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
@@ -79,7 +78,7 @@
     canGoNext,
     choice,
     locale,
-    onChoice,
+    onOpenChoice = () => {},
     onNext,
     onNavigate,
     onIndexChange,
@@ -88,7 +87,6 @@
     isInitialMount,
     interactionDisabled,
     secondDialogue = null,
-    secondChoice = null,
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
@@ -117,8 +115,18 @@
   let t = $derived(getTranslations(locale));
   let currentDialogue = $derived(dialogue[dialogueIndex]);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
-  let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
-  let showChoices = $derived(!!choice && !isTyping && isLastDialogue);
+  let advanceLabel = $derived.by(() => {
+    const key = advanceLabelKey(
+      getReaderAdvanceDecision({
+        isTyping: false,
+        index: dialogueIndex,
+        length: dialogue.length,
+        canGoNext,
+        hasChoice: !!choice,
+      })
+    );
+    return key === null ? t.reader.complete : t.reader[key];
+  });
   let progressText = $derived(
     t.reader.pageDisplay
       .replace('{current}', String(dialogueIndex + 1))
@@ -270,6 +278,10 @@
     if (decision === 'advance-line') {
       selfAdvanceTarget = dialogueIndex + 1;
       onIndexChange(dialogueIndex + 1);
+      return;
+    }
+    if (decision === 'open-choice') {
+      onOpenChoice();
       return;
     }
     if (decision === 'advance-scene' || decision === 'complete') onNext();
@@ -497,41 +509,11 @@
           {/if}
         {/if}
 
-        {#if showChoices}
-          <div class="choices">
-            <p lang={textLang}><RubyText text={choice?.prompt ?? ''} ruby={choice?.promptRuby} show={furigana} /></p>
-            {#if secondChoice}
-              <p class="second-text" lang={secondLang} data-testid="second-line">
-                <RubyText text={secondChoice.prompt} ruby={secondChoice.promptRuby} show={furigana} />
-              </p>
-            {/if}
-            {#each choice?.options ?? [] as option (option.id)}
-              <Button
-                variant="menu"
-                className="w-full text-left rounded-xl {controlBase}"
-                data-reader-interactive
-                data-reader-progression
-                onclick={() => onChoice(option.nextScene)}
-              >
-                <span lang={textLang}><RubyText text={option.label} ruby={option.labelRuby} show={furigana} /></span>
-                {#if secondChoice?.labels[option.id]}
-                  <span
-                    class="second-choice-label"
-                    lang={secondLang}
-                    data-testid="second-line"
-                  >
-                    <RubyText text={secondChoice.labels[option.id]} ruby={secondChoice.labelRuby?.[option.id]} show={furigana} />
-                  </span>
-                {/if}
-              </Button>
-            {/each}
-          </div>
-        {/if}
       </div>
 
       <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
         <div class="action-slot">
-          {#if !showChoices && !isTyping && currentDialogue}
+          {#if !isTyping && currentDialogue}
             <Button
               variant="menu"
               className="next-control block ml-auto w-auto rounded-full {controlBase}"
@@ -539,13 +521,7 @@
               data-reader-progression
               onclick={advance}
             >
-              {#if !isLastDialogue}
-                {t.reader.continue}
-              {:else if canGoNext}
-                {t.reader.nextScene}
-              {:else}
-                {t.reader.complete}
-              {/if}
+              {advanceLabel}
             </Button>
           {/if}
         </div>
@@ -701,8 +677,7 @@
 
   .speaker,
   .dialogue-text,
-  .progress,
-  .choices p {
+  .progress {
     margin: 0;
   }
 
@@ -726,14 +701,6 @@
     line-height: 1.6;
   }
 
-  .second-choice-label {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 400;
-    opacity: 0.8;
-  }
-
   .typewriter-cursor {
     display: inline-block;
     width: 0.45rem;
@@ -742,12 +709,6 @@
     vertical-align: -0.15em;
     background: #7dd3fc;
     animation: cursor-pulse 800ms ease-in-out infinite;
-  }
-
-  .choices {
-    display: grid;
-    gap: 0.75rem;
-    margin-top: 1rem;
   }
 
   .progress {

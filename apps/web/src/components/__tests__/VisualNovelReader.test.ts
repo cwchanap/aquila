@@ -23,6 +23,7 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
         reader: {
             unknown: 'Unknown',
             continue: 'Continue',
+            choose: 'Choose',
             nextScene: 'Next Scene',
             complete: 'Complete',
             bookmark: 'Bookmark',
@@ -195,7 +196,7 @@ function renderReader(overrides: Record<string, unknown> = {}) {
         canGoNext: false,
         choice: null,
         locale: 'en',
-        onChoice: vi.fn(),
+        onOpenChoice: vi.fn(),
         onBookmark: vi.fn(),
         onNext: vi.fn(),
         onNavigate: vi.fn(),
@@ -535,29 +536,44 @@ describe('VisualNovelReader', () => {
         expect(onIndexChange).toHaveBeenCalledWith(1);
     });
 
-    it('shows final-line choices and sends the selected next scene', async () => {
+    it('shows a Choose footer action on the final choice line and calls onOpenChoice', async () => {
         setReducedMotion(false);
-        const onChoice = vi.fn();
+        const onNext = vi.fn();
+        const onOpenChoice = vi.fn();
         renderReader({
             dialogue: [dialogue[0]],
             dialogueIndex: 0,
             choice,
-            onChoice,
+            onNext,
+            onOpenChoice,
         });
         await vi.runAllTimersAsync();
 
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Take the left path' })
-        );
-        expect(onChoice).toHaveBeenCalledWith('b1a_act2');
+        const choose = screen.getByRole('button', { name: 'Choose' });
+        // The last line stays on screen; the choice UI is not inline.
+        expect(screen.getByText('First visual line.')).toBeInTheDocument();
+        expect(screen.queryByText('Choose a route')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Take the left path' })
+        ).not.toBeInTheDocument();
+
+        await fireEvent.click(choose);
+        expect(onOpenChoice).toHaveBeenCalledTimes(1);
+        expect(onNext).not.toHaveBeenCalled();
     });
 
-    it('does not show choices before the final line', async () => {
+    it('keeps the Continue footer action in a choice scene before the final line', async () => {
         setReducedMotion(false);
         renderReader({ choice, dialogueIndex: 0 });
         await vi.runAllTimersAsync();
 
+        expect(
+            screen.getByRole('button', { name: 'Continue' })
+        ).toBeInTheDocument();
         expect(screen.queryByText('Choose a route')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Take the left path' })
+        ).not.toBeInTheDocument();
     });
 
     it('makes reader content inert while backlog owns focus and restores the trigger', async () => {
@@ -810,19 +826,31 @@ describe('VisualNovelReader', () => {
         expect(onNext).toHaveBeenCalled();
     });
 
-    it('does not call onNext on container click when choices are present', async () => {
+    it('calls onOpenChoice (not onNext) on a container tap at the final choice line', async () => {
         setReducedMotion(false);
         const onNext = vi.fn();
+        const onOpenChoice = vi.fn();
         renderReader({
             dialogue: [dialogue[0]],
             dialogueIndex: 0,
             canGoNext: false,
             choice,
             onNext,
+            onOpenChoice,
         });
         await vi.runAllTimersAsync();
         const container = screen.getByTestId('visual-novel-reader');
-        await fireEvent.click(container);
+        await fireEvent.pointerDown(container, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+        });
+        await fireEvent.pointerUp(container, {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+        });
+        expect(onOpenChoice).toHaveBeenCalledTimes(1);
         expect(onNext).not.toHaveBeenCalled();
     });
 
@@ -914,20 +942,24 @@ describe('VisualNovelReader', () => {
         expect(acts.map(b => b.textContent)).toEqual(['Act 1', 'Act 2']);
     });
 
-    it('renders choices for a choice-only scene with empty dialogue', async () => {
+    it('renders no choice UI for a choice-only scene with empty dialogue', async () => {
         setReducedMotion(false);
-        const onChoice = vi.fn();
+        // An empty choice-origin scene is rejected by the compiler; the leaf
+        // must not surface stray choice chrome for that invalid payload.
         renderReader({
             dialogue: [],
             dialogueIndex: 0,
             choice,
-            onChoice,
         });
+        await vi.runAllTimersAsync();
 
-        await fireEvent.click(
-            screen.getByRole('button', { name: 'Take the left path' })
-        );
-        expect(onChoice).toHaveBeenCalledWith('b1a_act2');
+        expect(screen.queryByText('Choose a route')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Take the left path' })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Choose' })
+        ).not.toBeInTheDocument();
     });
 
     it('does not advance when a pointer moves beyond the tap threshold between down and up', async () => {
@@ -1095,25 +1127,6 @@ describe('VisualNovelReader second language', () => {
         expect(container.querySelector('.visual-novel-reader')).not.toHaveClass(
             'has-second-line'
         );
-    });
-
-    it('shows the choice prompt and labels in the second language', async () => {
-        setReducedMotion(true);
-        renderReader({
-            dialogue: [dialogue[0]],
-            dialogueIndex: 0,
-            choice,
-            secondDialogue: [secondDialogue[0]],
-            secondChoice: {
-                prompt: '道を選んで',
-                labels: { left: '左の道を行く' },
-            },
-            secondLang: 'ja',
-        });
-        await vi.runAllTimersAsync();
-
-        expect(screen.getByText('道を選んで')).toHaveAttribute('lang', 'ja');
-        expect(screen.getByText('左の道を行く')).toHaveAttribute('lang', 'ja');
     });
 
     it('shows second-language lines in the History panel', async () => {

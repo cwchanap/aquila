@@ -30,7 +30,12 @@ import {
     type ProbeContext,
 } from './support/r2-browser-probe';
 import { findAudioGateAnchors } from './support/audio-gate-anchors';
-import { ReaderPage, VisualReaderPage } from './utils';
+import {
+    ReaderPage,
+    VisualReaderPage,
+    openCrossroads,
+    selectCrossroadsRoute,
+} from './utils';
 
 /**
  * HPA-233 release gate: prove the DEPLOYED reader serves one specific release.
@@ -890,13 +895,13 @@ test.describe('Deployed visual-novel release gate', () => {
             )
         );
         await expect(visual.root).toBeVisible();
-        await expect(page.getByText(choiceAnchors.prompt)).toBeVisible();
-        await page
-            .getByRole('button', {
-                name: choiceAnchors.optionLabel,
-                exact: true,
-            })
-            .click();
+        // The prompt and route cards live in the shared Crossroads overlay
+        // (HPA-961): the terminal line offers a single Choose affordance.
+        const crossroads = await openCrossroads(page);
+        await expect(
+            crossroads.getByRole('heading', { name: choiceAnchors.prompt })
+        ).toBeVisible();
+        await selectCrossroadsRoute(crossroads, choiceAnchors.optionLabel);
         await expect(page).toHaveURL(
             new RegExp(`[?&]scene=${choiceAnchors.nextScene}(?:&|$)`)
         );

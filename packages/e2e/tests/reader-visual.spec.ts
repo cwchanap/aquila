@@ -1,5 +1,9 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { VisualReaderPage } from './utils';
+import {
+    VisualReaderPage,
+    openCrossroads,
+    selectCrossroadsRoute,
+} from './utils';
 
 const READER_PATH =
     '/en/reader?story=the_seventh_mirror&scene=ch1_act2&dialogue=';
@@ -606,12 +610,13 @@ test.describe('Visual novel reader', () => {
         await expect(visual.leftPortrait).not.toHaveAttribute('src');
         await expect(visual.rightPortrait).not.toHaveAttribute('src');
 
+        // The prompt and route cards live in the shared Crossroads overlay
+        // (HPA-961): the terminal line offers a single Choose affordance.
+        const crossroads = await openCrossroads(page);
         await expect(
-            page.getByText('The doors are open. Do you step out?')
+            crossroads.getByText('The doors are open. Do you step out?')
         ).toBeVisible();
-        await page
-            .getByRole('button', { name: 'Step off onto the platform' })
-            .click();
+        await selectCrossroadsRoute(crossroads, 'Step off onto the platform');
         await expect(page).toHaveURL(/scene=b1a_act4/);
         await expect(page).toHaveURL(dialogueUrl(1));
         await expect(visual.root).toBeVisible();

@@ -31,6 +31,7 @@ const { mockGetTranslations } = vi.hoisted(() => ({
     mockGetTranslations: vi.fn((locale: string) => ({
         reader: {
             unknown: 'Unknown',
+            choose: 'Choose',
             nextScene: 'Next Scene',
             complete: 'Complete',
             bookmark: 'Bookmark',
@@ -474,32 +475,125 @@ describe('MobileNovelReader', () => {
             expect(onNext).toHaveBeenCalled();
         });
 
-        it('does not call onNext on tap when choice is present on last line', async () => {
+        it('calls onOpenChoice (not onNext) on a reading-area tap at the final choice line', async () => {
             const onNext = vi.fn();
+            const onIndexChange = vi.fn();
+            const onOpenChoice = vi.fn();
             renderReader({
                 dialogue: [mockDialogue[0]],
                 dialogueIndex: 0,
                 canGoNext: false,
                 choice: mockChoice,
                 onNext,
+                onIndexChange,
+                onOpenChoice,
             });
             await vi.runAllTimersAsync();
             await fireEvent.click(screen.getByLabelText('Tap to continue'));
+            expect(onOpenChoice).toHaveBeenCalledTimes(1);
             expect(onNext).not.toHaveBeenCalled();
+            expect(onIndexChange).not.toHaveBeenCalled();
         });
 
-        it('renders choices on the last line and calls onChoice', async () => {
-            const onChoice = vi.fn();
+        it('renders a terminal Choose button on the final choice line and calls onOpenChoice', async () => {
+            const onNext = vi.fn();
+            const onIndexChange = vi.fn();
+            const onOpenChoice = vi.fn();
             renderReader({
                 dialogue: [mockDialogue[0]],
                 dialogueIndex: 0,
                 choice: mockChoice,
-                onChoice,
+                onNext,
+                onIndexChange,
+                onOpenChoice,
             });
             await vi.runAllTimersAsync();
-            expect(screen.getByText('Pick one?')).toBeInTheDocument();
-            await fireEvent.click(screen.getByText('Option A'));
-            expect(onChoice).toHaveBeenCalledWith('sceneA');
+
+            const choose = screen.getByRole('button', { name: 'Choose' });
+            expect(choose.className).toContain('pointer-events-auto');
+            // The last line stays on screen; the choice UI is not inline.
+            expect(screen.getByText('First line.')).toBeInTheDocument();
+            expect(screen.queryByText('Pick one?')).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Option A' })
+            ).not.toBeInTheDocument();
+
+            await fireEvent.click(choose);
+            expect(onOpenChoice).toHaveBeenCalledTimes(1);
+            expect(onNext).not.toHaveBeenCalled();
+            // The button's click must not leak into the reading-area layer.
+            expect(onIndexChange).not.toHaveBeenCalled();
+        });
+
+        it('opens Crossroads in one tap even while the chrome is visible', async () => {
+            const onOpenChoice = vi.fn();
+            renderReader({
+                dialogue: [mockDialogue[0]],
+                dialogueIndex: 0,
+                choice: mockChoice,
+                onOpenChoice,
+            });
+            await vi.runAllTimersAsync();
+
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Choose' })
+            );
+            expect(onOpenChoice).toHaveBeenCalledTimes(1);
+            // The terminal action dismisses the chrome as it opens.
+            expect(
+                screen.queryByLabelText('Back to Home')
+            ).not.toBeInTheDocument();
+        });
+
+        it('still dismisses the chrome first on a reading-area tap at the final choice line', async () => {
+            const onOpenChoice = vi.fn();
+            renderReader({
+                dialogue: [mockDialogue[0]],
+                dialogueIndex: 0,
+                choice: mockChoice,
+                onOpenChoice,
+            });
+            await vi.runAllTimersAsync();
+
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+
+            await fireEvent.click(screen.getByLabelText('Tap to continue'));
+            expect(
+                screen.queryByLabelText('Back to Home')
+            ).not.toBeInTheDocument();
+            expect(onOpenChoice).not.toHaveBeenCalled();
+        });
+
+        it('keeps the ▼ indicator on non-final lines of a choice scene', async () => {
+            renderReader({ dialogueIndex: 0, choice: mockChoice });
+            await vi.runAllTimersAsync();
+
+            expect(screen.getByText('▼')).toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Choose' })
+            ).not.toBeInTheDocument();
+            expect(screen.queryByText('Pick one?')).not.toBeInTheDocument();
+        });
+
+        it('renders a terminal Next Scene button that calls onNext in one tap', async () => {
+            const onNext = vi.fn();
+            renderReader({
+                dialogue: [mockDialogue[0]],
+                dialogueIndex: 0,
+                canGoNext: true,
+                onNext,
+            });
+            await vi.runAllTimersAsync();
+
+            const next = screen.getByRole('button', { name: 'Next Scene' });
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            expect(screen.getByLabelText('Back to Home')).toBeInTheDocument();
+            await fireEvent.click(next);
+            expect(onNext).toHaveBeenCalledTimes(1);
         });
 
         it('bookmarks the current line number at index 0', async () => {
@@ -1014,24 +1108,6 @@ describe('MobileNovelReader second language', () => {
         );
         expect(screen.getByText('二行目。')).toHaveAttribute('lang', 'ja');
         expect(screen.getByText('Second line.')).toHaveAttribute('lang', 'en');
-    });
-
-    it('shows translated choice prompt and labels', async () => {
-        renderReader({
-            dialogueIndex: 2,
-            choice: mockChoice,
-            secondChoice: {
-                prompt: 'どれにする？',
-                labels: { o1: '選択肢A', o2: '選択肢B' },
-            },
-            secondLang: 'ja',
-        });
-
-        await waitFor(() =>
-            expect(screen.getByText('どれにする？')).toBeInTheDocument()
-        );
-        expect(screen.getByText('選択肢A')).toHaveAttribute('lang', 'ja');
-        expect(screen.getByText('選択肢B')).toBeInTheDocument();
     });
 
     it('lists translations in the history sheet', async () => {

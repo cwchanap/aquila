@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import {
-    render,
-    screen,
-    waitFor,
-    fireEvent,
-    within,
-} from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import NovelReader from '../NovelReader.svelte';
 import type { DialogueEntry, ChoiceDefinition } from '@aquila/stories';
@@ -46,6 +40,7 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             endOfStory: 'End of story!',
             unknown: 'Unknown',
             continue: 'Continue',
+            choose: 'Choose',
             nextScene: 'Next Scene',
             complete: 'Complete',
             bookmark: 'Bookmark',
@@ -549,37 +544,53 @@ describe('NovelReader — scene changes', () => {
 });
 
 describe('NovelReader — choice handling', () => {
-    it('shows choices after the last dialogue', async () => {
+    it('shows a Choose progression button on the final choice line and calls onOpenChoice', async () => {
+        const onNext = vi.fn();
+        const onOpenChoice = vi.fn();
         renderReader({
             dialogue: [mockDialogue[0]],
             dialogueIndex: 0,
             choice: mockChoice,
+            onNext,
+            onOpenChoice,
         });
         await vi.runAllTimersAsync();
-        expect(screen.getByText('What do you want to do?')).toBeInTheDocument();
-        expect(screen.getByText('Option 1')).toBeInTheDocument();
-        expect(screen.getByText('Option 2')).toBeInTheDocument();
-    });
 
-    it('calls onChoice when an option is clicked', async () => {
-        const onChoice = vi.fn();
-        renderReader({
-            dialogue: [mockDialogue[0]],
-            dialogueIndex: 0,
-            choice: mockChoice,
-            onChoice,
-        });
-        await vi.runAllTimersAsync();
-        await fireEvent.click(screen.getByText('Option 1'));
-        expect(onChoice).toHaveBeenCalledWith('scene_2');
-    });
-
-    it('hides choices before the last dialogue', async () => {
-        renderReader({ dialogueIndex: 0, choice: mockChoice });
-        await vi.runAllTimersAsync();
+        const choose = screen.getByText('Choose');
+        expect(choose.closest('button')).not.toBeNull();
+        // The last line stays on screen; the choice UI is not inline.
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
         expect(
             screen.queryByText('What do you want to do?')
         ).not.toBeInTheDocument();
+        expect(screen.queryByText('Option 1')).not.toBeInTheDocument();
+        expect(screen.queryByText('Option 2')).not.toBeInTheDocument();
+
+        await fireEvent.click(choose);
+        expect(onOpenChoice).toHaveBeenCalledTimes(1);
+        expect(onNext).not.toHaveBeenCalled();
+    });
+
+    it('keeps the Continue button visible on finished lines of a choice scene', async () => {
+        renderReader({ dialogueIndex: 0, choice: mockChoice });
+        await vi.runAllTimersAsync();
+
+        expect(screen.getByText('Continue')).toBeInTheDocument();
+        // No inline choice UI at any index.
+        expect(
+            screen.queryByText('What do you want to do?')
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText('Option 1')).not.toBeInTheDocument();
+    });
+
+    it('advances lines normally in a choice scene before the final line', async () => {
+        const { onIndexChange } = renderReader({
+            dialogueIndex: 0,
+            choice: mockChoice,
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onIndexChange).toHaveBeenCalledWith(1);
     });
 });
 
@@ -636,17 +647,20 @@ describe('NovelReader — navigation buttons', () => {
         expect(onNext).toHaveBeenCalled();
     });
 
-    it('does not call onNext when Enter is pressed on choice line', async () => {
+    it('calls onOpenChoice (not onNext) when Enter is pressed on the final choice line', async () => {
         const onNext = vi.fn();
+        const onOpenChoice = vi.fn();
         renderReader({
             dialogue: [mockDialogue[0]],
             dialogueIndex: 0,
             canGoNext: false,
             choice: mockChoice,
             onNext,
+            onOpenChoice,
         });
         await vi.runAllTimersAsync();
         await fireEvent.keyDown(window, { key: 'Enter' });
+        expect(onOpenChoice).toHaveBeenCalledTimes(1);
         expect(onNext).not.toHaveBeenCalled();
     });
 });
@@ -902,31 +916,6 @@ describe('NovelReader — second language', () => {
 
         expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
     });
-
-    it('shows the choice prompt and labels in the second language', async () => {
-        renderReader({
-            dialogueIndex: 2,
-            choice: mockChoice,
-            secondDialogue,
-            secondChoice: {
-                prompt: 'どうしますか？',
-                labels: { option1: '選択肢1' },
-            },
-            secondLang: 'ja',
-        });
-        await vi.runAllTimersAsync();
-
-        expect(screen.getByText('どうしますか？')).toHaveAttribute(
-            'lang',
-            'ja'
-        );
-        const option1 = screen.getByText('Option 1').closest('button');
-        expect(option1).toHaveTextContent('選択肢1');
-        const option2 = screen.getByText('Option 2').closest('button');
-        expect(
-            within(option2!).queryByTestId('second-line')
-        ).not.toBeInTheDocument();
-    });
 });
 
 describe('NovelReader — furigana', () => {
@@ -938,29 +927,17 @@ describe('NovelReader — furigana', () => {
         },
     ];
 
-    it('shows readings over the finished line and choices', async () => {
+    it('shows readings over the finished line', async () => {
         const { container } = renderReader({
             dialogue: jaDialogue,
             dialogueIndex: 0,
-            choice: {
-                prompt: '道を選ぶ',
-                promptRuby: [{ start: 0, end: 1, reading: 'みち' }],
-                options: [
-                    {
-                        id: 'option1',
-                        label: '左へ',
-                        labelRuby: [{ start: 0, end: 1, reading: 'ひだり' }],
-                        nextScene: 'scene_2',
-                    },
-                ],
-            },
         });
         await vi.runAllTimersAsync();
 
         const readings = Array.from(container.querySelectorAll('rt')).map(
             rt => rt.textContent
         );
-        expect(readings).toEqual(['きょう', 'みち', 'ひだり']);
+        expect(readings).toEqual(['きょう']);
     });
 
     it('shows plain text when furigana is off', async () => {

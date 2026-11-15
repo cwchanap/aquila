@@ -8,10 +8,7 @@
     StoryFlowConfig,
   } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
-  import type {
-    SecondChoiceLabels,
-    SecondLanguage,
-  } from '@/lib/reader-second-language';
+  import type { SecondLanguage } from '@/lib/reader-second-language';
   import SecondLanguagePicker from '@/components/SecondLanguagePicker.svelte';
   import FuriganaToggle from '@/components/FuriganaToggle.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
@@ -19,6 +16,7 @@
   import { cn } from '@/lib/utils';
   import type { ReaderMode } from '@/lib/reader-mode';
   import {
+    advanceLabelKey,
     getReaderAdvanceDecision,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
@@ -48,7 +46,7 @@
     currentSceneId,
     canGoNext = false,
     locale = 'en',
-    onChoice = () => {},
+    onOpenChoice = () => {},
     onBookmark = () => {},
     onNext = () => {},
     onNavigate = () => {},
@@ -59,7 +57,6 @@
     isInitialMount = true,
     interactionDisabled = false,
     secondDialogue = null,
-    secondChoice = null,
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
@@ -81,7 +78,7 @@
     currentSceneId?: string;
     canGoNext?: boolean;
     locale?: Locale;
-    onChoice?: (nextScene: string) => void;
+    onOpenChoice?: () => void;
     onBookmark?: (dialogueNumber: number) => void;
     onNext?: () => void;
     onNavigate?: (sceneId: string) => void;
@@ -93,7 +90,6 @@
     interactionDisabled?: boolean;
     /** Second-language lines aligned 1:1 with `dialogue`, or null when off. */
     secondDialogue?: DialogueEntry[] | null;
-    secondChoice?: SecondChoiceLabels | null;
     textLang?: string;
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
@@ -150,8 +146,21 @@
   let currentDialogue = $derived(dialogue[dialogueIndex]);
   let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
-  let showChoices = $derived(!!choice && !isTyping && isLastDialogue);
   let hasOverlay = $derived(drawerOpen || backlogOpen);
+  // Terminal-line action label: 'choose' opens Crossroads, 'nextScene'/
+  // 'complete' advance. Non-terminal lines keep the ▼ cue instead.
+  let terminalLabel = $derived.by(() => {
+    const key = advanceLabelKey(
+      getReaderAdvanceDecision({
+        isTyping: false,
+        index: dialogueIndex,
+        length: dialogue.length,
+        canGoNext,
+        hasChoice: !!choice,
+      })
+    );
+    return key === null ? null : t.reader[key];
+  });
 
   // Cancel any in-flight typewriter when the component unmounts so pending
   // onTick callbacks don't mutate state on a destroyed component.
@@ -278,6 +287,32 @@
     if (decision === 'advance-line') {
       selfAdvanceTarget = dialogueIndex + 1;
       onIndexChange(dialogueIndex + 1);
+      return;
+    }
+    if (decision === 'open-choice') {
+      onOpenChoice();
+      return;
+    }
+    if (decision === 'advance-scene' || decision === 'complete') onNext();
+  }
+
+  // The terminal action is a real button, so a single tap executes the
+  // decision — it bypasses only the reading-area's chrome-dismiss early
+  // return, not the overlay/disabled guards. stopPropagation keeps the click
+  // from also reaching the tap-to-advance layer below.
+  function handleTerminalAdvance(event: MouseEvent): void {
+    event.stopPropagation();
+    if (interactionDisabled || hasOverlay) return;
+    if (chromeVisible) chromeVisible = false;
+    const decision = getReaderAdvanceDecision({
+      isTyping: false,
+      index: dialogueIndex,
+      length: dialogue.length,
+      canGoNext,
+      hasChoice: !!choice,
+    });
+    if (decision === 'open-choice') {
+      onOpenChoice();
       return;
     }
     if (decision === 'advance-scene' || decision === 'complete') onNext();
@@ -529,48 +564,12 @@
   {/if}
 
   <!-- Bottom text panel. pointer-events-none lets taps fall through to the
-       advance layer except when choices need to be clickable. -->
+       advance layer; interactive children (back control, terminal action,
+       scrollable text) opt back in with pointer-events-auto. -->
   <div
-    class={cn(
-      'absolute inset-x-0 bottom-0 z-20 mx-auto max-w-2xl px-4 pb-4',
-      showChoices ? 'pointer-events-auto' : 'pointer-events-none'
-    )}
+    class="absolute inset-x-0 bottom-0 z-20 mx-auto max-w-2xl px-4 pb-4 pointer-events-none"
     style="padding-bottom: calc(1rem + env(safe-area-inset-bottom));"
   >
-    {#if showChoices}
-      <div class="space-y-3 rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md">
-        <p class="text-base font-semibold text-slate-700">
-          <span lang={textLang}><RubyText text={choice?.prompt ?? ''} ruby={choice?.promptRuby} show={furigana} /></span>
-          {#if secondChoice}
-            <span
-              class="mt-1 block text-sm font-normal text-slate-500"
-              lang={secondLang}
-              data-testid="second-line"
-            >
-              <RubyText text={secondChoice.prompt} ruby={secondChoice.promptRuby} show={furigana} />
-            </span>
-          {/if}
-        </p>
-        {#each choice?.options ?? [] as option (option.id)}
-          <button
-            type="button"
-            class="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-left text-base font-semibold text-slate-800 hover:border-blue-300 hover:text-blue-600"
-            onclick={() => onChoice(option.nextScene)}
-          >
-            <span lang={textLang}><RubyText text={option.label} ruby={option.labelRuby} show={furigana} /></span>
-            {#if secondChoice?.labels[option.id]}
-              <span
-                class="mt-1 block text-sm font-normal text-slate-500"
-                lang={secondLang}
-                data-testid="second-line"
-              >
-                <RubyText text={secondChoice.labels[option.id]} ruby={secondChoice.labelRuby?.[option.id]} show={furigana} />
-              </span>
-            {/if}
-          </button>
-        {/each}
-      </div>
-    {:else}
       <!-- Persistent back-one-line control, above the dialogue box. Its own
            pointer-events-auto re-enables clicks (the panel is none while reading). -->
       <div class="pointer-events-auto mb-2 flex">
@@ -632,15 +631,18 @@
           <div class="mt-2 text-right text-blue-500">
             {#if !isLastDialogue}
               <span class="inline-block motion-safe:animate-bounce" aria-hidden="true">▼</span>
-            {:else if canGoNext}
-              <span class="text-sm font-semibold">{t.reader.nextScene}</span>
-            {:else}
-              <span class="text-sm font-semibold">{t.reader.complete}</span>
+            {:else if terminalLabel}
+              <button
+                type="button"
+                class="pointer-events-auto rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow"
+                onclick={handleTerminalAdvance}
+              >
+                {terminalLabel}
+              </button>
             {/if}
           </div>
         {/if}
       </div>
-    {/if}
   </div>
 
   <!-- Visual-only long-press tooltip. Controls already expose their name via

@@ -252,6 +252,7 @@
     "continue": "Continue",
     "nextScene": "Next Scene",
     "complete": "Complete",
+    "choose": "Choose",
     "bookmark": "📖 Bookmark",
     "pageDisplay": "Page {current} of {total}",
     "unknown": "Unknown",
@@ -273,6 +274,11 @@
     "tapToContinue": "Tap to continue",
     "lineProgress": "Line {current} of {total}",
     "previousLine": "Previous line",
+    "crossroads": {
+      "back": "Back to the last line",
+      "route": "Route {letter}",
+      "keyHint": "Press {key}"
+    },
     "storyMap": {
       "title": "Story map",
       "open": "Open story map",

@@ -252,6 +252,7 @@
     "continue": "繼續",
     "nextScene": "下一場景",
     "complete": "完成",
+    "choose": "選擇",
     "bookmark": "📖 書籤",
     "pageDisplay": "第 {current} / {total} 頁",
     "unknown": "未知",
@@ -273,6 +274,11 @@
     "tapToContinue": "點擊繼續",
     "lineProgress": "第 {current} / {total} 行",
     "previousLine": "上一行",
+    "crossroads": {
+      "back": "返回最後一行",
+      "route": "路線 {letter}",
+      "keyHint": "按 {key} 鍵"
+    },
     "storyMap": {
       "title": "故事地圖",
       "open": "開啟故事地圖",

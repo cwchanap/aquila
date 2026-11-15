@@ -627,7 +627,7 @@
             {:else if terminalLabel}
               <button
                 type="button"
-                class="pointer-events-auto rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow"
+                class="pointer-events-auto min-h-11 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow"
                 onclick={handleTerminalAdvance}
               >
                 {terminalLabel}

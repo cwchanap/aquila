@@ -3068,6 +3068,64 @@ describe('ReaderShell', () => {
                 screen.getByRole('dialog', { name: /Decision · Act 2/ })
             ).toBeVisible();
         });
+
+        it('starts a release-delayed BGM cue on route selection without waiting for another reader gesture', async () => {
+            stubMatchMedia(false);
+            localStorage.setItem(READER_MODE_KEY, 'visual');
+            seedChoiceLine();
+            readerState.dialogue = [
+                {
+                    characterId: 'narrator',
+                    dialogue: 'Dawn at the fork.',
+                    bgm: 'dawn-apartment',
+                },
+                { dialogue: 'Final line at the fork.' },
+            ];
+            const release = deferred<RuntimeReleaseIdentity | null>();
+            const audio = createAudioRuntimeHarness(release.promise);
+            const bgm = createBgmHarness();
+            const onChoice = vi.fn((nextScene: string) => {
+                readerState.currentSceneId = nextScene;
+                readerState.dialogue = [
+                    { dialogue: 'The chosen branch begins.' },
+                ];
+                readerState.choice = null;
+                readerState.dialogueIndex = 0;
+                readerState.canGoNext = false;
+            });
+            render(ReaderShell, {
+                props: {
+                    onChoice,
+                    createAudioRuntime: () => audio.runtime,
+                    createBgmPlayer: () => bgm.player,
+                    createVisualRuntime: () => createRuntimeHarness().runtime,
+                },
+            });
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+
+            const choose = screen.getByRole('button', { name: 'Choose' });
+            await fireEvent.pointerDown(choose);
+            await fireEvent.click(choose);
+            const dialog = screen.getByRole('dialog', {
+                name: /Decision · Act 2/,
+            });
+            expect(dialog).toBeVisible();
+            expect(bgm.player.play).not.toHaveBeenCalled();
+
+            release.resolve(AUDIO_RELEASE_IDENTITY);
+            await Promise.resolve();
+            await tick();
+            expect(bgm.player.play).not.toHaveBeenCalled();
+
+            await fireEvent.click(
+                within(dialog).getAllByTestId('crossroads-route')[0]
+            );
+            expect(onChoice).toHaveBeenCalledWith('b1a_act3');
+            await tick();
+            expect(bgm.player.play).toHaveBeenCalledTimes(1);
+            expect(bgm.player.play).toHaveBeenCalledWith('dawn-apartment');
+        });
     });
 });
 

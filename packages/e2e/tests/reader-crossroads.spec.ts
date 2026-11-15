@@ -97,17 +97,34 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
     ).toBeLessThanOrEqual(innerWidth + 1);
 }
 
-async function expectSafeAreaRule(page: Page): Promise<void> {
-    type StyleRule = { cssText: string; cssRules?: ArrayLike<StyleRule> };
-    const found = await page.evaluate(() => {
+async function expectSafeAreaRule(back: Locator): Promise<void> {
+    type StyleRule = {
+        cssText: string;
+        selectorText?: string;
+        cssRules?: ArrayLike<StyleRule>;
+    };
+    const found = await back.evaluate(button => {
         const browser = globalThis as unknown as {
             document: {
                 styleSheets: ArrayLike<{ cssRules: ArrayLike<StyleRule> }>;
             };
         };
+        const footer = button.parentElement;
+        if (!footer) return false;
+        const applies = (selector: string): boolean => {
+            try {
+                return footer.matches(selector);
+            } catch {
+                return false;
+            }
+        };
         const scan = (rules: ArrayLike<StyleRule>): boolean => {
             for (const rule of Array.from(rules)) {
-                if (rule.cssText.includes('env(safe-area-inset-bottom)')) {
+                if (
+                    rule.selectorText &&
+                    rule.cssText.includes('env(safe-area-inset-bottom)') &&
+                    applies(rule.selectorText)
+                ) {
                     return true;
                 }
                 if (rule.cssRules && scan(rule.cssRules)) return true;
@@ -125,7 +142,7 @@ async function expectSafeAreaRule(page: Page): Promise<void> {
     });
     expect(
         found,
-        'expected an env(safe-area-inset-bottom) rule in the page styles'
+        'expected an env(safe-area-inset-bottom) rule applied to the Crossroads footer'
     ).toBe(true);
 }
 
@@ -266,7 +283,7 @@ test.describe('Crossroads choice overlay', () => {
             }
 
             await expectNoHorizontalOverflow(page);
-            await expectSafeAreaRule(page);
+            await expectSafeAreaRule(back);
 
             await testInfo.attach(`crossroads-${variant.key}.png`, {
                 body: await page.screenshot(),

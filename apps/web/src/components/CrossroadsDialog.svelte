@@ -152,7 +152,7 @@
           bind:this={headingEl}
           tabindex="-1"
           lang={textLang}
-          class="mt-3 max-w-[900px] text-balance font-serif text-[27px] font-semibold leading-snug outline-none sm:text-[42px] sm:leading-tight"
+          class="mt-3 max-w-[900px] text-balance wrap-anywhere font-serif text-[27px] font-semibold leading-snug outline-none sm:text-[42px] sm:leading-tight"
         >
           <RubyText
             text={choice.prompt}
@@ -162,7 +162,7 @@
         </h2>
         {#if secondChoice}
           <p
-            class="mt-2 max-w-[900px] font-serif text-[15px] italic leading-normal text-slate-300 sm:text-lg"
+            class="mt-2 max-w-[900px] wrap-anywhere font-serif text-[15px] italic leading-normal text-slate-300 sm:text-lg"
             lang={secondLang}
             data-testid="second-line"
           >
@@ -204,7 +204,7 @@
             class="relative grid w-full grid-cols-1 gap-3.5 pl-9 sm:grid-flow-col sm:auto-cols-fr sm:gap-0 sm:pl-0"
           >
             {#each options as option, i (option.id)}
-              <li class="route-item relative sm:px-3">
+              <li class="route-item relative min-w-0 sm:px-3">
                 <button
                   type="button"
                   data-testid="crossroads-route"
@@ -227,7 +227,7 @@
                     <span class="sr-only">{keyHint(i)}</span>
                   </span>
                   <span
-                    class="font-serif text-[19px] font-semibold leading-snug sm:text-[23px]"
+                    class="wrap-anywhere font-serif text-[19px] font-semibold leading-snug sm:text-[23px]"
                     lang={textLang}
                   >
                     <RubyText
@@ -238,7 +238,7 @@
                   </span>
                   {#if secondChoice?.labels[option.id]}
                     <span
-                      class="font-serif text-sm italic leading-normal text-slate-300 sm:text-[15px]"
+                      class="wrap-anywhere font-serif text-sm italic leading-normal text-slate-300 sm:text-[15px]"
                       lang={secondLang}
                       data-testid="second-line"
                     >

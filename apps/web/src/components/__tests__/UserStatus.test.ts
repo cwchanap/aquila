@@ -3,19 +3,6 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import UserStatus from '../UserStatus.svelte';
 
-// Mock utils
-vi.mock('../../lib/utils.js', () => ({
-    t: vi.fn((locale: string, key: string) => {
-        const translations: Record<string, string> = {
-            'nav.profile': 'Profile',
-            'progress.title': 'My Progress',
-            'common.logout': 'Logout',
-            'common.login': 'Login',
-        };
-        return translations[key] ?? key;
-    }),
-}));
-
 // Mock fetch globally
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -162,9 +149,13 @@ describe('UserStatus', () => {
             expect(progressLink).toHaveAttribute('href', '/en/progress');
         });
 
-        it.each(['en', 'zh', 'ja'])(
-            'orders the account menu Profile → My Progress → Logout (%s)',
-            async locale => {
+        it.each([
+            ['en', 'Profile', 'My Progress', 'Logout'],
+            ['zh', '個人資料', '我的進度', '登出'],
+            ['ja', 'プロフィール', 'マイプログレス', 'ログアウト'],
+        ] as const)(
+            'orders the account menu %s → %s → %s (%s)',
+            async (locale, profileText, progressText, logoutText) => {
                 document.documentElement.lang = locale;
                 render(UserStatus, {
                     props: { user: mockUser, currentLocale: locale },
@@ -173,9 +164,9 @@ describe('UserStatus', () => {
                 const menuButton = screen.getByTitle('User Menu');
                 await fireEvent.click(menuButton);
 
-                const profile = screen.getByText('Profile');
-                const progress = screen.getByText('My Progress');
-                const logout = screen.getByText('Logout');
+                const profile = screen.getByText(profileText);
+                const progress = screen.getByText(progressText);
+                const logout = screen.getByText(logoutText);
                 expect(
                     profile.compareDocumentPosition(progress) &
                         Node.DOCUMENT_POSITION_FOLLOWING
@@ -184,6 +175,10 @@ describe('UserStatus', () => {
                     progress.compareDocumentPosition(logout) &
                         Node.DOCUMENT_POSITION_FOLLOWING
                 ).toBeTruthy();
+                expect(profile.closest('a')).toHaveAttribute(
+                    'href',
+                    `/${locale}/profile`
+                );
                 expect(progress.closest('a')).toHaveAttribute(
                     'href',
                     `/${locale}/progress`
@@ -202,7 +197,7 @@ describe('UserStatus', () => {
             const menuButton = screen.getByTitle('User Menu');
             await fireEvent.click(menuButton);
 
-            const profileLink = screen.getByText('Profile').closest('a');
+            const profileLink = screen.getByText('個人資料').closest('a');
             expect(profileLink).toHaveAttribute('href', '/zh/profile');
         });
 
@@ -263,7 +258,7 @@ describe('UserStatus', () => {
 
             await vi.runAllTimersAsync();
 
-            const loginLink = screen.getByText('Login').closest('a');
+            const loginLink = screen.getByText('登入').closest('a');
             expect(loginLink).toHaveAttribute('href', '/zh/login');
         });
 
@@ -467,7 +462,7 @@ describe('UserStatus', () => {
 
             await vi.runAllTimersAsync();
 
-            const loginLink = screen.getByText('Login').closest('a');
+            const loginLink = screen.getByText('登入').closest('a');
             expect(loginLink).toHaveAttribute('href', '/zh/login');
         });
 

@@ -4,13 +4,14 @@ const PROGRESS_KEY = 'aquila:storyProgress:v1';
 
 function seedSignedOutProgress(page: Page) {
     return page.addInitScript(key => {
+        if (localStorage.getItem(key) !== null) return;
         const now = Date.now();
         localStorage.setItem(
             key,
             JSON.stringify({
                 the_seventh_mirror: {
                     sceneId: 'ch2_act1',
-                    dialogueIndex: 0,
+                    dialogueIndex: 9,
                     updatedAt: now - 2 * 60 * 60 * 1000,
                     finished: false,
                     endings: [],
@@ -108,7 +109,7 @@ test.describe('My Progress signed out', () => {
         await expect(mirror).toContainText('Continue');
         await expect(mirror).toHaveAttribute(
             'href',
-            '/en/reader?story=the_seventh_mirror&scene=ch2_act1&dialogue=1'
+            '/en/reader?story=the_seventh_mirror&scene=ch2_act1&dialogue=10'
         );
 
         const elevator = rows.nth(1);
@@ -127,20 +128,24 @@ test.describe('My Progress signed out', () => {
         expect(apiCalls).toEqual([]);
     });
 
-    test('continues a saved place from its row link', async ({ page }) => {
+    test('continues a saved place from its row link at the restored line', async ({
+        page,
+    }) => {
         await seedSignedOutProgress(page);
         await page.goto('/en/progress');
 
         await page.locator('a[data-story-id="the_seventh_mirror"]').click();
         await expect(page).toHaveURL(
-            /\/en\/reader\?story=the_seventh_mirror&scene=ch2_act1&dialogue=1/
+            /\/en\/reader\?story=the_seventh_mirror&scene=ch2_act1&dialogue=10/
         );
-        await expect(page.getByTestId('reader-ready')).toBeVisible({
-            timeout: 30_000,
-        });
+        const ready = page.getByTestId('reader-ready');
+        await expect(ready).toBeVisible({ timeout: 30_000 });
+        await expect(ready.getByText(/她轉向車廂前後/)).toBeVisible();
     });
 
-    test('restarts a finished story from its row link', async ({ page }) => {
+    test('restarts a finished story from its row link at the start', async ({
+        page,
+    }) => {
         await seedSignedOutProgress(page);
         await page.goto('/en/progress');
 
@@ -148,9 +153,9 @@ test.describe('My Progress signed out', () => {
         await expect(page).toHaveURL(
             /\/en\/reader\?story=elevator_game&restart=1/
         );
-        await expect(page.getByTestId('reader-ready')).toBeVisible({
-            timeout: 30_000,
-        });
+        const ready = page.getByTestId('reader-ready');
+        await expect(ready).toBeVisible({ timeout: 30_000 });
+        await expect(ready.getByText('1:58 a.m.')).toBeVisible();
     });
 
     test('opens story selection from the browse link', async ({ page }) => {
@@ -194,20 +199,14 @@ test.describe('My Progress signed out', () => {
     test('keeps a finished story counted after it is restarted', async ({
         page,
     }) => {
-        await page.addInitScript(key => {
-            localStorage.setItem(
-                key,
-                JSON.stringify({
-                    elevator_game: {
-                        sceneId: 'a1_act1',
-                        dialogueIndex: 0,
-                        updatedAt: Date.now() - 60 * 60 * 1000,
-                        finished: false,
-                        endings: ['b1a_act4'],
-                    },
-                })
-            );
-        }, PROGRESS_KEY);
+        await seedSignedOutProgress(page);
+        await page.goto('/en/progress');
+
+        await page.locator('a[data-story-id="elevator_game"]').click();
+        const ready = page.getByTestId('reader-ready');
+        await expect(ready).toBeVisible({ timeout: 30_000 });
+        await expect(ready.getByText('1:58 a.m.')).toBeVisible();
+
         await page.goto('/en/progress');
 
         await expect(page.getByTestId('count-finished')).toContainText('1');
@@ -217,7 +216,7 @@ test.describe('My Progress signed out', () => {
         await expect(row).toContainText('Continue');
         await expect(row).toHaveAttribute(
             'href',
-            '/en/reader?story=elevator_game&scene=a1_act1&dialogue=1'
+            '/en/reader?story=elevator_game&scene=act1&dialogue=1'
         );
     });
 });
@@ -243,7 +242,7 @@ test.describe('My Progress localized', () => {
         await expect(mirror).toContainText('繼續');
         await expect(mirror).toHaveAttribute(
             'href',
-            '/zh/reader?story=the_seventh_mirror&scene=ch2_act1&dialogue=1'
+            '/zh/reader?story=the_seventh_mirror&scene=ch2_act1&dialogue=10'
         );
 
         const browse = page.getByTestId('browse-stories');

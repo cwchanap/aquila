@@ -5,7 +5,7 @@ Implementation checklist · 2026-11-15 · **single draft PR**
 **Design:** [HPA-911 design specification](../specs/2026-11-15-hpa-911-my-progress-design.md)  
 **UI reference:** HPA-911 attachments **UI mockup (HTML): My Progress page, menus, Acts slider Home** and **UI mockup (PNG, all frames)**.  
 **Prerequisite:** HPA-703 merged in PR #117.  
-**Parallel work:** HPA-961 / PR #125 (Crossroads); avoid its reader-shell/choice logic.  
+**Baseline:** HPA-961 / PR #125 (Crossroads) is merged into `main`; preserve its reader-shell/choice logic.  
 **Delivery rule:** Add all implementation commits to this same HPA-911 draft PR. No separate coding PR or art/SFX task is needed.
 
 ## Work sequence
@@ -39,7 +39,7 @@ Implementation checklist · 2026-11-15 · **single draft PR**
 - [ ] Replace the Settings control with a **My Progress** link in `MainMenu.svelte`. Preserve Start Game and Bookmarks and remove obsolete Settings copy/handler.
 - [ ] Point `UserStatus.svelte`'s Story Config link to `/[locale]/progress` with the new label; leave Profile/Logout and signed-out login behavior as is.
 - [ ] In `ActPanel.svelte`, split the always-visible rail into independent Home link and Acts toggle; do not nest interactive elements. Add `backUrl` prop with localized accessible label; pass through `NovelReader.svelte` and `VisualNovelReader.svelte`. Verify the rail is clickable closed/open and neither Acts nor Story Map/reader navigation regresses.
-- [ ] Do **not** duplicate Mobile Text's existing Home control. Check mobile Visual's Acts rail after rebasing PR #125; do not edit Crossroads logic.
+- [ ] Do **not** duplicate Mobile Text's existing Home control. Check mobile Visual's Acts rail against `main`, which already includes PR #125; do not edit Crossroads logic.
 - [ ] Remove outdated links from tests and web content; generated zh/ja proxy pages remain generator-owned.
 
 ### 5. Automated checks and release readiness
@@ -48,7 +48,7 @@ Implementation checklist · 2026-11-15 · **single draft PR**
 - [ ] Execute real PostgreSQL migration + query tests through the MCP-driven E2E runner against a disposable database seeded with a user, bookmarks, reading progress and legacy character setup. Verify the character setup relation is absent, bookmarks/progress survive, and story deletion still behaves correctly. Re-run `bun drizzle:generate` and confirm no schema drift. No production DB mutation during planning or code review.
 - [ ] Execute browser end-to-end via MCP against a running build: anonymous and authenticated sessions, saved progress from a second browser context, sign-in claiming, sync errors, bfcache restoration, correct Continue/Read Again targets, old URLs returning 404, and navigation in en/zh/ja. Collect screenshots and network/request assertions.
 - [ ] Visual comparison **by the agent through MCP**: compare screenshot captures to the HPA-911 HTML/PNG mockups for signed-in desktop, signed-out desktop, phone in Chinese, empty phone, all save-card states, start/account menu, and Acts slider Home open/closed. Record screenshot artifact links in this PR; mockup yellow/red callouts must **not** appear in product UI.
-- [ ] Re-run StorySelect and reader E2E suites after PR #125 is rebased/merged; a single platform's browser automation is adequate when no platform-specific implementation changed.
+- [ ] Run StorySelect and reader E2E suites against the current main with PR #125 included; a single platform's browser automation is adequate when no platform-specific implementation changed.
 - [ ] Produce a final PR checklist with actual command outputs, MCP E2E evidence and screenshot links; keep draft until implementation + CI gates pass.
 
 ## End-to-end acceptance criteria (automated, no manual sign-off step)

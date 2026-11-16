@@ -1,22 +1,16 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
-  import {
-    Building2,
-    Crown,
-    CupSoda,
-    Moon,
-    Orbit,
-    Sparkles,
-    TrainFront,
-    WashingMachine,
-  } from 'lucide-svelte';
   import type { Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
-  import { STORY_CATALOG, type StoryAccent } from '@aquila/stories/catalog';
+  import { STORY_CATALOG } from '@aquila/stories/catalog';
   import { assetHostUrl } from '@/lib/asset-host';
   import type { AuthState } from '@/lib/auth-utils';
   import { StoryProgressView } from '@/lib/story-progress-view.svelte';
+  import {
+    STORY_ACCENTS,
+    storyIconFor,
+  } from '@/lib/story-presentation';
   import { buildCards, pickContinueCard } from '@/lib/story-select';
 
   let {
@@ -66,42 +60,13 @@
           : 'bg-white/40'
   );
 
-  const ACCENTS: Record<
-    StoryAccent,
-    { cover: string; ring: string; text: string; dot: string; bar: string }
-  > = {
-    rose: { cover: 'from-rose-500/50 to-amber-400/40', ring: 'hover:border-rose-300/50', text: 'text-rose-200', dot: 'bg-rose-200', bar: 'bg-rose-300' },
-    cyan: { cover: 'from-cyan-500/50 to-blue-500/40', ring: 'hover:border-cyan-300/50', text: 'text-cyan-200', dot: 'bg-cyan-200', bar: 'bg-cyan-300' },
-    indigo: { cover: 'from-indigo-500/50 to-violet-500/40', ring: 'hover:border-indigo-300/50', text: 'text-indigo-200', dot: 'bg-indigo-200', bar: 'bg-indigo-300' },
-    red: { cover: 'from-red-950/90 to-rose-700/70', ring: 'hover:border-red-300/50', text: 'text-red-200', dot: 'bg-red-200', bar: 'bg-red-300' },
-    pink: { cover: 'from-pink-400/70 to-amber-300/60', ring: 'hover:border-pink-300/50', text: 'text-pink-200', dot: 'bg-pink-200', bar: 'bg-pink-300' },
-    violet: { cover: 'from-indigo-950/90 to-violet-600/70', ring: 'hover:border-violet-300/50', text: 'text-violet-200', dot: 'bg-violet-200', bar: 'bg-violet-300' },
-    amber: { cover: 'from-amber-400/80 to-orange-600/70', ring: 'hover:border-amber-300/50', text: 'text-amber-200', dot: 'bg-amber-200', bar: 'bg-amber-300' },
-    emerald: { cover: 'from-emerald-900/90 to-lime-300/50', ring: 'hover:border-emerald-300/50', text: 'text-emerald-200', dot: 'bg-emerald-200', bar: 'bg-emerald-300' },
-  };
-
-  const ICONS: Record<string, typeof Sparkles> = {
-    the_seventh_mirror: Sparkles,
-    train_adventure: TrainFront,
-    dont_save_me_before_midnight: Moon,
-    elevator_game: Building2,
-    three_am_laundromat: WashingMachine,
-    day_4012: Orbit,
-    demon_lord_is_hiring: Crown,
-    one_pot_before_dawn: CupSoda,
-  };
-
-  function iconFor(id: string) {
-    return ICONS[id] ?? Sparkles;
-  }
-
   onMount(() => view.mount());
 </script>
 
 <div class="mx-auto flex w-full max-w-5xl flex-col gap-12" data-testid="story-select">
   {#if continueCard}
-    {@const accent = ACCENTS[continueCard.entry.accent]}
-    {@const Icon = iconFor(continueCard.entry.id)}
+    {@const accent = STORY_ACCENTS[continueCard.entry.accent]}
+    {@const Icon = storyIconFor(continueCard.entry.id)}
     <section aria-labelledby="continue-heading" class="motion-safe:animate-[fadeSlideUp_0.5s_ease_both]">
       <h2 id="continue-heading" class="sr-only">{t.continueReading}</h2>
       <a
@@ -151,8 +116,8 @@
     </div>
     <ul class="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-5">
       {#each shorts as card, i (card.entry.id)}
-        {@const accent = ACCENTS[card.entry.accent]}
-        {@const Icon = iconFor(card.entry.id)}
+        {@const accent = STORY_ACCENTS[card.entry.accent]}
+        {@const Icon = storyIconFor(card.entry.id)}
         <li class="w-44 shrink-0 snap-start md:w-auto motion-safe:animate-[fadeSlideUp_0.5s_ease_both]" style="animation-delay: {0.05 * i}s">
           <a
             href={card.href}
@@ -205,8 +170,8 @@
     </div>
     <ul class="grid grid-cols-1 gap-4 md:grid-cols-3">
       {#each sagas as card, i (card.entry.id)}
-        {@const accent = ACCENTS[card.entry.accent]}
-        {@const Icon = iconFor(card.entry.id)}
+        {@const accent = STORY_ACCENTS[card.entry.accent]}
+        {@const Icon = storyIconFor(card.entry.id)}
         <li class="flex flex-col rounded-2xl border border-white/15 bg-slate-950/35 backdrop-blur-xl transition-all duration-300 motion-safe:hover:-translate-y-1 motion-safe:animate-[fadeSlideUp_0.5s_ease_both] {accent.ring}" style="animation-delay: {0.1 + 0.05 * i}s">
           <a
             href={card.href}

@@ -87,7 +87,9 @@
       ? t.saveStatusSynced
       : saveState === 'syncing'
         ? t.saveStatusSyncing
-        : t.saveStatusNotSynced
+        : saveState === 'local-save-failed'
+          ? t.saveStatusAccountSaved
+          : t.saveStatusNotSynced
   );
 
   onMount(() => view.mount());

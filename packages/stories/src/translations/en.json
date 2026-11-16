@@ -141,6 +141,7 @@
     "saveStatusSynced": "Synced",
     "saveStatusSyncing": "Syncing",
     "saveStatusNotSynced": "Not synced",
+    "saveStatusAccountSaved": "Synced to account",
     "localSaveTitle": "Saved in this browser only",
     "localSaveBody": "Clearing your browser data or switching devices loses this progress.",
     "signInTipTitle": "Sign in to turn on cloud save.",

@@ -205,6 +205,45 @@ describe('MyProgress', () => {
         expect(card).toHaveTextContent("Couldn't reach your account");
     });
 
+    it('marks the chip as saved to the account when only the local copy fails', async () => {
+        const accountKey = storyProgressKey('user-1');
+        const origSetItem = Storage.prototype.setItem;
+        const setSpy = vi
+            .spyOn(Storage.prototype, 'setItem')
+            .mockImplementation(function (
+                this: Storage,
+                key: string,
+                value: string
+            ) {
+                if (key === accountKey) {
+                    throw new Error('QuotaExceededError');
+                }
+                origSetItem.call(this, key, value);
+            });
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        try {
+            renderProgress({ authState: 'signed-in', userId: 'user-1' });
+            await taskTurn();
+
+            const card = screen.getByTestId('save-card');
+            expect(within(card).getByRole('status')).toHaveTextContent(
+                'Synced to account'
+            );
+            expect(within(card).getByRole('status')).not.toHaveTextContent(
+                'Not synced'
+            );
+            expect(card).toHaveTextContent(
+                "this browser couldn't save the updated copy locally"
+            );
+        } finally {
+            setSpy.mockRestore();
+        }
+    });
+
     it('links each row to its saved place and omits last-read for epoch-stamped records', () => {
         saveProgress({
             train_adventure: {

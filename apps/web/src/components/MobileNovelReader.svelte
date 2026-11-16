@@ -16,8 +16,8 @@
   import { cn } from '@/lib/utils';
   import type { ReaderMode } from '@/lib/reader-mode';
   import {
-    advanceLabelKey,
     getReaderAdvanceDecision,
+    getReaderAdvanceLabel,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
   import MobileActDrawer from '@/components/MobileActDrawer.svelte';
@@ -147,18 +147,17 @@
   let isLastDialogue = $derived(dialogueIndex >= dialogue.length - 1);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
   let hasOverlay = $derived(drawerOpen || backlogOpen);
-  let terminalLabel = $derived.by(() => {
-    const key = advanceLabelKey(
-      getReaderAdvanceDecision({
-        isTyping: false,
+  let terminalLabel = $derived(
+    getReaderAdvanceLabel(
+      {
         index: dialogueIndex,
         length: dialogue.length,
         canGoNext,
         hasChoice: !!choice,
-      })
-    );
-    return key === null ? null : t.reader[key];
-  });
+      },
+      t.reader
+    )
+  );
 
   // Cancel any in-flight typewriter when the component unmounts so pending
   // onTick callbacks don't mutate state on a destroyed component.
@@ -297,19 +296,8 @@
   function handleTerminalAdvance(event: MouseEvent): void {
     event.stopPropagation();
     if (interactionDisabled || hasOverlay) return;
-    if (chromeVisible) chromeVisible = false;
-    const decision = getReaderAdvanceDecision({
-      isTyping: false,
-      index: dialogueIndex,
-      length: dialogue.length,
-      canGoNext,
-      hasChoice: !!choice,
-    });
-    if (decision === 'open-choice') {
-      onOpenChoice();
-      return;
-    }
-    if (decision === 'advance-scene' || decision === 'complete') onNext();
+    chromeVisible = false;
+    advance();
   }
 
   async function enterVisualMode(): Promise<void> {

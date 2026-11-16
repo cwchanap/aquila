@@ -57,6 +57,19 @@ export function advanceLabelKey(
     }
 }
 
+export function getReaderAdvanceLabel(
+    input: Omit<ReaderAdvanceInput, 'isTyping'>,
+    labels: Record<ReaderAdvanceLabelKey, string>
+): string | null {
+    const key = advanceLabelKey(
+        getReaderAdvanceDecision({
+            ...input,
+            isTyping: false,
+        })
+    );
+    return key === null ? null : labels[key];
+}
+
 export function isEndingPosition(
     flow: StoryFlowConfig | null,
     sceneId: string | null,

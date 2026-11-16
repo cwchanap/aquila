@@ -162,26 +162,34 @@ describe('UserStatus', () => {
             expect(progressLink).toHaveAttribute('href', '/en/progress');
         });
 
-        it('orders the account menu Profile → My Progress → Logout', async () => {
-            render(UserStatus, {
-                props: { user: mockUser, currentLocale: 'en' },
-            });
+        it.each(['en', 'zh', 'ja'])(
+            'orders the account menu Profile → My Progress → Logout (%s)',
+            async locale => {
+                document.documentElement.lang = locale;
+                render(UserStatus, {
+                    props: { user: mockUser, currentLocale: locale },
+                });
 
-            const menuButton = screen.getByTitle('User Menu');
-            await fireEvent.click(menuButton);
+                const menuButton = screen.getByTitle('User Menu');
+                await fireEvent.click(menuButton);
 
-            const profile = screen.getByText('Profile');
-            const progress = screen.getByText('My Progress');
-            const logout = screen.getByText('Logout');
-            expect(
-                profile.compareDocumentPosition(progress) &
-                    Node.DOCUMENT_POSITION_FOLLOWING
-            ).toBeTruthy();
-            expect(
-                progress.compareDocumentPosition(logout) &
-                    Node.DOCUMENT_POSITION_FOLLOWING
-            ).toBeTruthy();
-        });
+                const profile = screen.getByText('Profile');
+                const progress = screen.getByText('My Progress');
+                const logout = screen.getByText('Logout');
+                expect(
+                    profile.compareDocumentPosition(progress) &
+                        Node.DOCUMENT_POSITION_FOLLOWING
+                ).toBeTruthy();
+                expect(
+                    progress.compareDocumentPosition(logout) &
+                        Node.DOCUMENT_POSITION_FOLLOWING
+                ).toBeTruthy();
+                expect(progress.closest('a')).toHaveAttribute(
+                    'href',
+                    `/${locale}/progress`
+                );
+            }
+        );
 
         it('renders profile link with zh locale when document lang is zh', async () => {
             document.documentElement.lang = 'zh';

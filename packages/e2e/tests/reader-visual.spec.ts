@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
+    StoriesPage,
     VisualReaderPage,
     openCrossroads,
     selectCrossroadsRoute,
@@ -941,4 +942,112 @@ test('keeps portraits above the dialogue on a phone', async ({ page }) => {
     expect(portraitBox!.y + portraitBox!.height).toBeLessThanOrEqual(
         dialogueBox!.y + 1
     );
+});
+
+test.describe('Reader Acts rail Home', () => {
+    test('shows an independent Home link on the visual rail with the panel closed and open', async ({
+        page,
+    }) => {
+        const visual = new VisualReaderPage(page);
+        await visual.goto(7);
+        await expectCanonicalVisualLine(page, 7);
+
+        const railHome = page.getByRole('link', { name: '← Back to Home' });
+        await expect(railHome).toHaveCount(1);
+        await expect(railHome).toBeVisible();
+        await expect(railHome).toHaveAttribute('href', '/en/');
+
+        await page.getByRole('button', { name: 'Open acts panel' }).click();
+        await expect(
+            page.getByRole('button', { name: 'Close acts panel' })
+        ).toBeVisible();
+        await expect(railHome).toHaveCount(1);
+        await expect(railHome).toBeVisible();
+        await expect(railHome).toHaveAttribute('href', '/en/');
+    });
+
+    test('restores the saved place through Continue after the rail Home', async ({
+        page,
+    }) => {
+        const visual = new VisualReaderPage(page);
+        await visual.goto(7);
+        await expectCanonicalVisualLine(page, 7);
+
+        const cursor = page.getByTestId('visual-typewriter-cursor');
+        await expect(cursor).not.toBeAttached();
+        await visual.root.click();
+        await expectCanonicalVisualLine(page, 8);
+
+        await page.getByRole('link', { name: '← Back to Home' }).click();
+        await expect(page).toHaveURL('/en/');
+        await expect(page.locator('#start-btn')).toBeVisible();
+
+        const stories = new StoriesPage(page);
+        await stories.goto();
+        const resume =
+            '/en/reader?story=the_seventh_mirror&scene=ch1_act2&dialogue=8';
+        await expect(stories.continueReading).toHaveAttribute('href', resume);
+        await stories.continueReading.click();
+        await expectCanonicalVisualLine(page, 8);
+    });
+
+    test('shows the same rail Home on the desktop text Acts rail', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'text');
+        });
+        await page.goto(`${READER_PATH}7`);
+        await expect(page.getByTestId('reader-ready')).toBeVisible();
+        await expect(page).toHaveURL(dialogueUrl(7));
+
+        const railHome = page.getByRole('link', { name: '← Back to Home' });
+        await expect(railHome).toHaveCount(1);
+        await expect(railHome).toBeVisible();
+        await expect(railHome).toHaveAttribute('href', '/en/');
+
+        await page.getByRole('button', { name: 'Open acts panel' }).click();
+        await expect(
+            page.getByRole('button', { name: 'Close acts panel' })
+        ).toBeVisible();
+        await expect(railHome).toBeVisible();
+
+        await railHome.click();
+        await expect(page).toHaveURL('/en/');
+        await expect(page.locator('#start-btn')).toBeVisible();
+    });
+
+    test('keeps the rail Home on the phone-width visual reader', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const visual = new VisualReaderPage(page);
+        await visual.goto(7);
+
+        const railHome = page.getByRole('link', { name: '← Back to Home' });
+        await expect(railHome).toHaveCount(1);
+        await expect(railHome).toBeVisible();
+        await expect(railHome).toHaveAttribute('href', '/en/');
+
+        await railHome.click();
+        await expect(page).toHaveURL('/en/');
+    });
+
+    test('keeps exactly one Home control in the mobile text menu', async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-mode:v1', 'text');
+        });
+        await page.goto('/en/reader?story=train_adventure');
+        await expect(page.getByTestId('reader-ready')).toBeVisible();
+
+        await page.getByRole('button', { name: 'Open menu' }).click();
+        const home = page.getByRole('link', { name: '← Back to Home' });
+        await expect(home).toHaveCount(1);
+        await expect(home).toBeVisible();
+        await expect(home).toHaveAttribute('href', '/en/');
+    });
 });

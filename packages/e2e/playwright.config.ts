@@ -44,13 +44,13 @@ export default defineConfig({
             name: 'mobile-chrome',
             use: { ...devices['Pixel 5'] },
             testMatch:
-                /(reader-(mobile|visual|crossroads)|story-map)\.spec\.ts/,
+                /(reader-(mobile|visual|crossroads)|story-map|my-progress)\.spec\.ts/,
         },
         {
             name: 'mobile-safari',
             use: { ...devices['iPhone 12'] },
             testMatch:
-                /(reader-(mobile|visual|crossroads)|story-map)\.spec\.ts/,
+                /(reader-(mobile|visual|crossroads)|story-map|my-progress)\.spec\.ts/,
         },
     ],
 });

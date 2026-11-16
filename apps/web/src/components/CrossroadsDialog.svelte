@@ -20,6 +20,7 @@
     secondLang = undefined,
     furigana = true,
     t,
+    restoreFocusTarget = null,
     onSelect,
     onClose,
   }: {
@@ -31,6 +32,7 @@
     secondLang?: string;
     furigana?: boolean;
     t: Translations;
+    restoreFocusTarget?: HTMLElement | null;
     onSelect: (nextScene: string) => void;
     onClose: () => void;
   } = $props();
@@ -136,6 +138,7 @@
     data-testid="crossroads-dialog"
     use:focusTrap={{
       enabled: true,
+      restoreFocus: restoreFocusTarget,
       initialFocus: () => headingEl,
     }}
     class="pointer-events-none fixed inset-0 z-[96] flex flex-col text-slate-50"

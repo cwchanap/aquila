@@ -3155,7 +3155,35 @@ describe('ReaderShell', () => {
             expect(lines[1]).toHaveClass('on');
         });
 
-        it('preserves body focus on close when opened by a page-level key without a focused button', async () => {
+        it('restores focus to the mobile menu trigger when the opener unmounts at the breakpoint', async () => {
+            const mq = stubMatchMedia(false);
+            seedChoiceLine();
+            render(ReaderShell);
+            await tick();
+            await vi.advanceTimersByTimeAsync(1000);
+            const choose = screen.getByRole('button', { name: 'Choose' });
+            choose.focus();
+            await fireEvent.click(choose);
+            expect(
+                screen.getByRole('dialog', { name: /Decision · Act 2/ })
+            ).toBeVisible();
+
+            // Crossing the breakpoint swaps NovelReader for MobileNovelReader,
+            // so the recorded opener is unmounted while the dialog stays open.
+            mq.setMatches(true);
+            await tick();
+            expect(choose.isConnected).toBe(false);
+
+            await fireEvent.keyDown(window, { key: 'Escape' });
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            await waitFor(() =>
+                expect(
+                    document.getElementById('mobile-reader-menu-trigger')
+                ).toHaveFocus()
+            );
+        });
+
+        it('restores focus to the settings trigger when opened by a page-level key without a focused opener', async () => {
             stubMatchMedia(false);
             seedChoiceLine();
             render(ReaderShell);
@@ -3170,7 +3198,11 @@ describe('ReaderShell', () => {
 
             await fireEvent.keyDown(window, { key: 'Escape' });
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-            expect(document.activeElement).toBe(document.body);
+            await waitFor(() =>
+                expect(
+                    document.getElementById('reader-settings-trigger')
+                ).toHaveFocus()
+            );
         });
 
         it('opens the dialog without an act caption when the scene id has no act marker', async () => {

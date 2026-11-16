@@ -137,15 +137,23 @@ export function focusTrap(node: HTMLElement, params: FocusTrapParams = true) {
 
     function deactivate(): void {
         active = false;
-        // Prefer the explicit restoreFocus target when provided and still in the
-        // document (e.g. a persistent menu toggle when the opener unmounted with
-        // the chrome bar). If restoreFocus was removed before close, fall back to
-        // the recorded previously-focused element rather than stranding focus on
-        // a detached node.
+        // Restore to the recorded opener while it is still in the document.
+        // If it was unmounted while the trap was active (e.g. the reader
+        // swapped across the mobile breakpoint), or was never a real element
+        // (<body> when the opener detached before activation), fall back to
+        // the explicit restoreFocus target instead of stranding focus.
+        const doc = node.ownerDocument;
+        const opener =
+            previouslyFocused &&
+            previouslyFocused !== doc?.body &&
+            previouslyFocused !== doc?.documentElement &&
+            previouslyFocused.isConnected
+                ? previouslyFocused
+                : null;
         const target =
-            restoreFocus && restoreFocus.isConnected
-                ? restoreFocus
-                : previouslyFocused;
+            opener ??
+            (restoreFocus && restoreFocus.isConnected ? restoreFocus : null) ??
+            previouslyFocused;
         previouslyFocused = null;
         restoreFocusTo(target);
     }

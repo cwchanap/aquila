@@ -8,7 +8,7 @@ vi.mock('../../lib/utils.js', () => ({
     t: vi.fn((locale: string, key: string) => {
         const translations: Record<string, string> = {
             'nav.profile': 'Profile',
-            'nav.storyConfig': 'Story Config',
+            'progress.title': 'My Progress',
             'common.logout': 'Logout',
             'common.login': 'Login',
         };
@@ -99,7 +99,8 @@ describe('UserStatus', () => {
             await fireEvent.click(menuButton);
 
             expect(screen.getByText('Profile')).toBeInTheDocument();
-            expect(screen.getByText('Story Config')).toBeInTheDocument();
+            expect(screen.getByText('My Progress')).toBeInTheDocument();
+            expect(screen.queryByText('Story Config')).not.toBeInTheDocument();
             expect(screen.getByText('Logout')).toBeInTheDocument();
         });
 
@@ -147,6 +148,39 @@ describe('UserStatus', () => {
 
             const profileLink = screen.getByText('Profile').closest('a');
             expect(profileLink).toHaveAttribute('href', '/en/profile');
+        });
+
+        it('renders My Progress link with correct locale href', async () => {
+            render(UserStatus, {
+                props: { user: mockUser, currentLocale: 'en' },
+            });
+
+            const menuButton = screen.getByTitle('User Menu');
+            await fireEvent.click(menuButton);
+
+            const progressLink = screen.getByText('My Progress').closest('a');
+            expect(progressLink).toHaveAttribute('href', '/en/progress');
+        });
+
+        it('orders the account menu Profile → My Progress → Logout', async () => {
+            render(UserStatus, {
+                props: { user: mockUser, currentLocale: 'en' },
+            });
+
+            const menuButton = screen.getByTitle('User Menu');
+            await fireEvent.click(menuButton);
+
+            const profile = screen.getByText('Profile');
+            const progress = screen.getByText('My Progress');
+            const logout = screen.getByText('Logout');
+            expect(
+                profile.compareDocumentPosition(progress) &
+                    Node.DOCUMENT_POSITION_FOLLOWING
+            ).toBeTruthy();
+            expect(
+                progress.compareDocumentPosition(logout) &
+                    Node.DOCUMENT_POSITION_FOLLOWING
+            ).toBeTruthy();
         });
 
         it('renders profile link with zh locale when document lang is zh', async () => {

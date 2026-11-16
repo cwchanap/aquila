@@ -2,6 +2,7 @@
   import type { Locale, StoryFlowConfig } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import Button from '@/components/ui/Button.svelte';
+  import { House } from 'lucide-svelte';
   import {
     buildChapterData,
     extractActName,
@@ -17,6 +18,7 @@
     open = false,
     locale = 'en',
     visibleSceneIds,
+    backUrl,
   }: {
     flow: StoryFlowConfig;
     storyId: string;
@@ -26,6 +28,7 @@
     open?: boolean;
     locale?: Locale;
     visibleSceneIds?: ReadonlySet<string>;
+    backUrl?: string;
   } = $props();
 
   let expandedChapter: string | null = $state(null);
@@ -67,36 +70,49 @@
   data-story-id={storyId}
   class="h-full flex flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out {open ? 'w-[336px]' : 'w-12'}"
 >
-  <!-- Toggle tab -- always visible -->
-  <button
-    onclick={onToggle}
-    class="w-12 h-full flex flex-col items-center shrink-0 justify-start pt-6 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md hover:bg-white transition-colors"
-    aria-label={open ? t.reader.closeActsPanel : t.reader.openActsPanel}
-    aria-expanded={open}
+  <!-- Rail -- always visible: independent Home link above the Acts toggle -->
+  <div
+    class="w-12 h-full flex flex-col items-stretch shrink-0 bg-white/95 backdrop-blur-xl border-r border-white/50 shadow-md"
   >
-    {#if open}
-      <svg
-        class="w-5 h-5 text-slate-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
+    {#if backUrl}
+      <a
+        href={backUrl}
+        class="flex items-center justify-center w-12 h-12 shrink-0 text-slate-600 hover:bg-white hover:text-slate-800 transition-colors"
+        aria-label={t.common.backToHome}
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M15 19l-7-7 7-7"
-        />
-      </svg>
-    {:else}
-      <span
-        class="text-sm font-bold text-slate-600 tracking-wider"
-        style="writing-mode: vertical-rl;"
-      >
-        {t.reader.actPanel}
-      </span>
+        <House size={20} aria-hidden="true" />
+      </a>
     {/if}
-  </button>
+    <button
+      onclick={onToggle}
+      class="w-12 flex-1 flex flex-col items-center justify-start pt-6 hover:bg-white transition-colors"
+      aria-label={open ? t.reader.closeActsPanel : t.reader.openActsPanel}
+      aria-expanded={open}
+    >
+      {#if open}
+        <svg
+          class="w-5 h-5 text-slate-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      {:else}
+        <span
+          class="text-sm font-bold text-slate-600 tracking-wider"
+          style="writing-mode: vertical-rl;"
+        >
+          {t.reader.actPanel}
+        </span>
+      {/if}
+    </button>
+  </div>
 
   <!-- Panel content -- pushes main content -->
   <div

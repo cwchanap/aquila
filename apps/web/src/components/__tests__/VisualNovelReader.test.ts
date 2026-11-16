@@ -338,13 +338,13 @@ describe('VisualNovelReader', () => {
         );
     });
 
-    it('does not own Home or Bookmark controls in Visual mode', () => {
+    it('renders the rail Home link but no Bookmark control in Visual mode', () => {
         setReducedMotion(false);
         renderReader();
 
         expect(
-            screen.queryByRole('link', { name: 'Back to Home' })
-        ).not.toBeInTheDocument();
+            screen.getByRole('link', { name: 'Back to Home' })
+        ).toHaveAttribute('href', '/en/stories');
         expect(
             screen.queryByRole('button', { name: 'Bookmark' })
         ).not.toBeInTheDocument();

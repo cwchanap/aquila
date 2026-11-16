@@ -37,8 +37,7 @@
     "heading": "主選單",
     "startGame": "開始遊戲",
     "settings": "設定",
-    "bookmarks": "📖 書籤",
-    "settingsComingSoon": "設定功能即將推出！"
+    "bookmarks": "📖 書籤"
   },
   "common": {
     "hello": "你好",
@@ -50,8 +49,7 @@
     "backToHome": "← 返回主頁"
   },
   "nav": {
-    "profile": "個人資料",
-    "storyConfig": "故事設定"
+    "profile": "個人資料"
   },
   "adventure": {
     "title": "世界盡頭的月台"

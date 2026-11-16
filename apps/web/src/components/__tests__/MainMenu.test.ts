@@ -13,7 +13,9 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             startGame: 'Start Game',
             bookmarks: 'Bookmarks',
             settings: 'Settings',
-            settingsComingSoon: 'Settings coming soon!',
+        },
+        progress: {
+            title: 'My Progress',
         },
         bookmarks: {
             english: 'English',
@@ -97,12 +99,12 @@ describe('MainMenu', () => {
             expect(screen.getByText('Bookmarks')).toBeInTheDocument();
         });
 
-        it('renders the Settings button', () => {
+        it('renders the My Progress link', () => {
             render(MainMenu, {
                 props: { user: null, locale: 'en' },
             });
 
-            expect(screen.getByText('Settings')).toBeInTheDocument();
+            expect(screen.getByText('My Progress')).toBeInTheDocument();
         });
 
         it('renders English and Chinese language links', () => {
@@ -227,24 +229,55 @@ describe('MainMenu', () => {
         });
     });
 
-    describe('settings button', () => {
-        it('shows settings alert when settings button is clicked', async () => {
+    describe('my progress link', () => {
+        it('points to the locale progress page', () => {
             render(MainMenu, {
                 props: { user: null, locale: 'en' },
             });
 
-            const settingsBtn = screen.getByText('Settings').closest('button');
-            await fireEvent.click(settingsBtn!);
-
-            expect(mockAlert).toHaveBeenCalledWith('Settings coming soon!');
+            const progressLink = screen.getByText('My Progress').closest('a');
+            expect(progressLink).toHaveAttribute('href', '/en/progress');
         });
 
-        it('settings button has correct id', () => {
+        it('uses the document lang locale for the progress href', async () => {
+            document.documentElement.lang = 'ja';
+            render(MainMenu, {
+                props: { user: null, locale: 'ja' },
+            });
+
+            await vi.runAllTimersAsync();
+
+            const progressLink = screen.getByText('My Progress').closest('a');
+            expect(progressLink).toHaveAttribute('href', '/ja/progress');
+        });
+
+        it('orders the actions Start Game → My Progress → Bookmarks', () => {
             render(MainMenu, {
                 props: { user: null, locale: 'en' },
             });
 
-            expect(document.getElementById('settings-btn')).toBeInTheDocument();
+            const start = screen.getByText('Start Game');
+            const progress = screen.getByText('My Progress');
+            const bookmarks = screen.getByText('Bookmarks');
+            expect(
+                start.compareDocumentPosition(progress) &
+                    Node.DOCUMENT_POSITION_FOLLOWING
+            ).toBeTruthy();
+            expect(
+                progress.compareDocumentPosition(bookmarks) &
+                    Node.DOCUMENT_POSITION_FOLLOWING
+            ).toBeTruthy();
+        });
+
+        it('does not render the retired Settings control', () => {
+            render(MainMenu, {
+                props: { user: null, locale: 'en' },
+            });
+
+            expect(
+                document.getElementById('settings-btn')
+            ).not.toBeInTheDocument();
+            expect(screen.queryByText('Settings')).not.toBeInTheDocument();
         });
     });
 

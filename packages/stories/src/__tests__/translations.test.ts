@@ -167,6 +167,31 @@ describe('translations', () => {
             );
         });
 
+        it('retains the desktop menu.settings and adventure.title keys in every locale', () => {
+            for (const locale of ['en', 'zh', 'ja'] as const) {
+                const t = getTranslations(locale);
+                expect(t.menu.settings, `${locale}.menu.settings`).toBeTruthy();
+                expect(
+                    t.adventure.title,
+                    `${locale}.adventure.title`
+                ).toBeTruthy();
+            }
+        });
+
+        it('drops the retired web menu.settingsComingSoon and nav.storyConfig keys', () => {
+            for (const locale of ['en', 'zh', 'ja'] as const) {
+                const t = getTranslations(locale);
+                expect(
+                    'settingsComingSoon' in t.menu,
+                    `${locale}.menu.settingsComingSoon`
+                ).toBe(false);
+                expect(
+                    'storyConfig' in t.nav,
+                    `${locale}.nav.storyConfig`
+                ).toBe(false);
+            }
+        });
+
         it('falls back to English for an unknown locale (exercises the || branch)', () => {
             // Cast to bypass TypeScript's Locale type restriction to cover the fallback branch
             const t = getTranslations('fr' as Locale);

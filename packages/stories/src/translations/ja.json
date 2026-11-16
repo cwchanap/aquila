@@ -37,8 +37,7 @@
     "heading": "メインメニュー",
     "startGame": "ゲームを始める",
     "settings": "設定",
-    "bookmarks": "📖 しおり",
-    "settingsComingSoon": "設定は近日公開予定です！"
+    "bookmarks": "📖 しおり"
   },
   "common": {
     "hello": "こんにちは",
@@ -50,8 +49,7 @@
     "backToHome": "← ホームに戻る"
   },
   "nav": {
-    "profile": "プロフィール",
-    "storyConfig": "物語の設定"
+    "profile": "プロフィール"
   },
   "adventure": {
     "title": "世界の果てのホーム"

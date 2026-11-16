@@ -170,11 +170,11 @@
               {t(currentLocale, 'nav.profile')}
             </a>
             <a
-              href={`/${currentLocale}/characters`}
+              href={`/${currentLocale}/progress`}
               class="block px-4 py-3 text-sm text-slate-700 hover:bg-slate-100/60 hover:text-slate-900 transition-colors duration-200 rounded-lg mx-2 font-medium"
               style="font-family: 'Exo 2', sans-serif;"
             >
-              {t(currentLocale, 'nav.storyConfig')}
+              {t(currentLocale, 'progress.title')}
             </a>
             <div class="border-t border-slate-200/60 my-2 mx-2"></div>
             <form

@@ -39,6 +39,7 @@
     secondLang = undefined,
     furigana = true,
     visibleSceneIds,
+    backUrl,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -61,6 +62,7 @@
     /** Show furigana over Japanese text that has it. */
     furigana?: boolean;
     visibleSceneIds?: ReadonlySet<string>;
+    backUrl?: string;
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -287,6 +289,7 @@
           }
         }}
         {locale}
+        {backUrl}
       />
     {/if}
   </aside>

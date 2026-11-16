@@ -8,10 +8,8 @@ export const EMAIL_REGEX =
 
 export const USERNAME_MIN_LENGTH = 3;
 export const USERNAME_MAX_LENGTH = 50;
-export const CHARACTER_NAME_MAX_LENGTH = 50;
 
 export const USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/;
-export const CHARACTER_NAME_REGEX = /^[\p{L}\p{N}\p{M} _.-]+$/u;
 
 // Error messages
 export const ERROR_MESSAGES = {
@@ -28,25 +26,14 @@ export const ERROR_MESSAGES = {
         tooLong: 'username.tooLong',
         invalidChars: 'username.invalidChars',
     },
-    characterName: {
-        notString: 'characterName.notString',
-        empty: 'characterName.empty',
-        tooLong: 'characterName.tooLong',
-        invalidChars: 'characterName.invalidChars',
-    },
 } as const;
 
 type EmailErrorKey =
     (typeof ERROR_MESSAGES.email)[keyof typeof ERROR_MESSAGES.email];
 type UsernameErrorKey =
     (typeof ERROR_MESSAGES.username)[keyof typeof ERROR_MESSAGES.username];
-type CharacterNameErrorKey =
-    (typeof ERROR_MESSAGES.characterName)[keyof typeof ERROR_MESSAGES.characterName];
 
-export type ValidationErrorKey =
-    | EmailErrorKey
-    | UsernameErrorKey
-    | CharacterNameErrorKey;
+export type ValidationErrorKey = EmailErrorKey | UsernameErrorKey;
 
 export type ValidationTranslations = {
     email: {
@@ -59,12 +46,6 @@ export type ValidationTranslations = {
         notString: string;
         required: string;
         tooShort: string;
-        tooLong: string;
-        invalidChars: string;
-    };
-    characterName: {
-        notString: string;
-        empty: string;
         tooLong: string;
         invalidChars: string;
     };
@@ -90,14 +71,6 @@ const VALIDATION_MESSAGE_MAP: Record<
         translations.username.tooLong,
     [ERROR_MESSAGES.username.invalidChars]: translations =>
         translations.username.invalidChars,
-    [ERROR_MESSAGES.characterName.notString]: translations =>
-        translations.characterName.notString,
-    [ERROR_MESSAGES.characterName.empty]: translations =>
-        translations.characterName.empty,
-    [ERROR_MESSAGES.characterName.tooLong]: translations =>
-        translations.characterName.tooLong,
-    [ERROR_MESSAGES.characterName.invalidChars]: translations =>
-        translations.characterName.invalidChars,
 };
 
 export function resolveValidationMessage(
@@ -142,35 +115,6 @@ export function validateUsername(username: unknown): ValidationErrorKey | null {
         return ERROR_MESSAGES.username.invalidChars;
     }
     return null;
-}
-
-export type CharacterNameValidationResult =
-    | { valid: true; sanitizedName: string }
-    | { valid: false; errorKey: CharacterNameErrorKey };
-
-export function validateCharacterName(
-    name: unknown
-): CharacterNameValidationResult {
-    if (typeof name !== 'string') {
-        return {
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.notString,
-        };
-    }
-    const trimmed = name.trim();
-    if (trimmed.length === 0) {
-        return { valid: false, errorKey: ERROR_MESSAGES.characterName.empty };
-    }
-    if (trimmed.length > CHARACTER_NAME_MAX_LENGTH) {
-        return { valid: false, errorKey: ERROR_MESSAGES.characterName.tooLong };
-    }
-    if (!CHARACTER_NAME_REGEX.test(trimmed)) {
-        return {
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.invalidChars,
-        };
-    }
-    return { valid: true, sanitizedName: trimmed };
 }
 
 export function validateStoryId<T extends string>(

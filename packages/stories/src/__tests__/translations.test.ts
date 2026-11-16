@@ -53,7 +53,7 @@ describe('translations', () => {
 
         it('has character-related translations', () => {
             const en = getTranslations('en');
-            expect(en.characters).toBeDefined();
+            expect(en.characterNames).toBeDefined();
         });
 
         it('has localized reader story-load messages in both locales', () => {
@@ -90,7 +90,6 @@ describe('translations', () => {
             const en = getTranslations('en');
             expect(en.email).toBeDefined();
             expect(en.username).toBeDefined();
-            expect(en.characterName).toBeDefined();
         });
 
         it('provides story-map labels and the Acts range in every locale', () => {

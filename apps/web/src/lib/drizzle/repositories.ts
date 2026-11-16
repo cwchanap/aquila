@@ -2,7 +2,6 @@ import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { BaseRepository } from './base-repository.js';
 import {
     users,
-    characterSetups,
     stories,
     chapters,
     scenes,
@@ -11,8 +10,6 @@ import {
     readingProgress,
     type User,
     type NewUser,
-    type CharacterSetup,
-    type NewCharacterSetup,
     type Story,
     type NewStory,
     type Chapter,
@@ -88,68 +85,6 @@ export class UserRepository extends BaseRepository<typeof users, User> {
     }
 }
 
-// ============= Character Setup Repository =============
-export class CharacterSetupRepository extends BaseRepository<
-    typeof characterSetups,
-    CharacterSetup
-> {
-    protected table = characterSetups;
-    protected idColumn = characterSetups.id;
-
-    async create(
-        data: Omit<NewCharacterSetup, 'id' | 'createdAt' | 'updatedAt'>
-    ) {
-        const id = nanoid();
-        const [setup] = await this.db
-            .insert(characterSetups)
-            .values({
-                id,
-                ...data,
-            })
-            .returning();
-        return setup;
-    }
-
-    async findByUserAndStory(userId: string, storyId: string) {
-        const [setup] = await this.db
-            .select()
-            .from(characterSetups)
-            .where(
-                and(
-                    eq(characterSetups.userId, userId),
-                    eq(characterSetups.storyId, storyId)
-                )
-            )
-            .limit(1);
-        return setup;
-    }
-
-    async findByUser(userId: string) {
-        return await this.db
-            .select()
-            .from(characterSetups)
-            .where(eq(characterSetups.userId, userId))
-            .orderBy(desc(characterSetups.createdAt));
-    }
-
-    async update(
-        id: string,
-        data: Partial<
-            Omit<CharacterSetup, 'id' | 'createdAt' | 'userId' | 'storyId'>
-        >
-    ) {
-        const [setup] = await this.db
-            .update(characterSetups)
-            .set({
-                ...data,
-                updatedAt: new Date(),
-            })
-            .where(eq(characterSetups.id, id))
-            .returning();
-        return setup;
-    }
-}
-
 // ============= Story Repository =============
 export class StoryRepository extends BaseRepository<typeof stories, Story> {
     protected table = stories;
@@ -180,9 +115,7 @@ export class StoryRepository extends BaseRepository<typeof stories, Story> {
      *  removes a row: bookmarks go by story id alone (any signed-in user can
      *  bookmark any story id — the bookmark API does not check story
      *  ownership), so a no-op story delete must not wipe other users'
-     *  bookmarks. Character setups keep the owner scope: the setup API only
-     *  accepts compiled story ids, so a setup can never carry a Story Writer
-     *  id anyway. */
+     *  bookmarks. */
     async deleteWithDependents(id: string, userId: string): Promise<boolean> {
         return await this.db.transaction(async tx => {
             const deleted = await tx
@@ -191,14 +124,6 @@ export class StoryRepository extends BaseRepository<typeof stories, Story> {
                 .returning({ id: stories.id });
             if (deleted.length === 0) return false;
             await tx.delete(bookmarks).where(eq(bookmarks.storyId, id));
-            await tx
-                .delete(characterSetups)
-                .where(
-                    and(
-                        eq(characterSetups.userId, userId),
-                        eq(characterSetups.storyId, id)
-                    )
-                );
             return true;
         });
     }
@@ -482,7 +407,7 @@ export class ReadingProgressRepository extends BaseRepository<
     /**
      * Merge a client map into the account's stored map atomically. Locking the
      * user row (rather than the progress row) serializes two first-time writes
-     * without blocking FK-checked session/bookmark/character inserts.
+     * without blocking FK-checked session/bookmark inserts.
      */
     async mergeForUser(
         userId: string,

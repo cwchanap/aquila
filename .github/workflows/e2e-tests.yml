@@ -71,8 +71,9 @@ jobs:
         run: bun run drizzle:migrate
 
       - name: Run reading-progress real-Postgres tests
-        # Opt-in suite: proves the FOR NO KEY UPDATE merge and the
-        # compiled-story bookmark/character writes against the migrated job DB.
+        # Opt-in suite: proves the FOR NO KEY UPDATE merge, compiled-story
+        # bookmark writes, the character_setups drop, and scoped story
+        # deletion against the migrated job DB.
         working-directory: apps/web
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}

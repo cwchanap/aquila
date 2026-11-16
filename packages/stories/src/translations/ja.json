@@ -32,12 +32,6 @@
     "tooLong": "ユーザー名は 50 文字以内で入力してください",
     "invalidChars": "ユーザー名に使えるのは英字、数字、アンダースコア、ハイフンのみです"
   },
-  "characterName": {
-    "notString": "キャラクター名は文字列で入力してください",
-    "empty": "キャラクター名を入力してください",
-    "tooLong": "キャラクター名は 50 文字以内で入力してください",
-    "invalidChars": "キャラクター名に使用できない文字が含まれています。使えるのは文字、数字、スペース、一部の記号のみです。"
-  },
   "menu": {
     "title": "メインメニュー - ゲームアプリ",
     "heading": "メインメニュー",
@@ -59,19 +53,8 @@
     "profile": "プロフィール",
     "storyConfig": "物語の設定"
   },
-  "setup": {
-    "title": "キャラクター設定",
-    "heading": "キャラクターを設定",
-    "characterName": "主人公の名前：",
-    "placeholder": "キャラクターの名前を入力",
-    "startAdventure": "冒険を始める",
-    "saving": "保存中...",
-    "enterName": "キャラクターの名前を入力してください",
-    "saveFailed": "キャラクター設定を保存できませんでした。もう一度お試しください。"
-  },
   "adventure": {
-    "title": "世界の果てのホーム",
-    "desktop_only_notice": "世界の果てのホームは現在デスクトップアプリでのみ遊べます。デスクトップ版をダウンロードして旅を続けてください。"
+    "title": "世界の果てのホーム"
   },
   "stories": {
     "title": "物語を選ぶ",
@@ -132,30 +115,6 @@
     "day4012Desc": "定期メンテナンスだと、それは言った。嘘だった。この先を決めるのは、それではないから。",
     "onePotBeforeDawn": "夜明け前の一煎",
     "onePotBeforeDawnDesc": "一煎目は必ず捨てる。夜明け前、二人の本音を聞いたのは彼女だけ。"
-  },
-  "characters": {
-    "title": "マイキャラクター",
-    "heading": "マイキャラクター",
-    "subtitle": "物語の仲間たち",
-    "description": "物語ごとに設定したキャラクターの一覧です。",
-    "noCharacters": "まだキャラクターが設定されていません",
-    "loadFailed": "キャラクターを読み込めませんでした",
-    "loadFailedDescription": "一時的なエラーで保存済みのキャラクターを読み込めませんでした。データは安全です。しばらくしてからもう一度お試しください。",
-    "retry": "再試行",
-    "startFirstStory": "最初の物語を始める",
-    "guestDescription": "ログインするとキャラクターを保存できます。下にはこの端末のキャラクターが表示されます。",
-    "loadingLocal": "端末のキャラクターを読み込み中...",
-    "noLocalCharacters": "端末にキャラクターがありません",
-    "signInToSave": "ログインしてキャラクターを保存",
-    "playStory": "物語を遊ぶ",
-    "edit": "編集",
-    "save": "保存",
-    "cancel": "キャンセル",
-    "nameRequired": "キャラクター名を入力してください",
-    "updateFailed": "キャラクター名を更新できませんでした。もう一度お試しください。",
-    "errorLoadingLocalCharacters": "端末のキャラクターを読み込めませんでした",
-    "invalidName": "キャラクター名に使用できない文字が含まれています。",
-    "invalidStoryId": "有効な物語 ID が必要です"
   },
   "characterNames": {
     "narrator": "ナレーション",

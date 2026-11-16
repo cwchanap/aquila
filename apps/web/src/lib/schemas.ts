@@ -123,15 +123,6 @@ export const ChapterCreateSchema = z.object({
 
 export type ChapterCreate = z.infer<typeof ChapterCreateSchema>;
 
-// Character setup schemas
-export const CharacterSetupSchema = z.object({
-    characterName: z.string().min(1, 'Character name is required').max(50),
-    storyId: z.string().min(1, 'Story ID is required'),
-    locale: z.enum(LOCALE_ENUM).default('en'),
-});
-
-export type CharacterSetup = z.infer<typeof CharacterSetupSchema>;
-
 // Reading progress sync schemas
 export const ProgressSyncSchema = z.object({
     // Envelope shape only; individual records are sanitized by

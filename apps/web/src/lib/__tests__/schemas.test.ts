@@ -7,7 +7,6 @@ import {
     BookmarkCreateSchema,
     BookmarkUpdateSchema,
     UserUpdateSchema,
-    CharacterSetupSchema,
 } from '../schemas';
 
 const validSceneBase = {
@@ -315,67 +314,6 @@ describe('UserUpdateSchema', () => {
 
     it('rejects an empty name when provided', () => {
         const result = UserUpdateSchema.safeParse({ name: '' });
-        expect(result.success).toBe(false);
-    });
-});
-
-describe('CharacterSetupSchema', () => {
-    it('accepts a valid setup with default locale', () => {
-        const result = CharacterSetupSchema.safeParse({
-            characterName: 'Hero',
-            storyId: 'train_adventure',
-        });
-        expect(result.success).toBe(true);
-        if (result.success) expect(result.data.locale).toBe('en');
-    });
-
-    it('accepts zh locale', () => {
-        const result = CharacterSetupSchema.safeParse({
-            characterName: 'Hero',
-            storyId: 'train_adventure',
-            locale: 'zh',
-        });
-        expect(result.success).toBe(true);
-        if (result.success) expect(result.data.locale).toBe('zh');
-    });
-
-    it('rejects empty characterName', () => {
-        const result = CharacterSetupSchema.safeParse({
-            characterName: '',
-            storyId: 'train_adventure',
-        });
-        expect(result.success).toBe(false);
-    });
-
-    it('rejects characterName longer than 50 characters', () => {
-        const result = CharacterSetupSchema.safeParse({
-            characterName: 'a'.repeat(51),
-            storyId: 'train_adventure',
-        });
-        expect(result.success).toBe(false);
-    });
-
-    it('accepts characterName exactly 50 characters', () => {
-        const result = CharacterSetupSchema.safeParse({
-            characterName: 'a'.repeat(50),
-            storyId: 'train_adventure',
-        });
-        expect(result.success).toBe(true);
-    });
-
-    it('rejects missing storyId', () => {
-        const result = CharacterSetupSchema.safeParse({
-            characterName: 'Hero',
-        });
-        expect(result.success).toBe(false);
-    });
-
-    it('rejects invalid locale', () => {
-        const result = CharacterSetupSchema.safeParse({
-            characterName: 'Hero',
-            storyId: 'train_adventure',
-            locale: 'fr',
-        });
         expect(result.success).toBe(false);
     });
 });

@@ -4,10 +4,9 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { randomUUID, webcrypto } from 'node:crypto';
 import * as schema from '../schema';
-import { bookmarks, characterSetups, readingProgress, users } from '../schema';
+import { bookmarks, readingProgress, users } from '../schema';
 import {
     BookmarkRepository,
-    CharacterSetupRepository,
     ReadingProgressRepository,
     StoryRepository,
 } from '../repositories';
@@ -65,8 +64,8 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
 
     afterAll(async () => {
         crypto.getRandomValues = stubbedGetRandomValues;
-        // Deleting the user cascades to reading_progress, bookmarks and
-        // character_setups, so the disposable database keeps no test data.
+        // Deleting the user cascades to reading_progress and bookmarks,
+        // so the disposable database keeps no test data.
         if (database && userId) {
             await database.delete(users).where(eq(users.id, userId));
         }
@@ -176,23 +175,58 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
         });
     }, 30_000);
 
-    it('stores a compiled-story character setup without a Story Writer row', async () => {
-        const repo = new CharacterSetupRepository(database);
-
-        const saved = await repo.create({
-            userId,
-            storyId: 'train_adventure',
-            characterName: 'Hana',
-        });
-
-        const setup = await repo.findByUserAndStory(userId, 'train_adventure');
-        expect(setup).toMatchObject({
-            id: saved.id,
-            characterName: 'Hana',
-        });
+    it('reports the retired character_setups table as dropped', async () => {
+        const { rows } = await pool.query<{ reg: string | null }>(
+            `SELECT to_regclass('public.character_setups') AS reg`
+        );
+        expect(rows).toHaveLength(1);
+        expect(rows[0].reg).toBeNull();
     }, 30_000);
 
-    it('deletes a story with its bookmarks and character setups', async () => {
+    it("leaves another user's story and its bookmarks untouched", async () => {
+        const storyId = `unauth-${randomUUID()}`;
+        const otherUserId = `hpa703-other-${randomUUID()}`;
+        await database.insert(users).values({
+            id: otherUserId,
+            email: `${otherUserId}@example.invalid`,
+        });
+        try {
+            await database.insert(schema.stories).values({
+                id: storyId,
+                userId: otherUserId,
+                title: 'Someone else story',
+                status: 'draft',
+            });
+            const bookmarkRepo = new BookmarkRepository(database);
+            await bookmarkRepo.create({
+                userId,
+                storyId,
+                sceneId: 'scene-1',
+                bookmarkName: 'Story bookmark',
+                locale: 'en',
+            });
+
+            const storyRepo = new StoryRepository(database);
+            expect(await storyRepo.deleteWithDependents(storyId, userId)).toBe(
+                false
+            );
+
+            // The story row and every bookmark keyed by it survive a
+            // delete the owner check rejected.
+            expect(await storyRepo.findById(storyId)).toBeDefined();
+            expect(
+                await database
+                    .select()
+                    .from(bookmarks)
+                    .where(eq(bookmarks.storyId, storyId))
+            ).toHaveLength(1);
+        } finally {
+            // The second user's story cascades on user delete.
+            await database.delete(users).where(eq(users.id, otherUserId));
+        }
+    }, 30_000);
+
+    it('deletes a story with its bookmarks across owners', async () => {
         const storyId = `del-${randomUUID()}`;
         const otherUserId = `hpa703-other-${randomUUID()}`;
         await database.insert(users).values({
@@ -232,11 +266,6 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
                 bookmarkName: 'Someone else bookmark',
                 locale: 'en',
             });
-            await new CharacterSetupRepository(database).create({
-                userId,
-                storyId,
-                characterName: 'Hana',
-            });
 
             const storyRepo = new StoryRepository(database);
             expect(await storyRepo.deleteWithDependents(storyId, userId)).toBe(
@@ -250,17 +279,6 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
                     .select()
                     .from(bookmarks)
                     .where(eq(bookmarks.storyId, storyId))
-            ).toEqual([]);
-            expect(
-                await database
-                    .select()
-                    .from(characterSetups)
-                    .where(
-                        and(
-                            eq(characterSetups.userId, userId),
-                            eq(characterSetups.storyId, storyId)
-                        )
-                    )
             ).toEqual([]);
             const compiledBookmarks = await database
                 .select()

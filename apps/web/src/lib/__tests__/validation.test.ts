@@ -2,15 +2,12 @@ import { describe, it, expect } from 'vitest';
 import {
     validateEmail,
     validateUsername,
-    validateCharacterName,
     validateStoryId,
     resolveValidationMessage,
     EMAIL_REGEX,
     USERNAME_REGEX,
-    CHARACTER_NAME_REGEX,
     USERNAME_MIN_LENGTH,
     USERNAME_MAX_LENGTH,
-    CHARACTER_NAME_MAX_LENGTH,
     ERROR_MESSAGES,
     type ValidationTranslations,
 } from '../validation';
@@ -28,23 +25,9 @@ describe('Validation Constants', () => {
         expect(USERNAME_REGEX.test('user-name')).toBe(true);
     });
 
-    it('should have correct character name regex pattern', () => {
-        expect(CHARACTER_NAME_REGEX).toBeInstanceOf(RegExp);
-        // Test that the regex matches valid character names
-        expect(CHARACTER_NAME_REGEX.test('John Doe')).toBe(true);
-        expect(CHARACTER_NAME_REGEX.test('Jane-Marie')).toBe(true);
-        expect(CHARACTER_NAME_REGEX.test('Dr. Smith')).toBe(true);
-        expect(CHARACTER_NAME_REGEX.test('王小明')).toBe(true);
-        expect(CHARACTER_NAME_REGEX.test('Zoë Álvarez')).toBe(true);
-    });
-
     it('should have correct username length constraints', () => {
         expect(USERNAME_MIN_LENGTH).toBe(3);
         expect(USERNAME_MAX_LENGTH).toBe(50);
-    });
-
-    it('should have correct character name length constraint', () => {
-        expect(CHARACTER_NAME_MAX_LENGTH).toBe(50);
     });
 });
 
@@ -177,202 +160,6 @@ describe('validateUsername', () => {
     });
 });
 
-describe('validateCharacterName', () => {
-    const validNames = [
-        'Hero',
-        'John Doe',
-        'Jane-Marie',
-        'Dr. Smith',
-        'Mr. Anderson',
-        'Test 123',
-        'A B C',
-        '王小明',
-        'Zoë Álvarez',
-        'Łukasz Kowalski',
-        'A'.repeat(50), // Exactly 50 characters
-    ];
-
-    it('should return valid true for valid character names', () => {
-        validNames.forEach(name => {
-            const result = validateCharacterName(name);
-            expect(result).toEqual({
-                valid: true,
-                sanitizedName: name.trim(),
-            });
-        });
-    });
-
-    it('should return sanitizedName (trimmed) for names with leading/trailing whitespace', () => {
-        expect(validateCharacterName('  John  ')).toEqual({
-            valid: true,
-            sanitizedName: 'John',
-        });
-        expect(validateCharacterName(' John Doe ')).toEqual({
-            valid: true,
-            sanitizedName: 'John Doe',
-        });
-    });
-
-    it('should return valid false with notString error for non-string input', () => {
-        expect(validateCharacterName(null)).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.notString,
-        });
-        expect(validateCharacterName(undefined)).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.notString,
-        });
-        expect(validateCharacterName(123)).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.notString,
-        });
-    });
-
-    it('should return valid false with empty error for empty string', () => {
-        expect(validateCharacterName('')).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.empty,
-        });
-        expect(validateCharacterName('   ')).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.empty,
-        });
-    });
-
-    it('should return valid false with tooLong error for names exceeding maximum length', () => {
-        const tooLong = 'a'.repeat(51);
-        expect(validateCharacterName(tooLong)).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.tooLong,
-        });
-    });
-
-    it('should return valid false with invalidChars error for names with invalid characters', () => {
-        expect(validateCharacterName('John@Doe')).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.invalidChars,
-        });
-        expect(validateCharacterName('John#Doe')).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.invalidChars,
-        });
-        expect(validateCharacterName('John&Doe')).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.invalidChars,
-        });
-        expect(validateCharacterName('John*Doe')).toEqual({
-            valid: false,
-            errorKey: ERROR_MESSAGES.characterName.invalidChars,
-        });
-    });
-
-    it('should allow valid special characters', () => {
-        expect(validateCharacterName('John-Doe')).toEqual({
-            valid: true,
-            sanitizedName: 'John-Doe',
-        });
-        expect(validateCharacterName('John.Doe')).toEqual({
-            valid: true,
-            sanitizedName: 'John.Doe',
-        });
-        expect(validateCharacterName('John Doe')).toEqual({
-            valid: true,
-            sanitizedName: 'John Doe',
-        });
-        expect(validateCharacterName('John_Doe')).toEqual({
-            valid: true,
-            sanitizedName: 'John_Doe',
-        });
-    });
-
-    describe('XSS prevention', () => {
-        it('should reject names with HTML tags', () => {
-            expect(
-                validateCharacterName('<script>alert("xss")</script>')
-            ).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(
-                validateCharacterName('<img src=x onerror=alert(1)>')
-            ).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('<div>John</div>')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(
-                validateCharacterName('</script><script>alert(1)</script>')
-            ).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-        });
-
-        it('should reject names with HTML entities', () => {
-            expect(validateCharacterName('&lt;script&gt;')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('&#60;script&#62;')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('&#x3C;script&#x3E;')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-        });
-
-        it('should reject names with JavaScript event handlers', () => {
-            expect(validateCharacterName('onerror=alert(1)')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('onclick="hack()"')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('onload=malicious()')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-        });
-
-        it('should reject names with angle brackets', () => {
-            expect(validateCharacterName('John<Doe')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('John>Doe')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('<>John<>')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-        });
-
-        it('should reject names with quotes that could break attributes', () => {
-            expect(validateCharacterName('John"Doe')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName("John'Doe")).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-            expect(validateCharacterName('John`Doe')).toEqual({
-                valid: false,
-                errorKey: ERROR_MESSAGES.characterName.invalidChars,
-            });
-        });
-    });
-});
-
 describe('resolveValidationMessage', () => {
     const mockTranslations: ValidationTranslations = {
         email: {
@@ -387,12 +174,6 @@ describe('resolveValidationMessage', () => {
             tooShort: 'Username is too short',
             tooLong: 'Username is too long',
             invalidChars: 'Username has invalid characters',
-        },
-        characterName: {
-            notString: 'Name must be a string',
-            empty: 'Name cannot be empty',
-            tooLong: 'Name is too long',
-            invalidChars: 'Name has invalid characters',
         },
     };
 
@@ -475,42 +256,6 @@ describe('resolveValidationMessage', () => {
                 ERROR_MESSAGES.username.invalidChars
             )
         ).toBe('Username has invalid characters');
-    });
-
-    it('resolves characterName.notString message', () => {
-        expect(
-            resolveValidationMessage(
-                mockTranslations,
-                ERROR_MESSAGES.characterName.notString
-            )
-        ).toBe('Name must be a string');
-    });
-
-    it('resolves characterName.empty message', () => {
-        expect(
-            resolveValidationMessage(
-                mockTranslations,
-                ERROR_MESSAGES.characterName.empty
-            )
-        ).toBe('Name cannot be empty');
-    });
-
-    it('resolves characterName.tooLong message', () => {
-        expect(
-            resolveValidationMessage(
-                mockTranslations,
-                ERROR_MESSAGES.characterName.tooLong
-            )
-        ).toBe('Name is too long');
-    });
-
-    it('resolves characterName.invalidChars message', () => {
-        expect(
-            resolveValidationMessage(
-                mockTranslations,
-                ERROR_MESSAGES.characterName.invalidChars
-            )
-        ).toBe('Name has invalid characters');
     });
 });
 

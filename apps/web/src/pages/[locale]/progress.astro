@@ -1,0 +1,71 @@
+---
+import MainLayout from '../../layouts/main.astro';
+import OceanBackground from '../../components/OceanBackground.astro';
+import UserStatus from '../../components/UserStatus.svelte';
+import AuthDegradedBanner from '../../components/AuthDegradedBanner.astro';
+import MyProgress from '../../components/MyProgress.svelte';
+import type { Locale } from '@aquila/stories';
+import { isLocale } from '@aquila/stories/translations';
+import { authStateFromSession, getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '../../lib/auth-utils.js';
+import { t as translate } from '../../lib/utils';
+
+interface Props {
+  locale?: string;
+}
+
+const rawLocale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
+const locale: Locale = isLocale(rawLocale) ? rawLocale : 'en';
+const t = (key: string) => translate(locale, key);
+
+const sessionResult = await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS });
+const user = sessionResult.status === 'ok' ? sessionResult.user : null;
+const authFailed = sessionResult.status === 'error';
+const authState = authStateFromSession(sessionResult);
+---
+
+<MainLayout title={t("progress.title")}>
+  {authFailed && <AuthDegradedBanner message={t('auth.degradedBanner')} />}
+  <OceanBackground>
+
+    <!-- Back button — refined glass pill -->
+    <a
+      href={`/${locale}/`}
+      aria-label={t("common.backLabel")}
+      class="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-white/40 text-white/80 hover:text-white transition-all duration-300 motion-safe:hover:scale-105 text-sm font-light tracking-wide"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>{t("common.back")}</span>
+    </a>
+
+    <!-- User status -->
+    <UserStatus client:load user={user} currentLocale={locale} />
+
+    <!-- Main content -->
+    <div class="min-h-screen flex flex-col items-center px-4 sm:px-6 py-24">
+
+      <!-- Header -->
+      <div class="text-center mb-12 motion-safe:animate-[fadeSlideDown_0.7s_ease_forwards]">
+        <!-- Ambient divider above -->
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <div class="h-px w-16 bg-linear-to-r from-transparent to-cyan-300/50"></div>
+          <!-- Subtle accent: slow-drifting tide mark -->
+          <div class="w-2 h-2 rounded-full bg-cyan-300/60 motion-safe:animate-[tidePulse_4s_ease-in-out_infinite]"></div>
+          <div class="h-px w-16 bg-linear-to-l from-transparent to-cyan-300/50"></div>
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl font-serif font-bold text-white/95 tracking-tight drop-shadow-lg mb-3">
+          {t("progress.heading")}
+        </h1>
+        <p class="text-white/50 text-sm tracking-[0.25em] uppercase font-light">
+          {t("progress.tagline")}
+        </p>
+      </div>
+
+      <MyProgress client:load locale={locale} authState={authState} userId={user?.id ?? null} />
+
+    </div>
+
+  </OceanBackground>
+</MainLayout>

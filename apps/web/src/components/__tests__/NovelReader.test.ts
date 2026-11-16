@@ -661,6 +661,18 @@ describe('NovelReader — navigation buttons', () => {
         expect(onOpenChoice).toHaveBeenCalledTimes(1);
         expect(onNext).not.toHaveBeenCalled();
     });
+
+    it('hides the advance button when a choice scene has no dialogue lines', async () => {
+        renderReader({
+            dialogue: [],
+            dialogueIndex: 0,
+            canGoNext: false,
+            choice: mockChoice,
+        });
+        await vi.runAllTimersAsync();
+        expect(screen.queryByRole('button', { name: 'Complete' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Choose' })).toBeNull();
+    });
 });
 
 describe('NovelReader — bookmark & progress', () => {

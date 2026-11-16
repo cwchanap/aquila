@@ -20,7 +20,6 @@
     secondLang = undefined,
     furigana = true,
     t,
-    restoreFocus = null,
     onSelect,
     onClose,
   }: {
@@ -32,12 +31,11 @@
     secondLang?: string;
     furigana?: boolean;
     t: Translations;
-    restoreFocus?: HTMLElement | null;
     onSelect: (nextScene: string) => void;
     onClose: () => void;
   } = $props();
 
-  const ROUTE_LETTERS = ['A', 'B', 'C', 'D'];
+  const MAX_SHORTCUT_KEYS = 4;
   const ROUTE_WIDTHS = [
     '',
     'sm:max-w-[440px]',
@@ -47,7 +45,8 @@
   ];
 
   let headingEl = $state<HTMLElement | null>(null);
-  let picked = $state(false);
+  let openToken = $derived(open ? {} : null);
+  let pickedToken: object | null = null;
   let activeRoute = $state<number | null>(null);
 
   let options = $derived(choice.options);
@@ -62,18 +61,24 @@
   );
   let fanMid = $derived(options.length / 2);
 
-  $effect(() => {
-    if (open) {
-      picked = false;
+  $effect.pre(() => {
+    if (!open) {
       activeRoute = null;
     }
   });
 
+  function routeLetter(index: number): string {
+    return index >= 0 && index < 26
+      ? String.fromCharCode(65 + index)
+      : String(index + 1);
+  }
+
   function routeLabel(index: number): string {
-    return t.reader.crossroads.route.replace(
-      '{letter}',
-      ROUTE_LETTERS[index] ?? String(index + 1)
-    );
+    return t.reader.crossroads.route.replace('{letter}', routeLetter(index));
+  }
+
+  function hasShortcut(index: number): boolean {
+    return index < MAX_SHORTCUT_KEYS;
   }
 
   function keyHint(index: number): string {
@@ -81,8 +86,8 @@
   }
 
   function select(option: ChoiceOptionDefinition): void {
-    if (picked) return;
-    picked = true;
+    if (!openToken || pickedToken === openToken) return;
+    pickedToken = openToken;
     onSelect(option.nextScene);
   }
 
@@ -131,7 +136,6 @@
     data-testid="crossroads-dialog"
     use:focusTrap={{
       enabled: true,
-      restoreFocus,
       initialFocus: () => headingEl,
     }}
     class="pointer-events-none fixed inset-0 z-[96] flex flex-col text-slate-50"
@@ -218,7 +222,7 @@
                 <Button
                   variant="menu"
                   data-testid="crossroads-route"
-                  aria-keyshortcuts={String(i + 1)}
+                  aria-keyshortcuts={hasShortcut(i) ? String(i + 1) : undefined}
                   className="route-card relative flex h-auto min-h-11 w-full flex-col gap-1.5 overflow-visible rounded-2xl border border-white/20 bg-white/[0.07] bg-none px-4 py-3.5 text-left text-base font-normal normal-case tracking-normal text-slate-50 shadow-none backdrop-blur-md transition-[border-color,background-color,transform,box-shadow] duration-150 hover:-translate-y-[3px] hover:scale-100 hover:border-cyan-300 hover:bg-cyan-400/10 hover:shadow-[0_0_0_4px_rgba(34,211,238,0.12),0_20px_40px_rgba(0,0,0,0.35)] focus:ring-0 focus:ring-opacity-100 focus-visible:outline-none focus-visible:border-cyan-300 focus-visible:bg-cyan-400/10 focus-visible:ring-2 focus-visible:ring-cyan-300/70 sm:min-h-[132px] sm:gap-2.5 sm:rounded-[20px] sm:px-[22px] sm:pb-[18px] sm:pt-[22px]"
                   onclick={() => select(option)}
                   onmouseenter={() => (activeRoute = i)}
@@ -230,11 +234,13 @@
                     class="flex items-center justify-between gap-2 text-[12px] font-bold uppercase tracking-[0.14em] text-cyan-200"
                   >
                     <span>{routeLabel(i)}</span>
-                    <i
-                      class="hidden not-italic text-[13px] font-semibold normal-case tracking-normal text-slate-200/60 sm:block"
-                      aria-hidden="true">{i + 1}</i
-                    >
-                    <span class="sr-only">{keyHint(i)}</span>
+                    {#if hasShortcut(i)}
+                      <i
+                        class="hidden not-italic text-[13px] font-semibold normal-case tracking-normal text-slate-200/60 sm:block"
+                        aria-hidden="true">{i + 1}</i
+                      >
+                      <span class="sr-only">{keyHint(i)}</span>
+                    {/if}
                   </span>
                   <span
                     class="wrap-anywhere font-serif text-[19px] font-semibold leading-snug sm:text-[23px]"

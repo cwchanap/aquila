@@ -12,8 +12,8 @@
   import Button from '@/components/ui/Button.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import {
-    advanceLabelKey,
     getReaderAdvanceDecision,
+    getReaderAdvanceLabel,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
   import { typeText } from '@/lib/typewriter';
@@ -115,18 +115,17 @@
   let t = $derived(getTranslations(locale));
   let currentDialogue = $derived(dialogue[dialogueIndex]);
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
-  let advanceLabel = $derived.by(() => {
-    const key = advanceLabelKey(
-      getReaderAdvanceDecision({
-        isTyping: false,
+  let advanceLabel = $derived(
+    getReaderAdvanceLabel(
+      {
         index: dialogueIndex,
         length: dialogue.length,
         canGoNext,
         hasChoice: !!choice,
-      })
-    );
-    return key === null ? t.reader.complete : t.reader[key];
-  });
+      },
+      t.reader
+    )
+  );
   let progressText = $derived(
     t.reader.pageDisplay
       .replace('{current}', String(dialogueIndex + 1))
@@ -513,7 +512,7 @@
 
       <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
         <div class="action-slot">
-          {#if !isTyping && currentDialogue}
+          {#if !isTyping && currentDialogue && advanceLabel}
             <Button
               variant="menu"
               className="next-control block ml-auto w-auto rounded-full {controlBase}"

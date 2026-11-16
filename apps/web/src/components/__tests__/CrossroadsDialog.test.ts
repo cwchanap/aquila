@@ -466,7 +466,7 @@ describe('CrossroadsDialog', () => {
         expect(onSelect).toHaveBeenCalledTimes(1);
     });
 
-    it('allows a fresh selection after reopening', async () => {
+    it('allows a fresh selection after reopening, including synchronous keydown on reopen', async () => {
         const onSelect = vi.fn();
         const { rerender } = render(CrossroadsDialog, {
             props: baseProps({ onSelect }),
@@ -475,7 +475,9 @@ describe('CrossroadsDialog', () => {
         expect(onSelect).toHaveBeenCalledTimes(1);
         await rerender(baseProps({ open: false, onSelect }));
         await rerender(baseProps({ onSelect }));
-        await fireEvent.click(screen.getAllByTestId('crossroads-route')[1]);
+        window.dispatchEvent(
+            new KeyboardEvent('keydown', { key: '2', bubbles: true })
+        );
         expect(onSelect).toHaveBeenCalledTimes(2);
         expect(onSelect).toHaveBeenLastCalledWith('b1b_act4');
     });
@@ -548,7 +550,7 @@ describe('CrossroadsDialog', () => {
         );
     });
 
-    it('numbers route labels beyond the lettered set', () => {
+    it('letters routes beyond D and omits shortcut hints past the fourth card', () => {
         render(CrossroadsDialog, {
             props: baseProps({
                 choice: {
@@ -557,8 +559,20 @@ describe('CrossroadsDialog', () => {
                 },
             }),
         });
-        expect(screen.getByText('Route 5')).toBeVisible();
-        expect(screen.getAllByTestId('crossroads-route')).toHaveLength(5);
+        expect(screen.getByText('Route E')).toBeVisible();
+        const cards = screen.getAllByTestId('crossroads-route');
+        expect(cards).toHaveLength(5);
+        for (let i = 0; i < 4; i++) {
+            expect(cards[i].getAttribute('aria-keyshortcuts')).toBe(
+                String(i + 1)
+            );
+            expect(
+                within(cards[i]).getByText(`Press ${i + 1}`)
+            ).toBeInTheDocument();
+        }
+        expect(cards[4].getAttribute('aria-keyshortcuts')).toBeNull();
+        expect(within(cards[4]).queryByText('Press 5')).not.toBeInTheDocument();
+        expect(within(cards[4]).queryByText('5')).not.toBeInTheDocument();
     });
 
     it('lights the route line under the hovered or focused card', async () => {

@@ -4,6 +4,7 @@ import { getTranslations } from '@aquila/stories/translations';
 import {
     advanceLabelKey,
     getReaderAdvanceDecision,
+    getReaderAdvanceLabel,
     isChoicePosition,
     isEndingPosition,
     isReaderInteractiveTarget,
@@ -272,5 +273,48 @@ describe('advanceLabelKey', () => {
                 expect(typeof t.reader[key]).toBe('string');
             }
         }
+    });
+});
+
+describe('getReaderAdvanceLabel', () => {
+    const t = getTranslations('en');
+
+    it('resolves localized labels for actionable positions and null when no advance is available', () => {
+        expect(
+            getReaderAdvanceLabel(
+                { index: 0, length: 2, canGoNext: false, hasChoice: false },
+                t.reader
+            )
+        ).toBe('Continue');
+        expect(
+            getReaderAdvanceLabel(
+                { index: 1, length: 2, canGoNext: false, hasChoice: true },
+                t.reader
+            )
+        ).toBe('Choose');
+        expect(
+            getReaderAdvanceLabel(
+                { index: 1, length: 2, canGoNext: true, hasChoice: false },
+                t.reader
+            )
+        ).toBe('Next Scene');
+        expect(
+            getReaderAdvanceLabel(
+                { index: 1, length: 2, canGoNext: false, hasChoice: false },
+                t.reader
+            )
+        ).toBe('Complete');
+        expect(
+            getReaderAdvanceLabel(
+                { index: 0, length: 0, canGoNext: false, hasChoice: true },
+                t.reader
+            )
+        ).toBeNull();
+        expect(
+            getReaderAdvanceLabel(
+                { index: 0, length: 0, canGoNext: false, hasChoice: false },
+                t.reader
+            )
+        ).toBeNull();
     });
 });

@@ -11,8 +11,8 @@
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { resolveCharacterName } from '@/lib/character-name';
   import {
-    advanceLabelKey,
     getReaderAdvanceDecision,
+    getReaderAdvanceLabel,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
   import { onDestroy } from 'svelte';
@@ -68,18 +68,17 @@
   // Derived view state — the visible reader is a pure function of the index.
   let completedDialogues = $derived(dialogue.slice(0, dialogueIndex));
   let currentDialogue = $derived(dialogue[dialogueIndex]);
-  let advanceLabel = $derived.by(() => {
-    const key = advanceLabelKey(
-      getReaderAdvanceDecision({
-        isTyping: false,
+  let advanceLabel = $derived(
+    getReaderAdvanceLabel(
+      {
         index: dialogueIndex,
         length: dialogue.length,
         canGoNext,
         hasChoice: !!choice,
-      })
-    );
-    return key === null ? t.reader.complete : t.reader[key];
-  });
+      },
+      t.reader
+    )
+  );
 
   // Component-local presentation state only.
   let isTyping = $state(false);
@@ -371,7 +370,7 @@
       {/if}
 
       <!-- Continue indicator -->
-      {#if !isTyping}
+      {#if !isTyping && advanceLabel}
         <div class="text-center">
           <button
             onclick={handleNext}

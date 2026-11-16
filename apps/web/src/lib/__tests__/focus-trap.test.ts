@@ -283,11 +283,7 @@ describe('focusTrap', () => {
         handle.destroy();
     });
 
-    it('restores focus to the explicit restoreFocus target instead of the detached opener', () => {
-        // Simulate the overlay scenario: the opener button is unmounted in the
-        // same batch as activation, so by the time the trap records
-        // activeElement the opener is already detached from the DOM. Without an
-        // explicit restore target, deactivate would strand focus on <body>.
+    it('restores focus to the explicit restoreFocus target even when the opener remains connected', () => {
         const persistentToggle = makeButton('menu');
         document.body.append(persistentToggle);
 
@@ -300,18 +296,14 @@ describe('focusTrap', () => {
         container.append(closeBtn);
         document.body.append(container);
 
-        // Activate with the opener still focused…
         const handle = focusTrap(container, {
             enabled: true,
             restoreFocus: persistentToggle,
         });
         expect(document.activeElement).toBe(closeBtn);
 
-        // …then detach the opener (mimicking the chrome bar unmounting).
-        opener.remove();
-
-        // Deactivate must restore focus to the persistent toggle, not the
-        // detached opener (which would leave focus on <body>).
+        // Even while opener is still in the document (e.g. hidden behind
+        // closed chrome), the caller's explicit restoreFocus target wins.
         handle.update({ enabled: false, restoreFocus: persistentToggle });
         expect(document.activeElement).toBe(persistentToggle);
         handle.destroy();

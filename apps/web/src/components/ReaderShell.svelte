@@ -726,10 +726,7 @@
     }
   );
   let overlayFocusTarget = $derived.by((): HTMLElement | null => {
-    if (
-      !(storyMapOpen || endingOpen || crossroadsOpen) ||
-      typeof document === 'undefined'
-    ) {
+    if (!(storyMapOpen || endingOpen) || typeof document === 'undefined') {
       return null;
     }
     const id =
@@ -768,6 +765,15 @@
     }
   }
 
+  function activateVisualAudio(): void {
+    if (readerMode !== 'visual' || isBlocking) return;
+    bgmActivated = true;
+    voicePlayer.resume();
+    if (bgmEnabled && selectedBgmKey && !audioInitialLoadPending) {
+      bgmPlayer.play(selectedBgmKey);
+    }
+  }
+
   function activateBgm(event?: PointerEvent | KeyboardEvent): void {
     if (readerMode !== 'visual' || leafDisabled) return;
     if (
@@ -777,11 +783,7 @@
     ) {
       return;
     }
-    bgmActivated = true;
-    voicePlayer.resume();
-    if (bgmEnabled && selectedBgmKey && !audioInitialLoadPending) {
-      bgmPlayer.play(selectedBgmKey);
-    }
+    activateVisualAudio();
   }
 
   function handleBgmActivationKey(event: KeyboardEvent): void {
@@ -849,7 +851,7 @@
 
   function handleCrossroadsSelect(nextScene: string): void {
     crossroadsPositionKey = null;
-    activateBgm();
+    activateVisualAudio();
     onChoice(nextScene);
   }
 
@@ -1305,7 +1307,6 @@
     {secondLang}
     {furigana}
     {t}
-    restoreFocus={overlayFocusTarget}
     onSelect={handleCrossroadsSelect}
     onClose={closeCrossroads}
   />

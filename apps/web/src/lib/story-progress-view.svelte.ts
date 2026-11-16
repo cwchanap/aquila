@@ -15,11 +15,6 @@ import {
 export type StorySyncState =
     'idle' | 'synced' | 'failed' | 'local-failed' | 'local-save-failed';
 
-/** Per-instance owner of the shared progress lifecycle: local progress
- *  reads, anonymous-claim, account sync, session revalidation, and
- *  bfcache restore handling. Each component that shows story progress
- *  creates its own instance and calls mount() from onMount; the returned
- *  cleanup removes the pageshow listener. */
 export class StoryProgressView {
     private readonly locale: Locale;
     // The server render freezes authState and userId at SSR time; a page
@@ -181,7 +176,6 @@ export class StoryProgressView {
         return run;
     }
 
-    /** Runs the mount lifecycle and returns its cleanup. */
     mount(): () => void {
         this.refresh();
         if (this.authState === 'signed-in') void this.runSync();

@@ -28,9 +28,6 @@ describe('StoryProgressView', () => {
     });
 
     it("keeps each mounted instance's account and progress independent", async () => {
-        // The helper is per-instance, not a singleton: a signed-in view
-        // reads and syncs its own account map while a signed-out view on
-        // the same page keeps showing the anonymous one.
         const fetchMock = vi.fn().mockResolvedValue(
             serverResponse({
                 progress: {
@@ -81,10 +78,6 @@ describe('StoryProgressView', () => {
             expect(signedOut.syncState).toBe('idle');
             expect(fetchMock).toHaveBeenCalledTimes(1);
 
-            // The signed-in view claimed the anonymous place and shows
-            // the cloud-only story; the signed-out view keeps the
-            // anonymous snapshot it read at mount and never saw the
-            // other instance's download.
             expect(signedOut.progress).toHaveProperty('train_adventure');
             expect(signedOut.progress).not.toHaveProperty('elevator_game');
             expect(signedIn.progress).toHaveProperty('elevator_game');
@@ -108,8 +101,6 @@ describe('StoryProgressView', () => {
         await taskTurn();
         expect(vi.mocked(authClient.getSession)).toHaveBeenCalledTimes(1);
 
-        // After cleanup the pageshow listener is gone: a later restore is
-        // not this view's to answer anymore.
         dispose();
         window.dispatchEvent(restoredPageShow());
         await taskTurn();

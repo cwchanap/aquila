@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { ReaderPage, StoriesPage } from './utils';
+import { MainMenuPage, ReaderPage, StoriesPage } from './utils';
 
 const PROGRESS_KEY = 'aquila:storyProgress:v1';
 
@@ -150,6 +150,58 @@ test.describe('Story select shelves', () => {
             'href',
             '/en/reader?story=the_seventh_mirror&restart=1'
         );
+    });
+});
+
+test.describe('Main menu', () => {
+    test('orders Start Game, My Progress, Bookmarks with no inert Settings', async ({
+        page,
+    }) => {
+        const menu = new MainMenuPage(page);
+        await menu.goto();
+        await menu.expectToBeVisible();
+
+        const start = page.getByRole('link', { name: 'Start Game' });
+        const progress = page.getByRole('link', { name: 'My Progress' });
+        const bookmarks = page.getByRole('button', { name: '📖 Bookmarks' });
+        await expect(start).toHaveAttribute('href', '/en/stories');
+        await expect(progress).toHaveAttribute('href', '/en/progress');
+        await expect(bookmarks).toBeVisible();
+        const actions = page.locator('#start-btn').locator('..');
+        await expect(actions.locator(':scope > *')).toHaveCount(3);
+        await expect(actions.getByRole('button')).toHaveCount(1);
+        await expect(page.locator('a[href$="/characters"]')).toHaveCount(0);
+
+        const startBox = await start.boundingBox();
+        const progressBox = await progress.boundingBox();
+        const bookmarksBox = await bookmarks.boundingBox();
+        expect(startBox).not.toBeNull();
+        expect(progressBox).not.toBeNull();
+        expect(bookmarksBox).not.toBeNull();
+        expect(startBox!.y).toBeLessThan(progressBox!.y);
+        expect(progressBox!.y).toBeLessThan(bookmarksBox!.y);
+
+        await progress.click();
+        await expect(page).toHaveURL('/en/progress');
+        await expect(
+            page.getByRole('heading', { name: 'My Progress' })
+        ).toBeVisible();
+    });
+
+    test('opens the localized progress page from the Chinese menu', async ({
+        page,
+    }) => {
+        const menu = new MainMenuPage(page, 'zh');
+        await menu.goto();
+        await menu.expectToBeVisible();
+
+        const progress = page.getByRole('link', { name: '我的進度' });
+        await expect(progress).toHaveAttribute('href', '/zh/progress');
+        await progress.click();
+        await expect(page).toHaveURL('/zh/progress');
+        await expect(
+            page.getByRole('heading', { name: '我的進度' })
+        ).toBeVisible();
     });
 });
 

@@ -101,7 +101,7 @@ describe('generate-zh-proxy-pages', () => {
         mockExistsSync.mockReturnValue(true);
         mockReaddirSync.mockImplementation((dir: string) => {
             if (String(dir).includes('[locale]')) {
-                return [makeFileDirent('setup.astro')];
+                return [makeFileDirent('profile.astro')];
             }
             return [];
         });
@@ -113,7 +113,7 @@ describe('generate-zh-proxy-pages', () => {
             { recursive: true }
         );
         expect(mockWriteFileSync).toHaveBeenCalledWith(
-            expect.stringContaining('setup.astro'),
+            expect.stringContaining('profile.astro'),
             expect.stringContaining('locale="zh"')
         );
     });

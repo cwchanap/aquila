@@ -6,7 +6,6 @@ import {
     sessions,
     accounts,
     verificationTokens,
-    characterSetups,
     stories,
     chapters,
     scenes,
@@ -48,29 +47,6 @@ describe('Database schema', () => {
 
         it('verificationTokens table is defined', () => {
             expect(verificationTokens).toBeDefined();
-        });
-    });
-
-    describe('characterSetups table', () => {
-        it('is defined', () => {
-            expect(characterSetups).toBeDefined();
-        });
-
-        it('has expected columns', () => {
-            const cols = characterSetups as unknown as {
-                id: unknown;
-                userId: unknown;
-                characterName: unknown;
-                storyId: unknown;
-                createdAt: unknown;
-                updatedAt: unknown;
-            };
-            expect(cols.id).toBeDefined();
-            expect(cols.userId).toBeDefined();
-            expect(cols.characterName).toBeDefined();
-            expect(cols.storyId).toBeDefined();
-            expect(cols.createdAt).toBeDefined();
-            expect(cols.updatedAt).toBeDefined();
         });
     });
 
@@ -191,9 +167,7 @@ describe('Database schema', () => {
     });
 
     describe('compiled-story foreign keys', () => {
-        function foreignTables(
-            table: typeof bookmarks | typeof characterSetups
-        ) {
+        function foreignTables(table: typeof bookmarks) {
             return getTableConfig(table).foreignKeys.map(
                 fk => fk.reference().foreignTable
             );
@@ -201,10 +175,6 @@ describe('Database schema', () => {
 
         it('bookmarks keep only the user foreign key', () => {
             expect(foreignTables(bookmarks)).toEqual([users]);
-        });
-
-        it('character setups keep only the user foreign key', () => {
-            expect(foreignTables(characterSetups)).toEqual([users]);
         });
     });
 
@@ -247,16 +217,6 @@ describe('Database schema', () => {
                 unknown
             >;
             expect(result).toHaveProperty('tokenIdx');
-        });
-
-        it('characterSetups index builder returns expected index keys', () => {
-            const result = invokeBuilder(characterSetups) as Record<
-                string,
-                unknown
-            >;
-            expect(result).toHaveProperty('userIdIdx');
-            expect(result).toHaveProperty('storyIdIdx');
-            expect(result).toHaveProperty('userStoryIdx');
         });
 
         it('stories index builder returns expected index keys', () => {

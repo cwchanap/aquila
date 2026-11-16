@@ -32,12 +32,6 @@
     "tooLong": "Username must be at most 50 characters",
     "invalidChars": "Username can only contain letters, numbers, underscores, and hyphens"
   },
-  "characterName": {
-    "notString": "Character name must be a string",
-    "empty": "Character name cannot be empty",
-    "tooLong": "Character name must be at most 50 characters",
-    "invalidChars": "Character name contains invalid characters. Only letters, numbers, spaces, and certain special characters are allowed."
-  },
   "menu": {
     "title": "Main Menu - Game App",
     "heading": "Main Menu",
@@ -59,19 +53,8 @@
     "profile": "Profile",
     "storyConfig": "Story Config"
   },
-  "setup": {
-    "title": "Setup Character",
-    "heading": "Setup Your Character",
-    "characterName": "Main Character Name:",
-    "placeholder": "Enter your character's name",
-    "startAdventure": "Start Adventure",
-    "saving": "Saving...",
-    "enterName": "Please enter a character name",
-    "saveFailed": "Failed to save character setup. Please try again."
-  },
   "adventure": {
-    "title": "The Platform at the End of the World",
-    "desktop_only_notice": "The Platform at the End of the World is currently only playable in the desktop app. Download the desktop build to continue your journey."
+    "title": "The Platform at the End of the World"
   },
   "stories": {
     "title": "Select Story",
@@ -132,30 +115,6 @@
     "day4012Desc": "It said it was routine maintenance. It lied, because what comes next isn't its call.",
     "onePotBeforeDawn": "One Pot Before Dawn",
     "onePotBeforeDawnDesc": "The first infusion is always poured away. Before dawn, only she has heard both truths."
-  },
-  "characters": {
-    "title": "My Characters",
-    "heading": "My Characters",
-    "subtitle": "Your Story Companions",
-    "description": "Here are your configured characters for different stories.",
-    "noCharacters": "No characters configured yet",
-    "loadFailed": "Couldn't load your characters",
-    "loadFailedDescription": "A temporary error prevented your saved characters from loading. Your data is safe — please try again.",
-    "retry": "Retry",
-    "startFirstStory": "Start Your First Story",
-    "guestDescription": "Sign in to save your characters permanently, or view your local characters below.",
-    "loadingLocal": "Loading local characters...",
-    "noLocalCharacters": "No local characters found",
-    "signInToSave": "Sign In to Save Characters",
-    "playStory": "Play Story",
-    "edit": "Edit",
-    "save": "Save",
-    "cancel": "Cancel",
-    "nameRequired": "Character name cannot be empty",
-    "updateFailed": "Failed to update character name. Please try again.",
-    "errorLoadingLocalCharacters": "Error loading local characters",
-    "invalidName": "Character name contains invalid characters.",
-    "invalidStoryId": "Valid story ID is required"
   },
   "characterNames": {
     "narrator": "Narrator",

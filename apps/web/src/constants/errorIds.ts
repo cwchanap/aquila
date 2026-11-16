@@ -40,9 +40,11 @@ export const ERROR_IDS = {
     VALIDATION_USERNAME_INVALID: 'VAL_004',
     VALIDATION_USERNAME_TOO_SHORT: 'VAL_005',
     VALIDATION_USERNAME_TOO_LONG: 'VAL_006',
-    VALIDATION_CHARACTER_NAME_INVALID: 'VAL_007',
-    VALIDATION_CHARACTER_NAME_TOO_SHORT: 'VAL_008',
-    VALIDATION_CHARACTER_NAME_TOO_LONG: 'VAL_009',
+    // VAL_007-009 were the character-name validation IDs
+    // (VALIDATION_CHARACTER_NAME_INVALID / _TOO_SHORT / _TOO_LONG); retired
+    // when character setup was removed for My Progress. Do NOT reuse these
+    // IDs for new errors, as they may already exist in historical Sentry
+    // data.
 
     // API errors (API_001-099)
     API_INVALID_REQUEST: 'API_001',
@@ -63,8 +65,10 @@ export const ERROR_IDS = {
     REPO_USER_FETCH_FAILED: 'REPO_008',
 
     // Character setup errors (CHAR_001-099)
-    CHAR_SETUP_FAILED: 'CHAR_001',
-    CHAR_VALIDATION_FAILED: 'CHAR_002',
+    // CHAR_001 was CHAR_SETUP_FAILED and CHAR_002 was
+    // CHAR_VALIDATION_FAILED; both retired when the character-setup API was
+    // removed for My Progress. Do NOT reuse these IDs for new errors, as
+    // they may already exist in historical Sentry data.
 } as const;
 
 export type ErrorId = (typeof ERROR_IDS)[keyof typeof ERROR_IDS];

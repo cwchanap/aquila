@@ -68,7 +68,7 @@ describe('middleware', () => {
         });
 
         it('sets currentLocale for deep nested /en/ paths', async () => {
-            const ctx = makeContext('/en/story/setup');
+            const ctx = makeContext('/en/stories/train_adventure');
             await onRequest(ctx as any, next);
             expect(ctx.locals.currentLocale).toBe('en');
             expect(next).toHaveBeenCalledOnce();

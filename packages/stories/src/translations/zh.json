@@ -32,12 +32,6 @@
     "tooLong": "使用者名稱不得超過 50 個字元",
     "invalidChars": "使用者名稱只能包含字母、數字、底線與連字號"
   },
-  "characterName": {
-    "notString": "角色名稱必須為字串",
-    "empty": "角色名稱不能為空",
-    "tooLong": "角色名稱不得超過 50 個字元",
-    "invalidChars": "角色名稱包含無效字元。僅允許字母、數字、空白與特定符號。"
-  },
   "menu": {
     "title": "主選單 - 遊戲應用",
     "heading": "主選單",
@@ -59,19 +53,8 @@
     "profile": "個人資料",
     "storyConfig": "故事設定"
   },
-  "setup": {
-    "title": "設定角色",
-    "heading": "設定您的角色",
-    "characterName": "主角姓名：",
-    "placeholder": "輸入您的角色姓名",
-    "startAdventure": "開始冒險",
-    "saving": "儲存中...",
-    "enterName": "請輸入角色姓名",
-    "saveFailed": "儲存角色設定失敗。請重試。"
-  },
   "adventure": {
-    "title": "世界盡頭的月台",
-    "desktop_only_notice": "此冒險目前僅支援桌面裝置，請在電腦上遊玩以獲得最佳體驗。"
+    "title": "世界盡頭的月台"
   },
   "stories": {
     "title": "選擇故事",
@@ -132,30 +115,6 @@
     "day4012Desc": "它說只是例行維護。它說了謊——因為接下來的事，不該由它決定。",
     "onePotBeforeDawn": "天亮前的一壺茶",
     "onePotBeforeDawnDesc": "第一泡茶要倒掉。天亮前，只有她聽過兩個人的真話。"
-  },
-  "characters": {
-    "title": "我的角色",
-    "heading": "我的角色",
-    "subtitle": "您的故事夥伴",
-    "description": "這裡顯示您為不同故事配置的角色。",
-    "noCharacters": "尚未配置角色",
-    "loadFailed": "無法載入您的角色",
-    "loadFailedDescription": "暫時性錯誤導致無法載入已儲存的角色。您的資料安全無虞 — 請稍後再試。",
-    "retry": "重試",
-    "startFirstStory": "開始您的第一個故事",
-    "guestDescription": "登入以永久儲存您的角色，或查看下面的本機角色。",
-    "loadingLocal": "正在載入本機角色...",
-    "noLocalCharacters": "未找到本機角色",
-    "signInToSave": "登入以儲存角色",
-    "playStory": "開始遊戲",
-    "edit": "編輯",
-    "save": "儲存",
-    "cancel": "取消",
-    "nameRequired": "角色名稱不能為空",
-    "updateFailed": "更新角色名稱失敗，請重試。",
-    "errorLoadingLocalCharacters": "載入本機角色失敗",
-    "invalidName": "角色名稱包含無效字元。",
-    "invalidStoryId": "需要有效的故事 ID"
   },
   "characterNames": {
     "narrator": "旁白",

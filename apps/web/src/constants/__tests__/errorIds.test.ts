@@ -121,20 +121,16 @@ describe('ERROR_IDS', () => {
             expect(ERROR_IDS.VALIDATION_USERNAME_TOO_LONG).toBe('VAL_006');
         });
 
-        it('should define VALIDATION_CHARACTER_NAME_INVALID as VAL_007', () => {
-            expect(ERROR_IDS.VALIDATION_CHARACTER_NAME_INVALID).toBe('VAL_007');
-        });
-
-        it('should define VALIDATION_CHARACTER_NAME_TOO_SHORT as VAL_008', () => {
-            expect(ERROR_IDS.VALIDATION_CHARACTER_NAME_TOO_SHORT).toBe(
-                'VAL_008'
-            );
-        });
-
-        it('should define VALIDATION_CHARACTER_NAME_TOO_LONG as VAL_009', () => {
-            expect(ERROR_IDS.VALIDATION_CHARACTER_NAME_TOO_LONG).toBe(
-                'VAL_009'
-            );
+        // VAL_007-009 are retired (were the character-name validation IDs,
+        // removed when character setup was retired for My Progress). They
+        // are reserved so historical Sentry data stays stable — guard
+        // against accidental reuse by ensuring no exported constant maps
+        // to any of those values.
+        it('should not reuse retired VAL_007 through VAL_009', () => {
+            const values = Object.values(ERROR_IDS);
+            expect(values).not.toContain('VAL_007');
+            expect(values).not.toContain('VAL_008');
+            expect(values).not.toContain('VAL_009');
         });
     });
 
@@ -199,12 +195,14 @@ describe('ERROR_IDS', () => {
     });
 
     describe('Character setup errors (CHAR_001-002)', () => {
-        it('should define CHAR_SETUP_FAILED as CHAR_001', () => {
-            expect(ERROR_IDS.CHAR_SETUP_FAILED).toBe('CHAR_001');
-        });
-
-        it('should define CHAR_VALIDATION_FAILED as CHAR_002', () => {
-            expect(ERROR_IDS.CHAR_VALIDATION_FAILED).toBe('CHAR_002');
+        // CHAR_001 and CHAR_002 are retired (were character-setup save /
+        // validation IDs, removed when the character-setup API was retired
+        // for My Progress). They are reserved so historical Sentry data
+        // stays stable — guard against accidental reuse.
+        it('should not reuse retired CHAR_001 or CHAR_002', () => {
+            const values = Object.values(ERROR_IDS);
+            expect(values).not.toContain('CHAR_001');
+            expect(values).not.toContain('CHAR_002');
         });
     });
 

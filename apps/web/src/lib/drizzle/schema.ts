@@ -128,33 +128,6 @@ export const verificationTokens = pgTable(
     })
 );
 
-// Character setups table
-export const characterSetups = pgTable(
-    'character_setups',
-    {
-        id: text('id').primaryKey(),
-        userId: text('user_id')
-            .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
-        characterName: text('character_name').notNull(),
-        storyId: text('story_id').notNull(),
-        createdAt: timestamp('created_at', { mode: 'date' })
-            .notNull()
-            .defaultNow(),
-        updatedAt: timestamp('updated_at', { mode: 'date' })
-            .notNull()
-            .defaultNow(),
-    },
-    table => ({
-        userIdIdx: index('character_setups_user_id_idx').on(table.userId),
-        storyIdIdx: index('character_setups_story_id_idx').on(table.storyId),
-        userStoryIdx: index('character_setups_user_story_idx').on(
-            table.userId,
-            table.storyId
-        ),
-    })
-);
-
 // ============= Story Management Tables =============
 
 // Story table - top level organization
@@ -246,8 +219,6 @@ export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 export type VerificationToken = typeof verificationTokens.$inferSelect;
 export type NewVerificationToken = typeof verificationTokens.$inferInsert;
-export type CharacterSetup = typeof characterSetups.$inferSelect;
-export type NewCharacterSetup = typeof characterSetups.$inferInsert;
 
 // ============= Reading Progress (Bookmarks) =============
 

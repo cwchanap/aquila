@@ -41,14 +41,13 @@ vi.mock('nanoid', () => ({
 
 import {
     UserRepository,
-    CharacterSetupRepository,
     StoryRepository,
     ChapterRepository,
     SceneRepository,
     BookmarkRepository,
     ReadingProgressRepository,
 } from '../repositories';
-import { bookmarks, characterSetups, stories } from '../schema';
+import { bookmarks, stories } from '../schema';
 
 describe('Repositories', () => {
     beforeEach(() => {
@@ -257,122 +256,6 @@ describe('Repositories', () => {
         });
     });
 
-    describe('CharacterSetupRepository', () => {
-        let repo: CharacterSetupRepository;
-
-        beforeEach(() => {
-            repo = new CharacterSetupRepository(mockDb as any);
-        });
-
-        describe('delete()', () => {
-            it('returns true when character setup is deleted', async () => {
-                mockDb.returning.mockResolvedValue([{ id: 'setup-123' }]);
-
-                const result = await repo.delete('setup-123');
-
-                expect(result).toBe(true);
-            });
-
-            it('returns false when character setup does not exist', async () => {
-                mockDb.returning.mockResolvedValue([]);
-
-                const result = await repo.delete('nonexistent');
-
-                expect(result).toBe(false);
-            });
-        });
-
-        describe('create()', () => {
-            it('creates a character setup with generated id', async () => {
-                const newSetup = {
-                    id: 'test-id-123',
-                    userId: 'user-1',
-                    storyId: 'story-1',
-                    characterName: 'Alice',
-                };
-                mockDb.returning.mockResolvedValue([newSetup]);
-
-                const result = await repo.create({
-                    userId: 'user-1',
-                    storyId: 'story-1',
-                    characterName: 'Alice',
-                });
-
-                expect(result).toEqual(newSetup);
-                expect(mockDb.insert).toHaveBeenCalled();
-                expect(mockDb.values).toHaveBeenCalledWith(
-                    expect.objectContaining({ id: expect.any(String) })
-                );
-            });
-        });
-
-        describe('findByUserAndStory()', () => {
-            it('returns setup when found', async () => {
-                const setup = {
-                    id: 'setup-1',
-                    userId: 'user-1',
-                    storyId: 'story-1',
-                };
-                mockDb.limit.mockResolvedValue([setup]);
-
-                const result = await repo.findByUserAndStory(
-                    'user-1',
-                    'story-1'
-                );
-
-                expect(result).toEqual(setup);
-                expect(mockDb.where).toHaveBeenCalled();
-            });
-
-            it('returns undefined when not found', async () => {
-                mockDb.limit.mockResolvedValue([]);
-
-                const result = await repo.findByUserAndStory(
-                    'user-x',
-                    'story-x'
-                );
-
-                expect(result).toBeUndefined();
-            });
-        });
-
-        describe('findByUser()', () => {
-            it('returns all setups for a user', async () => {
-                const setups = [
-                    { id: 'setup-1', userId: 'user-1' },
-                    { id: 'setup-2', userId: 'user-1' },
-                ];
-                mockDb.orderBy.mockResolvedValue(setups);
-
-                const result = await repo.findByUser('user-1');
-
-                expect(result).toEqual(setups);
-                expect(mockDb.orderBy).toHaveBeenCalled();
-            });
-        });
-
-        describe('update()', () => {
-            it('returns updated character setup and includes updatedAt', async () => {
-                const updated = {
-                    id: 'setup-1',
-                    characterName: 'Bob',
-                };
-                mockDb.returning.mockResolvedValue([updated]);
-
-                const result = await repo.update('setup-1', {
-                    characterName: 'Bob',
-                });
-
-                expect(result).toEqual(updated);
-                expect(mockDb.update).toHaveBeenCalled();
-                expect(mockDb.returning).toHaveBeenCalled();
-                const setArg = mockDb.set.mock.calls[0][0];
-                expect(setArg).toHaveProperty('updatedAt');
-                expect(setArg.updatedAt).toBeInstanceOf(Date);
-            });
-        });
-    });
-
     describe('StoryRepository', () => {
         let repo: StoryRepository;
 
@@ -463,7 +346,6 @@ describe('Repositories', () => {
                 expect(mockDb.delete.mock.calls.map(c => c[0])).toEqual([
                     stories,
                     bookmarks,
-                    characterSetups,
                 ]);
             });
 

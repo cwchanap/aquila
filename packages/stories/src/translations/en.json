@@ -37,8 +37,7 @@
     "heading": "Main Menu",
     "startGame": "Start Game",
     "settings": "Settings",
-    "bookmarks": "📖 Bookmarks",
-    "settingsComingSoon": "Settings coming soon!"
+    "bookmarks": "📖 Bookmarks"
   },
   "common": {
     "hello": "Hello",
@@ -50,8 +49,7 @@
     "backToHome": "← Back to Home"
   },
   "nav": {
-    "profile": "Profile",
-    "storyConfig": "Story Config"
+    "profile": "Profile"
   },
   "adventure": {
     "title": "The Platform at the End of the World"

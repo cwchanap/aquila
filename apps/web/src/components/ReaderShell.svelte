@@ -1157,6 +1157,7 @@
           {isInitialMount}
           interactionDisabled={leafDisabled}
           visibleSceneIds={storyMapVisibleIds}
+          {backUrl}
         />
       {:else if isMobile}
         <MobileNovelReader
@@ -1213,6 +1214,7 @@
           {isInitialMount}
           interactionDisabled={leafDisabled}
           visibleSceneIds={storyMapVisibleIds}
+          {backUrl}
         />
       {/if}
     </div>

@@ -965,6 +965,32 @@ describe('ReaderShell', () => {
         expect(screen.getByRole('button', { name: 'Open menu' })).toHaveFocus();
     });
 
+    it('forwards the localized backUrl to the desktop Text rail Home link', () => {
+        stubMatchMedia(false);
+        render(ReaderShell, { props: { backUrl: '/zh/' } });
+
+        expect(
+            screen.getByRole('link', { name: 'Back to Home' })
+        ).toHaveAttribute('href', '/zh/');
+    });
+
+    it('forwards the localized backUrl to the Visual rail Home link', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        render(ReaderShell, {
+            props: {
+                backUrl: '/ja/',
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+
+        await waitFor(() =>
+            expect(
+                screen.getByRole('link', { name: 'Back to Home' })
+            ).toHaveAttribute('href', '/ja/')
+        );
+    });
+
     it('defaults to Text and restores Visual synchronously without a Text leaf flash', () => {
         stubMatchMedia(false);
         const defaultFactory = vi.fn(() => createRuntimeHarness().runtime);

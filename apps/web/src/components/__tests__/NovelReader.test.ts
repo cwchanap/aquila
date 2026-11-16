@@ -133,12 +133,17 @@ afterEach(() => {
 });
 
 describe('NovelReader — controlled contract', () => {
-    it('does not own Home or Bookmark controls on desktop Text', () => {
-        renderReader({ backUrl: '/en/', showBookmarkButton: true });
+    it('renders an independent rail Home link but no Bookmark control on desktop Text', () => {
+        renderReader({
+            backUrl: '/en/',
+            showBookmarkButton: true,
+            storyId: 'test_story',
+            currentSceneId: 'b1a_act1',
+        });
 
         expect(
-            screen.queryByRole('link', { name: 'Back to Home' })
-        ).not.toBeInTheDocument();
+            screen.getByRole('link', { name: 'Back to Home' })
+        ).toHaveAttribute('href', '/en/');
         expect(
             screen.queryByRole('button', { name: 'Bookmark' })
         ).not.toBeInTheDocument();
@@ -388,9 +393,16 @@ describe('NovelReader — basic rendering', () => {
         });
     });
 
-    it('does not render Home or Bookmark controls', () => {
-        renderReader({ backUrl: '/en/', showBookmarkButton: true });
-        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
+    it('renders the rail Home link but no Bookmark control', () => {
+        renderReader({
+            backUrl: '/en/',
+            showBookmarkButton: true,
+            storyId: 'test_story',
+            currentSceneId: 'b1a_act1',
+        });
+        expect(
+            screen.getByRole('link', { name: 'Back to Home' })
+        ).toHaveAttribute('href', '/en/');
         expect(screen.queryByText('Bookmark')).not.toBeInTheDocument();
     });
 });
@@ -692,9 +704,16 @@ describe('NovelReader — bookmark & progress', () => {
 });
 
 describe('NovelReader — localization', () => {
-    it('renders without desktop Home or Bookmark controls in Chinese', () => {
-        renderReader({ locale: 'zh' });
-        expect(screen.queryByText('Back to Home')).not.toBeInTheDocument();
+    it('renders the rail Home link but no Bookmark control in Chinese', () => {
+        renderReader({
+            locale: 'zh',
+            backUrl: '/zh/',
+            storyId: 'test_story',
+            currentSceneId: 'b1a_act1',
+        });
+        expect(
+            screen.getByRole('link', { name: 'Back to Home' })
+        ).toHaveAttribute('href', '/zh/');
         expect(screen.queryByText('Bookmark')).not.toBeInTheDocument();
     });
 });

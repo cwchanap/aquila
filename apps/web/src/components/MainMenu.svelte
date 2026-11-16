@@ -39,10 +39,6 @@
     window.location.href = `/${isLocale(pathLocale) ? pathLocale : 'en'}/bookmarks`;
   };
 
-  const handleSettingsClick = () => {
-    // Settings functionality not yet implemented
-    window.alert(translations.menu?.settingsComingSoon ?? '[Coming soon]');
-  };
 </script>
 
 <!-- Ocean Background -->
@@ -154,6 +150,15 @@
               {translations.menu.startGame}
             </a>
 
+            <!-- Secondary: My Progress -->
+            <a
+              href={`/${currentLocale}/progress`}
+              class="block w-full text-center py-3 px-6 rounded-2xl bg-white/60 hover:bg-white/80 active:bg-white/90 text-slate-700 hover:text-slate-900 font-medium text-sm tracking-wide border border-white/70 hover:border-slate-200 transition-all duration-200"
+              style="font-family: 'Exo 2', sans-serif;"
+            >
+              {translations.progress.title}
+            </a>
+
             <!-- Secondary: Bookmarks -->
             <button
               class="w-full py-3 px-6 rounded-2xl bg-white/60 hover:bg-white/80 active:bg-white/90 text-slate-700 hover:text-slate-900 font-medium text-sm tracking-wide border border-white/70 hover:border-slate-200 transition-all duration-200"
@@ -161,16 +166,6 @@
               on:click={handleBookmarksClick}
             >
               {translations.menu.bookmarks}
-            </button>
-
-            <!-- Secondary: Settings -->
-            <button
-              id="settings-btn"
-              class="w-full py-3 px-6 rounded-2xl bg-white/60 hover:bg-white/80 active:bg-white/90 text-slate-700 hover:text-slate-900 font-medium text-sm tracking-wide border border-white/70 hover:border-slate-200 transition-all duration-200"
-              style="font-family: 'Exo 2', sans-serif;"
-              on:click={handleSettingsClick}
-            >
-              {translations.menu.settings}
             </button>
 
           </div>

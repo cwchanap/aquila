@@ -74,6 +74,7 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
         },
+        common: { backToHome: 'Back to Home' },
         locale: 'en',
     })),
 }));
@@ -376,6 +377,54 @@ describe('ActPanel', () => {
             },
         });
 
+        expect(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        ).toBeInTheDocument();
+    });
+
+    it('renders an independent Home link above the Acts toggle when open', () => {
+        render(ActPanel, {
+            props: {
+                flow: mockFlow,
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onToggle,
+                open: true,
+                locale: 'en',
+                backUrl: '/en/',
+            },
+        });
+
+        const home = screen.getByRole('link', { name: 'Back to Home' });
+        expect(home).toHaveAttribute('href', '/en/');
+        const toggle = screen.getByRole('button', {
+            name: 'Close acts panel',
+        });
+        expect(toggle.contains(home)).toBe(false);
+        expect(home.contains(toggle)).toBe(false);
+        expect(
+            home.compareDocumentPosition(toggle) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+    });
+
+    it('keeps the Home link available when the panel is closed', () => {
+        render(ActPanel, {
+            props: {
+                flow: mockFlow,
+                storyId: 'test_story',
+                currentSceneId: 'b1a_act1',
+                onNavigate,
+                onToggle,
+                open: false,
+                locale: 'en',
+                backUrl: '/zh/',
+            },
+        });
+
+        const home = screen.getByRole('link', { name: 'Back to Home' });
+        expect(home).toHaveAttribute('href', '/zh/');
         expect(
             screen.getByRole('button', { name: 'Open acts panel' })
         ).toBeInTheDocument();

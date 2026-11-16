@@ -23,7 +23,7 @@ The start menu replaces its nonfunctional Settings control with My Progress. The
 | `apps/web/src/lib/drizzle/schema.ts` and `repositories.ts` | Obsolete `characterSetups` table and repository | Remove and generate the destructive migration |
 | `packages/stories/src/translations/{en,zh,ja}.json` | Localized UI strings | Remove dead character-setup keys and add My Progress strings |
 
-[HPA-961 / PR #125](https://github.com/cwchanap/aquila/pull/125) is active on reader choice dialogs. Avoid unnecessary changes to `ReaderShell` or choice/Story Map behavior; rebasing the Acts-panel changes against it is sufficient. [HPA-821](https://linear.app/cwchanap/issue/HPA-821/reader-friction-main-menu-settings-does-nothing-first-choice-is-hidden) overlaps the dead Settings control but remains a separate follow-up for its other reader issues.
+[HPA-961 / PR #125](https://github.com/cwchanap/aquila/pull/125) is now merged into `main`. Build on the merged Crossroads implementation; avoid unnecessary changes to `ReaderShell` or choice/Story Map behavior. No extra rebase gate is needed unless `main` advances. [HPA-821](https://linear.app/cwchanap/issue/HPA-821/reader-friction-main-menu-settings-does-nothing-first-choice-is-hidden) overlaps the dead Settings control but remains a separate follow-up for its other reader issues.
 
 ## Shared progress view lifecycle
 

@@ -283,7 +283,11 @@ describe('focusTrap', () => {
         handle.destroy();
     });
 
-    it('restores focus to the explicit restoreFocus target even when the opener remains connected', () => {
+    it('restores focus to the recorded opener while it remains connected', () => {
+        // The modal contract is "return focus to the element that opened the
+        // overlay". The explicit restoreFocus target is only a fallback for
+        // when that opener is gone — it must not hijack focus to an unrelated
+        // control while the real opener is still in the document.
         const persistentToggle = makeButton('menu');
         document.body.append(persistentToggle);
 
@@ -302,8 +306,40 @@ describe('focusTrap', () => {
         });
         expect(document.activeElement).toBe(closeBtn);
 
-        // Even while opener is still in the document (e.g. hidden behind
-        // closed chrome), the caller's explicit restoreFocus target wins.
+        handle.update({ enabled: false, restoreFocus: persistentToggle });
+        expect(document.activeElement).toBe(opener);
+        handle.destroy();
+    });
+
+    it('restores focus to the explicit restoreFocus target instead of the detached opener', () => {
+        // Simulate the overlay scenario: the opener button is unmounted while
+        // the trap is active (e.g. the reader swapped across the mobile
+        // breakpoint). Without an explicit restore target, deactivate would
+        // strand focus on <body>.
+        const persistentToggle = makeButton('menu');
+        document.body.append(persistentToggle);
+
+        const opener = makeButton('opener');
+        document.body.append(opener);
+        opener.focus();
+
+        const container = document.createElement('div');
+        const closeBtn = makeButton('close');
+        container.append(closeBtn);
+        document.body.append(container);
+
+        // Activate with the opener still focused…
+        const handle = focusTrap(container, {
+            enabled: true,
+            restoreFocus: persistentToggle,
+        });
+        expect(document.activeElement).toBe(closeBtn);
+
+        // …then detach the opener (mimicking the reader leaf unmounting).
+        opener.remove();
+
+        // Deactivate must restore focus to the persistent toggle, not the
+        // detached opener (which would leave focus on <body>).
         handle.update({ enabled: false, restoreFocus: persistentToggle });
         expect(document.activeElement).toBe(persistentToggle);
         handle.destroy();

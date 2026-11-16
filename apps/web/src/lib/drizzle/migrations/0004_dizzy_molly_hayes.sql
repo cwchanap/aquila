@@ -1,1 +1,1 @@
-DROP TABLE "character_setups" CASCADE;
+DROP TABLE "character_setups";

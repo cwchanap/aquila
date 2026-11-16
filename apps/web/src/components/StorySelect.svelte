@@ -19,7 +19,6 @@
     userId: serverUserId,
   }: { locale: Locale; authState: AuthState; userId: string | null } = $props();
 
-  // untrack: the props seed the view's mutable copies the client re-checks.
   const view = new StoryProgressView(
     untrack(() => ({
       locale,

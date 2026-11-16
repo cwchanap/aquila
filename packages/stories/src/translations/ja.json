@@ -141,6 +141,7 @@
     "saveStatusSynced": "同期済み",
     "saveStatusSyncing": "同期中",
     "saveStatusNotSynced": "未同期",
+    "saveStatusAccountSaved": "アカウントに同期済み",
     "localSaveTitle": "このブラウザにのみ保存",
     "localSaveBody": "ブラウザのデータを消去したり端末を変えたりすると、この進捗は失われます。",
     "signInTipTitle": "ログインしてクラウドセーブをオンにしましょう。",

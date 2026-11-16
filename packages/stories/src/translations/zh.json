@@ -141,6 +141,7 @@
     "saveStatusSynced": "已同步",
     "saveStatusSyncing": "同步中",
     "saveStatusNotSynced": "未同步",
+    "saveStatusAccountSaved": "已同步至帳戶",
     "localSaveTitle": "僅儲存在此瀏覽器",
     "localSaveBody": "清除瀏覽器資料或更換裝置會遺失這些進度。",
     "signInTipTitle": "登入即可開啟雲端存檔。",

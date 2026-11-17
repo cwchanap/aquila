@@ -412,17 +412,17 @@
 ## 70. 精靈守衛（Elf Guard）
 
 - **ID**: `elf_guard`
-- **Aliases**: Elf Guard, エルフの衛兵, Elf Swordsman, エルフの剣士
+- **Aliases**: Elf Guard, エルフの衛兵, Elf Swordsman, エルフの剣士, エルフの弓兵A, エルフの弓兵B, エルフの剣士B
 
 ## 71. 精靈（Elf）
 
 - **ID**: `elf`
-- **Aliases**: Elf, エルフ, Elf Woman, エルフの女性, Elder Elf, 年長のエルフ, エルフの子ども, エルフの母親, 若いエルフA, 若いエルフB, 若いエルフC, エルフの少女, エルフの老人, エルフの職人, エルフの露店主
+- **Aliases**: Elf, エルフ, Elf Woman, エルフの女性, Elder Elf, 年長のエルフ, エルフの子ども, エルフの母親, 若いエルフA, 若いエルフB, 若いエルフC, エルフの少女, エルフの老人, エルフの職人, エルフの露店主, 若いエルフ, 若いエルフの剣士, ほかのエルフの剣士, エルフの同胞A, エルフの同胞B
 
 ## 72. 士兵（Soldier）
 
 - **ID**: `soldier`
-- **Aliases**: Soldier, 兵士
+- **Aliases**: Soldier, 兵士, 兵士A, 兵士B
 
 ## 73. 守衛（Guard）
 
@@ -502,7 +502,7 @@
 ## 88. 訊息（Message）
 
 - **ID**: `message`
-- **Aliases**: Message, メッセージ
+- **Aliases**: Message, メッセージ, メモ
 
 ## 89. 圖書館員（Librarian）
 
@@ -547,7 +547,7 @@
 ## 97. 男子（Man）
 
 - **ID**: `man`
-- **Aliases**: Man, 男, Uncle Zhang, チャンおじさん
+- **Aliases**: Man, 男, Uncle Zhang, チャンおじさん, 謎の男
 
 ## 98. 女子（Woman）
 
@@ -562,7 +562,7 @@
 ## 100. 對講機（Intercom）
 
 - **ID**: `intercom`
-- **Aliases**: Intercom, インターホン
+- **Aliases**: Intercom, インターホン, 無線機
 
 ## 101. 廣播（Announcement）
 

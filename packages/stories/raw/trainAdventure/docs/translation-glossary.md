@@ -198,6 +198,15 @@ Used before a character is named. All are registered as aliases in
 | 精靈幼童 | Elf Child | エルフの子ども | `elf` |
 | 精靈母親 | Elf Mother | エルフの母親 | `elf` |
 | 年輕精靈A / B / C | Young Elf A / B / C | 若いエルフA / B / C | `elf` |
+| 年輕精靈 / 年輕精靈劍士 | Young Elf / Young Elf Swordsman | 若いエルフ / 若いエルフの剣士 | `elf` |
+| 其他精靈劍士 | Other Elf Swordsmen | ほかのエルフの剣士 | `elf` |
+| 精靈族人A / B | Elf Kin A / B | エルフの同胞A / B | `elf` |
+| 精靈弓箭手A / B | Elf Archer A / B | エルフの弓兵A / B | `elf_guard` |
+| 精靈劍士B | Elf Swordsman B | エルフの剣士B | `elf_guard` |
+| 神秘男子 | Mysterious Man | 謎の男 | `man` |
+| 便條 | Note | メモ | `message` |
+| 對講機 | Intercom (a field radio) | 無線機 | `intercom` |
+| 士兵A / B | Soldier A / B | 兵士A / B | `soldier` |
 | 神秘聲音 | Mysterious Voice | 謎の声 | `voice` |
 | 張伯伯 | Uncle Zhang | チャンおじさん | `man` |
 | 女將 | Innkeeper | 女将 | `inn_keeper` |
@@ -345,6 +354,7 @@ Used before a character is named. All are registered as aliases in
 | 李桑 / 李先生 (*address*, branch_1a: Emi, Kenta, Saito Ren, Yamamoto) | Mr. Li | リーさん |
 | 山本大叔 (narration and *address*, branch_1a) | Uncle Yamamoto | 山本さん（やまもとさん） |
 | 艾拉如先生 (*address*: Li Jie → Ailaru) / 艾拉如長老 | Mr. Ailaru / Elder Ailaru | アイラルさん / アイラル長老（ちょうろう） |
+| 艾爾文 (an elf swordsman killed in branch_1a 4b act 27) | Elwin | エルウィン |
 | 星塵迴響 (the hit film Emi and Li Jie talk about, branch_4a act 14) | *Stardust Echoes* | 『星屑の残響（ほしくずのざんきょう）』 |
 | 永夜之地 | the Land of Eternal Night | 永夜の地（えいやのち） |
 | 空心磚 (the hollow brick in the guard room, branch_3b acts 11, 19) | the hollow brick | 空洞のレンガ（くうどうのレンガ） |
@@ -422,8 +432,10 @@ Used before a character is named. All are registered as aliases in
   3a acts 9–12, then 4a acts 13–20) and route 2b (act 7, then 3a acts 8–20 and
   3b acts 8–20). The cabin route (2a, 3a, 4a) goes on: 4a acts 21–35, then 5a
   acts 36–48 (the Hawaii ending) and 5b acts 36–37 plus 終幕 (the dark ending).
-  The branch runs to act 72 in zh; everything else past act 20 still reads zh
-  until it is translated.
+  Route 2b → 3a is now translated to its end: acts 21–26, then 4a acts 27–28
+  plus 終幕, and 4b acts 27–36 plus the epilogue and 終幕 (back on Earth in
+  2040). The branch runs to act 72 in zh; everything else past act 20 still
+  reads zh until it is translated (3b acts 21 onward is the largest part left).
 - **Acts 4–6 are voiced**, and for a translated scene the ja reader text *is*
   the spoken text. The 104 voiced lines there (act 4: 51, act 5: 30, act 6: 23)
   keep the wording of `voice-script.ja.json` as the reader text, so the takes
@@ -455,5 +467,36 @@ Used before a character is named. All are registered as aliases in
   Tree in the other routes. The gray void it speaks from is 灰色の空間.
 - **Real-world names stay as zh has them**: 中森明菜, ZARD, 夏目漱石, 川端康成,
   太宰治 and 『人間失格』 (4a act 14).
+- **Acts 21–36 on route 2b → 3a (4a / 4b)**: the elves' descriptive labels are
+  in the table above (Elwin is the swordsman Kelan mourns in 4b act 27).
+  Chiefs and villagers: 村の長 / エルフの長 read おさ, 年長のエルフ reads
+  ねんちょう, and Li Jie calls Ailaru アイラルさん. The field radio in 4b
+  act 36 is 無線機; the soldiers who meet him in 終幕 are 兵士A / 兵士B and
+  hand over two boxes (箱, はこ) holding phones. 十分 reads じゅっぷん as a
+  length of time (十分ごとに, 三十分ほど) and じゅうぶん as "enough".
+- **Voice collisions**: a short unvoiced line whose wording and speaker equal an
+  existing take (「これは……」, 「ここは……」, Emi's 「はい……」) makes
+  `voice:check` list it as voiced. This batch rewrote five such lines
+  (これは……！, ここは……？, ……はい。); run `voice:check` before opening a ja PR.
 - **zh slips kept and reported, not fixed**: 3b act 20 says Asuka is the injured
   girl of Kenta's group, while 3b act 17 has Misaki shot in the leg.
+
+## Route notes: branch_1b → branch_2a (cabin route, ja to the dark ending)
+
+- **Coverage**: acts 9–14 (route 2a), 3a acts 15–16 and 終幕. Route 2a → 3b
+  (acts 15 onward) and route 2b are still zh.
+- **Shape**: unlike branch_1b → branch_2c, Li Jie stays with the Kobayashi
+  mother and children and walks them north to the cabin; the family *is* named
+  here. In act 9 she introduces herself (小林智子, 陽菜, 翔太), so the labels
+  優しい母親 / しっかり者の姉 / 無邪気な弟 hold until then and the names after.
+  Li Jie says 小林さん to her; the children call him リー・ジエお兄ちゃん.
+- **The father** is 小林さんのご主人 in Li Jie's thoughts and narration after
+  he dies on the tracks (zh 小林先生); his name 小林雄大 first appears in 終幕,
+  on the notebook's list.
+- **Li Jie's name**: act 9 spells it out as 傑出の「傑」 (zh 傑出的傑), the one
+  place a Chinese name takes ruby in this route (けっしゅつ, けつ); everywhere
+  else it stays katakana, リー・ジエ.
+- **The notebook** (終幕): the plan's five steps, the eight names and the
+  struck-through lines are quoted as written; 迷霧の森, 月光の林, 銀月湖 and
+  終焉の祭壇 follow the places table.
+- **No line in these acts is voiced.**

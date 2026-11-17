@@ -72,6 +72,13 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
         await pool?.end();
     }, 30_000);
 
+    it('drops the retired character_setups table', async () => {
+        const { rows } = await pool.query<{
+            regclass: string | null;
+        }>(`SELECT to_regclass('public.character_setups') AS regclass`);
+        expect(rows[0].regclass).toBeNull();
+    }, 30_000);
+
     it('keeps both discoveries when two first-time merges race', async () => {
         const repo = new ReadingProgressRepository(database);
 

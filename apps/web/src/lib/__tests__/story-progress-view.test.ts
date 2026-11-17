@@ -89,6 +89,166 @@ describe('StoryProgressView', () => {
         }
     });
 
+    it('flags an unreadable local map for a signed-out visitor instead of reporting empty progress', () => {
+        const original = Storage.prototype.getItem;
+        const getSpy = vi
+            .spyOn(Storage.prototype, 'getItem')
+            .mockImplementation(function (this: Storage, key: string) {
+                if (key === storyProgressKey(null)) {
+                    throw new DOMException('denied', 'SecurityError');
+                }
+                return original.call(this, key);
+            });
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-out',
+            userId: null,
+        });
+        const dispose = view.mount();
+        try {
+            expect(view.localReadFailed).toBe(true);
+            expect(view.progress).toEqual({});
+            expect(fetchMock).not.toHaveBeenCalled();
+            expect(
+                original.call(localStorage, storyProgressKey(null))
+            ).toBeNull();
+        } finally {
+            dispose();
+            getSpy.mockRestore();
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('flags malformed persisted JSON and never overwrites or clears it', () => {
+        localStorage.setItem(storyProgressKey(null), '{broken');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-out',
+            userId: null,
+        });
+        const dispose = view.mount();
+        try {
+            expect(view.localReadFailed).toBe(true);
+            expect(view.progress).toEqual({});
+            expect(fetchMock).not.toHaveBeenCalled();
+            expect(localStorage.getItem(storyProgressKey(null))).toBe(
+                '{broken'
+            );
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('flags the read failure for an unavailable-auth visit too', async () => {
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: null,
+            error: { message: 'down' },
+        } as never);
+        localStorage.setItem(storyProgressKey(null), '{broken');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'unavailable',
+            userId: null,
+        });
+        const dispose = view.mount();
+        try {
+            await taskTurn();
+            expect(view.authState).toBe('unavailable');
+            expect(view.localReadFailed).toBe(true);
+            expect(view.progress).toEqual({});
+            expect(fetchMock).not.toHaveBeenCalled();
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it("never shows the previous account's progress when the new account's map cannot be read", async () => {
+        localStorage.setItem(storyProgressKey('user-2'), '{broken');
+        const fetchMock = vi.fn().mockResolvedValue(
+            serverResponse({
+                progress: {
+                    train_adventure: {
+                        sceneId: 'act2',
+                        dialogueIndex: 0,
+                        updatedAt: 5,
+                        finished: false,
+                        endings: [],
+                    },
+                },
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-in',
+            userId: 'user-1',
+        });
+        const dispose = view.mount();
+        try {
+            await taskTurn();
+            expect(view.progress).toHaveProperty('train_adventure');
+
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: 'user-2' } },
+                error: null,
+            } as never);
+            window.dispatchEvent(restoredPageShow());
+            await taskTurn();
+
+            expect(view.userId).toBe('user-2');
+            expect(view.localReadFailed).toBe(true);
+            expect(view.progress).toEqual({});
+            expect(view.progress).not.toHaveProperty('train_adventure');
+            expect(localStorage.getItem(storyProgressKey('user-2'))).toBe(
+                '{broken'
+            );
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('recovers when a later refresh can read the map again', async () => {
+        localStorage.setItem(storyProgressKey(null), '{broken');
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-out',
+            userId: null,
+        });
+        const dispose = view.mount();
+        try {
+            expect(view.localReadFailed).toBe(true);
+
+            localStorage.setItem(
+                storyProgressKey(null),
+                JSON.stringify({
+                    train_adventure: {
+                        sceneId: 'act2',
+                        dialogueIndex: 0,
+                        updatedAt: 5,
+                        finished: false,
+                        endings: [],
+                    },
+                })
+            );
+            window.dispatchEvent(restoredPageShow());
+            await taskTurn();
+
+            expect(view.localReadFailed).toBe(false);
+            expect(view.progress).toHaveProperty('train_adventure');
+        } finally {
+            dispose();
+        }
+    });
+
     it('stops answering restores once unmounted', async () => {
         const view = new StoryProgressView({
             locale: 'en',

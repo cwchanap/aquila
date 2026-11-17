@@ -146,7 +146,9 @@
     "signInTipBody": "您的進度會移入帳戶，並可在任何裝置上繼續。",
     "signInTipAction": "登入",
     "unavailableTitle": "顯示此瀏覽器中的進度",
-    "unavailableBody": "目前無法登入，無法檢查雲端存檔。"
+    "unavailableBody": "目前無法登入，無法檢查雲端存檔。",
+    "readErrorTitle": "無法讀取您的進度",
+    "readErrorBody": "此瀏覽器無法讀取已儲存的進度，因此無法在此顯示。未上傳、變更或清除任何內容——請嘗試重新整理頁面。"
   },
   "characterNames": {
     "narrator": "旁白",

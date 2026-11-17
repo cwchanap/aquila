@@ -147,7 +147,13 @@
     </section>
   {/if}
 
-  {#if summary.started === 0}
+  {#if view.localReadFailed}
+    <div data-testid="read-error" role="status" class="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-amber-300/40 bg-slate-950/25 px-6 py-10 text-center backdrop-blur-xl">
+      <CloudOff class="h-8 w-8 text-amber-200" aria-hidden="true" />
+      <h2 class="font-serif text-lg font-semibold text-white">{t.readErrorTitle}</h2>
+      <p class="text-sm text-white/75">{t.readErrorBody}</p>
+    </div>
+  {:else if summary.started === 0}
     <div class="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-white/15 bg-slate-950/25 px-6 py-10 text-center backdrop-blur-xl">
       <BookOpen class="h-8 w-8 text-white/80" aria-hidden="true" />
       <h2 class="font-serif text-lg font-semibold text-white">{t.emptyTitle}</h2>
@@ -187,7 +193,7 @@
             <a
               href={card.href}
               data-story-id={card.entry.id}
-              aria-labelledby="progress-{card.entry.id}-title"
+              aria-labelledby="progress-{card.entry.id}-title progress-{card.entry.id}-action"
               class="group flex items-center gap-3 rounded-2xl border border-white/15 bg-slate-950/35 p-3 backdrop-blur-xl transition-all duration-300 sm:gap-4 sm:p-4 motion-safe:hover:-translate-y-0.5 {accent.ring}"
             >
               <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-linear-to-br text-white sm:h-14 sm:w-14 {accent.cover}">
@@ -215,7 +221,7 @@
                   </span>
                 {/if}
               </span>
-              <span class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold sm:px-4 sm:py-2 {card.action === 'continue' ? 'bg-white text-blue-900' : 'bg-white/15 text-white'}">{card.actionLabel}</span>
+              <span id="progress-{card.entry.id}-action" class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold sm:px-4 sm:py-2 {card.action === 'continue' ? 'bg-white text-blue-900' : 'bg-white/15 text-white'}">{card.actionLabel}</span>
             </a>
           </li>
         {/each}

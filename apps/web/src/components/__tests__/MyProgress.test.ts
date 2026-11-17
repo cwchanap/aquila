@@ -158,6 +158,92 @@ describe('MyProgress', () => {
         expect(screen.queryByTestId('count-started')).toBeNull();
     });
 
+    it('tells a signed-out reader when saved progress cannot be read instead of claiming nothing was read', () => {
+        const original = Storage.prototype.getItem;
+        const getSpy = vi
+            .spyOn(Storage.prototype, 'getItem')
+            .mockImplementation(function (this: Storage, key: string) {
+                if (key === storyProgressKey(null)) {
+                    throw new DOMException('denied', 'SecurityError');
+                }
+                return original.call(this, key);
+            });
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        try {
+            renderProgress();
+
+            expect(screen.getByTestId('read-error')).toHaveTextContent(
+                "Couldn't read your progress"
+            );
+            expect(
+                screen.queryByRole('heading', { name: 'Nothing read yet' })
+            ).toBeNull();
+            expect(screen.queryByTestId('count-started')).toBeNull();
+            expect(
+                screen.queryAllByRole('link', { name: /Continue/ })
+            ).toHaveLength(0);
+            expect(progressCalls(fetchMock)).toHaveLength(0);
+            expect(
+                original.call(localStorage, storyProgressKey(null))
+            ).toBeNull();
+        } finally {
+            getSpy.mockRestore();
+        }
+    });
+
+    it('shows the read-error state for malformed persisted JSON without touching the saved bytes', () => {
+        localStorage.setItem(storyProgressKey(null), '{broken');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        renderProgress();
+
+        expect(screen.getByTestId('read-error')).toHaveTextContent(
+            "couldn't read"
+        );
+        expect(
+            screen.queryByRole('heading', { name: 'Nothing read yet' })
+        ).toBeNull();
+        expect(localStorage.getItem(storyProgressKey(null))).toBe('{broken');
+        expect(progressCalls(fetchMock)).toHaveLength(0);
+    });
+
+    it('shows the read-error state without a sign-in tip when auth is unavailable and the map is unreadable', async () => {
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: null,
+            error: { message: 'down' },
+        } as never);
+        localStorage.setItem(storyProgressKey(null), '{broken');
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        renderProgress({ authState: 'unavailable' });
+        await taskTurn();
+
+        const card = screen.getByTestId('save-card');
+        expect(card).toHaveTextContent('Showing progress in this browser');
+        expect(
+            within(card).queryByRole('link', { name: 'Sign in' })
+        ).toBeNull();
+        expect(screen.getByTestId('read-error')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('heading', { name: 'Nothing read yet' })
+        ).toBeNull();
+        expect(localStorage.getItem(storyProgressKey(null))).toBe('{broken');
+        expect(progressCalls(fetchMock)).toHaveLength(0);
+    });
+
+    it('shows the localized read-error state in zh', () => {
+        localStorage.setItem(storyProgressKey(null), '{broken');
+        renderProgress({ locale: 'zh' });
+
+        expect(screen.getByTestId('read-error')).toHaveTextContent(
+            '無法讀取您的進度'
+        );
+        expect(
+            screen.queryByRole('heading', { name: '還沒有閱讀紀錄' })
+        ).toBeNull();
+    });
+
     it('shows local progress without a sign-in tip when auth is unavailable', async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: null,
@@ -244,6 +330,18 @@ describe('MyProgress', () => {
         }
     });
 
+    it('names each row link with its title and its action', () => {
+        saveProgress(LOCAL_PROGRESS);
+        renderProgress();
+
+        expect(rowLink('train_adventure')).toHaveAccessibleName(
+            'The Platform at the End of the World Continue'
+        );
+        expect(rowLink('demon_lord_is_hiring')).toHaveAccessibleName(
+            'The Demon Lord Is Hiring Read again'
+        );
+    });
+
     it('links each row to its saved place and omits last-read for epoch-stamped records', () => {
         saveProgress({
             train_adventure: {
@@ -286,8 +384,27 @@ describe('MyProgress', () => {
         renderProgress();
 
         const browse = screen.getByTestId('browse-stories');
-        expect(browse).toHaveTextContent('4 stories not started yet');
+        expect(browse).toHaveTextContent('4 not started yet');
         expect(browse).toHaveAttribute('href', '/en/stories');
+    });
+
+    it('uses count-neutral wording when exactly one story is unstarted', () => {
+        const started: Record<string, unknown> = {};
+        for (const entry of STORY_CATALOG.slice(1)) {
+            started[entry.id] = {
+                sceneId: 'act2',
+                dialogueIndex: 0,
+                updatedAt: NOW - HOUR,
+                finished: false,
+                endings: [],
+            };
+        }
+        saveProgress(started);
+        renderProgress();
+
+        const browse = screen.getByTestId('browse-stories');
+        expect(browse).toHaveTextContent('1 not started yet');
+        expect(browse).not.toHaveTextContent('1 stories');
     });
 
     it('renders translated chrome for zh', () => {
@@ -301,5 +418,8 @@ describe('MyProgress', () => {
             screen.getByRole('heading', { name: '你的故事' })
         ).toBeInTheDocument();
         expect(rowLink('train_adventure')).toHaveTextContent('1 小時前');
+        expect(rowLink('the_seventh_mirror')).toHaveAccessibleName(
+            '神鏡七日 繼續'
+        );
     });
 });

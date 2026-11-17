@@ -784,8 +784,12 @@ describe('StorySelect', () => {
         ).toBeInTheDocument();
 
         // The retry starts now; the previous result is no longer current.
+        // taskTurn flushes the revalidation chain to the second request —
+        // the 'syncing' render already fired, so no DOM mutation is left
+        // to trigger a waitFor poll once the request lands.
         window.dispatchEvent(restoredPageShow());
-        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
+        await taskTurn();
+        expect(progressCalls(fetchMock)).toHaveLength(2);
         await waitFor(() =>
             expect(
                 screen.getByTestId('progress-sync-status')
@@ -819,7 +823,8 @@ describe('StorySelect', () => {
         ).toBeInTheDocument();
 
         window.dispatchEvent(restoredPageShow());
-        await waitFor(() => expect(progressCalls(fetchMock)).toHaveLength(2));
+        await taskTurn();
+        expect(progressCalls(fetchMock)).toHaveLength(2);
         await waitFor(() =>
             expect(
                 screen.getByTestId('progress-sync-status')

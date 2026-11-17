@@ -249,6 +249,71 @@ describe('StoryProgressView', () => {
         }
     });
 
+    it('reports failure instead of a stale synced when a restore cannot re-read the session', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-in',
+            userId: 'user-1',
+        });
+        const dispose = view.mount();
+        try {
+            await taskTurn();
+            expect(view.syncState).toBe('synced');
+
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: null,
+                error: { message: 'down' },
+            } as never);
+            window.dispatchEvent(restoredPageShow());
+            await taskTurn();
+
+            expect(view.syncState).toBe('failed');
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('does not let a sync that began before a restore reinstate a stale synced', async () => {
+        let resolveFirst!: (response: Response) => void;
+        const fetchMock = vi.fn(
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveFirst = resolve;
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-in',
+            userId: 'user-1',
+        });
+        const dispose = view.mount();
+        try {
+            // The mount request is still in flight when the restore's
+            // session re-read fails, so the failure owns the status.
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: null,
+                error: { message: 'down' },
+            } as never);
+            window.dispatchEvent(restoredPageShow());
+            await taskTurn();
+            expect(view.syncState).toBe('failed');
+
+            resolveFirst(serverResponse({ progress: {} }));
+            await taskTurn();
+            expect(view.syncState).toBe('failed');
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
+
     it('stops answering restores once unmounted', async () => {
         const view = new StoryProgressView({
             locale: 'en',

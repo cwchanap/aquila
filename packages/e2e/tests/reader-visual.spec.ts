@@ -1045,7 +1045,7 @@ test.describe('Reader Acts rail Home', () => {
         await expect(page.getByTestId('reader-ready')).toBeVisible();
 
         await page.getByRole('button', { name: 'Open menu' }).click();
-        const home = page.getByRole('link', { name: '← Back to Home' });
+        const home = page.getByRole('link', { name: 'Back to Home' });
         await expect(home).toHaveCount(1);
         await expect(home).toBeVisible();
         await expect(home).toHaveAttribute('href', '/en/');

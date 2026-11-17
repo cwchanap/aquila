@@ -67,7 +67,7 @@ inside the cabin in 迷霧之森: one small square room of thick, smooth, dark w
 **旁白**：恵美乖巧地走到床邊，蜷縮在床的一側，閉上了眼睛。
 
 ```bg shower
-inside the cabin's tiny washroom in 迷霧之森: walls of dark wooden planks, a single small brass oil lamp on a hook giving a dim warm orange glow. Camera: a tight close-up of Li Jie's face and head, framed from the collarbones up: Li Jie (28-year-old man, short black hair soaked flat against his head) leans his forehead against his forearm on the dark plank wall, eyes closed, cold water from above streaming down over his hair and face, his expression exhausted and troubled, lost in thought, not smiling; water droplets catch the lamplight. Only Li Jie in view. Moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+inside the cabin's tiny washroom in 迷霧之森: walls of dark wooden planks, a single small brass oil lamp on a hook giving a dim warm orange glow. Camera: a tight close-up of Li Jie's head, side-on in three-quarter profile, framed from the collarbones up: Li Jie (28-year-old man, short black hair soaked flat against his head) stands with his head bowed under the falling water, chin lowered, eyes closed, cold water from above streaming over his hair and running down his face and neck, his expression exhausted and troubled, lost in thought, not smiling; a natural, relaxed pose with no arms or hands in the frame; the dark plank wall soft behind him, water droplets catching the lamplight. Only Li Jie in view. Moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
 ```
 
 **旁白**：李杰進入浴室。冰涼的水沖刷著他疲憊的身體，讓他稍微清醒了一些。他靠在牆上，任由水流過臉龐。

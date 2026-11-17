@@ -369,6 +369,44 @@ describe('StoryProgressView', () => {
         }
     });
 
+    it('revalidates a retained signed-out page on online when its restore never answered', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-out',
+            userId: null,
+        });
+        const dispose = view.mount();
+        try {
+            vi.mocked(authClient.getSession).mockResolvedValueOnce({
+                data: null,
+                error: { message: 'offline' },
+            } as never);
+            window.dispatchEvent(restoredPageShow());
+            await taskTurn();
+            expect(view.syncState).toBe('failed');
+            expect(view.authState).toBe('signed-out');
+
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: 'user-1' } },
+                error: null,
+            } as never);
+            window.dispatchEvent(new Event('online'));
+            await taskTurn();
+
+            expect(view.authState).toBe('signed-in');
+            expect(view.userId).toBe('user-1');
+            expect(view.syncState).toBe('synced');
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
+
     it('retries runSync directly when retry() is called after a sync failure', async () => {
         const fetchMock = vi
             .fn()

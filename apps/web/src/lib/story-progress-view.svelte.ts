@@ -228,9 +228,14 @@ export class StoryProgressView {
             this.refresh();
         };
         const onOnline = () => {
+            // A retained signed-out answer still retries when the
+            // newest restore never validated — the reconnect is what
+            // lets that restore answer, and retry() re-reads the
+            // session before it can sync.
             if (
                 this.syncState === 'failed' &&
-                this.authState !== 'signed-out'
+                (this.authState !== 'signed-out' ||
+                    this.validatedSeq !== this.restoreSeq)
             ) {
                 void this.retry();
             }

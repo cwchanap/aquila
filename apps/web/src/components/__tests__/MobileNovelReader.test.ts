@@ -65,7 +65,10 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             storyMap: { open: 'Open story map' },
         },
         characterNames: { narrator: 'Narrator' },
-        common: { backToHome: 'Back to Home' },
+        common: {
+            backToHome: '← Back to Home',
+            backToHomeLabel: 'Back to Home',
+        },
         languages: { english: 'English', chinese: '中文', japanese: '日本語' },
         locale,
     })),

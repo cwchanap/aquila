@@ -14,6 +14,10 @@
   import type { AuthState } from '@/lib/auth-utils';
   import { StoryProgressView } from '@/lib/story-progress-view.svelte';
   import {
+    progressSyncPresentation,
+    type CloudSyncStatus,
+  } from '@/lib/sync-presentation';
+  import {
     STORY_ACCENTS,
     storyIconFor,
   } from '@/lib/story-presentation';
@@ -38,65 +42,33 @@
     }))
   );
 
-  let t = $derived(getTranslations(locale).progress);
+  let mounted = $state(false);
+  let translations = $derived(getTranslations(locale));
+  let t = $derived(translations.progress);
+  let common = $derived(translations.common);
   let cards = $derived(
-    buildCards(STORY_CATALOG, view.progress, locale, getTranslations(locale).stories)
+    buildCards(STORY_CATALOG, view.progress, locale, translations.stories)
   );
   let summary = $derived(summarizeProgress(cards));
   let rows = $derived(startedStoryCards(cards));
   let notStarted = $derived(summary.total - summary.started);
+  let readyForEmpty = $derived(
+    mounted && (view.authState === 'signed-out' || view.syncState !== 'idle')
+  );
 
-  type SaveState =
-    | 'syncing'
-    | 'synced'
-    | 'failed'
-    | 'local-failed'
-    | 'local-save-failed'
-    | 'browser'
-    | 'unavailable';
-  let saveState = $derived.by((): SaveState => {
-    if (view.authState === 'unavailable') return 'unavailable';
-    if (view.authState === 'signed-out') return 'browser';
-    if (view.syncState === 'idle') return 'syncing';
-    return view.syncState;
+  let cloudState = $derived<CloudSyncStatus>(
+    view.syncState === 'idle' ? 'syncing' : view.syncState
+  );
+  let cloudCard = $derived(progressSyncPresentation(t)[cloudState]);
+
+  onMount(() => {
+    mounted = true;
+    return view.mount();
   });
-  let saveBody = $derived(
-    saveState === 'synced'
-      ? t.cloudSaveSynced
-      : saveState === 'failed'
-        ? t.cloudSaveFailed
-        : saveState === 'local-failed'
-          ? t.cloudSaveLocalReadFailed
-          : saveState === 'local-save-failed'
-            ? t.cloudSaveLocalSaveFailed
-            : saveState === 'browser'
-              ? t.localSaveBody
-              : saveState === 'unavailable'
-                ? t.unavailableBody
-                : t.cloudSaveSyncing
-  );
-  let saveDot = $derived(
-    saveState === 'synced'
-      ? 'bg-emerald-300/80'
-      : saveState === 'syncing'
-        ? 'bg-cyan-300/70 motion-safe:animate-pulse'
-        : 'bg-amber-300/80'
-  );
-  let saveChip = $derived(
-    saveState === 'synced'
-      ? t.saveStatusSynced
-      : saveState === 'syncing'
-        ? t.saveStatusSyncing
-        : saveState === 'local-save-failed'
-          ? t.saveStatusAccountSaved
-          : t.saveStatusNotSynced
-  );
-
-  onMount(() => view.mount());
 </script>
 
 <div class="mx-auto flex w-full max-w-4xl flex-col gap-6" data-testid="my-progress">
-  {#if saveState === 'browser'}
+  {#if view.authState === 'signed-out'}
     <section data-testid="save-card" class="rounded-2xl border border-white/25 bg-slate-950/30 p-4 backdrop-blur-xl sm:p-5">
       <div class="flex items-center gap-4">
         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white/85 sm:h-12 sm:w-12">
@@ -116,7 +88,7 @@
         >{t.signInTipAction}</a>
       </div>
     </section>
-  {:else if saveState === 'unavailable'}
+  {:else if view.authState === 'unavailable'}
     <section data-testid="save-card" class="flex items-center gap-4 rounded-2xl border border-white/25 bg-slate-950/30 p-4 backdrop-blur-xl sm:p-5">
       <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white/85 sm:h-12 sm:w-12">
         <MonitorSmartphone class="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
@@ -128,10 +100,10 @@
     </section>
   {:else}
     <section data-testid="save-card" class="flex items-center gap-4 rounded-2xl border border-white/25 bg-slate-950/30 p-4 backdrop-blur-xl sm:p-5">
-      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 {saveState === 'synced' ? 'bg-emerald-400/25 text-emerald-200' : saveState === 'syncing' ? 'bg-cyan-400/20 text-cyan-100' : 'bg-amber-400/25 text-amber-100'}">
-        {#if saveState === 'synced'}
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 {cloudCard.iconBoxClass}">
+        {#if cloudCard.icon === 'check'}
           <CloudCheck class="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
-        {:else if saveState === 'syncing'}
+        {:else if cloudCard.icon === 'syncing'}
           <Cloud class="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
         {:else}
           <CloudOff class="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
@@ -139,11 +111,20 @@
       </span>
       <div class="min-w-0 flex-1">
         <h2 class="font-serif text-base font-semibold text-white sm:text-lg">{t.cloudSaveTitle}</h2>
-        <p class="text-sm text-white/75">{saveBody}</p>
+        <p class="text-sm text-white/75">{cloudCard.body}</p>
       </div>
-      <span role="status" class="flex shrink-0 items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/85">
-        <span class="h-1.5 w-1.5 rounded-full {saveDot}" aria-hidden="true"></span>{saveChip}
-      </span>
+      <div class="flex shrink-0 items-center gap-2">
+        {#if cloudState === 'failed'}
+          <button
+            type="button"
+            onclick={() => void view.retry()}
+            class="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/20"
+          >{common.retry}</button>
+        {/if}
+        <span role="status" class="flex shrink-0 items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/85">
+          <span class="h-1.5 w-1.5 rounded-full {cloudCard.dotClass}" aria-hidden="true"></span>{cloudCard.chip}
+        </span>
+      </div>
     </section>
   {/if}
 
@@ -154,15 +135,17 @@
       <p class="text-sm text-white/75">{t.readErrorBody}</p>
     </div>
   {:else if summary.started === 0}
-    <div class="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-white/15 bg-slate-950/25 px-6 py-10 text-center backdrop-blur-xl">
-      <BookOpen class="h-8 w-8 text-white/80" aria-hidden="true" />
-      <h2 class="font-serif text-lg font-semibold text-white">{t.emptyTitle}</h2>
-      <p class="text-sm text-white/75">{t.emptyBody}</p>
-      <a
-        href={`/${locale}/stories`}
-        class="mt-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-blue-900 transition-transform duration-300 motion-safe:hover:scale-105"
-      >{t.browseStories}</a>
-    </div>
+    {#if readyForEmpty}
+      <div class="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-white/15 bg-slate-950/25 px-6 py-10 text-center backdrop-blur-xl">
+        <BookOpen class="h-8 w-8 text-white/80" aria-hidden="true" />
+        <h2 class="font-serif text-lg font-semibold text-white">{t.emptyTitle}</h2>
+        <p class="text-sm text-white/75">{t.emptyBody}</p>
+        <a
+          href={`/${locale}/stories`}
+          class="mt-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-blue-900 transition-transform duration-300 motion-safe:hover:scale-105"
+        >{t.browseStories}</a>
+      </div>
+    {/if}
   {:else}
     <div class="grid grid-cols-3 gap-2 sm:gap-4">
       <div data-testid="count-started" class="rounded-xl border border-white/15 bg-slate-950/25 p-2.5 text-center backdrop-blur-xl sm:rounded-2xl sm:p-4">

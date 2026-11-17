@@ -331,4 +331,66 @@ describe('StoryProgressView', () => {
         await taskTurn();
         expect(vi.mocked(authClient.getSession)).toHaveBeenCalledTimes(1);
     });
+
+    it('recovers from a failed restore session check on retry and online', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-in',
+            userId: 'user-1',
+        });
+        const dispose = view.mount();
+        try {
+            await taskTurn();
+            expect(view.syncState).toBe('synced');
+
+            vi.mocked(authClient.getSession).mockResolvedValueOnce({
+                data: null,
+                error: { message: 'offline' },
+            } as never);
+            window.dispatchEvent(restoredPageShow());
+            await taskTurn();
+            expect(view.syncState).toBe('failed');
+
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: 'user-1' } },
+                error: null,
+            } as never);
+            window.dispatchEvent(new Event('online'));
+            await taskTurn();
+            expect(view.syncState).toBe('synced');
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('retries runSync directly when retry() is called after a sync failure', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockRejectedValueOnce(new Error('offline'))
+            .mockResolvedValueOnce(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+        const view = new StoryProgressView({
+            locale: 'en',
+            authState: 'signed-in',
+            userId: 'user-1',
+        });
+        const dispose = view.mount();
+        try {
+            await taskTurn();
+            expect(view.syncState).toBe('failed');
+
+            await view.retry();
+            expect(view.syncState).toBe('synced');
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+        } finally {
+            dispose();
+            vi.unstubAllGlobals();
+        }
+    });
 });

@@ -74,7 +74,10 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
         },
-        common: { backToHome: 'Back to Home' },
+        common: {
+            backToHome: '← Back to Home',
+            backToHomeLabel: 'Back to Home',
+        },
         locale: 'en',
     })),
 }));

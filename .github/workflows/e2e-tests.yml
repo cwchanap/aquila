@@ -72,8 +72,9 @@ jobs:
 
       - name: Run reading-progress real-Postgres tests
         # Opt-in suite: proves the FOR NO KEY UPDATE merge, compiled-story
-        # bookmark writes, the character_setups drop, and scoped story
-        # deletion against the migrated job DB.
+        # bookmark writes, and scoped story deletion against the migrated job
+        # DB. (Dropping character_setups waits for a follow-up release once
+        # prior deployments drain.)
         working-directory: apps/web
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}

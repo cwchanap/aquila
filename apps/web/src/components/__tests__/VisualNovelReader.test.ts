@@ -55,7 +55,8 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             narrator: 'Narrator',
         },
         common: {
-            backToHome: 'Back to Home',
+            backToHome: '← Back to Home',
+            backToHomeLabel: 'Back to Home',
         },
         locale,
     })),

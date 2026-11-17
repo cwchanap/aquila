@@ -46,7 +46,9 @@
     "login": "ログイン",
     "back": "戻る",
     "backLabel": "前のページに戻る",
-    "backToHome": "← ホームに戻る"
+    "backToHome": "← ホームに戻る",
+    "backToHomeLabel": "ホームに戻る",
+    "retry": "再試行"
   },
   "nav": {
     "profile": "プロフィール"

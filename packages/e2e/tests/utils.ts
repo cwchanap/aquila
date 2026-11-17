@@ -288,7 +288,7 @@ export class MobileReaderPage {
     }
 
     private get backToHomeLabel() {
-        const labels = { en: '← Back to Home', zh: '← 返回主頁' };
+        const labels = { en: 'Back to Home', zh: '返回主頁' };
         return labels[this.locale];
     }
 

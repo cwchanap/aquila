@@ -46,7 +46,9 @@
     "login": "Login",
     "back": "Back",
     "backLabel": "Go back to the previous page",
-    "backToHome": "← Back to Home"
+    "backToHome": "← Back to Home",
+    "backToHomeLabel": "Back to Home",
+    "retry": "Retry"
   },
   "nav": {
     "profile": "Profile"

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
 import type { Locale } from '@aquila/stories';
 import { STORY_CATALOG } from '@aquila/stories/catalog';
@@ -264,6 +264,45 @@ describe('MyProgress', () => {
         expect(progressCalls(fetchMock)).toHaveLength(0);
     });
 
+    it('holds back the empty state until signed-in cloud sync finishes', async () => {
+        let resolveSync!: (response: Response) => void;
+        const fetchMock = vi.fn(
+            () =>
+                new Promise<Response>(resolve => {
+                    resolveSync = resolve;
+                })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+        renderProgress({ authState: 'signed-in', userId: 'user-1' });
+
+        expect(
+            within(screen.getByTestId('save-card')).getByRole('status')
+        ).toHaveTextContent('Syncing');
+        expect(
+            screen.queryByRole('heading', { name: 'Nothing read yet' })
+        ).toBeNull();
+
+        resolveSync(
+            serverResponse({
+                progress: {
+                    elevator_game: {
+                        sceneId: 'b1a_act4',
+                        dialogueIndex: 9,
+                        updatedAt: NOW - HOUR,
+                        finished: true,
+                        endings: ['b1a_act4'],
+                    },
+                },
+            })
+        );
+        await taskTurn();
+
+        expect(
+            screen.queryByRole('heading', { name: 'Nothing read yet' })
+        ).toBeNull();
+        expect(rowLink('elevator_game')).toBeInTheDocument();
+    });
+
     it('announces cloud save as synced after a signed-in sync succeeds', async () => {
         const fetchMock = vi
             .fn()
@@ -278,8 +317,11 @@ describe('MyProgress', () => {
         expect(progressCalls(fetchMock).length).toBeGreaterThan(0);
     });
 
-    it('announces a readable failure when signed-in sync fails', async () => {
-        const fetchMock = vi.fn().mockRejectedValue(new Error('offline'));
+    it('announces a readable failure with a Retry button when signed-in sync fails', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockRejectedValueOnce(new Error('offline'))
+            .mockResolvedValueOnce(serverResponse({ progress: {} }));
         vi.stubGlobal('fetch', fetchMock);
         renderProgress({ authState: 'signed-in', userId: 'user-1' });
         await taskTurn();
@@ -289,6 +331,13 @@ describe('MyProgress', () => {
             'Not synced'
         );
         expect(card).toHaveTextContent("Couldn't reach your account");
+
+        await fireEvent.click(
+            within(card).getByRole('button', { name: 'Retry' })
+        );
+        await taskTurn();
+
+        expect(within(card).getByRole('status')).toHaveTextContent('Synced');
     });
 
     it('marks the chip as saved to the account when only the local copy fails', async () => {

@@ -1,5 +1,9 @@
 # 第十一幕：破碎的線索
 
+```bg wake_porridge
+inside the cabin in 迷霧之森: one small square room of thick, smooth, dark wooden planks, spotlessly clean and dry, with not a speck of dust or a cobweb anywhere, under a low ceiling of dark beams; no electric light: four small brass oil lamps hanging on hooks on the walls give a soft, warm orange glow. Seen from the front door: along the left wall a wooden double bed made up with neat white sheets, a pillow and a folded blanket, its head in the far-left corner beside a small wooden bedside table; in the middle of the far wall a small square window of old glass showing only grey-white fog, and under it a small square wooden table with two plain wooden stools; in the far-right corner a simple little kitchen: a low wood-burning stove of stone and clay with a small iron pot, a plank counter, open shelves of plain clay bowls and plates, and a wooden cupboard; in the right wall a closed plank door to the washroom; a wide plank floor; nothing else, no decorations, no text. Camera: low, at floor level from just behind Li Jie's shoulder. In the left foreground Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt), his hair messy from sleep, sits up on the blanket on the plank floor, rubbing the back of his stiff neck, not smiling. Across the room in the far-right kitchen corner Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones) stands with her back to him at the little stone stove, stirring the small iron pot with a wooden spoon, white steam rising from it into the lamplight. Only these two people in view. Warm orange lamplight against the cold grey-white fog in the window, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **旁白**：李杰這次是徹底清醒了。不再是那種半夢半醒的迷糊狀態，而是完全清醒的意識。
 
 **旁白**：一股淡淡的米粥香氣飄進鼻腔，讓他因飢餓而空虛的胃抽動了一下。
@@ -12,11 +16,19 @@
 
 **李杰**：(站起來，活動了一下僵硬的身體)辛苦妳了。
 
+```bg breakfast
+inside the cabin in 迷霧之森: one small square room of thick, smooth, dark wooden planks, spotlessly clean and dry, with not a speck of dust or a cobweb anywhere, under a low ceiling of dark beams; no electric light: four small brass oil lamps hanging on hooks on the walls give a soft, warm orange glow. Seen from the front door: along the left wall a wooden double bed made up with neat white sheets, a pillow and a folded blanket, its head in the far-left corner beside a small wooden bedside table; in the middle of the far wall a small square window of old glass showing only grey-white fog, and under it a small square wooden table with two plain wooden stools; in the far-right corner a simple little kitchen: a low wood-burning stove of stone and clay with a small iron pot, a plank counter, open shelves of plain clay bowls and plates, and a wooden cupboard; in the right wall a closed plank door to the washroom; a wide plank floor; nothing else, no decorations, no text. Camera: a medium two-shot at seated eye level, side-on across the small square table under the window, the grey-white fog in the glass behind them. On the table two plain clay bowls of steaming white rice porridge with a few bits of dried greens, and wooden spoons. On the left Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt) sits on a stool, his hand reaching for his spoon, looking up at her with a sudden questioning look, not smiling. On the right Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones) sits on the other stool with her bowl, eyes lowered, not smiling. White steam rises slowly in the warm lamplight. Only these two people in view. Warm orange lamplight against the cold grey-white fog in the window, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **旁白**：恵美端來兩碗熱氣騰騰的粥，放在桌上。白色的蒸氣在昏暗的油燈光下緩緩升起，帶著米香和一絲乾菜的鹹味。
 
 **旁白**：就在李杰準備拿起湯匙時，半夜醒來的那段模糊記憶突然變得清晰。他記起來了——恵美不在床上的那一幕。
 
 **李杰**：對了，清水...我半夜好像醒過一次，當時妳...不在床上。妳去哪了？
+
+```bg flinch
+inside the cabin in 迷霧之森: one small square room of thick, smooth, dark wooden planks, spotlessly clean and dry, with not a speck of dust or a cobweb anywhere, under a low ceiling of dark beams; no electric light: four small brass oil lamps hanging on hooks on the walls give a soft, warm orange glow. Seen from the front door: along the left wall a wooden double bed made up with neat white sheets, a pillow and a folded blanket, its head in the far-left corner beside a small wooden bedside table; in the middle of the far wall a small square window of old glass showing only grey-white fog, and under it a small square wooden table with two plain wooden stools; in the far-right corner a simple little kitchen: a low wood-burning stove of stone and clay with a small iron pot, a plank counter, open shelves of plain clay bowls and plates, and a wooden cupboard; in the right wall a closed plank door to the washroom; a wide plank floor; nothing else, no decorations, no text. Camera: Li Jie's point of view across the little table, a close-up of Emi at seated eye level, the fogged window behind her. Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones) holds her clay bowl of porridge in both hands; her hands tremble and a little porridge slops at the rim; her eyes dart away to the side, avoiding his, a forced, flustered look, not smiling. Only Emi in view. Warm orange lamplight against the cold grey-white fog in the window, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
 
 **旁白**：恵美端著碗的手輕微地抖了一下，粥湯都險些灑了出來。
 
@@ -28,17 +40,29 @@
 
 **李杰**：(內心)她在隱瞞什麼...但現在追問也沒用。先吃飽，保存體力。
 
+```bg
+reuse branch_1a/branch_2a/branch_3a/b1a_b2a_b3a_act11_breakfast
+```
+
 **旁白**：兩人沉默地吃完了這頓簡單的早餐。粥很燙，但味道不錯。至少比餓著肚子在森林裡走要好得多。
 
 **李杰**：不知道大叔他們怎麼樣了。希望他們沒有遇到麻煩。
 
 **清水恵美**：嗯...我們吃完...就快點去追他們吧。人多一點...總會比較安心。
 
+```bg leaving_prep
+inside the cabin in 迷霧之森: one small square room of thick, smooth, dark wooden planks, spotlessly clean and dry, with not a speck of dust or a cobweb anywhere, under a low ceiling of dark beams; no electric light: four small brass oil lamps hanging on hooks on the walls give a soft, warm orange glow. Seen from the front door: along the left wall a wooden double bed made up with neat white sheets, a pillow and a folded blanket, its head in the far-left corner beside a small wooden bedside table; in the middle of the far wall a small square window of old glass showing only grey-white fog, and under it a small square wooden table with two plain wooden stools; in the far-right corner a simple little kitchen: a low wood-burning stove of stone and clay with a small iron pot, a plank counter, open shelves of plain clay bowls and plates, and a wooden cupboard; in the right wall a closed plank door to the washroom; a wide plank floor; nothing else, no decorations, no text. Camera: a medium-wide shot at standing eye level from beside the foot of the bed, toward the kitchen corner. On the right Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones) stands at the open wooden cupboard, wrapping dried fruit and grain in a square of plain cloth and tucking the bundle into her cream canvas shoulder bag; the washed clay bowls are stacked on the shelf. On the left Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) stands by the table, running a fingertip along the spotless shelf edge and studying it, frowning, puzzled, not smiling. Only these two people in view. Warm orange lamplight against the cold grey-white fog in the window, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **旁白**：吃完後，恵美主動地收拾好碗筷，然後從櫥櫃裡拿出一些乾果和穀物，用布包好，放進了自己的背包裡。
 
 **旁白**：在他們準備離開前，李杰又花了一些時間，仔細地觀察了這間小屋。每一個角落都乾淨得不可思議，沒有灰塵，沒有蜘蛛網，甚至連牆角都看不到一絲髒汙。
 
 **李杰**：(內心)這裡的主人...是最近才離開的嗎？還是說...他一直都在附近？
+
+```bg back_on_path
+a small, old cabin of dark weathered timber standing alone at the side of the forest path deep in 迷霧之森: a single storey of thick dark planks covered in green moss, a low pitched roof of dark wooden shingles furred with moss, a short stone chimney at one end with no smoke, one plain plank front door facing the path with a single flat stone step before it, and one small square window of old glass on each side of the door, both dark and dim so nothing inside can be seen; colossal twisted black trees close around it under a dense canopy that hides the sky; no fence, no sign, no lamp outside, no other buildings. The fog is as thick as ever: the cabin and a few metres of path show, everything beyond dissolves into grey-white. Camera: a medium-wide shot at eye level on the path a little past the cabin, looking back toward it: the cabin with its closed door and dark windows stands soft in the fog on the left of the frame behind them. Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) and Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, plain white canvas sneakers, a cream canvas shoulder bag) walk toward the camera along the path side by side, away from the cabin; he turns to her as he talks, tired, at most a faint smile, his smartphone held up in one hand at chest height with its small white LED torch on, its light shining forward past the camera's side so it makes only a soft white glow, no glare; she listens with her sketchbook hugged to her chest, a shy look, not smiling. Only these two people in view. Muted cold palette of misty grey-white and violet-black with the small white glow of the phone torch, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
 
 **旁白**：最終，他沒有發現任何額外的線索。兩人一起走出了小屋，重新回到了那條被濃霧籠罩的小徑上。
 
@@ -54,13 +78,25 @@
 
 **李杰**：是啊，至少比困在這種全是霧的鬼地方好多了。
 
+```bg stops
+the 迷霧之森 (Misty Forest) inland from Jishui station: a narrow path of dark packed earth strewn with dead leaves winds between colossal, strangely twisted ancient trees, their gnarled black trunks and contorted branches rising up out of sight, thick roots breaking through the ground, ferns and moss at their feet; a dense canopy hides the sky and the two moons; only thin threads of eerie violet moonlight slip through gaps in the leaves into drifting white mist; no lamps, no buildings, no signposts, no fences. The fog is thick all around, grey-white beyond a few metres. Camera: a low angle close to the ground, side-on to the path. Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) has stopped dead mid-stride, his right black leather shoe pressed down on the dead leaves and dark earth, and looks down at his foot, startled, not smiling, his smartphone held up in one hand at chest height with its small white LED torch on. Just behind him Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, plain white canvas sneakers, a cream canvas shoulder bag) has stopped too, startled, clutching her sketchbook. Nothing shows under his shoe. Only these two people in view. Muted cold palette of misty grey-white and violet-black with the small white glow of the phone torch, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **旁白**：就在氣氛變得稍微輕鬆了一些時，李杰的腳下突然傳來「喀啦」一聲清脆的碎裂聲。
 
 **李杰**：(停下腳步)什麼東西？
 
+```bg glasses
+the 迷霧之森 (Misty Forest) inland from Jishui station: a narrow path of dark packed earth strewn with dead leaves winds between colossal, strangely twisted ancient trees, their gnarled black trunks and contorted branches rising up out of sight, thick roots breaking through the ground, ferns and moss at their feet; a dense canopy hides the sky and the two moons; only thin threads of eerie violet moonlight slip through gaps in the leaves into drifting white mist; no lamps, no buildings, no signposts, no fences. Camera: a detail insert at ground level, close on the path: on the dark packed earth among dead leaves, half buried in the mud right beside the toe of Li Jie's black leather shoe, which he has just lifted away, lies a crushed pair of glasses with a thin silver wire frame: the frame bent and twisted, one temple arm bent out of shape, both lenses smashed into jagged glittering shards. The white light of his phone torch falls on them from above. Only his shoe and the lower leg of his dark trousers in view, no faces, no other people. Muted cold palette of dark earth, grey-white fog and violet-black with the white torchlight, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **旁白**：他挪開自己的腳。在他腳邊的泥土裡，半埋著一副已經被他踩碎的...眼鏡。
 
 **李杰**：(內心)眼鏡...？為什麼森林裡會有眼鏡？
+
+```bg frame_held
+the 迷霧之森 (Misty Forest) inland from Jishui station: a narrow path of dark packed earth strewn with dead leaves winds between colossal, strangely twisted ancient trees, their gnarled black trunks and contorted branches rising up out of sight, thick roots breaking through the ground, ferns and moss at their feet; a dense canopy hides the sky and the two moons; only thin threads of eerie violet moonlight slip through gaps in the leaves into drifting white mist; no lamps, no buildings, no signposts, no fences. The fog is thick all around, grey-white beyond a few metres. Camera: a close shot, slightly low, three-quarter from the front. Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) crouches on the path, holding the twisted glasses up in front of his face between finger and thumb: a thin silver wire frame bent out of shape, one temple arm bent, both lenses shattered with only a few jagged shards left in the rims; his face grim and uneasy in the white light of the smartphone in his other hand, its small LED torch on, not smiling. Behind him, soft and slightly out of focus, Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, plain white canvas sneakers, a cream canvas shoulder bag) stands with her sketchbook hugged to her chest, staring at the glasses, frightened, not smiling. Only these two people in view. Muted cold palette of misty grey-white and violet-black with the small white glow of the phone torch, moody cinematic visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
 
 **旁白**：他彎下腰，撿起扭曲的鏡框。鏡片已經完全碎裂。這副眼鏡看起來很普通，但出現在這裡，本身就是一件極其不祥的事。
 

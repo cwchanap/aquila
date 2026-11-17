@@ -1,4 +1,4 @@
-# Art bible, Shinjuku platform, train carriage, Jishui station, 幽冥之都 and 迷霧之森 (acts 1-8)
+# Art bible, Shinjuku platform, train carriage, Jishui station, 幽冥之都, 迷霧之森 and the cabin in the fog (acts 1-11)
 
 The train carries exactly 16 passengers, the cast on the character sheet. No extras anywhere inside the train. A scene shows only the people its beat needs; nobody has to appear in every background. Ling Mo is gone from act 4 on in both branches; who else stays aboard depends on the branch (see Acts 4-6 below).
 
@@ -71,7 +71,7 @@ There is no exterior shot: an outside view of the train never matched the interi
 - Acts 1-2: Tokyo night city on both sides, then the black tunnel (windows act as mirrors), then the blue-black glow.
 - Act 3 onward: dark forest through the left windows, black sea with two violet crescent moons (one large, one small) through the right windows. Jishui station's platform is on the forest (left) side, so the doors open on the left: a short platform of cracked grey-white stone slabs with moss; along its far side a real single-storey wooden station house (the waiting room of acts 4-6: plank walls with cracks and mould, glassless windows, a dark open doorway, rows of benches inside, a timetable board by the door, a few old paper lanterns under the eaves, unlit in act 3 and glowing faintly from act 4 on); a weathered wooden sign reading 寂海 with a worn line of small text beneath (act 6 reads it as ← 永恆之森 | 幽冥之都 →; keep it unreadable in act 3); the dark forest right behind, and a dirt path from the platform's right-hand end, seen facing the station house, into the trees (act 4 walks it; the left-hand end has no path). The sea and the two moons show only through the right windows; the left windows and the open door show no moon.
 
-## Acts 4-8
+## Acts 4-11
 
 After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui and the art moves to the platform and the waiting room; in branch 1b he stays aboard, the doors lock and the train runs on along the coast to 幽冥之都, where he gets off in acts 7-8. The carriage, seating plan and window views above still hold inside the train.
 
@@ -82,6 +82,7 @@ After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui 
 - **Branch 1b, from act 5 on:** aboard, Li Jie, the Ito couple, Nakamura and the Kobayashi family, in their own seats. Everyone else got off while Li Jie was in the front cars, so the near half of the carriage is empty.
 - **Branch 1b, act 7:** Li Jie alone on the 幽冥之都 platform and in the station building. Still aboard, with the door open, the Ito couple, Nakamura and the Kobayashi family, fighting (b1b_act7_carriage_fight). Hina and Shota run out to him at the end of the act.
 - **Branch 1a/2a, acts 7-8:** Li Jie stays to search the waiting room and Emi stays with him. Yamamoto, his messenger bag on his shoulder, leaves for the forest at the start of act 7 (b1a_b2a_act7_yamamoto_leaves) and is not seen again in these acts. From then on only Li Jie and Emi are in the picture: in the waiting room, on the platform's right-hand end where the dirt path starts, and in 迷霧之森 up to the four-way fork.
+- **Branch 1a/2a/3a, acts 9-11:** only Li Jie and Emi. They take the main path from the fork, find the cabin at the side of the path, sleep there, and walk on in the morning until Li Jie steps on the broken glasses (Saito's, act 12).
 - **Branch 1b, act 8:** the train leaves with Yudai, the Ito couple and Nakamura aboard; it is shown only from inside (b1b_act8_train_leaving) and as two red tail lights going away down the track (b1b_act8_mother_fallen), never as a train body. Tomoko, Hina, Shota and Li Jie stay on the platform.
 
 ### Continuity details
@@ -100,6 +101,11 @@ These are settled from the story text and hold in every image, acts 1-8:
 - **Li Jie's sword (branch 1b):** from b1b_act7_sword on he carries a long straight sword, its blade pitted red-brown with rust and dull, a plain crossguard, the grip wrapped in rotting cloth strips. In act 8 he plants its point on the stones while he listens. The station map is folded in his pocket and never shown again.
 - **The waiting-room map (branch 1a/2a):** it hangs on the far end wall until Li Jie tears it down in act 7 (b1a_b2a_act7_map_taken); a paler patch of wood shows where it was. From then on it is folded in his pocket, and he unfolds it at the fork in act 8. It keeps the look it has on the wall in b1a_act6_waiting_room: yellowed parchment, torn edges, faint brown ink paths and little drawn trees, labels too small and faded to read.
 - **Li Jie's phone torch (branch 1a/2a):** on in the waiting room in act 7 until he takes the map down, off on the platform and on the first stretch of forest path, and on again from act 8's "霧越來越濃了" (b1a_b2a_act8_torch_fog) to the end of the act.
+- **Li Jie's phone torch (branch 1a/2a/3a):** still on along the main path in act 9 and again outdoors in act 11; off inside the cabin, which the oil lamps light. Prompts say "smartphone ... small white LED torch" and hold it at chest height; held low it comes out as a flashlight.
+- **Emi's bag:** the cream canvas shoulder bag she has carried since act 1 (it shows in every 1a/2a shot) is the 背包 she packs food into in act 11.
+- **Emi's clothes in the cabin (acts 10-11):** from act 10's "十幾分鐘後，恵美從浴室出來" she wears a long white cotton robe, hair wet, through the night. In act 11 she is back in her beige dress (act 16 calls her own clothes dirty when she changes into an elf robe there).
+- **Li Jie's backpack in the cabin:** set down against the wall by the front door from bed_offer on, back on his shoulder for leaving_prep.
+- **The broken glasses (act 11):** a thin silver wire frame like Saito's glasses on his portrait, bent and twisted, one temple arm bent, both lenses smashed. Act 12's text calls the frame 黑色細框 (thin black); the art follows the portrait until the text or the art is changed.
 - **Tomoko's injury (branch 1b, act 8):** she falls on the platform as the doors close: her long skirt is torn at one knee, the knee scraped and bleeding with a line of blood down her shin, and there is dust and blood on her cardigan, in every act 8 shot.
 
 ### Jishui station (branch 1a)
@@ -133,6 +139,20 @@ the 迷霧之森 (Misty Forest) inland from Jishui station: a narrow path of dar
 - **No moon** shows anywhere under the canopy, and the sea and the station are never in view.
 - **The four-way fork** (act 8, again at the start of act 9): seen from the path they arrive on, the main path goes straight on, the widest and most obvious; two narrower trails of about the same size leave on the left, a little apart; one narrower trail leaves on the right. All four vanish into fog within a few metres. There is no signpost or marker. By the map, the right-hand trail is the branch to 幽冥之都 and straight on is the main path deeper into the forest; the two left-hand trails are not on the map.
 - **References:** `_reference/mist_forest_path.png` (empty, the path through the trees in thin mist) and `_reference/mist_forest_crossroads.png` (empty, the fork from the path they arrive on). Pass the path reference for every shot on the path and the fork reference for every shot at the fork.
+
+### 霧中小屋, the cabin in the fog (branch 1a/2a/3a, acts 9-11)
+
+Along the main path from the four-way fork the fog is at its thickest (act 9: 能見度甚至不足三公尺) and the light is an even grey with no day or night. The cabin stands on the right-hand side of the path as they walk deeper in, its front door facing the path. Every outside prompt starts with this sentence:
+
+a small, old cabin of dark weathered timber standing alone at the side of the forest path deep in 迷霧之森: a single storey of thick dark planks covered in green moss, a low pitched roof of dark wooden shingles furred with moss, a short stone chimney at one end with no smoke, one plain plank front door facing the path with a single flat stone step before it, and one small square window of old glass on each side of the door, both dark and dim so nothing inside can be seen; colossal twisted black trees close around it under a dense canopy that hides the sky; no fence, no sign, no lamp outside, no other buildings.
+
+Inside it is warm, dry and spotless (act 10). Every inside prompt starts with this sentence, which fixes the layout seen from the front door:
+
+inside the cabin in 迷霧之森: one small square room of thick, smooth, dark wooden planks, spotlessly clean and dry, with not a speck of dust or a cobweb anywhere, under a low ceiling of dark beams; no electric light: four small brass oil lamps hanging on hooks on the walls give a soft, warm orange glow. Seen from the front door: along the left wall a wooden double bed made up with neat white sheets, a pillow and a folded blanket, its head in the far-left corner beside a small wooden bedside table; in the middle of the far wall a small square window of old glass showing only grey-white fog, and under it a small square wooden table with two plain wooden stools; in the far-right corner a simple little kitchen: a low wood-burning stove of stone and clay with a small iron pot, a plank counter, open shelves of plain clay bowls and plates, and a wooden cupboard; in the right wall a closed plank door to the washroom; a wide plank floor; nothing else, no decorations, no text.
+
+- **References:** `_reference/mist_cabin_exterior.png` (empty, the cabin from the path in thick fog, made from `mist_forest_path.png`) and `_reference/mist_cabin_interior.png` (empty, the room from just inside the front door, made from the exterior reference). Pass the exterior for shots outside the cabin, the interior for shots inside it, and `mist_forest_path.png` for shots on the path away from the cabin.
+- **Lamps:** turned low from emi_sleeps through the night (act 10); bright again for breakfast in act 11.
+- **The washroom** is shown only once, as a close-up of Li Jie's face under the water (act10_shower).
 
 ### Shot list, branch 1a
 
@@ -223,6 +243,38 @@ Shown again in acts 7-8: b1b_act6_lijie_steps_out as act 7 opens, platform when 
 | b1a_b2a_act8_main_path | Following her gaze down the main path | point of view, down the main path | no people |
 
 Shown again with a `reuse` bg block: crossroads for the last lines of act 8, while Li Jie looks over the four ways with Emi beside him (act 9 opens on the same beat).
+
+### Shot list, branch 1a/2a/3a, acts 9-11
+
+| Background | Beat | Framing | Who is in view |
+| --- | --- | --- | --- |
+| b1a_b2a_b3a_act9_into_fog | They take the main path and the fog swallows them | wide, from the path they arrived on, down the main path | Li Jie and Emi tiny, from behind, half gone in the fog |
+| b1a_b2a_b3a_act9_strange_calm | Her fear has gone, an odd calm | close, side-on, walking | Emi calm in front, Li Jie glancing at her |
+| b1a_b2a_b3a_act9_talking | "妳是做什麼的？" | medium two-shot from the front, walking | Li Jie talking, Emi answering |
+| b1a_b2a_b3a_act9_side_by_side | Talk of the night before, a small flame in the fog | extreme wide from high in the branches | the two tiny on the path |
+| b1a_b2a_b3a_act9_watch | Five hours gone, exhaustion | close-medium, three-quarter front | Li Jie checking his wristwatch, Emi dragging behind |
+| b1a_b2a_b3a_act9_emi_points | "你看前面！" | medium, from behind between them | Emi gripping his sleeve and pointing; a dark outline in the fog |
+| b1a_b2a_b3a_act9_cabin | The cabin in the fog | wide, three-quarter onto its front | the cabin; the two small from behind |
+| b1a_b2a_b3a_act9_approach | "我們過去看看" | medium two-shot, side-on, cabin soft behind | Li Jie offering his arm, Emi leaning on it |
+| b1a_b2a_b3a_act10_room | He opens the door: a warm, lamplit room | over Li Jie's shoulder from the threshold | Li Jie in the doorway, Emi behind him |
+| b1a_b2a_b3a_act10_emi_unfazed | She takes it all as normal | medium two-shot, reverse toward the door | Emi calm, Li Jie frowning at her |
+| b1a_b2a_b3a_act10_bed_offer | Shower first, the bed is yours | three-quarter medium-wide | Li Jie pointing to the washroom, Emi fiddling with her hem by the bed |
+| b1a_b2a_b3a_act10_robe | She comes out in a white robe | medium, knees up, at the washroom door | Emi in the robe, Li Jie leaning on the wall |
+| b1a_b2a_b3a_act10_emi_sleeps | She curls up and sleeps | close-medium at mattress height | Emi asleep |
+| b1a_b2a_b3a_act10_shower | His thoughts under the cold water | tight close-up, collarbones up | Li Jie |
+| b1a_b2a_b3a_act10_floor | He sleeps on the floor | high angle from the beams | Emi on the bed, Li Jie on the floor |
+| b1a_b2a_b3a_act10_wake | He wakes in the night | close-up at floor level | Li Jie |
+| b1a_b2a_b3a_act10_empty_bed | The bed is empty and made | his point of view from the floor | no people |
+| b1a_b2a_b3a_act11_wake_porridge | Morning, porridge on the stove | low, from behind him on the floor | Li Jie sitting up, Emi at the stove |
+| b1a_b2a_b3a_act11_breakfast | Breakfast; "妳去哪了？" | medium two-shot, side-on at the table | Li Jie, Emi |
+| b1a_b2a_b3a_act11_flinch | Her hands shake and she dodges | his point of view, close-up | Emi |
+| b1a_b2a_b3a_act11_leaving_prep | She packs food, he searches the room | medium-wide toward the kitchen | Emi at the cupboard, Li Jie at the shelf |
+| b1a_b2a_b3a_act11_back_on_path | Back on the path, small talk | medium-wide, looking back at the cabin | the two walking toward the camera |
+| b1a_b2a_b3a_act11_stops | A crack underfoot | low, side-on at ground level | Li Jie stopped mid-stride, Emi behind |
+| b1a_b2a_b3a_act11_glasses | Crushed glasses in the mud | detail insert | the glasses, his shoe |
+| b1a_b2a_b3a_act11_frame_held | He picks up the twisted frame | close, slightly low, three-quarter front | Li Jie crouching with the frame, Emi behind |
+
+Shown again with a `reuse` bg block: b1a_b2a_act8_crossroads for the first four lines of act 9, act10_emi_sleeps when Li Jie comes out of the washroom, and act11_breakfast while they finish eating in silence.
 
 ## Portraits
 

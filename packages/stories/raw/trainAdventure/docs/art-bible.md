@@ -262,7 +262,7 @@ Shown again with a `reuse` bg block: crossroads for the last lines of act 8, whi
 | b1a_b2a_b3a_act10_robe | She comes out in a white robe | medium, knees up, at the washroom door | Emi in the robe, Li Jie leaning on the wall |
 | b1a_b2a_b3a_act10_emi_sleeps | She curls up and sleeps | close-medium at mattress height | Emi asleep |
 | b1a_b2a_b3a_act10_shower | His thoughts under the cold water | tight close-up, collarbones up | Li Jie |
-| b1a_b2a_b3a_act10_floor | He sleeps on the floor | high angle from the beams | Emi on the bed, Li Jie on the floor |
+| b1a_b2a_b3a_act10_floor | He sleeps on the floor | low, side-on from the middle of the room | Emi asleep on the bed, Li Jie curled on his side on the floor beside it |
 | b1a_b2a_b3a_act10_wake | He wakes in the night | close-up at floor level | Li Jie |
 | b1a_b2a_b3a_act10_empty_bed | The bed is empty and made | his point of view from the floor | no people |
 | b1a_b2a_b3a_act11_wake_porridge | Morning, porridge on the stove | low, from behind him on the floor | Li Jie sitting up, Emi at the stove |

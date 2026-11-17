@@ -195,6 +195,20 @@ export class StoryProgressView {
         return run;
     }
 
+    /** Re-runs session verification or progress sync after a transient failure. */
+    retry(): Promise<void> {
+        if (
+            this.authState === 'unavailable' ||
+            this.validatedSeq !== this.restoreSeq
+        ) {
+            return this.revalidateSession();
+        }
+        if (this.authState === 'signed-in') {
+            return this.runSync();
+        }
+        return Promise.resolve();
+    }
+
     mount(): () => void {
         this.refresh();
         if (this.authState === 'signed-in') void this.runSync();
@@ -213,7 +227,19 @@ export class StoryProgressView {
             void this.revalidateSession();
             this.refresh();
         };
+        const onOnline = () => {
+            if (
+                this.syncState === 'failed' &&
+                this.authState !== 'signed-out'
+            ) {
+                void this.retry();
+            }
+        };
         window.addEventListener('pageshow', onPageShow);
-        return () => window.removeEventListener('pageshow', onPageShow);
+        window.addEventListener('online', onOnline);
+        return () => {
+            window.removeEventListener('pageshow', onPageShow);
+            window.removeEventListener('online', onOnline);
+        };
     }
 }

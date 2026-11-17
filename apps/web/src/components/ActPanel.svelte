@@ -78,7 +78,7 @@
       <a
         href={backUrl}
         class="flex items-center justify-center w-12 h-12 shrink-0 text-slate-600 hover:bg-white hover:text-slate-800 transition-colors"
-        aria-label={t.common.backToHome}
+        aria-label={t.common.backToHomeLabel}
       >
         <House size={20} aria-hidden="true" />
       </a>

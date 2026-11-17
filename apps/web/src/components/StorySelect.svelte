@@ -8,6 +8,10 @@
   import type { AuthState } from '@/lib/auth-utils';
   import { StoryProgressView } from '@/lib/story-progress-view.svelte';
   import {
+    storySelectSyncPresentation,
+    type CloudSyncStatus,
+  } from '@/lib/sync-presentation';
+  import {
     STORY_ACCENTS,
     storyIconFor,
   } from '@/lib/story-presentation';
@@ -27,7 +31,9 @@
     }))
   );
 
-  let t = $derived(getTranslations(locale).stories);
+  let translations = $derived(getTranslations(locale));
+  let t = $derived(translations.stories);
+  let common = $derived(translations.common);
   // Covers live on the R2 asset host — an <img> that 404s removes itself so
   // the accent-gradient + icon fallback underneath shows through.
   let failedCovers = new SvelteSet<string>();
@@ -37,26 +43,18 @@
   let sagas = $derived(cards.filter(c => c.entry.format === 'saga'));
   let continueCard = $derived(pickContinueCard(cards));
 
-  type SyncLine = 'syncing' | 'synced' | 'failed' | 'local-failed' | 'local-save-failed' | 'signed-out';
+  type SyncLine = CloudSyncStatus | 'signed-out';
   let syncLine = $derived.by((): SyncLine | null => {
     if (view.authState === 'unavailable') return null;
     if (view.authState === 'signed-out') {
       return Object.keys(view.progress).length > 0 ? 'signed-out' : null;
     }
-    if (view.syncState === 'synced') return 'synced';
-    if (view.syncState === 'failed') return 'failed';
-    if (view.syncState === 'local-failed') return 'local-failed';
-    if (view.syncState === 'local-save-failed') return 'local-save-failed';
-    return 'syncing';
+    return view.syncState === 'idle' ? 'syncing' : view.syncState;
   });
-  let syncDot = $derived(
-    syncLine === 'synced'
-      ? 'bg-emerald-300/80'
-      : syncLine === 'failed' || syncLine === 'local-failed' || syncLine === 'local-save-failed'
-        ? 'bg-amber-300/80'
-        : syncLine === 'syncing'
-          ? 'bg-cyan-300/70 motion-safe:animate-pulse'
-          : 'bg-white/40'
+  let syncMeta = $derived(
+    syncLine && syncLine !== 'signed-out'
+      ? storySelectSyncPresentation(t)[syncLine]
+      : null
   );
 
   onMount(() => view.mount());
@@ -94,18 +92,27 @@
   {/if}
 
   {#if syncLine}
-    <p
+    <div
       data-testid="progress-sync-status"
-      role={view.authState === 'signed-in' ? 'status' : undefined}
       class="-my-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-white/70 drop-shadow-[0_1px_6px_rgba(15,23,42,0.6)]"
     >
-      <span class="h-1.5 w-1.5 shrink-0 rounded-full {syncDot}" aria-hidden="true"></span>
+      <span
+        class="h-1.5 w-1.5 shrink-0 rounded-full {syncMeta ? syncMeta.dotClass : 'bg-white/40'}"
+        aria-hidden="true"
+      ></span>
       {#if syncLine === 'signed-out'}
         <span>{t.syncLocalOnly} <a href={`/${locale}/login`} class="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white">{t.syncSignIn}</a></span>
-      {:else}
-        <span>{syncLine === 'synced' ? t.syncSynced : syncLine === 'local-failed' ? t.syncLocalFailed : syncLine === 'local-save-failed' ? t.syncLocalSaveFailed : syncLine === 'failed' ? t.syncFailed : t.syncSyncing}</span>
+      {:else if syncMeta}
+        <span role="status">{syncMeta.label}</span>
+        {#if syncLine === 'failed'}
+          <button
+            type="button"
+            onclick={() => void view.retry()}
+            class="underline decoration-white/40 underline-offset-4 transition-colors hover:text-white"
+          >{common.retry}</button>
+        {/if}
       {/if}
-    </p>
+    </div>
   {/if}
 
   <section aria-labelledby="quick-reads-heading" class="flex flex-col gap-4" data-testid="quick-reads">

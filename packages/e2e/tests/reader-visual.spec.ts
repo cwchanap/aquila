@@ -952,7 +952,7 @@ test.describe('Reader Acts rail Home', () => {
         await visual.goto(7);
         await expectCanonicalVisualLine(page, 7);
 
-        const railHome = page.getByRole('link', { name: '← Back to Home' });
+        const railHome = page.getByRole('link', { name: 'Back to Home' });
         await expect(railHome).toHaveCount(1);
         await expect(railHome).toBeVisible();
         await expect(railHome).toHaveAttribute('href', '/en/');
@@ -978,7 +978,7 @@ test.describe('Reader Acts rail Home', () => {
         await visual.root.click();
         await expectCanonicalVisualLine(page, 8);
 
-        await page.getByRole('link', { name: '← Back to Home' }).click();
+        await page.getByRole('link', { name: 'Back to Home' }).click();
         await expect(page).toHaveURL('/en/');
         await expect(page.locator('#start-btn')).toBeVisible();
 
@@ -1002,7 +1002,7 @@ test.describe('Reader Acts rail Home', () => {
         await expect(page.getByTestId('reader-ready')).toBeVisible();
         await expect(page).toHaveURL(dialogueUrl(7));
 
-        const railHome = page.getByRole('link', { name: '← Back to Home' });
+        const railHome = page.getByRole('link', { name: 'Back to Home' });
         await expect(railHome).toHaveCount(1);
         await expect(railHome).toBeVisible();
         await expect(railHome).toHaveAttribute('href', '/en/');
@@ -1025,7 +1025,7 @@ test.describe('Reader Acts rail Home', () => {
         const visual = new VisualReaderPage(page);
         await visual.goto(7);
 
-        const railHome = page.getByRole('link', { name: '← Back to Home' });
+        const railHome = page.getByRole('link', { name: 'Back to Home' });
         await expect(railHome).toHaveCount(1);
         await expect(railHome).toBeVisible();
         await expect(railHome).toHaveAttribute('href', '/en/');

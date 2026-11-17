@@ -60,7 +60,7 @@ describe('summarizeProgress', () => {
         });
     });
 
-    it('counts a story as finished whenever any ending is found, even mid re-read', () => {
+    it('counts stories with endings found (even mid re-read) and stories marked finished without endings', () => {
         const cards = cardsFor({
             elevator_game: {
                 sceneId: 's1',
@@ -69,7 +69,7 @@ describe('summarizeProgress', () => {
                 finished: false,
                 endings: ['e1'],
             },
-            demon_lord_is_hiring: {
+            the_seventh_mirror: {
                 sceneId: 's2',
                 dialogueIndex: 0,
                 updatedAt: 2_000,
@@ -79,7 +79,7 @@ describe('summarizeProgress', () => {
         });
 
         const summary = summarizeProgress(cards);
-        expect(summary.finished).toBe(1);
+        expect(summary.finished).toBe(2);
         expect(summary.started).toBe(2);
     });
 
@@ -173,6 +173,29 @@ describe('lastReadLabel', () => {
         expect(lastReadLabel(NOW - 60 * 60 * 1000, 'zh', NOW)).toBe('1 小時前');
         expect(lastReadLabel(NOW - 3 * 24 * 60 * 60 * 1000, 'ja', NOW)).toBe(
             '3 日前'
+        );
+    });
+
+    it('clamps future timestamps to now instead of formatting "in N minutes"', () => {
+        expect(lastReadLabel(NOW + 3 * 60 * 1000, 'en', NOW)).toBe('now');
+        expect(lastReadLabel(NOW + 3 * 60 * 1000, 'zh', NOW)).toBe('現在');
+    });
+
+    it('promotes rounded values at unit boundaries', () => {
+        const MINUTE = 60 * 1000;
+        const HOUR = 60 * MINUTE;
+        const DAY = 24 * HOUR;
+        expect(lastReadLabel(NOW - 59.6 * 1000, 'en', NOW)).toBe(
+            '1 minute ago'
+        );
+        expect(lastReadLabel(NOW - 59.6 * MINUTE, 'en', NOW)).toBe(
+            '1 hour ago'
+        );
+        expect(lastReadLabel(NOW - 23.6 * HOUR, 'en', NOW)).toBe('yesterday');
+        expect(lastReadLabel(NOW - 6.6 * DAY, 'en', NOW)).toBe('last week');
+        expect(lastReadLabel(NOW - 29.6 * DAY, 'en', NOW)).toBe('last month');
+        expect(lastReadLabel(NOW - 11.6 * 30 * DAY, 'en', NOW)).toBe(
+            'last year'
         );
     });
 });

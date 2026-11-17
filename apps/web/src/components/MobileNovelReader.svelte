@@ -417,9 +417,9 @@
         <a
           href={backUrl}
           class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
-          aria-label={t.common.backToHome}
+          aria-label={t.common.backToHomeLabel}
           use:longpress={{
-            onLongPress: (node) => showTooltip(node, t.common.backToHome),
+            onLongPress: (node) => showTooltip(node, t.common.backToHomeLabel),
             onRelease: hideTooltip,
           }}
         >

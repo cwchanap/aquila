@@ -46,7 +46,9 @@
     "login": "登入",
     "back": "返回",
     "backLabel": "返回上一頁",
-    "backToHome": "← 返回主頁"
+    "backToHome": "← 返回主頁",
+    "backToHomeLabel": "返回主頁",
+    "retry": "重試"
   },
   "nav": {
     "profile": "個人資料"

@@ -133,7 +133,10 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
         },
         stories: { elevatorGame: 'The Elevator Game' },
         characterNames: { narrator: 'Narrator' },
-        common: { backToHome: 'Back to Home' },
+        common: {
+            backToHome: '← Back to Home',
+            backToHomeLabel: 'Back to Home',
+        },
         languages: { english: 'English', chinese: '中文', japanese: '日本語' },
         locale,
     })),
@@ -915,7 +918,7 @@ describe('ReaderShell', () => {
         await fireEvent.click(settingsTrigger);
 
         expect(
-            screen.getByRole('link', { name: 'Back to Home' })
+            screen.getByRole('link', { name: '← Back to Home' })
         ).toHaveAttribute('href', '/en/');
         expect(
             screen.getByRole('button', { name: 'Visual Novel' })

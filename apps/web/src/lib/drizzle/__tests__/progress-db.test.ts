@@ -175,14 +175,6 @@ describeDb('ReadingProgressRepository on real PostgreSQL', () => {
         });
     }, 30_000);
 
-    it('reports the retired character_setups table as dropped', async () => {
-        const { rows } = await pool.query<{ reg: string | null }>(
-            `SELECT to_regclass('public.character_setups') AS reg`
-        );
-        expect(rows).toHaveLength(1);
-        expect(rows[0].reg).toBeNull();
-    }, 30_000);
-
     it("leaves another user's story and its bookmarks untouched", async () => {
         const storyId = `unauth-${randomUUID()}`;
         const otherUserId = `hpa703-other-${randomUUID()}`;

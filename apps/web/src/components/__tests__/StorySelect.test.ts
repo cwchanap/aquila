@@ -14,6 +14,7 @@ import { authClient } from '../../lib/auth-client';
 import StorySelect from '../StorySelect.svelte';
 import { storyProgressKey } from '../../lib/story-progress-store';
 import { STORY_SELECT_SYNC_TIMEOUT_MS } from '../../lib/story-progress-sync';
+import { useFakeTimerWaitFor } from '../../lib/test-setup';
 
 function renderSelect(
     props: {
@@ -82,6 +83,7 @@ function cardLink(id: string): HTMLAnchorElement {
 
 describe('StorySelect', () => {
     beforeEach(() => {
+        useFakeTimerWaitFor();
         localStorage.clear();
         vi.stubEnv('PUBLIC_ASSET_BASE_URL', 'https://assets.example/');
         // Session re-reads start signed-out; a test that wants a signed-in
@@ -1115,5 +1117,32 @@ describe('StorySelect', () => {
             JSON.parse(localStorage.getItem(storyProgressKey('user-a')) ?? '{}')
         ).not.toHaveProperty('train_adventure');
         expect(localStorage.getItem(storyProgressKey(null)) ?? '{}').toBe('{}');
+    });
+
+    it('offers a Retry button when sync fails and recovers when clicked', async () => {
+        stubSession({ user: { id: 'user-1' } });
+        const fetchMock = vi
+            .fn()
+            .mockRejectedValueOnce(new Error('offline'))
+            .mockResolvedValueOnce(serverResponse({ progress: {} }));
+        vi.stubGlobal('fetch', fetchMock);
+
+        renderSelect({ authState: 'signed-in' });
+        const status = screen.getByTestId('progress-sync-status');
+        expect(
+            await within(status).findByText(
+                "Couldn't reach your account. Progress is kept in this browser and syncs next time."
+            )
+        ).toBeInTheDocument();
+
+        await fireEvent.click(
+            within(status).getByRole('button', { name: 'Retry' })
+        );
+        expect(
+            await within(status).findByText(
+                'Your progress is saved to your account'
+            )
+        ).toBeInTheDocument();
+        expect(progressCalls(fetchMock)).toHaveLength(2);
     });
 });

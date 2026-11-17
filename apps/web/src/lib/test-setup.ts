@@ -63,6 +63,12 @@ const mockNow = new Date('2024-01-01T00:00:00.000Z');
 vi.useFakeTimers();
 vi.setSystemTime(mockNow);
 
+// Alias `jest` to `vi` so @testing-library/dom's waitFor detects the faked
+// clock (via setTimeout.clock) and self-advances fake time each poll —
+// without it, waitFor can only re-check on DOM mutations and silently
+// starves when the awaited condition isn't DOM-visible.
+(globalThis as Record<string, unknown>).jest = vi;
+
 // Mock environment variables
 process.env.BETTER_AUTH_URL = 'http://localhost:5090';
 process.env.BETTER_AUTH_SECRET = 'test-secret';

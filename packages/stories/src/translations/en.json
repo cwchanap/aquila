@@ -123,7 +123,7 @@
     "storiesStarted": "Stories started",
     "finishedLabel": "Finished",
     "endingsFoundLabel": "Endings found",
-    "notStartedYet": "{n} stories not started yet",
+    "notStartedYet": "{n} not started yet",
     "browseStories": "Browse stories",
     "emptyTitle": "Nothing read yet",
     "emptyBody": "Your place in each story is saved automatically as you read.",
@@ -143,10 +143,12 @@
     "localSaveTitle": "Saved in this browser only",
     "localSaveBody": "Clearing your browser data or switching devices loses this progress.",
     "signInTipTitle": "Sign in to turn on cloud save.",
-    "signInTipBody": "Your progress below moves into your account, and you can continue on any device.",
+    "signInTipBody": "Your saved progress moves into your account, and you can continue on any device.",
     "signInTipAction": "Sign in",
     "unavailableTitle": "Showing progress in this browser",
-    "unavailableBody": "Sign-in is unavailable right now, so cloud save can't be checked."
+    "unavailableBody": "Sign-in is unavailable right now, so cloud save can't be checked.",
+    "readErrorTitle": "Couldn't read your progress",
+    "readErrorBody": "This browser couldn't read its saved progress, so it can't be shown here. Nothing was uploaded, changed, or erased — try reloading the page."
   },
   "characterNames": {
     "narrator": "Narrator",

@@ -103,7 +103,9 @@ test.describe('My Progress signed out', () => {
         );
 
         const mirror = rows.nth(0);
-        await expect(mirror).toContainText('The Seventh Mirror');
+        await expect(mirror).toHaveAccessibleName(
+            'The Seventh Mirror Continue'
+        );
         await expect(mirror).toContainText('Chapter 2 of 28');
         await expect(mirror).toContainText('Last read 2 hours ago');
         await expect(mirror).toContainText('Continue');
@@ -113,7 +115,9 @@ test.describe('My Progress signed out', () => {
         );
 
         const elevator = rows.nth(1);
-        await expect(elevator).toContainText('The Elevator Game');
+        await expect(elevator).toHaveAccessibleName(
+            'The Elevator Game Read again'
+        );
         await expect(elevator).toContainText('1 of 2 endings');
         await expect(elevator).toContainText('Last read yesterday');
         await expect(elevator).toContainText('Read again');
@@ -123,7 +127,7 @@ test.describe('My Progress signed out', () => {
         );
 
         const browse = page.getByTestId('browse-stories');
-        await expect(browse).toContainText('6 stories not started yet');
+        await expect(browse).toContainText('6 not started yet');
         await expect(browse).toHaveAttribute('href', '/en/stories');
         expect(apiCalls).toEqual([]);
     });

@@ -28,6 +28,7 @@ export class StoryProgressView {
     // mount.
     progress: StoryProgressMap = $state({});
     syncState: StorySyncState = $state('idle');
+    localReadFailed = $state(false);
     private syncInFlight: Promise<void> | null = null;
     // A join during an in-flight request sets this so exactly one
     // follow-up pass runs behind it; the running request still carries
@@ -74,7 +75,9 @@ export class StoryProgressView {
             importSavedSessions(store, storage, this.locale, accountId);
             if (accountId) store.claimAnonymous(this.locale);
         }
-        this.progress = store.getAll();
+        const map = store.getAllChecked();
+        this.localReadFailed = map === null;
+        this.progress = map ?? {};
     }
 
     /** Re-reads the session; null keeps the server-rendered state. */

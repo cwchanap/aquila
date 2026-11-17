@@ -117,8 +117,18 @@ export class StoryProgressView {
      *  a failed re-read keeps no state. */
     private async revalidateSession(): Promise<void> {
         const ticket = ++this.restoreSeq;
+        // The last sync answer described the pre-restore account and
+        // progress; it is not current while the re-read is unanswered.
+        this.syncState = 'idle';
         const refreshed = await this.fetchAuthState();
-        if (ticket !== this.restoreSeq || refreshed === null) return;
+        if (ticket !== this.restoreSeq) return;
+        if (refreshed === null) {
+            // The newest restore cannot prove the retained account, so
+            // the displayed progress is unverified — say so rather than
+            // keep a pre-restore result.
+            this.syncState = 'failed';
+            return;
+        }
         this.validatedSeq = ticket;
         this.applyAuthState(refreshed);
         if (this.authState === 'signed-in') void this.runSync();
@@ -150,6 +160,7 @@ export class StoryProgressView {
         // A retry starts from 'idle' so the previous answer is not shown
         // as current while the new request is unanswered.
         this.syncState = 'idle';
+        const seq = this.restoreSeq;
         const run = (async () => {
             try {
                 if (!this.userId) {
@@ -161,15 +172,20 @@ export class StoryProgressView {
                     accountId: this.userId,
                     locale: this.locale,
                 });
-                this.syncState = result.ok
-                    ? 'synced'
-                    : result.phase === 'local-read'
-                      ? 'local-failed'
-                      : result.phase === 'local-save'
-                        ? 'local-save-failed'
-                        : 'failed';
+                // A restore that began mid-request supersedes this
+                // answer — the restore's revalidation or its queued
+                // rerun owns the status now.
+                if (this.restoreSeq === seq) {
+                    this.syncState = result.ok
+                        ? 'synced'
+                        : result.phase === 'local-read'
+                          ? 'local-failed'
+                          : result.phase === 'local-save'
+                            ? 'local-save-failed'
+                            : 'failed';
+                }
             } catch {
-                this.syncState = 'failed';
+                if (this.restoreSeq === seq) this.syncState = 'failed';
             } finally {
                 this.syncInFlight = null;
                 this.refresh();

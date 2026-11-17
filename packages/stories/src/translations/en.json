@@ -148,7 +148,7 @@
     "unavailableTitle": "Showing progress in this browser",
     "unavailableBody": "Sign-in is unavailable right now, so cloud save can't be checked.",
     "readErrorTitle": "Couldn't read your progress",
-    "readErrorBody": "This browser couldn't read its saved progress, so it can't be shown here. Nothing was uploaded, changed, or erased — try reloading the page."
+    "readErrorBody": "This browser couldn't read its saved progress, so it can't be shown here. Try reloading the page."
   },
   "characterNames": {
     "narrator": "Narrator",

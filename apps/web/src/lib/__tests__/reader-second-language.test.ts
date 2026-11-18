@@ -74,6 +74,18 @@ describe('alignSecondDialogue', () => {
         expect(alignSecondDialogue(main, undefined)).toBeNull();
         expect(alignSecondDialogue(main, [line('一。')])).toBeNull();
     });
+
+    it('suppresses the second scene when every line is identical', () => {
+        const main = [line('她看着窗外。'), line('“你不走吗？”')];
+        const second = [line('她看着窗外。'), line('“你不走吗？”')];
+        expect(alignSecondDialogue(main, second)).toBeNull();
+    });
+
+    it('keeps the second scene when only some lines match', () => {
+        const main = [line('One.'), line('Two.')];
+        const second = [line('One.'), line('二。')];
+        expect(alignSecondDialogue(main, second)).toEqual(second);
+    });
 });
 
 describe('secondChoiceLabels', () => {

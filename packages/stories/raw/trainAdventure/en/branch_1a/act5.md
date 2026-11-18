@@ -74,7 +74,7 @@
 
 **Narrator**: A shrill "hsss—" cut through the dead silence of Jakkai Station without warning.
 
-**Li Jie**: (his head snapping around, thinking) That's... the doors!
+**Li Jie**: (thinking) (his head snapping around) That's... the doors!
 
 **Narrator**: The doors! The train doors, open until a moment ago, had begun to slide shut — with no announcement, no warning at all!
 
@@ -102,7 +102,7 @@
 
 **Narrator**: And overhead, the two strange violet crescent moons, watching them like eyes.
 
-**Li Jie**: (slowly turning his head toward where the train had vanished, thinking) It... just left... It's really gone...
+**Li Jie**: (thinking) (slowly turning his head toward where the train had vanished) It... just left... It's really gone...
 
 **Shimizu Emi**: (her voice soft, but calmer than before) Are we... never going home...?
 

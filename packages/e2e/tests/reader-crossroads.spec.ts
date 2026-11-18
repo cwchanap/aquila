@@ -1,7 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { trainAdventureFlow } from '../../stories/src/generated/trainAdventure/flow';
 import { scene as act3Dialogue } from '../../stories/src/generated/trainAdventure/scenes/en/act3';
-import { scene as act4Dialogue } from '../../stories/src/generated/trainAdventure/scenes/en/b1a_act4';
 import { scene as oneOptionDialogue } from '../../stories/src/generated/trainAdventure/scenes/b1a_b2a_act8';
 import { scene as threeOptionDialogue } from '../../stories/src/generated/trainAdventure/scenes/en/b1b_act8';
 import { scene as fourOptionDialogue } from '../../stories/src/generated/trainAdventure/scenes/b1a_b2b_b3b_b4b_b5a_act70';
@@ -429,7 +428,7 @@ test.describe('Crossroads choice overlay', () => {
         await expect(
             page
                 .getByTestId('reader-ready')
-                .getByText(act4Dialogue[0].dialogue.slice(0, 30))
+                .getByText('The air inside the car had gone still')
         ).toBeVisible();
 
         await expect

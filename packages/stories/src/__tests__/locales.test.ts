@@ -15,6 +15,7 @@ import {
     resolveStoryTextLocale,
 } from '../story-metadata';
 import { getStoryContent } from '../stories';
+import { trainAdventureEnTranslatedScenes } from '../generated/trainAdventure/dialogue.en';
 import type { RubySpan } from '../types';
 import {
     loadStoryContent,
@@ -167,6 +168,14 @@ describe('story text locales', () => {
                 }
             }
         });
+    });
+
+    // Compiler provenance, not text equality: an identical translation is
+    // still translated, and a deleted mirror file silently falls back to zh.
+    it('reports the English step-off mirror scenes as translated', () => {
+        for (const sceneId of ['b1a_act4', 'b1a_act5', 'b1a_act6']) {
+            expect(trainAdventureEnTranslatedScenes).toContain(sceneId);
+        }
     });
 });
 

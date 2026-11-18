@@ -44,13 +44,18 @@ export function secondLanguageOptions(textLocale: Locale): Locale[] {
 }
 
 /** The translated line for each main line, or null when the translation
- *  does not line up (a stale or mismatched scene). Translations mirror the
- *  zh source entry for entry, so line N pairs with line N. */
+ *  does not line up (a stale or mismatched scene) or when every line is
+ *  identical to the main text (an untranslated fallback would otherwise
+ *  show the same text twice). Translations mirror the zh source entry for
+ *  entry, so line N pairs with line N. */
 export function alignSecondDialogue(
     dialogue: readonly DialogueEntry[],
     second: readonly DialogueEntry[] | undefined
 ): DialogueEntry[] | null {
     if (!second || second.length !== dialogue.length) return null;
+    if (second.every((entry, i) => entry.dialogue === dialogue[i].dialogue)) {
+        return null;
+    }
     return [...second];
 }
 

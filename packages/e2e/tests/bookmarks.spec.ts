@@ -99,6 +99,14 @@ test.describe('Bookmarks page', () => {
         await expect(
             bookmarks.container.getByText('No bookmarks yet.')
         ).toHaveCount(0);
+        await expect(
+            bookmarks.container.getByRole('button', { name: 'Sync to Cloud' })
+        ).toHaveCount(0);
+        await expect(
+            bookmarks.container.getByRole('button', {
+                name: 'Sync All to Cloud',
+            })
+        ).toHaveCount(0);
 
         releaseCloud();
         await expect(
@@ -107,6 +115,9 @@ test.describe('Bookmarks page', () => {
         await expect(
             bookmarks.container.getByText('Loading bookmarks...')
         ).toHaveCount(0);
+        await expect(
+            bookmarks.container.getByRole('button', { name: 'Sync to Cloud' })
+        ).toHaveCount(1);
     });
 
     test('renders the page title and container (en)', async ({ page }) => {
@@ -179,7 +190,7 @@ test.describe('Bookmarks page', () => {
         ).toBeVisible();
     });
 
-    test('shows an English error banner and keeps local cards when the cloud fetch fails (en)', async ({
+    test('shows an English error banner and keeps local cards without the empty state on a signed-in cloud failure', async ({
         page,
     }) => {
         const bookmarks = new BookmarksPage(page, 'en');
@@ -188,7 +199,7 @@ test.describe('Bookmarks page', () => {
             storyId: 'train_adventure',
             sceneId: 'scene_1',
         });
-        await useSsrAuthState(page, 'unavailable');
+        await useSsrAuthState(page, 'signed-in');
         await page.route('**/api/bookmarks', route =>
             route.fulfill({ status: 500 })
         );
@@ -200,5 +211,11 @@ test.describe('Bookmarks page', () => {
                 'Failed to load bookmarks. Please try again.'
             )
         ).toBeVisible();
+        await expect(
+            bookmarks.container.getByText('No bookmarks yet.')
+        ).toHaveCount(0);
+        await expect(
+            bookmarks.container.getByText('Start Reading')
+        ).toHaveCount(0);
     });
 });

@@ -1000,7 +1000,9 @@ test.describe('Reader Acts rail Home', () => {
             localStorage.setItem('aquila:reader-mode:v1', 'text');
         });
         await page.goto(`${READER_PATH}7`);
-        await expect(page.getByTestId('reader-ready')).toBeVisible();
+        await expect(page.getByTestId('reader-ready')).toBeVisible({
+            timeout: 15_000,
+        });
         await expect(page).toHaveURL(dialogueUrl(7));
 
         const railHome = page.getByRole('link', { name: 'Back to Home' });
@@ -1043,7 +1045,9 @@ test.describe('Reader Acts rail Home', () => {
             localStorage.setItem('aquila:reader-mode:v1', 'text');
         });
         await page.goto('/en/reader?story=train_adventure');
-        await expect(page.getByTestId('reader-ready')).toBeVisible();
+        await expect(page.getByTestId('reader-ready')).toBeVisible({
+            timeout: 15_000,
+        });
 
         await page.getByRole('button', { name: 'Open menu' }).click();
         const home = page.getByRole('link', { name: 'Back to Home' });

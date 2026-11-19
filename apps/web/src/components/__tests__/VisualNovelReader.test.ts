@@ -242,7 +242,9 @@ describe('VisualNovelReader', () => {
             onOpenChoice,
         });
         expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
-        expect(container.querySelector('rt')).toBeNull();
+        expect(
+            container.querySelector('rt')?.closest('[aria-hidden="true"]')
+        ).not.toBeNull();
         await fireEvent.click(
             screen.getByRole('button', { name: 'Reveal text' })
         );

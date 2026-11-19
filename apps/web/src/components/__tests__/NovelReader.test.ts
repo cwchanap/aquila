@@ -156,7 +156,9 @@ describe('NovelReader — controlled contract', () => {
             onOpenChoice,
         });
         expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
-        expect(container.querySelector('rt')).toBeNull();
+        expect(
+            container.querySelector('rt')?.closest('[aria-hidden="true"]')
+        ).not.toBeNull();
         await fireEvent.click(
             screen.getByRole('button', { name: 'Reveal text' })
         );
@@ -251,8 +253,10 @@ describe('NovelReader — controlled contract', () => {
         await vi.advanceTimersByTimeAsync(30);
 
         expect(
-            screen.queryByText('First dialogue line.')
-        ).not.toBeInTheDocument();
+            screen
+                .getByText('First dialogue line.')
+                .closest('[aria-hidden="true"]')
+        ).not.toBeNull();
         expect(document.querySelector('.animate-pulse')).not.toBeNull();
     });
 

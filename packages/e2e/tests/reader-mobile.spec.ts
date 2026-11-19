@@ -17,7 +17,9 @@ test.describe('Mobile reader', () => {
         const reveal = page.getByRole('button', { name: 'Reveal text' });
         await expect(reveal).toBeVisible();
         await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1);
-        const passage = page.locator('.mobile-reader p.pointer-events-auto');
+        const passage = page.locator(
+            '.mobile-reader p.pointer-events-auto .passage-visible'
+        );
         await expect(passage).not.toHaveText(firstScene[0].dialogue);
         await reveal.click({ force: true });
         await page.clock.runFor(30);

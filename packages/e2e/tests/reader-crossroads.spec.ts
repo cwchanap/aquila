@@ -424,10 +424,13 @@ test.describe('Crossroads choice overlay', () => {
             ''
         );
         // The English primary line renders (not the zh fallback); the prefix
-        // shows while the typewriter is still revealing the paragraph.
+        // shows while the typewriter is still revealing the paragraph. Scope
+        // to the visible passage: the hidden typing reserve duplicates the
+        // full line, so an unscoped text locator is ambiguous mid-reveal.
         await expect(
             page
                 .getByTestId('reader-ready')
+                .locator('.passage-visible')
                 .getByText('The air inside the car had gone still')
         ).toBeVisible();
 

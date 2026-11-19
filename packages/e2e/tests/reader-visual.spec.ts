@@ -281,7 +281,9 @@ test.describe('Visual novel reader', () => {
             const wasTyping = await cursor.isVisible();
             if (!wasTyping) {
                 await expect(
-                    page.getByText('⋯⋯這是什麼？', { exact: true })
+                    page
+                        .locator('.passage-visible')
+                        .getByText('⋯⋯這是什麼？', { exact: true })
                 ).toBeVisible();
             }
             const advancedBox = await visual.dialogueBox.boundingBox();
@@ -395,7 +397,9 @@ test.describe('Visual novel reader', () => {
             localStorage.setItem('aquila:reader-mode:v1', 'text');
         });
         await page.goto(`${READER_PATH}7`);
-        const line = page.getByText('⋯⋯這是什麼？', { exact: true });
+        const line = page
+            .locator('.passage-visible')
+            .getByText('⋯⋯這是什麼？', { exact: true });
         await expect(line).toBeVisible();
         await expect(page).toHaveURL(dialogueUrl(7));
 
@@ -480,9 +484,11 @@ test.describe('Visual novel reader', () => {
             previousUrl!
         );
         await expect(
-            page.getByText('現在那面鏡子放在澪自己的桌上。', {
-                exact: true,
-            })
+            page
+                .locator('.passage-visible')
+                .getByText('現在那面鏡子放在澪自己的桌上。', {
+                    exact: true,
+                })
         ).toBeVisible();
         await expect(
             page.getByRole('button', { name: 'Open history' })
@@ -546,7 +552,9 @@ test.describe('Visual novel reader', () => {
             previousUrl!
         );
         await expect(
-            page.getByText('⋯⋯這是什麼？', { exact: true })
+            page
+                .locator('.passage-visible')
+                .getByText('⋯⋯這是什麼？', { exact: true })
         ).toBeVisible();
         await expect(
             page.getByRole('button', { name: 'Open history' })

@@ -1,7 +1,8 @@
 <script lang="ts">
   import RubyText from '@/components/RubyText.svelte';
   import { getTranslations } from '@aquila/stories/translations';
-  import type { Locale, RubySpan } from '@aquila/stories';
+  import type { Locale } from '@aquila/stories';
+  import type { HistoryLine } from '@/lib/reader-history';
   import { focusTrap } from '@/lib/focus-trap';
 
   let {
@@ -14,13 +15,7 @@
     secondLang = undefined,
     furigana = true,
   }: {
-    lines: {
-      characterName: string;
-      text: string;
-      ruby?: RubySpan[];
-      secondText?: string;
-      secondRuby?: RubySpan[];
-    }[];
+    lines: HistoryLine[];
     textLang?: string;
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
@@ -71,6 +66,7 @@
     <ul class="space-y-4">
       {#each lines as line, i (i)}
         <li>
+          {#if line.separator}<h3 class="mb-2 font-bold text-slate-700">{line.separator}</h3>{/if}
           {#if line.characterName}
             <p class="text-sm font-bold text-blue-600">{line.characterName}</p>
           {/if}

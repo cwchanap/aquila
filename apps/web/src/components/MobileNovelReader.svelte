@@ -14,6 +14,7 @@
   import type { TypingSpeed } from '@/lib/reader-typing-speed';
   import FuriganaToggle from '@/components/FuriganaToggle.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
+  import { sceneHistoryLines, type HistoryLine } from '@/lib/reader-history';
   import { typeText as runTypewriter } from '@/lib/typewriter';
   import { cn } from '@/lib/utils';
   import type { ReaderMode } from '@/lib/reader-mode';
@@ -73,6 +74,7 @@
     visibleSceneIds,
     storyMapAvailable = false,
     onOpenStoryMap = () => {},
+    historyLines,
   }: {
     flow: StoryFlowConfig;
     dialogueIndex?: number;
@@ -110,6 +112,7 @@
     visibleSceneIds?: ReadonlySet<string>;
     storyMapAvailable?: boolean;
     onOpenStoryMap?: () => void;
+    historyLines?: HistoryLine[];
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
@@ -369,15 +372,7 @@
   );
 
   let backlogLines = $derived(
-    dialogue
-      .slice(0, dialogueIndex + 1)
-      .map((entry, index) => ({
-        characterName: resolveCharacterName(entry, t),
-        text: entry.dialogue,
-        ruby: entry.ruby,
-        secondText: secondDialogue?.[index]?.dialogue,
-        secondRuby: secondDialogue?.[index]?.ruby,
-      }))
+    historyLines ?? sceneHistoryLines(dialogue, dialogueIndex, t, secondDialogue)
   );
 </script>
 

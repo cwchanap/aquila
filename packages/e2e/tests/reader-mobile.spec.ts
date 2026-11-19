@@ -174,6 +174,15 @@ test.describe('Mobile reader', () => {
             new RegExp(`[?&]scene=${previousScene}(?:&|$)`)
         );
         await expect(reader.actsHeadingLocator).not.toBeVisible();
+        await reader.openMenu();
+        await reader.openHistory();
+        const history = page.getByRole('dialog', { name: 'History' });
+        await expect(history.locator('h3')).toHaveText([
+            'Act 7',
+            'Act 8',
+            'Act 7',
+        ]);
+        await expect(history.locator('h3')).not.toContainText(['Act 9']);
     });
 
     test('opens the history backlog', async ({ page }) => {

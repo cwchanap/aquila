@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
-import type { DialogueEntry } from '@aquila/stories';
 
 vi.mock('@aquila/stories/translations', async importOriginal => ({
     ...(await importOriginal<typeof import('@aquila/stories/translations')>()),
@@ -26,10 +25,10 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
 
 import VisualBacklog from '../VisualBacklog.svelte';
 
-const threeLines: DialogueEntry[] = [
-    { characterId: 'narrator', dialogue: 'First' },
-    { character: 'Guide', dialogue: 'Second' },
-    { dialogue: 'Third' },
+const threeLines = [
+    { characterName: 'Narrator', text: 'First' },
+    { characterName: 'Guide', text: 'Second' },
+    { characterName: '', text: 'Third' },
 ];
 
 describe('VisualBacklog', () => {
@@ -38,11 +37,10 @@ describe('VisualBacklog', () => {
         vi.clearAllMocks();
     });
 
-    it('shows current-scene dialogue through the active line', () => {
+    it('shows the supplied history lines', () => {
         render(VisualBacklog, {
             props: {
-                dialogue: threeLines,
-                dialogueIndex: 1,
+                lines: threeLines.slice(0, 2),
                 locale: 'en',
                 onClose: vi.fn(),
             },
@@ -58,21 +56,22 @@ describe('VisualBacklog', () => {
     it('hides leading stage directions and keeps readings on the right text', () => {
         render(VisualBacklog, {
             props: {
-                dialogue: [
-                    { dialogue: '(內心)好。' },
+                lines: [
                     {
-                        dialogue: '（心の声）今日は雨。',
+                        characterName: 'Narrator',
+                        text: '(內心)好。',
+                        secondText: '(thinking) Fine.',
+                    },
+                    {
+                        characterName: 'Narrator',
+                        text: '（心の声）今日は雨。',
                         ruby: [
                             { start: 1, end: 2, reading: 'こころ' },
                             { start: 5, end: 7, reading: 'きょう' },
                         ],
+                        secondText: 'Rain today.',
                     },
                 ],
-                secondDialogue: [
-                    { dialogue: '(thinking) Fine.' },
-                    { dialogue: 'Rain today.' },
-                ],
-                dialogueIndex: 1,
                 locale: 'en',
                 onClose: vi.fn(),
             },
@@ -97,8 +96,7 @@ describe('VisualBacklog', () => {
 
         render(VisualBacklog, {
             props: {
-                dialogue: threeLines,
-                dialogueIndex: 0,
+                lines: threeLines,
                 trigger,
                 onClose,
             },
@@ -123,8 +121,7 @@ describe('VisualBacklog', () => {
         const onClose = vi.fn();
         render(VisualBacklog, {
             props: {
-                dialogue: threeLines,
-                dialogueIndex: 0,
+                lines: threeLines,
                 trigger,
                 onClose,
             },
@@ -146,8 +143,7 @@ describe('VisualBacklog', () => {
         async (_label, shiftKey) => {
             render(VisualBacklog, {
                 props: {
-                    dialogue: threeLines,
-                    dialogueIndex: 0,
+                    lines: threeLines,
                     onClose: vi.fn(),
                 },
             });
@@ -177,12 +173,9 @@ describe('VisualBacklog second language', () => {
     it('shows each line with its second-language text', () => {
         render(VisualBacklog, {
             props: {
-                dialogue: threeLines,
-                dialogueIndex: 1,
-                secondDialogue: [
-                    { dialogue: '一' },
-                    { dialogue: '二' },
-                    { dialogue: '三' },
+                lines: [
+                    { ...threeLines[0], secondText: '一' },
+                    { ...threeLines[1], secondText: '二' },
                 ],
                 textLang: 'en',
                 secondLang: 'ja',
@@ -204,13 +197,13 @@ describe('VisualBacklog furigana', () => {
     it('shows readings over Japanese lines', () => {
         render(VisualBacklog, {
             props: {
-                dialogue: [
+                lines: [
                     {
-                        dialogue: '今日は雨。',
+                        characterName: '',
+                        text: '今日は雨。',
                         ruby: [{ start: 0, end: 2, reading: 'きょう' }],
                     },
                 ],
-                dialogueIndex: 0,
                 onClose: vi.fn(),
             },
         });

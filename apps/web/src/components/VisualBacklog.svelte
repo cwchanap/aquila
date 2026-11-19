@@ -1,15 +1,13 @@
 <script lang="ts">
   import RubyText from '@/components/RubyText.svelte';
-  import type { DialogueEntry, Locale } from '@aquila/stories';
+  import type { Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
-  import { resolveCharacterName } from '@/lib/character-name';
+  import type { HistoryLine } from '@/lib/reader-history';
   import { focusTrap } from '@/lib/focus-trap';
   import { hideStageDirections } from '@/lib/reader-stage-directions';
 
   let {
-    dialogue = [],
-    dialogueIndex = 0,
-    secondDialogue = null,
+    lines = [],
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
@@ -17,9 +15,7 @@
     onClose = () => {},
     trigger = null,
   }: {
-    dialogue?: DialogueEntry[];
-    dialogueIndex?: number;
-    secondDialogue?: DialogueEntry[] | null;
+    lines?: HistoryLine[];
     textLang?: string;
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
@@ -30,7 +26,6 @@
   } = $props();
 
   let t = $derived(getTranslations(locale));
-  let visibleDialogue = $derived(dialogue.slice(0, dialogueIndex + 1));
 
   function close(): void {
     trigger?.focus();
@@ -68,17 +63,23 @@
   </header>
 
   <ol>
-    {#each visibleDialogue as entry, index (index)}
-      {@const characterName = resolveCharacterName(entry, t)}
-      {@const line = hideStageDirections(entry)}
-      {@const second = secondDialogue?.[index]
-        ? hideStageDirections(secondDialogue[index])
+    {#each lines as line, index (index)}
+      {@const text = hideStageDirections({
+        dialogue: line.text,
+        ruby: line.ruby,
+      })}
+      {@const second = line.secondText
+        ? hideStageDirections({
+            dialogue: line.secondText,
+            ruby: line.secondRuby,
+          })
         : null}
       <li>
-        {#if characterName}
-          <p class="speaker">{characterName}</p>
+        {#if line.separator}<h3>{line.separator}</h3>{/if}
+        {#if line.characterName}
+          <p class="speaker">{line.characterName}</p>
         {/if}
-        <p lang={textLang}><RubyText text={line.dialogue} ruby={line.ruby} show={furigana} /></p>
+        <p lang={textLang}><RubyText text={text.dialogue} ruby={text.ruby} show={furigana} /></p>
         {#if second}
           <p class="second-text" lang={secondLang}>
             <RubyText text={second.dialogue} ruby={second.ruby} show={furigana} />

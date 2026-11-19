@@ -35,6 +35,7 @@ export class BookmarksManager {
     private localBookmarksList: LocalBookmark[] = [];
     private authState: AuthState;
     private cloudLoading = false;
+    private cloudLoaded = false;
     private readonly t: ReturnType<typeof getTranslations>;
     private readonly locale: Locale;
     private readonly localStore: LocalBookmarksStore;
@@ -71,9 +72,10 @@ export class BookmarksManager {
             }
 
             this.authState = 'signed-in';
-            this.cloudLoading = false;
             const data = await response.json();
             this.cloudBookmarks = Array.isArray(data) ? data : data.data || [];
+            this.cloudLoaded = true;
+            this.cloudLoading = false;
             this.renderAll();
         } catch (error) {
             console.error('Failed to load bookmarks:', error);
@@ -111,7 +113,7 @@ export class BookmarksManager {
         if (this.authState === 'signed-in') {
             if (this.cloudLoading) {
                 this.renderCloudLoadingSection(container);
-            } else {
+            } else if (this.cloudLoaded) {
                 this.renderSection(
                     container,
                     this.t.bookmarks.cloudBookmarks,
@@ -216,7 +218,7 @@ export class BookmarksManager {
             empty.textContent = this.t.bookmarks.noLocalBookmarks;
             section.appendChild(empty);
         } else {
-            if (this.authState === 'signed-in') {
+            if (this.authState === 'signed-in' && !this.cloudLoading) {
                 const bulkBtn = document.createElement('button');
                 bulkBtn.className =
                     'mb-4 px-6 py-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium shadow-lg transition-all duration-300';
@@ -376,7 +378,7 @@ export class BookmarksManager {
         const date = this.formatDate(bookmark.updatedAt);
 
         const leadingActions: HTMLButtonElement[] = [];
-        if (this.authState === 'signed-in') {
+        if (this.authState === 'signed-in' && !this.cloudLoading) {
             const syncBtn = document.createElement('button');
             syncBtn.className =
                 'px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium text-sm transition-all duration-300';
@@ -423,6 +425,7 @@ export class BookmarksManager {
             });
 
             if (response.ok) {
+                this.cloudLoaded = true;
                 this.localStore.remove(id);
                 this.localBookmarksList = this.localBookmarksList.filter(
                     b => b.id !== id
@@ -462,6 +465,7 @@ export class BookmarksManager {
                 });
 
                 if (response.ok) {
+                    this.cloudLoaded = true;
                     this.localStore.remove(bookmark.id);
                     const data = await response.json().catch(() => null);
                     if (data) {

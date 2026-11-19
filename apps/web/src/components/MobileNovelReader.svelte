@@ -412,7 +412,7 @@
   <!-- Auto-hiding chrome bar (icon toolbar + slim progress). -->
   {#if chromeVisible}
     <div
-      class="absolute inset-x-0 top-0 z-20 bg-white/80 shadow backdrop-blur-md"
+      class="absolute inset-x-0 top-0 z-20 max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white/80 shadow backdrop-blur-md"
       style="padding-top: calc(0.5rem + env(safe-area-inset-top));"
     >
       <div class="flex items-center gap-1 px-2 py-2 pl-16">
@@ -556,10 +556,10 @@
   >
       <!-- Persistent back-one-line control, above the dialogue box. Its own
            pointer-events-auto re-enables clicks (the panel is none while reading). -->
-      <div class="pointer-events-auto mb-2 flex">
+      <div class="mb-2 flex">
         <button
           type="button"
-          class="flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm disabled:opacity-40"
+          class="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm disabled:opacity-40"
           aria-label={t.reader.previousLine}
           disabled={dialogueIndex === 0}
           onclick={goBack}
@@ -571,7 +571,7 @@
           <ChevronLeft size={20} aria-hidden="true" />
         </button>
       </div>
-      <!-- Fixed-height reading box: chip · scrollable text · pinned indicator.
+      <!-- Reading box: chip · scrollable text · pinned indicator.
            The box stays pointer-events-none (inherited from the panel) so taps
            on the chip/indicator fall through to the advance layer, but the
            scrollable text re-enables pointer events so overflowed lines can be
@@ -581,8 +581,8 @@
            handler and calls preventDefault() so advance isn't triggered twice. -->
       <div
         class={cn(
-          'flex flex-col rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md',
-          secondDialogue ? 'h-64' : 'h-52'
+          'mobile-dialogue-box flex flex-col rounded-3xl bg-white/90 p-5 shadow-2xl backdrop-blur-md',
+          secondDialogue ? 'min-h-64' : 'min-h-52'
         )}
       >
         {#if currentName}
@@ -594,7 +594,7 @@
         {/if}
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <p
-          class="pointer-events-auto flex-1 overflow-y-auto text-lg leading-relaxed text-slate-800"
+          class="reader-scroll pointer-events-auto min-h-0 flex-1 overflow-y-auto text-lg leading-relaxed text-slate-800"
           onclick={advance}
           onkeydown={(e) => {
             if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
@@ -603,13 +603,28 @@
             advance();
           }}
         >
+          <span class="passage-grid">
+          {#if isTyping}
+            <span class="passage-reserve" aria-hidden="true">
+              <span lang={textLang}><RubyText text={currentDialogue?.dialogue ?? ''} ruby={currentDialogue?.ruby} show={furigana} /></span>
+              {#if secondDialogue?.[dialogueIndex]}
+                <span class="mt-2 block text-base text-slate-500" lang={secondLang}>
+                  <RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} />
+                </span>
+              {/if}
+            </span>
+          {/if}
+          <span class={['passage-visible', { 'typing-overlay': isTyping }]}>
           {#if isTyping}<span lang={textLang}>{typingText}</span><span
             class="ml-0.5 inline-block h-5 w-2 motion-safe:animate-pulse bg-blue-600 align-middle"
+            aria-hidden="true"
           ></span>{:else}<span lang={textLang}><RubyText text={currentDialogue?.dialogue ?? ''} ruby={currentDialogue?.ruby} show={furigana} /></span>{#if secondDialogue?.[dialogueIndex]}<span
               class="mt-2 block text-base text-slate-500"
               lang={secondLang}
               data-testid="second-line"
             ><RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} /></span>{/if}{/if}
+          </span>
+          </span>
         </p>
         <div class="mt-2 min-h-11 flex items-center justify-end text-right text-blue-500">
             {#if isTyping}
@@ -684,5 +699,36 @@
 <style>
   .mobile-reader {
     font-family: 'Georgia', 'Times New Roman', serif;
+  }
+
+  .mobile-dialogue-box {
+    max-height: calc(100dvh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .passage-grid {
+    display: grid;
+    position: relative;
+  }
+
+  .passage-reserve,
+  .passage-visible {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  .passage-reserve {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .typing-overlay {
+    position: absolute;
+    inset: 0;
+  }
+
+  @media (max-height: 31rem) and (orientation: landscape) {
+    .mobile-dialogue-box {
+      min-height: 7.6rem;
+    }
   }
 </style>

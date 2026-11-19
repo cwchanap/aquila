@@ -500,7 +500,7 @@
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
         bind:this={dialogueBody}
-        class="dialogue-body"
+        class="dialogue-body reader-scroll"
         data-testid="visual-dialogue-body"
         role="region"
         aria-label={t.reader.dialogueBodyLabel}
@@ -511,6 +511,16 @@
         {/if}
 
         {#if currentDialogue && currentLine}
+          <div class="dialogue-passage">
+          {#if isTyping}
+            <div class="passage-reserve" aria-hidden="true">
+              <p class="dialogue-text" lang={textLang}><RubyText text={currentLine.dialogue} ruby={currentLine.ruby} show={furigana} /></p>
+              {#if secondLine}
+                <p class="second-text" lang={secondLang}><RubyText text={secondLine.dialogue} ruby={secondLine.ruby} show={furigana} /></p>
+              {/if}
+            </div>
+          {/if}
+          <div class={['passage-visible', { 'typing-overlay': isTyping }]}>
           <p class="dialogue-text" lang={textLang}>
             {#if isTyping}
               {typingText}<span
@@ -527,6 +537,8 @@
               <RubyText text={secondLine.dialogue} ruby={secondLine.ruby} show={furigana} />
             </p>
           {/if}
+          </div>
+          </div>
         {/if}
 
       </div>
@@ -660,7 +672,9 @@
     left: max(4rem, env(safe-area-inset-left));
     z-index: 10;
     max-width: 72rem;
-    height: var(--dialogue-box-height);
+    height: auto;
+    min-height: var(--dialogue-box-height);
+    max-height: calc(100dvh - max(8rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)));
     overflow: hidden;
     display: grid;
     grid-template-rows: minmax(0, 1fr) minmax(2.75rem, auto);
@@ -678,6 +692,27 @@
     min-height: 0;
     padding-right: 9rem;
     overflow-y: auto;
+  }
+
+  .dialogue-passage {
+    display: grid;
+    position: relative;
+  }
+
+  .passage-reserve,
+  .passage-visible {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  .passage-reserve {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .typing-overlay {
+    position: absolute;
+    inset: 0;
   }
 
   .dialogue-footer {

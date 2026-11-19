@@ -300,10 +300,8 @@
   <main class="flex-1 flex items-center justify-center p-6 relative min-w-0">
     <div class="w-full max-w-4xl">
     <!-- Main dialogue box with glassmorphism style -->
-    <div
-      bind:this={dialogueContainer}
-      class="bg-white/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50 max-h-[70vh] overflow-y-auto scroll-smooth"
-    >
+    <div class="bg-white/90 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/50">
+    <div bind:this={dialogueContainer} class="reader-scroll max-h-[70vh] overflow-y-auto scroll-smooth">
       <!-- Completed history: every line strictly before dialogueIndex -->
       {#each completedDialogues as entry, index (index)}
         <div
@@ -350,9 +348,16 @@
                 </span>
               {/if}
             </div>
-            <div
-              class="flex-1 text-lg text-slate-800 leading-relaxed min-h-[60px]"
-            >
+            <div class="passage-grid flex-1 text-lg text-slate-800 leading-relaxed min-h-[60px] min-w-0">
+              {#if isTyping}
+                <div class="passage-reserve" aria-hidden="true">
+                  <span lang={textLang}><RubyText text={currentDialogue.dialogue} ruby={currentDialogue.ruby} show={furigana} /></span>
+                  {#if secondDialogue?.[dialogueIndex]}
+                    <span class="mt-1 block text-base text-slate-500" lang={secondLang}><RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} /></span>
+                  {/if}
+                </div>
+              {/if}
+              <div class={['passage-visible', { 'typing-overlay': isTyping }]}>
               {#if isTyping}
                 <span lang={textLang}>{typingText}</span>
                 <span class="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"
@@ -369,14 +374,16 @@
                   </span>
                 {/if}
               {/if}
+              </div>
             </div>
           </div>
         </div>
       {/if}
+    </div>
 
       <!-- Continue indicator -->
       {#if currentDialogue && (isTyping || advanceLabel)}
-        <div class="text-center">
+        <div class="mt-2 text-center">
           <button
             onclick={handleNext}
             class="group px-8 py-3 bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -403,5 +410,26 @@
 <style>
   .novel-reader {
     font-family: 'Georgia', 'Times New Roman', serif;
+  }
+
+  .passage-grid {
+    display: grid;
+    position: relative;
+  }
+
+  .passage-reserve,
+  .passage-visible {
+    grid-area: 1 / 1;
+    min-width: 0;
+  }
+
+  .passage-reserve {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .typing-overlay {
+    position: absolute;
+    inset: 0;
   }
 </style>

@@ -264,9 +264,9 @@ test.describe('Visual novel reader', () => {
             ).not.toBe(null);
             if (!initialBox) continue;
             expect(
-                Math.abs(initialBox.height - viewport.expectedHeight),
-                `dialogue height at ${viewport.width}x${viewport.height}`
-            ).toBeLessThanOrEqual(1);
+                initialBox.height,
+                `minimum dialogue height at ${viewport.width}x${viewport.height}`
+            ).toBeGreaterThanOrEqual(viewport.expectedHeight - 1);
             await expect(visual.dialogueBody).toBeVisible();
             await expect(visual.dialogueFooter).toBeVisible();
 
@@ -290,11 +290,6 @@ test.describe('Visual novel reader', () => {
                 'dialogue box is measurable after advancing'
             ).not.toBe(null);
             if (!advancedBox) continue;
-            expect(
-                Math.abs(advancedBox.height - initialBox.height),
-                `advanced height delta at ${viewport.width}x${viewport.height}`
-            ).toBeLessThanOrEqual(1);
-
             if (wasTyping) {
                 await visual.root.click();
                 await expect(cursor).not.toBeAttached();
@@ -306,7 +301,7 @@ test.describe('Visual novel reader', () => {
             ).not.toBe(null);
             if (!completeBox) continue;
             expect(
-                Math.abs(completeBox.height - initialBox.height),
+                Math.abs(completeBox.height - advancedBox.height),
                 `completed height delta at ${viewport.width}x${viewport.height}`
             ).toBeLessThanOrEqual(1);
             await expect(visual.dialogueBody).toBeVisible();
@@ -689,13 +684,11 @@ test.describe('Visual novel reader', () => {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.addInitScript(() => {
             localStorage.setItem('aquila:reader-mode:v1', 'visual');
+            localStorage.setItem('aquila:reader-second-language:v1', 'zh');
         });
-        // Line 4 overflows the 390px dialogue body by a wide margin; the
-        // branch-choice line (47) only barely overflows and cannot scroll
-        // reliably across environments now that choices live in the
-        // Crossroads dialog instead of the body.
+        // The bilingual opening overflows even when the dialogue box grows.
         await page.goto(
-            '/en/reader?story=train_adventure&scene=act3&dialogue=4'
+            '/en/reader?story=train_adventure&scene=act1&dialogue=1'
         );
         const visual = new VisualReaderPage(page);
         const body = visual.dialogueBody;
@@ -709,7 +702,7 @@ test.describe('Visual novel reader', () => {
         // height and the captured line cannot still be growing.
         await expect(
             page.getByTestId('visual-typewriter-cursor')
-        ).not.toBeAttached();
+        ).not.toBeAttached({ timeout: 15_000 });
 
         const beforeUrl = page.url();
         const beforeDialogue = await body.locator('.dialogue-text').innerText();

@@ -168,7 +168,9 @@ describe('MobileNovelReader', () => {
             onOpenChoice,
         });
         expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
-        expect(container.querySelector('rt')).toBeNull();
+        expect(
+            container.querySelector('rt')?.closest('[aria-hidden="true"]')
+        ).not.toBeNull();
         await fireEvent.click(
             screen.getByRole('button', { name: 'Reveal text' })
         );
@@ -308,7 +310,9 @@ describe('MobileNovelReader', () => {
             await fireEvent.keyDown(window, { key: 'Enter' });
             await vi.advanceTimersByTimeAsync(30);
 
-            expect(screen.queryByText('First line.')).not.toBeInTheDocument();
+            expect(
+                screen.getByText('First line.').closest('[aria-hidden="true"]')
+            ).not.toBeNull();
             expect(
                 document.querySelector('[class*="animate-pulse"]')
             ).not.toBeNull();

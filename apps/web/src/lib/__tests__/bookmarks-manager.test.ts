@@ -129,24 +129,135 @@ describe('BookmarksManager', () => {
         vi.restoreAllMocks();
     });
 
-    describe('initializeUI', () => {
-        it('sets loading text content', () => {
-            const loading = document.createElement('div');
-            loading.id = 'loading-text';
-            document.body.appendChild(loading);
+    describe('server auth state', () => {
+        let origLS: Storage;
+        beforeEach(() => {
+            origLS = setupLocalStorage();
+        });
+        afterEach(() => {
+            restoreLocalStorage(origLS);
+        });
+
+        it('skips the cloud request and shows the login state when signed out', async () => {
+            setupContainer();
+            global.fetch = vi.fn();
+
+            const manager = new BookmarksManager('en', 'signed-out');
+            await manager.loadBookmarks();
+
+            expect(global.fetch).not.toHaveBeenCalled();
+            const container = getContainer();
+            expect(container.textContent).toContain('You must be logged in');
+            expect(container.textContent).not.toContain('Cloud Bookmarks');
+            expect(container.textContent).not.toContain('Loading...');
+        });
+
+        it('renders local cards and a cloud loading label before a signed-in response', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            let resolveFetch!: (response: unknown) => void;
+            global.fetch = vi.fn(
+                () =>
+                    new Promise(resolve => {
+                        resolveFetch = resolve;
+                    })
+            );
+
+            const manager = new BookmarksManager('en', 'signed-in');
+            const loading = manager.loadBookmarks();
+
+            const container = getContainer();
+            expect(container.textContent).toContain('Local Save');
+            expect(container.textContent).toContain('Cloud Bookmarks');
+            expect(container.textContent).toContain('Loading...');
+            expect(container.textContent).not.toContain('No bookmarks yet.');
+
+            resolveFetch({ ok: true, json: vi.fn().mockResolvedValue([]) });
+            await loading;
+
+            expect(container.textContent).toContain('No bookmarks yet.');
+            expect(container.textContent).not.toContain('Loading...');
+        });
+
+        it('keeps a loading surface for unavailable auth with no local cards', async () => {
+            setupContainer();
+            let resolveFetch!: (response: unknown) => void;
+            global.fetch = vi.fn(
+                () =>
+                    new Promise(resolve => {
+                        resolveFetch = resolve;
+                    })
+            );
 
             const manager = new BookmarksManager('en');
-            manager.initializeUI();
+            const loading = manager.loadBookmarks();
 
-            expect(document.getElementById('loading-text')!.textContent).toBe(
-                'Loading...'
+            expect(getContainer().textContent).toContain('Loading...');
+
+            resolveFetch({ ok: false, status: 500 });
+            await loading;
+
+            const container = getContainer();
+            expect(container.textContent).toContain(
+                'Failed to load bookmarks. Please try again.'
+            );
+            expect(container.textContent).not.toContain(
+                'You must be logged in'
             );
         });
 
-        it('gracefully handles missing UI elements', () => {
-            document.body.replaceChildren();
-            const manager = new BookmarksManager('en');
-            expect(() => manager.initializeUI()).not.toThrow();
+        it('keeps local cards when an unavailable cloud fetch fails', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            global.fetch = vi
+                .fn()
+                .mockResolvedValue({ ok: false, status: 500 } as any);
+
+            const manager = new BookmarksManager('en', 'unavailable');
+            await manager.loadBookmarks();
+
+            const container = getContainer();
+            expect(container.textContent).toContain('Local Save');
+            expect(container.textContent).toContain(
+                'Failed to load bookmarks. Please try again.'
+            );
+            expect(container.textContent).not.toContain(
+                'You must be logged in'
+            );
+        });
+
+        it('marks an unavailable visitor signed out only after a real 401', async () => {
+            setupContainer();
+            global.fetch = vi
+                .fn()
+                .mockResolvedValue({ ok: false, status: 401 } as any);
+
+            const manager = new BookmarksManager('en', 'unavailable');
+            await manager.loadBookmarks();
+
+            expect(getContainer().textContent).toContain(
+                'You must be logged in'
+            );
         });
     });
 

@@ -1,6 +1,7 @@
 import { getTranslations } from '@aquila/stories/translations';
 import type { Locale } from '@aquila/stories';
 import { showAlert, showConfirm } from './ui-dialogs';
+import type { AuthState } from './auth-utils';
 import {
     LocalBookmarksStore,
     type LocalBookmark,
@@ -32,31 +33,35 @@ interface BookmarkCardData {
 export class BookmarksManager {
     private cloudBookmarks: Bookmark[] = [];
     private localBookmarksList: LocalBookmark[] = [];
-    private authState: 'unknown' | 'logged-out' | 'logged-in' = 'unknown';
+    private authState: AuthState;
+    private cloudLoading = false;
     private readonly t: ReturnType<typeof getTranslations>;
     private readonly locale: Locale;
     private readonly localStore: LocalBookmarksStore;
 
-    constructor(locale: Locale) {
+    constructor(locale: Locale, authState: AuthState = 'unavailable') {
         this.locale = locale;
+        this.authState = authState;
         this.t = getTranslations(locale);
         this.localStore = new LocalBookmarksStore(locale);
     }
 
-    initializeUI(): void {
-        const loadingEl = document.getElementById('loading-text');
-
-        if (loadingEl) loadingEl.textContent = this.t.bookmarks.loading;
-    }
-
     async loadBookmarks(): Promise<void> {
         this.localBookmarksList = this.localStore.getAll();
+        if (this.authState === 'signed-out') {
+            this.renderAll();
+            return;
+        }
+
+        this.cloudLoading = true;
+        this.renderAll();
 
         try {
             const response = await fetch('/api/bookmarks');
 
             if (response.status === 401) {
-                this.authState = 'logged-out';
+                this.authState = 'signed-out';
+                this.cloudLoading = false;
                 this.renderAll();
                 return;
             }
@@ -65,12 +70,14 @@ export class BookmarksManager {
                 throw new Error('Failed to fetch bookmarks');
             }
 
-            this.authState = 'logged-in';
+            this.authState = 'signed-in';
+            this.cloudLoading = false;
             const data = await response.json();
             this.cloudBookmarks = Array.isArray(data) ? data : data.data || [];
             this.renderAll();
         } catch (error) {
             console.error('Failed to load bookmarks:', error);
+            this.cloudLoading = false;
             this.renderAll();
             const container = document.getElementById('bookmarks-container');
             if (container) {
@@ -101,18 +108,24 @@ export class BookmarksManager {
 
         container.textContent = '';
 
-        if (this.authState === 'logged-in') {
-            this.renderSection(
-                container,
-                this.t.bookmarks.cloudBookmarks,
-                this.cloudBookmarks
-            );
+        if (this.authState === 'signed-in') {
+            if (this.cloudLoading) {
+                this.renderCloudLoadingSection(container);
+            } else {
+                this.renderSection(
+                    container,
+                    this.t.bookmarks.cloudBookmarks,
+                    this.cloudBookmarks
+                );
+            }
+        } else if (this.authState === 'unavailable' && this.cloudLoading) {
+            this.renderCloudLoadingSection(container);
         }
 
         this.renderLocalSection(container);
 
         if (
-            this.authState === 'logged-out' &&
+            this.authState === 'signed-out' &&
             this.localBookmarksList.length === 0
         ) {
             const card = this.createCard();
@@ -127,6 +140,24 @@ export class BookmarksManager {
             card.appendChild(loginBtn);
             container.appendChild(card);
         }
+    }
+
+    private renderCloudLoadingSection(container: HTMLElement): void {
+        const section = document.createElement('div');
+        section.className = 'mb-8';
+
+        const heading = document.createElement('h2');
+        heading.className =
+            'text-xl font-serif font-semibold text-white/90 mb-4 tracking-tight';
+        heading.textContent = this.t.bookmarks.cloudBookmarks;
+        section.appendChild(heading);
+
+        const loading = document.createElement('p');
+        loading.className = 'text-white/65 mb-4';
+        loading.textContent = this.t.bookmarks.loading;
+        section.appendChild(loading);
+
+        container.appendChild(section);
     }
 
     private renderSection(
@@ -166,7 +197,7 @@ export class BookmarksManager {
     private renderLocalSection(container: HTMLElement): void {
         if (
             this.localBookmarksList.length === 0 &&
-            this.authState !== 'logged-in'
+            this.authState !== 'signed-in'
         )
             return;
 
@@ -185,7 +216,7 @@ export class BookmarksManager {
             empty.textContent = this.t.bookmarks.noLocalBookmarks;
             section.appendChild(empty);
         } else {
-            if (this.authState === 'logged-in') {
+            if (this.authState === 'signed-in') {
                 const bulkBtn = document.createElement('button');
                 bulkBtn.className =
                     'mb-4 px-6 py-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium shadow-lg transition-all duration-300';
@@ -200,7 +231,7 @@ export class BookmarksManager {
         }
 
         if (
-            this.authState === 'logged-out' &&
+            this.authState === 'signed-out' &&
             this.localBookmarksList.length > 0
         ) {
             const hint = document.createElement('p');
@@ -345,7 +376,7 @@ export class BookmarksManager {
         const date = this.formatDate(bookmark.updatedAt);
 
         const leadingActions: HTMLButtonElement[] = [];
-        if (this.authState === 'logged-in') {
+        if (this.authState === 'signed-in') {
             const syncBtn = document.createElement('button');
             syncBtn.className =
                 'px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium text-sm transition-all duration-300';

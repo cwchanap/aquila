@@ -4,7 +4,11 @@ import OceanBackground from '@/components/OceanBackground.astro';
 import UserStatus from '@/components/UserStatus.svelte';
 import { BookOpen } from 'lucide-svelte';
 import AuthDegradedBanner from '@/components/AuthDegradedBanner.astro';
-import { getSessionUser } from '@/lib/auth-utils.js';
+import {
+  authStateFromSession,
+  getSessionUser,
+  SESSION_LOOKUP_TIMEOUT_MS,
+} from '@/lib/auth-utils.js';
 import { t as translate } from '@/lib/utils';
 
 interface Props {
@@ -15,9 +19,12 @@ interface Props {
 const locale = (Astro.props.locale as string | undefined) || Astro.params.locale || 'en';
 const t = (key: string) => translate(locale, key);
 
-const sessionResult = await getSessionUser(Astro.request);
+const sessionResult = await getSessionUser(Astro.request, {
+  timeoutMs: SESSION_LOOKUP_TIMEOUT_MS,
+});
 const user = sessionResult.status === 'ok' ? sessionResult.user : null;
 const authFailed = sessionResult.status === 'error';
+const authState = authStateFromSession(sessionResult);
 ---
 
 <MainLayout title={t("bookmarks.title")}>
@@ -64,9 +71,9 @@ const authFailed = sessionResult.status === 'error';
       </div>
 
       <!-- Bookmarks list -->
-      <div id="bookmarks-container" class="w-full max-w-4xl space-y-10 bg-blue-950/75 backdrop-blur-md rounded-3xl p-8 border border-white/10" data-locale={locale}>
+      <div id="bookmarks-container" class="w-full max-w-4xl space-y-10 bg-blue-950/75 backdrop-blur-md rounded-3xl p-8 border border-white/10" data-locale={locale} data-auth-state={authState}>
         <div class="text-center py-12">
-          <div id="loading-text" class="text-white/80"></div>
+          <div id="loading-text" class="text-white/80">{t("bookmarks.loading")}</div>
         </div>
       </div>
 
@@ -76,13 +83,16 @@ const authFailed = sessionResult.status === 'error';
 
   <script>
     import { BookmarksManager } from '@/lib/bookmarks-manager';
+    import { authStateFromAttr } from '@/lib/auth-state-attr';
 
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('bookmarks-container');
       const locale = container?.getAttribute('data-locale') || 'en';
-      const manager = new BookmarksManager(locale);
-      manager.initializeUI();
-      manager.loadBookmarks();
+      const authState = authStateFromAttr(
+        container?.getAttribute('data-auth-state') ?? null
+      );
+      const manager = new BookmarksManager(locale, authState);
+      void manager.loadBookmarks();
     });
   </script>
 </MainLayout>

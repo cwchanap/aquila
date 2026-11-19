@@ -60,6 +60,31 @@ async function dispatchPopstate(page: Page, pathAndQuery: string) {
 }
 
 test.describe('Reader lazy story loading', () => {
+    test('server-renders the localized loading status with the direct link intact', async ({
+        request,
+    }) => {
+        const response = await request.get(SEVENTH_MIRROR_DIRECT_LINK);
+        const html = await response.text();
+
+        expect(html).toContain('id="reader-container"');
+        expect(html).toContain('Loading story');
+    });
+
+    test('replaces the server loading status once the reader mounts', async ({
+        page,
+    }) => {
+        const reader = new ReaderPage(page);
+        await page.goto(SEVENTH_MIRROR_DIRECT_LINK);
+        await expectReadyStory(reader, 'the_seventh_mirror');
+
+        await expect(
+            page
+                .locator('#reader-container [role="status"]')
+                .filter({ hasText: 'Loading story' })
+        ).toHaveCount(0);
+        await expectCanonicalUrl(page, SEVENTH_MIRROR_DIRECT_LINK);
+    });
+
     test('requests only the selected story and restores the exact direct link', async ({
         page,
     }) => {

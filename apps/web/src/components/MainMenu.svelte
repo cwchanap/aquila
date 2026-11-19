@@ -13,6 +13,7 @@
 
   // Use centralized translations
   $: translations = getTranslations(currentLocale as Locale);
+  $: activeLanguage = currentLocale === 'zh' ? translations.languages.chinese : currentLocale === 'ja' ? translations.languages.japanese : translations.languages.english;
 
   // Update locale on client side if different from prop
   onMount(() => {
@@ -89,11 +90,11 @@
   <div class="absolute top-5 left-5 z-20">
     <details class="bg-white/60 backdrop-blur-md rounded-xl px-1 py-1 shadow-sm border border-white/50">
       <summary
-        aria-label={translations.languages.switcher}
+        aria-label={`${activeLanguage} — ${translations.languages.switcher}`}
         class="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70"
         style="font-family: 'Exo 2', sans-serif;"
       >
-        {currentLocale === 'zh' ? translations.languages.chinese : currentLocale === 'ja' ? translations.languages.japanese : translations.languages.english}
+        {activeLanguage}
       </summary>
       <div class="flex flex-col gap-0.5">
         <a

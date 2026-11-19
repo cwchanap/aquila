@@ -158,9 +158,14 @@ test.describe('Main menu', () => {
         page,
     }) => {
         await page.goto('/en/');
-        const switcher = page.locator('summary[aria-label="Choose language"]');
+        const switcher = page.locator(
+            'summary[aria-label="English — Choose language"]'
+        );
         const japanese = page.getByRole('link', { name: '日本語' });
         await expect(switcher).toHaveText('English');
+        await expect(
+            switcher.locator('xpath=ancestor::astro-island')
+        ).not.toHaveAttribute('ssr');
         await expect(japanese).toBeHidden();
         await switcher.focus();
         await page.keyboard.press('Enter');
@@ -174,9 +179,19 @@ test.describe('Main menu', () => {
                 page.evaluate(() => localStorage.getItem('aquila:language'))
             )
             .toBe('ja');
+        const japaneseSwitcher = page.locator(
+            'summary[aria-label="日本語 — 言語を選択"]'
+        );
+        await expect(japaneseSwitcher).toHaveText('日本語');
         await expect(
-            page.locator('summary[aria-label="言語を選択"]')
-        ).toHaveText('日本語');
+            japaneseSwitcher.locator('xpath=ancestor::astro-island')
+        ).not.toHaveAttribute('ssr');
+        await japaneseSwitcher.click();
+        await page.getByRole('link', { name: '中文' }).click();
+        await expect(page).toHaveURL('/zh/');
+        await expect(
+            page.locator('summary[aria-label="中文 — 選擇語言"]')
+        ).toHaveText('中文');
     });
 
     test('orders Start Game, My Progress, Bookmarks with no inert Settings', async ({

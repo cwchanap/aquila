@@ -23,6 +23,7 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
         reader: {
             unknown: 'Unknown',
             continue: 'Continue',
+            revealText: 'Reveal text',
             choose: 'Choose',
             nextScene: 'Next Scene',
             complete: 'Complete',
@@ -220,6 +221,19 @@ function renderReader(overrides: Record<string, unknown> = {}) {
 }
 
 describe('VisualNovelReader', () => {
+    it('reveals the current line before opening its choice', async () => {
+        const onOpenChoice = vi.fn();
+        renderReader({ dialogue: [dialogue[0]], choice, onOpenChoice });
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Reveal text' })
+        );
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First visual line.')).toBeInTheDocument();
+        expect(onOpenChoice).not.toHaveBeenCalled();
+        await fireEvent.click(screen.getByRole('button', { name: 'Choose' }));
+        expect(onOpenChoice).toHaveBeenCalledOnce();
+    });
+
     afterEach(() => {
         vi.clearAllMocks();
     });

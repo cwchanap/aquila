@@ -2,7 +2,7 @@ export interface TypewriterOptions {
     /** Full text to type out. */
     text: string;
     /** Delay per character, in milliseconds. */
-    speed: number;
+    delay: () => number;
     /** Called with the visible substring on each tick (and full text on skip). */
     onTick: (partial: string) => void;
     /** When true, reveal the full text immediately and stop. */
@@ -22,11 +22,16 @@ export type TypewriterResult = 'done' | 'cancelled';
 export async function typeText(
     options: TypewriterOptions
 ): Promise<TypewriterResult> {
-    const { text, speed, onTick, isSkipped, isCancelled } = options;
+    const { text, delay, onTick, isSkipped, isCancelled } = options;
 
     for (let i = 0; i < text.length; i++) {
         if (isCancelled()) return 'cancelled';
         if (isSkipped()) {
+            onTick(text);
+            break;
+        }
+        const speed = delay();
+        if (speed === 0) {
             onTick(text);
             break;
         }

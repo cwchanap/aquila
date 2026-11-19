@@ -22,7 +22,7 @@
     VisualSnapshot,
     VisualStateController,
   } from '@/lib/visual-assets';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
 
   type Props = {
     controller: VisualStateController | null;
@@ -48,6 +48,7 @@
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
     furigana?: boolean;
+    typingDelay?: number;
     visibleSceneIds?: ReadonlySet<string>;
     backUrl?: string;
   };
@@ -92,6 +93,7 @@
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
+    typingDelay = 30,
     visibleSceneIds,
     backUrl,
   }: Props = $props();
@@ -220,15 +222,16 @@
     isTyping = true;
     skipTyping = false;
     const version = sceneVersion;
-    const result = await typeText({
+    // The current delay must not become a dependency of the scene effect.
+    const result = await untrack(() => typeText({
       text,
-      speed: 30,
+      delay: () => typingDelay,
       onTick: (partial) => {
         typingText = partial;
       },
       isSkipped: () => skipTyping,
       isCancelled: () => version !== sceneVersion,
-    });
+    }));
     if (result === 'cancelled') return;
     typingText = text;
     isTyping = false;
@@ -526,7 +529,7 @@
 
       <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
         <div class="action-slot">
-          {#if !isTyping && currentDialogue && advanceLabel}
+          {#if currentDialogue && (isTyping || advanceLabel)}
             <Button
               variant="menu"
               className="next-control block ml-auto w-auto rounded-full {controlBase}"
@@ -534,7 +537,7 @@
               data-reader-progression
               onclick={advance}
             >
-              {advanceLabel}
+              {isTyping ? t.reader.revealText : advanceLabel}
             </Button>
           {/if}
         </div>

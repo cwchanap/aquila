@@ -32,6 +32,7 @@
     type SecondLanguage,
   } from '@/lib/reader-second-language';
   import { readFurigana, writeFurigana } from '@/lib/reader-furigana';
+  import { readTypingSpeed, writeTypingSpeed, resolveTypingDelay, type TypingSpeed } from '@/lib/reader-typing-speed';
   import {
     createSfxPlayer as createDefaultSfxPlayer,
   } from '@/lib/audio/sfx-player';
@@ -259,6 +260,19 @@
   // Furigana over Japanese text, whether it is the story text or the
   // second language.
   let furigana = $state(readFurigana());
+  let typingPreference = $state<TypingSpeed | null>(readTypingSpeed());
+  let prefersReducedMotion = $state(
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  );
+  let typingDelay = $derived(resolveTypingDelay(typingPreference, prefersReducedMotion));
+  let typingSpeed: TypingSpeed = $derived(typingDelay === 0 ? 'instant' : typingDelay === 10 ? 'fast' : 'normal');
+
+  function setTypingSpeed(value: TypingSpeed): void {
+    typingPreference = value;
+    writeTypingSpeed(value);
+  }
   let furiganaAvailable = $derived(
     textLocale === 'ja' || activeSecondLocale === 'ja'
   );
@@ -1002,12 +1016,21 @@
       return;
     }
     const mql = window.matchMedia(MOBILE_QUERY);
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotion = (e: globalThis.MediaQueryListEvent) => {
+      prefersReducedMotion = e.matches;
+    };
+    prefersReducedMotion = motionQuery.matches;
+    motionQuery.addEventListener('change', updateMotion);
     const update = (e: globalThis.MediaQueryListEvent) => {
       isMobile = e.matches;
     };
     isMobile = mql.matches;
     mql.addEventListener('change', update);
-    return () => mql.removeEventListener('change', update);
+    return () => {
+      mql.removeEventListener('change', update);
+      motionQuery.removeEventListener('change', updateMotion);
+    };
   });
 
   onDestroy(() => {
@@ -1088,6 +1111,8 @@
     {secondLanguage}
     secondLanguageOptions={secondLanguageChoices}
     onSecondLanguageChange={setSecondLanguage}
+    {typingSpeed}
+    onTypingSpeedChange={setTypingSpeed}
     {furigana}
     {furiganaAvailable}
     onFuriganaChange={setFurigana}
@@ -1133,6 +1158,7 @@
     >
       {#if readerMode === 'visual'}
         <VisualNovelReader
+          {typingDelay}
           {secondDialogue}
           {textLang}
           {secondLang}
@@ -1161,6 +1187,9 @@
         />
       {:else if isMobile}
         <MobileNovelReader
+          {typingDelay}
+          {typingSpeed}
+          onTypingSpeedChange={setTypingSpeed}
           {secondDialogue}
           {textLang}
           {secondLang}
@@ -1195,6 +1224,7 @@
         />
       {:else}
         <NovelReader
+          {typingDelay}
           {secondDialogue}
           {textLang}
           {secondLang}

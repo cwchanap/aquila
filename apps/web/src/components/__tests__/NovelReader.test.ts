@@ -40,6 +40,7 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             endOfStory: 'End of story!',
             unknown: 'Unknown',
             continue: 'Continue',
+            revealText: 'Reveal text',
             choose: 'Choose',
             nextScene: 'Next Scene',
             complete: 'Complete',
@@ -134,6 +135,23 @@ afterEach(() => {
 });
 
 describe('NovelReader — controlled contract', () => {
+    it('reveals the current line before opening its choice', async () => {
+        const onOpenChoice = vi.fn();
+        renderReader({
+            dialogue: [mockDialogue[0]],
+            choice: mockChoice,
+            onOpenChoice,
+        });
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Reveal text' })
+        );
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First dialogue line.')).toBeInTheDocument();
+        expect(onOpenChoice).not.toHaveBeenCalled();
+        await fireEvent.click(screen.getByRole('button', { name: 'Choose' }));
+        expect(onOpenChoice).toHaveBeenCalledOnce();
+    });
+
     it('renders an independent rail Home link but no Bookmark control on desktop Text', () => {
         renderReader({
             backUrl: '/en/',

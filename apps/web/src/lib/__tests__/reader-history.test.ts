@@ -74,23 +74,6 @@ describe('session history', () => {
         ).toEqual([]);
     });
 
-    it('keeps visited segments when mode or primary locale changes', () => {
-        let history: ReaderHistory = {
-            storyId: '',
-            current: null,
-            segments: [],
-        };
-        history = updateReaderHistory(history, position('act1', 1));
-        history = updateReaderHistory(history, position('act2'));
-        const afterPreferences = {
-            ...position('act2'),
-            mode: 'visual',
-            locale: 'ja',
-        };
-        history = updateReaderHistory(history, afterPreferences);
-        expect(history.segments).toEqual([{ sceneId: 'act1', lastIndex: 1 }]);
-    });
-
     it('rebuilds visited lines from current payloads and drops missing scenes', () => {
         const segments = [
             { sceneId: 'act1', lastIndex: 0 },

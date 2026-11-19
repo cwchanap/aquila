@@ -86,8 +86,13 @@ describe('MainMenu', () => {
                 document.documentElement.lang = locale;
                 render(MainMenu, { props: { user: null, locale } });
 
-                const summary = screen.getByLabelText('Choose language');
+                const summary = screen.getByLabelText(
+                    `${label} — Choose language`
+                );
                 expect(summary).toHaveTextContent(label);
+                expect(summary).toHaveAccessibleName(
+                    `${label} — Choose language`
+                );
                 expect(summary.closest('details')).not.toHaveAttribute('open');
             }
         );
@@ -129,7 +134,7 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            screen.getByLabelText('Choose language').click();
+            screen.getByLabelText('English — Choose language').click();
             expect(
                 screen.getByRole('link', { name: 'English' })
             ).toBeInTheDocument();
@@ -164,7 +169,7 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            screen.getByLabelText('Choose language').click();
+            screen.getByLabelText('English — Choose language').click();
             const enLink = screen.getByRole('link', { name: 'English' });
             expect(enLink).toHaveAttribute('href', '/en/');
         });
@@ -174,7 +179,7 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            screen.getByLabelText('Choose language').click();
+            screen.getByLabelText('English — Choose language').click();
             const zhLink = screen.getByRole('link', { name: '中文' });
             expect(zhLink).toHaveAttribute('href', '/zh/');
         });
@@ -184,7 +189,7 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            screen.getByLabelText('Choose language').click();
+            screen.getByLabelText('English — Choose language').click();
             const jaLink = screen.getByRole('link', { name: '日本語' });
             expect(jaLink).toHaveAttribute('href', '/ja/');
             expect(jaLink).toHaveAttribute('lang', 'ja');
@@ -197,7 +202,9 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            await fireEvent.click(screen.getByLabelText('Choose language'));
+            await fireEvent.click(
+                screen.getByLabelText('English — Choose language')
+            );
             const enLink = screen.getByRole('link', { name: 'English' });
             await fireEvent.click(enLink);
 
@@ -212,7 +219,9 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            await fireEvent.click(screen.getByLabelText('Choose language'));
+            await fireEvent.click(
+                screen.getByLabelText('English — Choose language')
+            );
             await fireEvent.click(screen.getByRole('link', { name: '日本語' }));
 
             expect(mockLocalStorageSetItem).toHaveBeenCalledWith(
@@ -226,7 +235,9 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            await fireEvent.click(screen.getByLabelText('Choose language'));
+            await fireEvent.click(
+                screen.getByLabelText('English — Choose language')
+            );
             const zhLink = screen.getByRole('link', { name: '中文' });
             await fireEvent.click(zhLink);
 
@@ -249,7 +260,9 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            await fireEvent.click(screen.getByLabelText('Choose language'));
+            await fireEvent.click(
+                screen.getByLabelText('English — Choose language')
+            );
             const enLink = screen.getByRole('link', { name: 'English' });
             await fireEvent.click(enLink);
 

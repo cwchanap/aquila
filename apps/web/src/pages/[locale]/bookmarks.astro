@@ -2,6 +2,7 @@
 import MainLayout from '@/layouts/main.astro';
 import OceanBackground from '@/components/OceanBackground.astro';
 import UserStatus from '@/components/UserStatus.svelte';
+import { BookOpen } from 'lucide-svelte';
 import AuthDegradedBanner from '@/components/AuthDegradedBanner.astro';
 import { getSessionUser } from '@/lib/auth-utils.js';
 import { t as translate } from '@/lib/utils';
@@ -52,7 +53,8 @@ const authFailed = sessionResult.status === 'error';
             <div class="h-px w-16 bg-linear-to-l from-transparent to-cyan-300/50"></div>
           </div>
 
-          <h1 id="page-title" class="text-4xl sm:text-5xl font-serif font-bold text-white tracking-tight drop-shadow-lg mb-3">
+          <h1 id="page-title" class="flex items-center justify-center gap-3 text-4xl sm:text-5xl font-serif font-bold text-white tracking-tight drop-shadow-lg mb-3">
+            <BookOpen size={36} aria-hidden="true" />
             {t("bookmarks.title")}
           </h1>
           <p id="page-description" class="text-white/80 text-sm font-light">

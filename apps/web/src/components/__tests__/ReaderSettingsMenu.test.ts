@@ -93,9 +93,7 @@ describe('ReaderSettingsMenu', () => {
         });
         renderSettings({ onBookmark });
 
-        await fireEvent.click(
-            screen.getByRole('button', { name: '📖 Bookmark' })
-        );
+        await fireEvent.click(screen.getByRole('button', { name: 'Bookmark' }));
 
         expect(onBookmark).toHaveBeenCalledOnce();
         expect(screen.getByLabelText('Bookmark name')).toHaveFocus();
@@ -125,14 +123,12 @@ describe('ReaderSettingsMenu', () => {
         view.unmount();
         const withoutBookmark = renderSettings({ showBookmarkButton: false });
         expect(
-            screen.queryByRole('button', { name: '📖 Bookmark' })
+            screen.queryByRole('button', { name: 'Bookmark' })
         ).not.toBeInTheDocument();
         withoutBookmark.unmount();
 
         const disabledBookmark = renderSettings({ bookmarkDisabled: true });
-        expect(
-            screen.getByRole('button', { name: '📖 Bookmark' })
-        ).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Bookmark' })).toBeDisabled();
         const trigger = screen.getByRole('button', {
             name: 'Open reader settings',
         });

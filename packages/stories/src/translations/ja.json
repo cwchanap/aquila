@@ -37,7 +37,7 @@
     "heading": "メインメニュー",
     "startGame": "ゲームを始める",
     "settings": "設定",
-    "bookmarks": "📖 しおり"
+    "bookmarks": "しおり"
   },
   "common": {
     "hello": "こんにちは",
@@ -172,7 +172,7 @@
     "ling_mo": "リン・モー"
   },
   "bookmarks": {
-    "title": "📖 しおり",
+    "title": "しおり",
     "description": "保存した読書の進み具合",
     "loading": "しおりを読み込み中...",
     "notLoggedIn": "しおりを見るにはログインしてください",
@@ -248,7 +248,7 @@
     "nextScene": "次の場面",
     "complete": "完了",
     "choose": "選ぶ",
-    "bookmark": "📖 しおり",
+    "bookmark": "しおり",
     "pageDisplay": "{current} / {total} ページ",
     "unknown": "不明",
     "actPanel": "章",
@@ -324,6 +324,7 @@
     "cancel": "キャンセル"
   },
   "languages": {
+    "switcher": "言語を選択",
     "english": "English",
     "chinese": "中文",
     "japanese": "日本語"

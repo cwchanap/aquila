@@ -6,12 +6,22 @@ test.describe('Bookmarks page', () => {
         const bookmarks = new BookmarksPage(page, 'en');
         await bookmarks.goto();
         await bookmarks.expectToBeVisible();
+        await expect(page).toHaveTitle('My Bookmarks');
     });
 
     test('renders the page title in zh', async ({ page }) => {
         const bookmarks = new BookmarksPage(page, 'zh');
         await bookmarks.goto();
         await bookmarks.expectToBeVisible();
+        await expect(page).toHaveTitle('我的書籤');
+    });
+
+    test('renders the page title in ja', async ({ page }) => {
+        await page.goto('/ja/bookmarks');
+        await expect(page).toHaveTitle('しおり');
+        await expect(
+            page.getByRole('heading', { name: 'しおり' })
+        ).toBeVisible();
     });
 
     test('shows the not-logged-in empty state with a login link', async ({

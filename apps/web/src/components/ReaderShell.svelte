@@ -17,6 +17,7 @@
   import { logger } from '@/lib/logger';
   import type { StoryProgress } from '@/lib/story-progress-store';
   import { actLabel, extractActName } from '@/lib/act-navigation';
+  import { buildHistoryLines, updateReaderHistory, type ReaderHistory } from '@/lib/reader-history';
   import { focusTrap } from '@/lib/focus-trap';
   import {
     readReaderMode,
@@ -214,6 +215,28 @@
         )
       : null
   );
+  let history: ReaderHistory = { storyId: '', current: null, segments: [] };
+  let historySegments = $state.raw<ReaderHistory['segments']>([]);
+  $effect(() => {
+    const position = {
+      storyId,
+      sceneId: currentSceneId,
+      lastIndex: dialogueIndex,
+      ready: loadStatus === 'ready' && hasActivePayload && activeFlow !== null && dialogue.length > 0,
+    };
+    const next = updateReaderHistory(history, position);
+    if (next.segments !== history.segments) historySegments = next.segments;
+    history = next;
+  });
+  let historyLines = $derived.by(() => {
+    const segments = [...historySegments, { sceneId: currentSceneId, lastIndex: dialogueIndex }];
+    return buildHistoryLines(
+      segments,
+      sceneId => sceneId === currentSceneId ? dialogue : getSceneDialogue(storyId, sceneId),
+      secondContent?.dialogue,
+      t
+    );
+  });
   let secondChoice = $derived.by(() => {
     if (!secondContent || !choice || !activeFlow) return null;
     const next = activeFlow.nodes.find(
@@ -1158,6 +1181,7 @@
     >
       {#if readerMode === 'visual'}
         <VisualNovelReader
+          {historyLines}
           {typingDelay}
           {secondDialogue}
           {textLang}
@@ -1187,6 +1211,7 @@
         />
       {:else if isMobile}
         <MobileNovelReader
+          {historyLines}
           {typingDelay}
           {typingSpeed}
           onTypingSpeedChange={setTypingSpeed}

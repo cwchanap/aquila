@@ -11,6 +11,7 @@
   import VisualBacklog from '@/components/VisualBacklog.svelte';
   import Button from '@/components/ui/Button.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
+  import { sceneHistoryLines, type HistoryLine } from '@/lib/reader-history';
   import {
     getReaderAdvanceDecision,
     getReaderAdvanceLabel,
@@ -51,6 +52,7 @@
     typingDelay?: number;
     visibleSceneIds?: ReadonlySet<string>;
     backUrl?: string;
+    historyLines?: HistoryLine[];
   };
 
   const emptyLayer = {
@@ -96,6 +98,7 @@
     typingDelay = 30,
     visibleSceneIds,
     backUrl,
+    historyLines,
   }: Props = $props();
 
   let snapshot = $state<VisualSnapshot>(emptySnapshot);
@@ -129,6 +132,7 @@
       : null
   );
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
+  let backlogLines = $derived(historyLines ?? sceneHistoryLines(dialogue, dialogueIndex, t, secondDialogue));
   let advanceLabel = $derived(
     getReaderAdvanceLabel(
       {
@@ -550,12 +554,10 @@
 
   {#if backlogOpen}
     <VisualBacklog
-      {dialogue}
-      {secondDialogue}
+      lines={backlogLines}
       {textLang}
       {secondLang}
       {furigana}
-      {dialogueIndex}
       {locale}
       trigger={historyButton}
       onClose={closeBacklog}

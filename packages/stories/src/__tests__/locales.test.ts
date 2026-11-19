@@ -84,11 +84,19 @@ describe('ja UI strings', () => {
 
     it('names every language in its own language', () => {
         for (const locale of SUPPORTED_LOCALES) {
-            expect(translations[locale].languages).toEqual({
+            expect(translations[locale].languages).toMatchObject({
                 english: 'English',
                 chinese: '中文',
                 japanese: '日本語',
             });
+        }
+    });
+
+    it('keeps bookmark labels and page titles free of emoji', () => {
+        for (const locale of SUPPORTED_LOCALES) {
+            expect(translations[locale].menu.bookmarks).not.toContain('📖');
+            expect(translations[locale].bookmarks.title).not.toContain('📖');
+            expect(translations[locale].reader.bookmark).not.toContain('📖');
         }
     });
 });

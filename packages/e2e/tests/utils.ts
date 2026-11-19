@@ -273,7 +273,7 @@ export class MobileReaderPage {
     }
 
     private get bookmarkLabel() {
-        const labels = { en: '📖 Bookmark', zh: '📖 書籤' };
+        const labels = { en: 'Bookmark', zh: '書籤' };
         return labels[this.locale];
     }
 

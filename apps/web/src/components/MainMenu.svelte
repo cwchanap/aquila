@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { BookOpen } from 'lucide-svelte';
   import UserStatus from './UserStatus.svelte';
   import { getTranslations, isLocale } from '@aquila/stories/translations';
   import type { Locale } from '@aquila/stories';
@@ -86,33 +87,42 @@
 
   <!-- Language switcher — top left, minimal pill -->
   <div class="absolute top-5 left-5 z-20">
-    <div class="flex flex-col gap-0.5 bg-white/60 backdrop-blur-md rounded-xl px-1 py-1 shadow-sm border border-white/50">
-      <a
-        href="/en/"
-        class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all duration-200 language-link"
+    <details class="bg-white/60 backdrop-blur-md rounded-xl px-1 py-1 shadow-sm border border-white/50">
+      <summary
+        aria-label={translations.languages.switcher}
+        class="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70"
         style="font-family: 'Exo 2', sans-serif;"
-        on:click={() => handleLanguageClick('en')}
       >
-        {translations.languages.english}
-      </a>
-      <a
-        href="/zh/"
-        class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all duration-200 language-link"
-        style="font-family: 'Exo 2', sans-serif;"
-        on:click={() => handleLanguageClick('zh')}
-      >
-        {translations.languages.chinese}
-      </a>
-      <a
-        href="/ja/"
-        lang="ja"
-        class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all duration-200 language-link"
-        style="font-family: 'Exo 2', sans-serif;"
-        on:click={() => handleLanguageClick('ja')}
-      >
-        {translations.languages.japanese}
-      </a>
-    </div>
+        {currentLocale === 'zh' ? translations.languages.chinese : currentLocale === 'ja' ? translations.languages.japanese : translations.languages.english}
+      </summary>
+      <div class="flex flex-col gap-0.5">
+        <a
+          href="/en/"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all duration-200 language-link"
+          style="font-family: 'Exo 2', sans-serif;"
+          on:click={() => handleLanguageClick('en')}
+        >
+          {translations.languages.english}
+        </a>
+        <a
+          href="/zh/"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all duration-200 language-link"
+          style="font-family: 'Exo 2', sans-serif;"
+          on:click={() => handleLanguageClick('zh')}
+        >
+          {translations.languages.chinese}
+        </a>
+        <a
+          href="/ja/"
+          lang="ja"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all duration-200 language-link"
+          style="font-family: 'Exo 2', sans-serif;"
+          on:click={() => handleLanguageClick('ja')}
+        >
+          {translations.languages.japanese}
+        </a>
+      </div>
+    </details>
   </div>
 
   <!-- Main content — centered card -->
@@ -161,10 +171,11 @@
 
             <!-- Secondary: Bookmarks -->
             <button
-              class="w-full py-3 px-6 rounded-2xl bg-white/60 hover:bg-white/80 active:bg-white/90 text-slate-700 hover:text-slate-900 font-medium text-sm tracking-wide border border-white/70 hover:border-slate-200 transition-all duration-200"
+              class="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-white/60 hover:bg-white/80 active:bg-white/90 text-slate-700 hover:text-slate-900 font-medium text-sm tracking-wide border border-white/70 hover:border-slate-200 transition-all duration-200"
               style="font-family: 'Exo 2', sans-serif;"
               on:click={handleBookmarksClick}
             >
+              <BookOpen size={18} aria-hidden="true" />
               {translations.menu.bookmarks}
             </button>
 

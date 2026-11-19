@@ -1,6 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
-  import { Cog, X } from 'lucide-svelte';
+  import { BookOpen, Cog, X } from 'lucide-svelte';
   import type { Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import type { ReaderMode } from '@/lib/reader-mode';
@@ -237,10 +237,11 @@
       {#if showBookmarkButton}
         <button
           type="button"
-          class="rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+          class="flex items-center gap-2 rounded-xl border-2 border-slate-200 px-4 py-3 text-left font-semibold hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={bookmarkDisabled}
           onclick={() => void bookmark()}
         >
+          <BookOpen size={18} aria-hidden="true" />
           {t.reader.bookmark}
         </button>
       {/if}

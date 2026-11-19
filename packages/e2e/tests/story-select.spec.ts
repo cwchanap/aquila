@@ -154,6 +154,31 @@ test.describe('Story select shelves', () => {
 });
 
 test.describe('Main menu', () => {
+    test('opens the collapsed language switcher with the keyboard and saves the choice', async ({
+        page,
+    }) => {
+        await page.goto('/en/');
+        const switcher = page.locator('summary[aria-label="Choose language"]');
+        const japanese = page.getByRole('link', { name: '日本語' });
+        await expect(switcher).toHaveText('English');
+        await expect(japanese).toBeHidden();
+        await switcher.focus();
+        await page.keyboard.press('Enter');
+        await expect(japanese).toBeVisible();
+        await expect(japanese).toHaveAttribute('href', '/ja/');
+        await japanese.focus();
+        await page.keyboard.press('Enter');
+        await expect(page).toHaveURL('/ja/');
+        await expect
+            .poll(() =>
+                page.evaluate(() => localStorage.getItem('aquila:language'))
+            )
+            .toBe('ja');
+        await expect(
+            page.locator('summary[aria-label="言語を選択"]')
+        ).toHaveText('日本語');
+    });
+
     test('orders Start Game, My Progress, Bookmarks with no inert Settings', async ({
         page,
     }) => {
@@ -163,7 +188,7 @@ test.describe('Main menu', () => {
 
         const start = page.getByRole('link', { name: 'Start Game' });
         const progress = page.getByRole('link', { name: 'My Progress' });
-        const bookmarks = page.getByRole('button', { name: '📖 Bookmarks' });
+        const bookmarks = page.getByRole('button', { name: 'Bookmarks' });
         await expect(start).toHaveAttribute('href', '/en/stories');
         await expect(progress).toHaveAttribute('href', '/en/progress');
         await expect(bookmarks).toBeVisible();

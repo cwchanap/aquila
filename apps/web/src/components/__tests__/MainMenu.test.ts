@@ -25,6 +25,7 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             english: 'English',
             chinese: '中文',
             japanese: '日本語',
+            switcher: 'Choose language',
         },
         common: {
             logout: 'Logout',
@@ -75,6 +76,22 @@ describe('MainMenu', () => {
     });
 
     describe('rendering', () => {
+        it.each([
+            ['en', 'English'],
+            ['zh', '中文'],
+            ['ja', '日本語'],
+        ])(
+            'shows the active %s language in a collapsed switcher',
+            (locale, label) => {
+                document.documentElement.lang = locale;
+                render(MainMenu, { props: { user: null, locale } });
+
+                const summary = screen.getByLabelText('Choose language');
+                expect(summary).toHaveTextContent(label);
+                expect(summary.closest('details')).not.toHaveAttribute('open');
+            }
+        );
+
         it('renders the game title heading', () => {
             render(MainMenu, {
                 props: { user: null, locale: 'en' },
@@ -112,8 +129,13 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            expect(screen.getByText('English')).toBeInTheDocument();
-            expect(screen.getByText('中文')).toBeInTheDocument();
+            screen.getByLabelText('Choose language').click();
+            expect(
+                screen.getByRole('link', { name: 'English' })
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('link', { name: '中文' })
+            ).toBeInTheDocument();
         });
 
         it('renders the start game link with correct locale href', () => {
@@ -142,7 +164,8 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            const enLink = screen.getByText('English').closest('a');
+            screen.getByLabelText('Choose language').click();
+            const enLink = screen.getByRole('link', { name: 'English' });
             expect(enLink).toHaveAttribute('href', '/en/');
         });
 
@@ -151,7 +174,8 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            const zhLink = screen.getByText('中文').closest('a');
+            screen.getByLabelText('Choose language').click();
+            const zhLink = screen.getByRole('link', { name: '中文' });
             expect(zhLink).toHaveAttribute('href', '/zh/');
         });
 
@@ -160,7 +184,8 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            const jaLink = screen.getByText('日本語').closest('a');
+            screen.getByLabelText('Choose language').click();
+            const jaLink = screen.getByRole('link', { name: '日本語' });
             expect(jaLink).toHaveAttribute('href', '/ja/');
             expect(jaLink).toHaveAttribute('lang', 'ja');
         });
@@ -172,7 +197,8 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            const enLink = screen.getByText('English');
+            await fireEvent.click(screen.getByLabelText('Choose language'));
+            const enLink = screen.getByRole('link', { name: 'English' });
             await fireEvent.click(enLink);
 
             expect(mockLocalStorageSetItem).toHaveBeenCalledWith(
@@ -186,7 +212,8 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            await fireEvent.click(screen.getByText('日本語'));
+            await fireEvent.click(screen.getByLabelText('Choose language'));
+            await fireEvent.click(screen.getByRole('link', { name: '日本語' }));
 
             expect(mockLocalStorageSetItem).toHaveBeenCalledWith(
                 'aquila:language',
@@ -199,7 +226,8 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            const zhLink = screen.getByText('中文');
+            await fireEvent.click(screen.getByLabelText('Choose language'));
+            const zhLink = screen.getByRole('link', { name: '中文' });
             await fireEvent.click(zhLink);
 
             expect(mockLocalStorageSetItem).toHaveBeenCalledWith(
@@ -221,7 +249,8 @@ describe('MainMenu', () => {
                 props: { user: null, locale: 'en' },
             });
 
-            const enLink = screen.getByText('English');
+            await fireEvent.click(screen.getByLabelText('Choose language'));
+            const enLink = screen.getByRole('link', { name: 'English' });
             await fireEvent.click(enLink);
 
             expect(consoleSpy).toHaveBeenCalled();

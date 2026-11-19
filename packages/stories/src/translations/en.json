@@ -37,7 +37,7 @@
     "heading": "Main Menu",
     "startGame": "Start Game",
     "settings": "Settings",
-    "bookmarks": "📖 Bookmarks"
+    "bookmarks": "Bookmarks"
   },
   "common": {
     "hello": "Hello",
@@ -172,7 +172,7 @@
     "ling_mo": "Ling Mo"
   },
   "bookmarks": {
-    "title": "📖 My Bookmarks",
+    "title": "My Bookmarks",
     "description": "Your saved reading progress",
     "loading": "Loading bookmarks...",
     "notLoggedIn": "Please log in to view your bookmarks",
@@ -248,7 +248,7 @@
     "nextScene": "Next Scene",
     "complete": "Complete",
     "choose": "Choose",
-    "bookmark": "📖 Bookmark",
+    "bookmark": "Bookmark",
     "pageDisplay": "Page {current} of {total}",
     "unknown": "Unknown",
     "actPanel": "Acts",
@@ -324,6 +324,7 @@
     "cancel": "Cancel"
   },
   "languages": {
+    "switcher": "Choose language",
     "english": "English",
     "chinese": "中文",
     "japanese": "日本語"

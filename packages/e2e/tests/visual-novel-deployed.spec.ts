@@ -160,7 +160,7 @@ const EXPECTED_AUDIO_IDENTITY: RuntimeReleaseIdentity = {
 const t = {
     textMode: 'Text',
     visualNovelMode: 'Visual Novel',
-    bookmark: '📖 Bookmark',
+    bookmark: 'Bookmark',
     bookmarkSaved: 'Bookmark saved!',
     continueReading: 'Continue Reading',
     visualAssetFallback: 'Some visuals are unavailable',

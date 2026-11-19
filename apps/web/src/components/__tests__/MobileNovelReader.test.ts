@@ -148,15 +148,41 @@ describe('MobileNovelReader', () => {
     });
 
     it('reveals without advancing on the first button gesture', async () => {
-        const { onIndexChange } = renderReader();
+        const text = `${'A long passage. '.repeat(20)}漢`;
+        const onOpenChoice = vi.fn();
+        const { onIndexChange, container } = renderReader({
+            dialogue: [
+                {
+                    dialogue: text,
+                    ruby: [
+                        {
+                            start: text.length - 1,
+                            end: text.length,
+                            reading: 'かん',
+                        },
+                    ],
+                },
+            ],
+            secondDialogue: [{ dialogue: 'Complete translation' }],
+            choice: mockChoice,
+            onOpenChoice,
+        });
+        expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
+        expect(container.querySelector('rt')).toBeNull();
         await fireEvent.click(
             screen.getByRole('button', { name: 'Reveal text' })
         );
-        await vi.runAllTimersAsync();
-        expect(screen.getByText('First line.')).toBeInTheDocument();
+        await vi.advanceTimersByTimeAsync(30);
+        expect(container.querySelector('.ruby-line')?.textContent).toBe(
+            `${text}(かん)`
+        );
+        expect(screen.getByTestId('second-line')).toHaveTextContent(
+            'Complete translation'
+        );
         expect(onIndexChange).not.toHaveBeenCalled();
-        await fireEvent.click(screen.getByLabelText('Tap to continue'));
-        expect(onIndexChange).toHaveBeenCalledExactlyOnceWith(1);
+        expect(onOpenChoice).not.toHaveBeenCalled();
+        await fireEvent.click(screen.getByRole('button', { name: 'Choose' }));
+        expect(onOpenChoice).toHaveBeenCalledOnce();
     });
 
     it('changes a running line to instant on its next tick without restarting', async () => {

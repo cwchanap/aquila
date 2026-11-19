@@ -1161,6 +1161,94 @@ describe('ReaderShell', () => {
         expect(sfx.player.play).toHaveBeenCalledWith('door-open');
     });
 
+    it('does not replay visual voice or SFX when changing speed or revealing a line', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        localStorage.setItem(READER_TYPING_SPEED_KEY, 'normal');
+        const text = 'A long spoken line. '.repeat(20).trim();
+        readerState.dialogue = [
+            { dialogue: 'First line.' },
+            { dialogue: text, sfx: 'door-open' },
+            { dialogue: 'Next line.', sfx: 'next-cue' },
+        ];
+        const sfx = createSfxHarness();
+        const voice = {
+            load: vi.fn(() => Promise.resolve(true)),
+            play: vi.fn(),
+            resume: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        };
+        const onIndexChange = vi.fn((index: number) => {
+            readerState.dialogueIndex = index;
+        });
+        const onNext = vi.fn();
+        render(ReaderShell, {
+            props: {
+                createSfxPlayer: () => sfx.player,
+                createVoicePlayer: () => voice,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+                createAudioRuntime: () => null,
+                onIndexChange,
+                onNext,
+            },
+        });
+        await tick();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Reveal text' })
+        );
+        await vi.advanceTimersByTimeAsync(30);
+        await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        await tick();
+        expect(readerState.dialogueIndex).toBe(1);
+        expect(sfx.player.play).toHaveBeenCalledTimes(1);
+        expect(sfx.player.play).toHaveBeenLastCalledWith('door-open');
+        expect(voice.play).toHaveBeenLastCalledWith('act1', 1);
+        expect(
+            voice.play.mock.calls.filter(
+                ([scene, index]) => scene === 'act1' && index === 1
+            )
+        ).toHaveLength(1);
+        const voiceCalls = voice.play.mock.calls.length;
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        await fireEvent.click(screen.getByRole('button', { name: 'Fast' }));
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Close reader settings' })
+        );
+        expect(voice.play).toHaveBeenCalledTimes(voiceCalls);
+        expect(sfx.player.play).toHaveBeenCalledTimes(1);
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Reveal text' })
+        );
+        await vi.advanceTimersByTimeAsync(30);
+        expect(screen.getByText(text)).toBeInTheDocument();
+        expect(readerState.dialogueIndex).toBe(1);
+        expect(onIndexChange).toHaveBeenCalledTimes(1);
+        expect(onIndexChange).toHaveBeenLastCalledWith(1);
+        expect(onNext).not.toHaveBeenCalled();
+        expect(voice.play).toHaveBeenCalledTimes(voiceCalls);
+        expect(sfx.player.play).toHaveBeenCalledTimes(1);
+
+        await fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+        await tick();
+        expect(readerState.dialogueIndex).toBe(2);
+        expect(onIndexChange).toHaveBeenCalledTimes(2);
+        expect(onIndexChange).toHaveBeenLastCalledWith(2);
+        expect(voice.play).toHaveBeenCalledTimes(voiceCalls + 1);
+        expect(voice.play).toHaveBeenLastCalledWith('act1', 2);
+        expect(
+            voice.play.mock.calls.filter(
+                ([scene, index]) => scene === 'act1' && index === 2
+            )
+        ).toHaveLength(1);
+        expect(sfx.player.play).toHaveBeenCalledTimes(2);
+        expect(sfx.player.play).toHaveBeenLastCalledWith('next-cue');
+        expect(onNext).not.toHaveBeenCalled();
+    });
+
     it('keeps one SFX player across responsive remounts without replaying the current position', async () => {
         const mm = stubMatchMedia(false);
         readerState.dialogue = sfxDialogue;

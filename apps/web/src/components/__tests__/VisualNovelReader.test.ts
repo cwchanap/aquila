@@ -222,13 +222,38 @@ function renderReader(overrides: Record<string, unknown> = {}) {
 
 describe('VisualNovelReader', () => {
     it('reveals the current line before opening its choice', async () => {
+        const text = `${'A long passage. '.repeat(20)}漢`;
         const onOpenChoice = vi.fn();
-        renderReader({ dialogue: [dialogue[0]], choice, onOpenChoice });
+        const { container, onIndexChange } = renderReader({
+            dialogue: [
+                {
+                    dialogue: text,
+                    ruby: [
+                        {
+                            start: text.length - 1,
+                            end: text.length,
+                            reading: 'かん',
+                        },
+                    ],
+                },
+            ],
+            secondDialogue: [{ dialogue: 'Complete translation' }],
+            choice,
+            onOpenChoice,
+        });
+        expect(screen.queryByTestId('second-line')).not.toBeInTheDocument();
+        expect(container.querySelector('rt')).toBeNull();
         await fireEvent.click(
             screen.getByRole('button', { name: 'Reveal text' })
         );
-        await vi.runAllTimersAsync();
-        expect(screen.getByText('First visual line.')).toBeInTheDocument();
+        await vi.advanceTimersByTimeAsync(30);
+        expect(container.querySelector('.ruby-line')?.textContent).toBe(
+            `${text}(かん)`
+        );
+        expect(screen.getByTestId('second-line')).toHaveTextContent(
+            'Complete translation'
+        );
+        expect(onIndexChange).not.toHaveBeenCalled();
         expect(onOpenChoice).not.toHaveBeenCalled();
         await fireEvent.click(screen.getByRole('button', { name: 'Choose' }));
         expect(onOpenChoice).toHaveBeenCalledOnce();

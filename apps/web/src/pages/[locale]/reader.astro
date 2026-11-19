@@ -23,7 +23,11 @@ const userId = sessionResult.status === 'ok' ? (sessionResult.user?.id ?? null) 
 <MainLayout title={title}>
     {authFailed && <AuthDegradedBanner message={translate(locale, 'auth.degradedBanner')} />}
     <div id="reader-container" class="min-h-screen" data-locale={translations.locale} data-auth-state={authState} data-user-id={userId}>
-        <!-- Reader will be mounted here -->
+        <div class="flex min-h-screen items-center justify-center bg-slate-950 p-6">
+            <div role="status" class="rounded-2xl bg-slate-950/90 p-8 text-center text-white shadow-2xl">
+                {translations.reader.loadingStory}
+            </div>
+        </div>
     </div>
 
     <script>

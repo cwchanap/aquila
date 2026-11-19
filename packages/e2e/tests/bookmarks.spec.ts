@@ -1,7 +1,114 @@
 import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { BookmarksPage } from './utils';
 
+type SsrAuthState = 'signed-in' | 'signed-out' | 'unavailable';
+
+/** Rewrites the server-rendered auth state on the bookmarks document so the
+ *  client's signed-in/unavailable branches are reachable without an OAuth
+ *  session. */
+async function useSsrAuthState(page: Page, authState: SsrAuthState) {
+    await page.route(
+        url =>
+            url.pathname.endsWith('/bookmarks') &&
+            !url.pathname.startsWith('/api/'),
+        async route => {
+            const response = await route.fetch();
+            const html = await response.text();
+            await route.fulfill({
+                response,
+                body: html.replace(
+                    /data-auth-state="[^"]*"/,
+                    `data-auth-state="${authState}"`
+                ),
+            });
+        }
+    );
+}
+
 test.describe('Bookmarks page', () => {
+    test('server-renders loading text and auth state before hydration', async ({
+        request,
+    }) => {
+        const response = await request.get('/en/bookmarks');
+        const html = await response.text();
+
+        expect(html).toContain('Loading bookmarks...');
+        expect(html).toMatch(
+            /data-auth-state="(signed-in|signed-out|unavailable)"/
+        );
+    });
+
+    test('replaces the server loading text on mount', async ({ page }) => {
+        await useSsrAuthState(page, 'signed-out');
+        const bookmarks = new BookmarksPage(page, 'en');
+        await bookmarks.goto();
+
+        await expect(bookmarks.loginLink).toBeVisible();
+        await expect(bookmarks.container).not.toContainText(
+            'Loading bookmarks...'
+        );
+    });
+
+    test('skips the cloud request for a known signed-out visitor', async ({
+        page,
+    }) => {
+        await useSsrAuthState(page, 'signed-out');
+        const cloudRequests: string[] = [];
+        page.on('request', request => {
+            if (new URL(request.url()).pathname === '/api/bookmarks') {
+                cloudRequests.push(request.url());
+            }
+        });
+        const bookmarks = new BookmarksPage(page, 'en');
+        await bookmarks.goto();
+
+        await expect(bookmarks.loginLink).toBeVisible();
+        expect(cloudRequests).toHaveLength(0);
+    });
+
+    test('shows local cards and a cloud loading label before a signed-in response', async ({
+        page,
+    }) => {
+        const bookmarks = new BookmarksPage(page, 'en');
+        await bookmarks.seedLocalBookmark({
+            bookmarkName: 'E2E checkpoint',
+            storyId: 'train_adventure',
+            sceneId: 'scene_1',
+        });
+        await useSsrAuthState(page, 'signed-in');
+
+        let releaseCloud!: () => void;
+        const cloudGate = new Promise<void>(resolve => {
+            releaseCloud = resolve;
+        });
+        await page.route('**/api/bookmarks', async route => {
+            await cloudGate;
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: '[]',
+            });
+        });
+
+        await bookmarks.goto();
+        await expect(bookmarks.localBookmarkCards()).toHaveCount(1);
+        await expect(
+            bookmarks.container.getByText('Loading bookmarks...')
+        ).toBeVisible();
+        await expect(
+            bookmarks.container.getByText('No bookmarks yet.')
+        ).toHaveCount(0);
+
+        releaseCloud();
+        await expect(
+            bookmarks.container.getByText('No bookmarks yet.')
+        ).toBeVisible();
+        await expect(
+            bookmarks.container.getByText('Loading bookmarks...')
+        ).toHaveCount(0);
+    });
+
     test('renders the page title and container (en)', async ({ page }) => {
         const bookmarks = new BookmarksPage(page, 'en');
         await bookmarks.goto();
@@ -55,6 +162,9 @@ test.describe('Bookmarks page', () => {
         page,
     }) => {
         const bookmarks = new BookmarksPage(page, 'zh');
+        // Force the unavailable (fetching) branch even when the anonymous
+        // visitor is server-rendered as signed out.
+        await useSsrAuthState(page, 'unavailable');
         // Force the cloud bookmarks endpoint to return a 500 so the manager
         // falls into the catch branch and renders the error banner.
         await page.route('**/api/bookmarks', route =>
@@ -69,15 +179,22 @@ test.describe('Bookmarks page', () => {
         ).toBeVisible();
     });
 
-    test('shows an English error banner when the cloud fetch fails (en)', async ({
+    test('shows an English error banner and keeps local cards when the cloud fetch fails (en)', async ({
         page,
     }) => {
         const bookmarks = new BookmarksPage(page, 'en');
+        await bookmarks.seedLocalBookmark({
+            bookmarkName: 'E2E checkpoint',
+            storyId: 'train_adventure',
+            sceneId: 'scene_1',
+        });
+        await useSsrAuthState(page, 'unavailable');
         await page.route('**/api/bookmarks', route =>
             route.fulfill({ status: 500 })
         );
         await bookmarks.goto();
 
+        await expect(bookmarks.localBookmarkCards()).toHaveCount(1);
         await expect(
             bookmarks.container.getByText(
                 'Failed to load bookmarks. Please try again.'

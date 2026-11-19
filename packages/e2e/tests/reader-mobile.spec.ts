@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { scene as act7Dialogue } from '../../stories/src/generated/trainAdventure/scenes/b1a_b2a_act7';
+import { scene as firstScene } from '../../stories/src/generated/trainAdventure/scenes/en/act1';
 import { MobileReaderPage } from './utils';
 
 test.describe('Mobile reader', () => {
@@ -9,14 +10,21 @@ test.describe('Mobile reader', () => {
         await page.addInitScript(() => {
             localStorage.setItem('aquila:reader-typing-speed:v1', 'normal');
         });
+        await page.clock.install();
         const reader = new MobileReaderPage(page);
         await reader.goto();
         await expect(page.getByTestId('reader-ready')).toBeVisible();
         const reveal = page.getByRole('button', { name: 'Reveal text' });
         await expect(reveal).toBeVisible();
-        await reveal.click();
+        await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1);
+        const passage = page.locator('.mobile-reader p.pointer-events-auto');
+        await expect(passage).not.toHaveText(firstScene[0].dialogue);
+        await reveal.click({ force: true });
+        await page.clock.runFor(30);
+        await expect(passage).toHaveText(firstScene[0].dialogue);
         await expect(reveal).toHaveCount(0);
         await expect(reader.previousLineButton).toBeDisabled();
+        await page.clock.resume();
         await reader.tapToAdvance();
         await expect(reader.previousLineButton).toBeEnabled();
 

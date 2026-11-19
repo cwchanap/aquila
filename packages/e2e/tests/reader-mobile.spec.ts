@@ -3,6 +3,33 @@ import { scene as act7Dialogue } from '../../stories/src/generated/trainAdventur
 import { MobileReaderPage } from './utils';
 
 test.describe('Mobile reader', () => {
+    test('reveals one line per gesture and persists reading speed', async ({
+        page,
+    }) => {
+        await page.addInitScript(() => {
+            localStorage.setItem('aquila:reader-typing-speed:v1', 'normal');
+        });
+        const reader = new MobileReaderPage(page);
+        await reader.goto();
+        await expect(page.getByTestId('reader-ready')).toBeVisible();
+        const reveal = page.getByRole('button', { name: 'Reveal text' });
+        await expect(reveal).toBeVisible();
+        await reveal.click();
+        await expect(reveal).toHaveCount(0);
+        await expect(reader.previousLineButton).toBeDisabled();
+        await reader.tapToAdvance();
+        await expect(reader.previousLineButton).toBeEnabled();
+
+        await reader.openMenu();
+        await page.getByRole('button', { name: 'Reading settings' }).click();
+        await page.getByRole('button', { name: 'Fast', exact: true }).click();
+        expect(
+            await page.evaluate(() =>
+                localStorage.getItem('aquila:reader-typing-speed:v1')
+            )
+        ).toBe('fast');
+    });
+
     test('shows the VN panel and advances on tap', async ({ page }) => {
         const reader = new MobileReaderPage(page);
         await reader.goto();

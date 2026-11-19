@@ -6,6 +6,8 @@
   import type { ReaderMode } from '@/lib/reader-mode';
   import type { SecondLanguage } from '@/lib/reader-second-language';
   import SecondLanguagePicker from '@/components/SecondLanguagePicker.svelte';
+  import TypewriterSpeedPicker from '@/components/TypewriterSpeedPicker.svelte';
+  import type { TypingSpeed } from '@/lib/reader-typing-speed';
   import FuriganaToggle from '@/components/FuriganaToggle.svelte';
   import { focusTrap } from '@/lib/focus-trap';
   import Button from '@/components/ui/Button.svelte';
@@ -25,6 +27,8 @@
     secondLanguage = 'off',
     secondLanguageOptions = [],
     onSecondLanguageChange = () => {},
+    typingSpeed = 'normal',
+    onTypingSpeedChange = () => {},
     furigana = true,
     furiganaAvailable = false,
     onFuriganaChange = () => {},
@@ -51,6 +55,8 @@
     secondLanguage?: SecondLanguage;
     secondLanguageOptions?: { locale: Locale; available: boolean }[];
     onSecondLanguageChange?: (value: SecondLanguage) => void;
+    typingSpeed?: TypingSpeed;
+    onTypingSpeedChange?: (value: TypingSpeed) => void;
     furigana?: boolean;
     /** Japanese text is on screen, so the furigana switch applies. */
     furiganaAvailable?: boolean;
@@ -209,6 +215,8 @@
           <span>{voiceEnabled ? t.reader.voiceOn : t.reader.voiceOff}</span>
         </button>
       {/if}
+
+      <TypewriterSpeedPicker {locale} value={typingSpeed} onChange={onTypingSpeedChange} />
 
       {#if secondLanguageOptions.length > 0}
         <SecondLanguagePicker

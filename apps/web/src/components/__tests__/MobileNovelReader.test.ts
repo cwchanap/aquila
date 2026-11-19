@@ -62,6 +62,12 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             secondLanguage: 'Second language',
             secondLanguageOff: 'Off',
             secondLanguageUnavailable: 'Not available for this story',
+            readingSettings: 'Reading settings',
+            typingSpeed: 'Typing speed',
+            typingSpeedInstant: 'Instant',
+            typingSpeedFast: 'Fast',
+            typingSpeedNormal: 'Normal',
+            revealText: 'Reveal text',
             storyMap: { open: 'Open story map' },
         },
         characterNames: { narrator: 'Narrator' },
@@ -129,6 +135,42 @@ function renderReader(overrides: Record<string, unknown> = {}) {
 
 describe('MobileNovelReader', () => {
     afterEach(() => vi.clearAllMocks());
+
+    it('offers typing speed in reading settings without second languages', async () => {
+        renderReader({ secondLanguageChoices: [], visualModeAvailable: false });
+        await fireEvent.click(screen.getByLabelText('Open menu'));
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Reading settings' })
+        );
+        expect(
+            screen.getByRole('group', { name: 'Typing speed' })
+        ).toBeInTheDocument();
+    });
+
+    it('reveals without advancing on the first button gesture', async () => {
+        const { onIndexChange } = renderReader();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Reveal text' })
+        );
+        await vi.runAllTimersAsync();
+        expect(screen.getByText('First line.')).toBeInTheDocument();
+        expect(onIndexChange).not.toHaveBeenCalled();
+        await fireEvent.click(screen.getByLabelText('Tap to continue'));
+        expect(onIndexChange).toHaveBeenCalledExactlyOnceWith(1);
+    });
+
+    it('changes a running line to instant on its next tick without restarting', async () => {
+        const { rerenderRaw, onIndexChange } = renderReader({
+            typingDelay: 30,
+        });
+        await vi.advanceTimersByTimeAsync(30);
+        expect(screen.getByText('Fi')).toBeInTheDocument();
+        await rerenderRaw({ typingDelay: 0 });
+        expect(screen.getByText('Fi')).toBeInTheDocument();
+        await vi.advanceTimersByTimeAsync(30);
+        expect(screen.getByText('First line.')).toBeInTheDocument();
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
 
     it('keeps Home and Bookmark in the mobile menu and emits the Visual mode change', async () => {
         const onModeChange = vi.fn();
@@ -1178,7 +1220,7 @@ describe('MobileNovelReader second language', () => {
         });
 
         await fireEvent.click(screen.getByLabelText('Open menu'));
-        const toggle = screen.getByLabelText('Second language');
+        const toggle = screen.getByLabelText('Reading settings');
         expect(toggle).toHaveAttribute('aria-expanded', 'false');
         await fireEvent.click(toggle);
         expect(toggle).toHaveAttribute('aria-expanded', 'true');
@@ -1203,7 +1245,7 @@ describe('MobileNovelReader second language', () => {
         });
 
         await fireEvent.click(screen.getByLabelText('Open menu'));
-        await fireEvent.click(screen.getByLabelText('Second language'));
+        await fireEvent.click(screen.getByLabelText('Reading settings'));
         expect(
             screen.getByRole('group', { name: 'Second language' })
         ).toBeInTheDocument();
@@ -1228,7 +1270,7 @@ describe('MobileNovelReader second language', () => {
         });
 
         await fireEvent.click(screen.getByLabelText('Open menu'));
-        await fireEvent.click(screen.getByLabelText('Second language'));
+        await fireEvent.click(screen.getByLabelText('Reading settings'));
         const toggle = screen.getByTestId('furigana-toggle');
         expect(toggle).toHaveAttribute('aria-pressed', 'true');
         await fireEvent.click(toggle);

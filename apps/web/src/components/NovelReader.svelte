@@ -15,7 +15,7 @@
     getReaderAdvanceLabel,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
 
   // Pure controlled reader. All session state arrives via props; the only
   // outward signal is onIndexChange. No readerState import.
@@ -38,6 +38,7 @@
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
+    typingDelay = 30,
     visibleSceneIds,
     backUrl,
   }: {
@@ -61,6 +62,7 @@
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
     furigana?: boolean;
+    typingDelay?: number;
     visibleSceneIds?: ReadonlySet<string>;
     backUrl?: string;
   } = $props();
@@ -84,7 +86,6 @@
 
   // Component-local presentation state only.
   let isTyping = $state(false);
-  let typingSpeed = 30;
   let skipTyping = $state(false);
   let typingText = $state('');
   let sceneVersion = $state(0);
@@ -140,15 +141,16 @@
     skipTyping = false;
     const version = sceneVersion;
     scrollToBottom();
-    const result = await runTypewriter({
+    // The current delay must not become a dependency of the scene effect.
+    const result = await untrack(() => runTypewriter({
       text: entry.dialogue,
-      speed: typingSpeed,
+      delay: () => typingDelay,
       onTick: (partial: string) => {
         typingText = partial;
       },
       isSkipped: () => skipTyping,
       isCancelled: () => version !== sceneVersion,
-    });
+    }));
     if (result === 'cancelled') return;
     typingText = entry.dialogue;
     isTyping = false;
@@ -373,13 +375,13 @@
       {/if}
 
       <!-- Continue indicator -->
-      {#if !isTyping && advanceLabel}
+      {#if currentDialogue && (isTyping || advanceLabel)}
         <div class="text-center">
           <button
             onclick={handleNext}
             class="group px-8 py-3 bg-linear-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
-            {advanceLabel}
+            {isTyping ? t.reader.revealText : advanceLabel}
           </button>
         </div>
       {/if}

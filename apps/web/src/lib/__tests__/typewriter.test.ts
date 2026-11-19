@@ -6,7 +6,7 @@ describe('typeText', () => {
         const ticks: string[] = [];
         const promise = typeText({
             text: 'abc',
-            speed: 10,
+            delay: () => 10,
             onTick: p => ticks.push(p),
             isSkipped: () => false,
             isCancelled: () => false,
@@ -20,7 +20,7 @@ describe('typeText', () => {
         const ticks: string[] = [];
         const promise = typeText({
             text: 'hello',
-            speed: 10,
+            delay: () => 10,
             onTick: p => ticks.push(p),
             isSkipped: () => true,
             isCancelled: () => false,
@@ -35,7 +35,7 @@ describe('typeText', () => {
         let cancelled = false;
         const promise = typeText({
             text: 'abcdef',
-            speed: 10,
+            delay: () => 10,
             onTick: p => {
                 ticks.push(p);
                 if (ticks.length === 2) cancelled = true;
@@ -46,5 +46,53 @@ describe('typeText', () => {
         await vi.runAllTimersAsync();
         await expect(promise).resolves.toBe('cancelled');
         expect(ticks.length).toBeLessThan(6);
+    });
+
+    it('uses the current delay on each tick and reveals instantly after a change to zero', async () => {
+        let delay = 30;
+        const ticks: string[] = [];
+        const promise = typeText({
+            text: 'abcdef',
+            delay: () => delay,
+            onTick: p => ticks.push(p),
+            isSkipped: () => false,
+            isCancelled: () => false,
+        });
+        expect(ticks).toEqual(['a']);
+        delay = 10;
+        await vi.advanceTimersByTimeAsync(30);
+        expect(ticks).toEqual(['a', 'ab']);
+        await vi.advanceTimersByTimeAsync(9);
+        expect(ticks).toEqual(['a', 'ab']);
+        delay = 0;
+        await vi.advanceTimersByTimeAsync(1);
+        await expect(promise).resolves.toBe('done');
+        expect(ticks).toEqual(['a', 'ab', 'abcdef']);
+    });
+
+    it('does not start a timer for instant text or reveal cancelled text', async () => {
+        const onTick = vi.fn();
+        await expect(
+            typeText({
+                text: 'abc',
+                delay: () => 0,
+                onTick,
+                isSkipped: () => false,
+                isCancelled: () => false,
+            })
+        ).resolves.toBe('done');
+        expect(onTick).toHaveBeenCalledExactlyOnceWith('abc');
+        expect(vi.getTimerCount()).toBe(0);
+        onTick.mockClear();
+        await expect(
+            typeText({
+                text: 'abc',
+                delay: () => 0,
+                onTick,
+                isSkipped: () => true,
+                isCancelled: () => true,
+            })
+        ).resolves.toBe('cancelled');
+        expect(onTick).not.toHaveBeenCalled();
     });
 });

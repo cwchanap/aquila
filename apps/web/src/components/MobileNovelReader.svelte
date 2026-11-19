@@ -1,6 +1,6 @@
 <script lang="ts">
   import RubyText from '@/components/RubyText.svelte';
-  import { onDestroy, tick } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import type {
     DialogueEntry,
     ChoiceDefinition,
@@ -10,6 +10,8 @@
   import { getTranslations } from '@aquila/stories/translations';
   import type { SecondLanguage } from '@/lib/reader-second-language';
   import SecondLanguagePicker from '@/components/SecondLanguagePicker.svelte';
+  import TypewriterSpeedPicker from '@/components/TypewriterSpeedPicker.svelte';
+  import type { TypingSpeed } from '@/lib/reader-typing-speed';
   import FuriganaToggle from '@/components/FuriganaToggle.svelte';
   import { resolveCharacterName } from '@/lib/character-name';
   import { typeText as runTypewriter } from '@/lib/typewriter';
@@ -29,7 +31,7 @@
     History,
     Bookmark,
     Film,
-    Languages,
+    Cog,
     Map as MapIcon,
   } from 'lucide-svelte';
   import { longpress } from '@/lib/longpress';
@@ -60,6 +62,9 @@
     textLang = undefined,
     secondLang = undefined,
     furigana = true,
+    typingDelay = 30,
+    typingSpeed = 'normal',
+    onTypingSpeedChange = () => {},
     secondLanguage = 'off',
     secondLanguageChoices = [],
     onSecondLanguageChange = () => {},
@@ -94,6 +99,9 @@
     secondLang?: string;
     /** Show furigana over Japanese text that has it. */
     furigana?: boolean;
+    typingDelay?: number;
+    typingSpeed?: TypingSpeed;
+    onTypingSpeedChange?: (value: TypingSpeed) => void;
     secondLanguage?: SecondLanguage;
     secondLanguageChoices?: { locale: Locale; available: boolean }[];
     onSecondLanguageChange?: (value: SecondLanguage) => void;
@@ -105,8 +113,6 @@
   } = $props();
 
   let t = $derived(getTranslations(locale as Locale));
-
-  const typingSpeed = 30;
 
   // Component-local presentation state only.
   let isTyping = $state(false);
@@ -178,15 +184,16 @@
     isTyping = true;
     skipTyping = false;
     const version = sceneVersion;
-    const result = await runTypewriter({
+    // The current delay must not become a dependency of the scene effect.
+    const result = await untrack(() => runTypewriter({
       text: entry.dialogue,
-      speed: typingSpeed,
+      delay: () => typingDelay,
       onTick: (partial: string) => {
         typingText = partial;
       },
       isSkipped: () => skipTyping,
       isCancelled: () => version !== sceneVersion,
-    });
+    }));
     if (result === 'cancelled') return;
     typingText = entry.dialogue;
     isTyping = false;
@@ -470,21 +477,19 @@
         >
           <History size={20} aria-hidden="true" />
         </button>
-        {#if secondLanguageChoices.length > 0}
-          <button
-            type="button"
-            class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
-            aria-label={t.reader.secondLanguage}
-            aria-expanded={languagePickerOpen}
-            onclick={() => (languagePickerOpen = !languagePickerOpen)}
-            use:longpress={{
-              onLongPress: (node) => showTooltip(node, t.reader.secondLanguage),
-              onRelease: hideTooltip,
-            }}
-          >
-            <Languages size={20} aria-hidden="true" />
-          </button>
-        {/if}
+        <button
+          type="button"
+          class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+          aria-label={t.reader.readingSettings}
+          aria-expanded={languagePickerOpen}
+          onclick={() => (languagePickerOpen = !languagePickerOpen)}
+          use:longpress={{
+            onLongPress: (node) => showTooltip(node, t.reader.readingSettings),
+            onRelease: hideTooltip,
+          }}
+        >
+          <Cog size={20} aria-hidden="true" />
+        </button>
         {#if visualModeAvailable}
           <button
             type="button"
@@ -517,15 +522,18 @@
           <span class="ml-auto pr-2 text-xs font-medium text-slate-600">{progressText}</span>
         {/if}
       </div>
-      {#if languagePickerOpen && secondLanguageChoices.length > 0}
+      {#if languagePickerOpen}
         <div class="flex flex-col gap-2 px-4 pb-3">
-          <SecondLanguagePicker
-            {locale}
-            value={secondLanguage}
-            options={secondLanguageChoices}
-            onChange={onSecondLanguageChange}
-            compact
-          />
+          <TypewriterSpeedPicker {locale} value={typingSpeed} onChange={onTypingSpeedChange} compact />
+          {#if secondLanguageChoices.length > 0}
+            <SecondLanguagePicker
+              {locale}
+              value={secondLanguage}
+              options={secondLanguageChoices}
+              onChange={onSecondLanguageChange}
+              compact
+            />
+          {/if}
           {#if furiganaAvailable}
             <FuriganaToggle
               {locale}
@@ -608,9 +616,14 @@
               data-testid="second-line"
             ><RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} /></span>{/if}{/if}
         </p>
-        {#if !isTyping}
-          <div class="mt-2 text-right text-blue-500">
-            {#if !isLastDialogue}
+        <div class="mt-2 min-h-11 flex items-center justify-end text-right text-blue-500">
+            {#if isTyping}
+              <button
+                type="button"
+                class="pointer-events-auto min-h-11 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow"
+                onclick={handleTerminalAdvance}
+              >{t.reader.revealText}</button>
+            {:else if !isLastDialogue}
               <span class="inline-block motion-safe:animate-bounce" aria-hidden="true">▼</span>
             {:else if terminalLabel}
               <button
@@ -621,8 +634,7 @@
                 {terminalLabel}
               </button>
             {/if}
-          </div>
-        {/if}
+        </div>
       </div>
   </div>
 

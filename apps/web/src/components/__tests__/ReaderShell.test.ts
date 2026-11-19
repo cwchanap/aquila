@@ -31,6 +31,7 @@ import type {
 import { READER_MODE_KEY } from '@/lib/reader-mode';
 import { READER_SECOND_LANGUAGE_KEY } from '@/lib/reader-second-language';
 import { READER_FURIGANA_KEY } from '@/lib/reader-furigana';
+import { READER_TYPING_SPEED_KEY } from '@/lib/reader-typing-speed';
 
 const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
     mockSupportsVisualMode: vi.fn(() => true),
@@ -89,6 +90,12 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             secondLanguage: 'Second language',
             secondLanguageOff: 'Off',
             secondLanguageUnavailable: 'Not available for this story',
+            readingSettings: 'Reading settings',
+            typingSpeed: 'Typing speed',
+            typingSpeedInstant: 'Instant',
+            typingSpeedFast: 'Fast',
+            typingSpeedNormal: 'Normal',
+            revealText: 'Reveal text',
             furigana: 'Furigana',
             furiganaOn: 'On',
             furiganaOff: 'Off',
@@ -522,6 +529,50 @@ describe('ReaderShell', () => {
     afterEach(() => {
         vi.clearAllMocks();
         vi.unstubAllEnvs();
+    });
+
+    it('defaults to instant for reduced motion and persists explicit speed over that default', async () => {
+        const listeners = new Set<(event: { matches: boolean }) => void>();
+        const motion = {
+            matches: true,
+            addEventListener: (
+                _: string,
+                cb: (event: { matches: boolean }) => void
+            ) => listeners.add(cb),
+            removeEventListener: (
+                _: string,
+                cb: (event: { matches: boolean }) => void
+            ) => listeners.delete(cb),
+        };
+        const desktop = {
+            matches: false,
+            addEventListener: () => {},
+            removeEventListener: () => {},
+        };
+        Object.defineProperty(window, 'matchMedia', {
+            value: vi.fn((query: string) =>
+                query.includes('reduced-motion') ? motion : desktop
+            ),
+            configurable: true,
+        });
+        const view = render(ReaderShell);
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        expect(screen.getByRole('button', { name: 'Instant' })).toHaveAttribute(
+            'aria-pressed',
+            'true'
+        );
+        await fireEvent.click(screen.getByRole('button', { name: 'Normal' }));
+        expect(localStorage.getItem(READER_TYPING_SPEED_KEY)).toBe('normal');
+        listeners.forEach(listener => listener({ matches: false }));
+        await tick();
+        expect(screen.getByRole('button', { name: 'Normal' })).toHaveAttribute(
+            'aria-pressed',
+            'true'
+        );
+        view.unmount();
+        expect(listeners.size).toBe(0);
     });
 
     it.each(['desktop', 'mobile', 'visual'])(

@@ -1141,6 +1141,159 @@ describe('ReaderShell', () => {
         expect(screen.getByText('Second dialogue line.')).toBeInTheDocument();
     });
 
+    it('preserves complete visit boundaries and refreshes both backlog languages across preferences and revisits', async () => {
+        stubMatchMedia(true);
+        localStorage.setItem(READER_SECOND_LANGUAGE_KEY, 'ja');
+        localStorage.setItem(READER_TYPING_SPEED_KEY, 'instant');
+        readerState.storyId = 'elevator_game';
+        readerState.activeFlow = jumpFlow;
+        const en = {
+            act1: [
+                { dialogue: 'EN A1' },
+                { dialogue: 'EN A2' },
+                { dialogue: 'EN A3 unread' },
+            ],
+            act2: [
+                { dialogue: 'EN B1' },
+                { dialogue: 'EN B2' },
+                { dialogue: 'EN B3 unread' },
+            ],
+        };
+        const zh = {
+            act1: [
+                { dialogue: 'ZH A1' },
+                { dialogue: 'ZH A2' },
+                { dialogue: 'ZH A3 unread' },
+            ],
+            act2: [
+                { dialogue: 'ZH B1' },
+                { dialogue: 'ZH B2' },
+                { dialogue: 'ZH B3 unread' },
+            ],
+        };
+        const ja = {
+            act1: [
+                { dialogue: 'JA A1' },
+                { dialogue: 'JA A2' },
+                { dialogue: 'JA A3 unread' },
+            ],
+            act2: [
+                { dialogue: 'JA B1' },
+                { dialogue: 'JA B2' },
+                { dialogue: 'JA B3 unread' },
+            ],
+        };
+        let primary = en;
+        readerState.dialogue = en.act1;
+        readerState.dialogueIndex = 1;
+        render(ReaderShell, {
+            props: {
+                getSceneDialogue: (_story: string, scene: string) =>
+                    primary[scene as keyof typeof primary] ?? null,
+                loadSecondLanguageContent: async (_story, locale) => ({
+                    dialogue: locale === 'ja' ? ja : en,
+                    choices: {},
+                    flow: jumpFlow,
+                    locale,
+                    textLocale: locale,
+                }),
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+        readerState.currentSceneId = 'act2';
+        readerState.dialogue = en.act2;
+        readerState.dialogueIndex = 1;
+        await tick();
+        await tick();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open menu' })
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        const initialHistory = screen.getByRole('dialog', { name: 'History' });
+        expect(
+            Array.from(initialHistory.querySelectorAll('li')).map(line =>
+                Array.from(line.querySelectorAll('p[lang]')).map(
+                    p => p.textContent
+                )
+            )
+        ).toEqual([
+            ['EN A1', 'JA A1'],
+            ['EN A2', 'JA A2'],
+            ['EN B1', 'JA B1'],
+            ['EN B2', 'JA B2'],
+        ]);
+        await fireEvent.click(
+            within(initialHistory).getByRole('button', {
+                name: 'Close history',
+            })
+        );
+
+        // Change the primary story payload and the secondary-language preference.
+        primary = zh;
+        readerState.locale = 'zh';
+        readerState.dialogue = zh.act2;
+        await tick();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open menu' })
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Reading settings' })
+        );
+        await fireEvent.click(screen.getByRole('button', { name: 'English' }));
+        await tick();
+        await tick();
+
+        readerState.currentSceneId = 'act1';
+        readerState.dialogue = zh.act1;
+        readerState.dialogueIndex = 0;
+        await tick();
+
+        const assertHistory = (dialog: HTMLElement) => {
+            const lines = Array.from(dialog.querySelectorAll('li'));
+            expect(
+                lines.map(line => line.querySelector('h3')?.textContent ?? '')
+            ).toEqual(['Act 1', '', 'Act 2', '', 'Act 1']);
+            expect(
+                lines.map(line =>
+                    Array.from(line.querySelectorAll('p[lang]')).map(
+                        p => p.textContent
+                    )
+                )
+            ).toEqual([
+                ['ZH A1', 'EN A1'],
+                ['ZH A2', 'EN A2'],
+                ['ZH B1', 'EN B1'],
+                ['ZH B2', 'EN B2'],
+                ['ZH A1', 'EN A1'],
+            ]);
+        };
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        assertHistory(screen.getByRole('dialog', { name: 'History' }));
+        await fireEvent.click(
+            within(screen.getByRole('dialog', { name: 'History' })).getByRole(
+                'button',
+                { name: 'Close history' }
+            )
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open menu' })
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Visual Novel' })
+        );
+        await tick();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        assertHistory(screen.getByRole('dialog', { name: 'History' }));
+    });
+
     it('plays a forward visual line cue once while the initial line stays silent', async () => {
         stubMatchMedia(false);
         readerState.dialogue = sfxDialogue;

@@ -42,6 +42,29 @@ test.describe('Mobile reader', () => {
         ).toBe('fast');
     });
 
+    test('exposes typing speed without a second language', async ({ page }) => {
+        // The Seventh Mirror ships no en/ja translation tree, so the reading
+        // settings panel has no second-language picker; speed must still show.
+        await page.goto('/en/reader?story=the_seventh_mirror');
+        await expect(page.getByTestId('reader-ready')).toBeVisible({
+            timeout: 15_000,
+        });
+        await page.getByRole('button', { name: 'Open menu' }).click();
+        await page.getByRole('button', { name: 'Reading settings' }).click();
+        await expect(
+            page.getByRole('group', { name: 'Typing speed' })
+        ).toBeVisible();
+        await expect(page.getByTestId('second-language-picker')).toHaveCount(0);
+        await page
+            .getByRole('button', { name: 'Instant', exact: true })
+            .click();
+        expect(
+            await page.evaluate(() =>
+                localStorage.getItem('aquila:reader-typing-speed:v1')
+            )
+        ).toBe('instant');
+    });
+
     test('shows the VN panel and advances on tap', async ({ page }) => {
         const reader = new MobileReaderPage(page);
         await reader.goto();

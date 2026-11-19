@@ -144,7 +144,9 @@ test.describe('My Progress signed out', () => {
         );
         const ready = page.getByTestId('reader-ready');
         await expect(ready).toBeVisible({ timeout: 30_000 });
-        await expect(ready.getByText(/她轉向車廂前後/)).toBeVisible();
+        await expect(
+            ready.locator('.passage-visible').getByText(/她轉向車廂前後/)
+        ).toBeVisible();
     });
 
     test('restarts a finished story from its row link at the start', async ({
@@ -159,7 +161,9 @@ test.describe('My Progress signed out', () => {
         );
         const ready = page.getByTestId('reader-ready');
         await expect(ready).toBeVisible({ timeout: 30_000 });
-        await expect(ready.getByText('1:58 a.m.')).toBeVisible();
+        await expect(
+            ready.locator('.passage-visible').getByText('1:58 a.m.')
+        ).toBeVisible();
     });
 
     test('opens story selection from the browse link', async ({ page }) => {
@@ -209,7 +213,9 @@ test.describe('My Progress signed out', () => {
         await page.locator('a[data-story-id="elevator_game"]').click();
         const ready = page.getByTestId('reader-ready');
         await expect(ready).toBeVisible({ timeout: 30_000 });
-        await expect(ready.getByText('1:58 a.m.')).toBeVisible();
+        await expect(
+            ready.locator('.passage-visible').getByText('1:58 a.m.')
+        ).toBeVisible();
 
         await page.goto('/en/progress');
 

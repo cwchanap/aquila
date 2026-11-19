@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { scene as act7Dialogue } from '../../stories/src/generated/trainAdventure/scenes/b1a_b2a_act7';
 import { MobileReaderPage } from './utils';
 
 test.describe('Mobile reader', () => {
@@ -93,6 +94,51 @@ test.describe('Mobile reader', () => {
         await expect(
             reader.actButtons.filter({ hasText: /^Act 2$/ })
         ).toHaveCount(0);
+    });
+
+    test('keeps an actually visited previous act navigable and hides the unread branch', async ({
+        page,
+    }) => {
+        const reader = new MobileReaderPage(page);
+        const previousScene = 'b1a_b2a_act7';
+        const currentScene = 'b1a_b2a_act8';
+        await page.goto(
+            `/en/reader?story=train_adventure&scene=${previousScene}&dialogue=${act7Dialogue.length}`,
+            { waitUntil: 'domcontentloaded' }
+        );
+        await expect(page.getByTestId('reader-ready')).toBeVisible({
+            timeout: 15_000,
+        });
+
+        // Finish the last line and cross into the next act: a real visit.
+        await reader.tapToAdvance(2);
+        await expect(page).toHaveURL(
+            new RegExp(`[?&]scene=${currentScene}(?:&|$)`)
+        );
+        await expect(page).toHaveURL(/[?&]dialogue=1(?:&|$)/);
+
+        await reader.openMenu();
+        await reader.openActs();
+        await expect(reader.actsHeadingLocator).toBeVisible();
+
+        // The act just read stays navigable...
+        const previousAct = reader.actButtons.filter({
+            hasText: /^Act 7$/,
+        });
+        await expect(previousAct).toBeVisible();
+        // ...while the unread branch ahead is not offered.
+        await expect(
+            reader.actButtons.filter({ hasText: /^Act 9$/ })
+        ).toHaveCount(0);
+        await expect(
+            reader.actButtons.filter({ hasText: /^Final$/ })
+        ).toHaveCount(0);
+
+        await previousAct.click();
+        await expect(page).toHaveURL(
+            new RegExp(`[?&]scene=${previousScene}(?:&|$)`)
+        );
+        await expect(reader.actsHeadingLocator).not.toBeVisible();
     });
 
     test('opens the history backlog', async ({ page }) => {

@@ -412,7 +412,7 @@
   <!-- Auto-hiding chrome bar (icon toolbar + slim progress). -->
   {#if chromeVisible}
     <div
-      class="absolute inset-x-0 top-0 z-20 max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white/80 shadow backdrop-blur-md"
+      class="absolute inset-x-0 top-0 z-[25] max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white/80 shadow backdrop-blur-md"
       style="padding-top: calc(0.5rem + env(safe-area-inset-top));"
     >
       <div class="flex items-center gap-1 px-2 py-2 pl-16">

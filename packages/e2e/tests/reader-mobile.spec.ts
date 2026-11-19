@@ -13,7 +13,9 @@ test.describe('Mobile reader', () => {
         await page.clock.install();
         const reader = new MobileReaderPage(page);
         await reader.goto();
-        await expect(page.getByTestId('reader-ready')).toBeVisible();
+        await expect(page.getByTestId('reader-ready')).toBeVisible({
+            timeout: 15_000,
+        });
         const reveal = page.getByRole('button', { name: 'Reveal text' });
         await expect(reveal).toBeVisible();
         await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1);

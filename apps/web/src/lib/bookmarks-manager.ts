@@ -115,6 +115,16 @@ export class BookmarksManager {
         const bookmarkId = focusedCard?.dataset.bookmarkId;
         const cardType = focusedCard?.dataset.testid;
         const action = focused?.dataset.bookmarkAction;
+        // Position within its card type, so a re-render that removed the card
+        // (a confirmed delete) can move focus to the card that took its place.
+        const cardIndex =
+            focusedCard && cardType
+                ? [
+                      ...container.querySelectorAll<HTMLElement>(
+                          `[data-testid="${cardType}"]`
+                      ),
+                  ].indexOf(focusedCard)
+                : -1;
         container.textContent = '';
 
         if (this.cloudError) this.renderCloudErrorBanner(container);
@@ -152,15 +162,14 @@ export class BookmarksManager {
         }
 
         if (bookmarkId && cardType && action) {
-            const card = [
+            const sameType = [
                 ...container.querySelectorAll<HTMLElement>(
-                    '[data-bookmark-id]'
+                    `[data-testid="${cardType}"]`
                 ),
-            ].find(
-                node =>
-                    node.dataset.bookmarkId === bookmarkId &&
-                    node.dataset.testid === cardType
-            );
+            ];
+            const card =
+                sameType.find(node => node.dataset.bookmarkId === bookmarkId) ??
+                sameType[Math.min(cardIndex, sameType.length - 1)];
             card?.querySelector<HTMLElement>(
                 `[data-bookmark-action="${action}"]`
             )?.focus({ preventScroll: true });

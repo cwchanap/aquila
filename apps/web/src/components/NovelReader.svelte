@@ -91,6 +91,7 @@
   let sceneVersion = $state(0);
   let showActPanel = $state(false);
   let dialogueContainer: HTMLElement | null = $state(null);
+  let activeLineEl: HTMLElement | null = $state(null);
   // Tracked so onDestroy can clear a pending scroll-to-bottom; otherwise the
   // 50ms timer can fire after unmount and touch a nulled dialogueContainer.
   let scrollTimer: ReturnType<typeof globalThis.setTimeout> | null = null;
@@ -121,11 +122,20 @@
     return resolveCharacterName(dialogueEntry, t);
   }
 
-  function scrollToBottom() {
+  function scrollToActiveLine() {
     if (scrollTimer !== null) globalThis.clearTimeout(scrollTimer);
     scrollTimer = globalThis.setTimeout(() => {
       scrollTimer = null;
-      if (dialogueContainer) {
+      if (!dialogueContainer) return;
+      const active = activeLineEl;
+      if (active && active.offsetHeight > dialogueContainer.clientHeight) {
+        // An active passage taller than the viewport reserves its full height
+        // while typing, so bottom-aligning would push the typed prefix above
+        // the visible region — pin the line's start instead.
+        dialogueContainer.scrollTop +=
+          active.getBoundingClientRect().top -
+          dialogueContainer.getBoundingClientRect().top;
+      } else {
         dialogueContainer.scrollTop = dialogueContainer.scrollHeight;
       }
     }, 50);
@@ -140,7 +150,7 @@
     isTyping = true;
     skipTyping = false;
     const version = sceneVersion;
-    scrollToBottom();
+    scrollToActiveLine();
     // The current delay must not become a dependency of the scene effect.
     const result = await untrack(() => runTypewriter({
       text: entry.dialogue,
@@ -190,9 +200,9 @@
           // full line immediately (no animation) AND schedule a scroll so the
           // active line is visible inside the overflowing dialogue container
           // (max-h-[70vh] overflow-y-auto). startTyping — the only path that
-          // calls scrollToBottom — is skipped here, so without this the
+          // calls scrollToActiveLine — is skipped here, so without this the
           // restored active line can remain below the viewport.
-          scrollToBottom();
+          scrollToActiveLine();
         } else {
           void startTyping(dialogueIndex);
         }
@@ -337,7 +347,7 @@
 
       <!-- Active line (dialogue[dialogueIndex]): typing or fully revealed -->
       {#if currentDialogue}
-        <div class="mb-6">
+        <div class="mb-6" bind:this={activeLineEl}>
           <div class="flex gap-4 items-start">
             <div class="w-32 shrink-0">
               {#if getCharacterName(currentDialogue)}
@@ -382,7 +392,7 @@
     </div>
 
       <!-- Continue indicator -->
-      {#if currentDialogue && (isTyping || advanceLabel)}
+      {#if isTyping || advanceLabel}
         <div class="mt-2 text-center">
           <button
             onclick={handleNext}

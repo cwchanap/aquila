@@ -399,7 +399,7 @@ describe('NovelReader — controlled contract', () => {
         // animation) but must still schedule a scroll so the active line is
         // visible inside the overflowing dialogue container (max-h-[70vh]
         // overflow-y-auto). startTyping — the only path that calls
-        // scrollToBottom — is skipped on first-mount restores, so the snap
+        // scrollToActiveLine — is skipped on first-mount restores, so the snap
         // branch must schedule the scroll itself. Without the fix, the
         // restored active line can remain below the viewport.
         const { container } = renderReader({ dialogueIndex: 2 });
@@ -421,6 +421,69 @@ describe('NovelReader — controlled contract', () => {
         });
         await vi.runAllTimersAsync();
         expect(capturedScrollTop).toBe(1000);
+    });
+
+    it('pins the start of an overflowing active passage while it types', async () => {
+        // Regression: the hidden passage-reserve gives the scroll container
+        // the passage's full height on the first tick, so bottom-aligning an
+        // active line taller than the 70vh container pushes the few typed
+        // characters above the viewport. scrollToActiveLine must pin the
+        // line's start when it overflows and only bottom-align short lines.
+        const { container } = renderReader({ dialogueIndex: 0 });
+        const dialogueContainer = container.querySelector(
+            '.overflow-y-auto'
+        ) as HTMLElement;
+        expect(dialogueContainer).not.toBeNull();
+        const activeLine = dialogueContainer.lastElementChild as HTMLElement;
+        let capturedScrollTop = 0;
+        Object.defineProperty(dialogueContainer, 'scrollTop', {
+            configurable: true,
+            get: () => capturedScrollTop,
+            set: (v: number) => {
+                capturedScrollTop = v;
+            },
+        });
+        Object.defineProperty(dialogueContainer, 'clientHeight', {
+            configurable: true,
+            get: () => 630,
+        });
+        Object.defineProperty(dialogueContainer, 'scrollHeight', {
+            configurable: true,
+            get: () => 1000,
+        });
+        Object.defineProperty(activeLine, 'offsetHeight', {
+            configurable: true,
+            get: () => 900,
+        });
+        Object.defineProperty(activeLine, 'getBoundingClientRect', {
+            configurable: true,
+            value: () => ({ top: 300 }) as DOMRect,
+        });
+        Object.defineProperty(dialogueContainer, 'getBoundingClientRect', {
+            configurable: true,
+            value: () => ({ top: 0 }) as DOMRect,
+        });
+        await vi.runAllTimersAsync();
+        // scrollTop lands on the line's offset below the container top (300),
+        // not scrollHeight (1000) — bottom-aligning would hide the opening.
+        expect(capturedScrollTop).toBe(300);
+    });
+
+    it('keeps the progression button for an empty scene that can advance', async () => {
+        // An empty linear scene is valid input (the compiler only rejects
+        // empty scenes routing to a choice) and keyboard advance still works,
+        // so the mouse progression action must render without currentDialogue.
+        const onNext = vi.fn();
+        renderReader({
+            dialogue: [],
+            dialogueIndex: 0,
+            canGoNext: true,
+            onNext,
+        });
+        await vi.runAllTimersAsync();
+        const button = screen.getByRole('button', { name: 'Next Scene' });
+        await fireEvent.click(button);
+        expect(onNext).toHaveBeenCalledOnce();
     });
 });
 

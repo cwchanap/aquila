@@ -1177,3 +1177,86 @@ describe('VisualNovelReader furigana', () => {
         ).toHaveTextContent('きょう');
     });
 });
+
+describe('VisualNovelReader stage directions', () => {
+    const directed: DialogueEntry[] = [
+        { characterId: 'narrator', dialogue: '(內心)又是一個喧鬧的夜晚。' },
+        { characterId: 'narrator', dialogue: '（沉默）' },
+        { characterId: 'narrator', dialogue: '那位先生（指著李杰）過來。' },
+    ];
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('hides the leading direction on the line and in the History panel', async () => {
+        setReducedMotion(true);
+        const { container } = renderReader({
+            dialogue: directed,
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+
+        expect(container.querySelector('.dialogue-text')).toHaveTextContent(
+            /^又是一個喧鬧的夜晚。$/
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        const history = screen.getByRole('dialog');
+        expect(within(history).getByText('又是一個喧鬧的夜晚。')).toBeVisible();
+        expect(history).not.toHaveTextContent('內心');
+    });
+
+    it('keeps a line that is only a direction and brackets inside a line', async () => {
+        setReducedMotion(true);
+        const { container, rerender } = renderReader({
+            dialogue: directed,
+            dialogueIndex: 1,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+        expect(container.querySelector('.dialogue-text')).toHaveTextContent(
+            '（沉默）'
+        );
+
+        await rerender({ dialogueIndex: 2 });
+        expect(container.querySelector('.dialogue-text')).toHaveTextContent(
+            '那位先生（指著李杰）過來。'
+        );
+    });
+
+    it('hides the direction on the second-language line', async () => {
+        setReducedMotion(true);
+        renderReader({
+            dialogue: [{ characterId: 'narrator', dialogue: 'Hello.' }],
+            secondDialogue: [
+                { characterId: 'narrator', dialogue: '（心の声）こんにちは。' },
+            ],
+            dialogueIndex: 0,
+            isInitialMount: false,
+            secondLang: 'ja',
+        });
+        await vi.runAllTimersAsync();
+
+        expect(screen.getByTestId('second-line')).toHaveTextContent(
+            /^こんにちは。$/
+        );
+    });
+
+    it('never types the direction out', async () => {
+        setReducedMotion(false);
+        const { container } = renderReader({
+            dialogue: directed,
+            dialogueIndex: 0,
+        });
+        await vi.advanceTimersByTimeAsync(90);
+
+        const typed = container.querySelector('.dialogue-text');
+        expect(typed).toHaveTextContent(/^又/);
+        expect(typed).not.toHaveTextContent('(');
+        await vi.runAllTimersAsync();
+        expect(typed).toHaveTextContent(/^又是一個喧鬧的夜晚。$/);
+    });
+});

@@ -4,6 +4,7 @@
   import { getTranslations } from '@aquila/stories/translations';
   import { resolveCharacterName } from '@/lib/character-name';
   import { focusTrap } from '@/lib/focus-trap';
+  import { hideStageDirections } from '@/lib/reader-stage-directions';
 
   let {
     dialogue = [],
@@ -69,14 +70,18 @@
   <ol>
     {#each visibleDialogue as entry, index (index)}
       {@const characterName = resolveCharacterName(entry, t)}
+      {@const line = hideStageDirections(entry)}
+      {@const second = secondDialogue?.[index]
+        ? hideStageDirections(secondDialogue[index])
+        : null}
       <li>
         {#if characterName}
           <p class="speaker">{characterName}</p>
         {/if}
-        <p lang={textLang}><RubyText text={entry.dialogue} ruby={entry.ruby} show={furigana} /></p>
-        {#if secondDialogue?.[index]}
+        <p lang={textLang}><RubyText text={line.dialogue} ruby={line.ruby} show={furigana} /></p>
+        {#if second}
           <p class="second-text" lang={secondLang}>
-            <RubyText text={secondDialogue[index].dialogue} ruby={secondDialogue[index].ruby} show={furigana} />
+            <RubyText text={second.dialogue} ruby={second.ruby} show={furigana} />
           </p>
         {/if}
       </li>

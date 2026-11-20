@@ -27,6 +27,41 @@ describe('hideStageDirections', () => {
         ).toBe('我確定。(轉頭)小心他。');
     });
 
+    it.each([
+        '（訊息）好！媽在家等你！',
+        '（精靈語）我們需要食物和水。',
+        '（隔著門，精靈語）我們需要食物和水。',
+        '（用日語，有些不好意思）你好。',
+        '（メッセージ）今夜は遅くなる。',
+        '(Elvish) We need food and water.',
+    ])('keeps the message or language label of %s', dialogue => {
+        const entry = { dialogue };
+        expect(hideStageDirections(entry)).toBe(entry);
+    });
+
+    it('hides a direction next to a label and keeps the label', () => {
+        expect(
+            hideStageDirections({ dialogue: '（點頭）（精靈語）好。' }).dialogue
+        ).toBe('（精靈語）好。');
+        expect(
+            hideStageDirections({ dialogue: '（精靈語）（點頭）好。' }).dialogue
+        ).toBe('（精靈語）好。');
+    });
+
+    it('does not mistake whispering or a phone gesture for a label', () => {
+        for (const dialogue of [
+            '（喃喃自語）好。',
+            '（低語）好。',
+            '（接起電話）喂？',
+            '（看著訊息，眼眶濕潤）好。',
+            '（深吸一口氣，語氣堅定）好。',
+        ]) {
+            expect(hideStageDirections({ dialogue }).dialogue).toBe(
+                dialogue.replace(/^（[^）]*）/, '')
+            );
+        }
+    });
+
     it('keeps a line that is only a direction', () => {
         const entry = { dialogue: '（沉默）' };
         expect(hideStageDirections(entry)).toBe(entry);
@@ -43,6 +78,21 @@ describe('hideStageDirections', () => {
         expect(line).toEqual({
             dialogue: '今日は雨。',
             ruby: [{ start: 0, end: 2, reading: 'きょう' }],
+        });
+    });
+
+    it('moves furigana past a label that stays', () => {
+        expect(
+            hideStageDirections({
+                dialogue: '（うなずき）（エルフ語）今日は雨。',
+                ruby: [
+                    { start: 1, end: 5, reading: 'うなず' },
+                    { start: 12, end: 14, reading: 'きょう' },
+                ],
+            })
+        ).toEqual({
+            dialogue: '（エルフ語）今日は雨。',
+            ruby: [{ start: 6, end: 8, reading: 'きょう' }],
         });
     });
 

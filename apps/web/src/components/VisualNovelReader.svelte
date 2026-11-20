@@ -521,7 +521,7 @@
           <div class="dialogue-passage">
           {#if isTyping}
             <div class="passage-reserve" aria-hidden="true">
-              <p class="dialogue-text" lang={textLang}><RubyText text={currentLine.dialogue} ruby={currentLine.ruby} show={furigana} /></p>
+              <p class="dialogue-text" lang={textLang}><RubyText text={currentLine.dialogue} ruby={currentLine.ruby} show={furigana} /><span class="typewriter-cursor typewriter-cursor-reserve" aria-hidden="true"></span></p>
               {#if secondLine}
                 <p class="second-text" lang={secondLang}><RubyText text={secondLine.dialogue} ruby={secondLine.ruby} show={furigana} /></p>
               {/if}
@@ -769,6 +769,10 @@
     vertical-align: -0.15em;
     background: #7dd3fc;
     animation: cursor-pulse 800ms ease-in-out infinite;
+  }
+
+  .typewriter-cursor-reserve {
+    animation: none;
   }
 
   .progress {

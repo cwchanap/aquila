@@ -270,6 +270,117 @@ describe('BookmarksManager', () => {
             }
         );
 
+        it.each(['Sync to Cloud', 'Sync All to Cloud'])(
+            'clears the listing error when retrying the cloud list after a successful %s succeeds',
+            async action => {
+                setupContainer();
+                localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                    {
+                        id: 'local-1',
+                        storyId: 'train_adventure',
+                        sceneId: 'act1',
+                        bookmarkName: 'Local Save',
+                        locale: 'en',
+                        createdAt: 1,
+                        updatedAt: 1,
+                    },
+                ]);
+                global.fetch = vi
+                    .fn()
+                    .mockResolvedValueOnce({ ok: false, status: 500 } as any)
+                    .mockResolvedValueOnce({
+                        ok: true,
+                        json: async () => sampleBookmarks[0],
+                    } as any)
+                    .mockResolvedValueOnce({
+                        ok: true,
+                        json: async () => sampleBookmarks,
+                    } as any);
+
+                await new BookmarksManager('en', 'signed-in').loadBookmarks();
+                const button = [
+                    ...getContainer().querySelectorAll('button'),
+                ].find(b => b.textContent === action)!;
+                button.click();
+                await vi.runAllTimersAsync();
+
+                const text = getContainer().textContent!;
+                expect(text).not.toContain(
+                    'Failed to load bookmarks. Please try again.'
+                );
+                expect(text).toContain('Chapter 1');
+                expect(text).toContain('At the station');
+            }
+        );
+
+        it.each([false, true])(
+            'preserves focus when the cloud response re-renders during a local delete confirm (confirmed=%s)',
+            async confirmed => {
+                setupContainer();
+                localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                    {
+                        id: 'local-1',
+                        storyId: 'train_adventure',
+                        sceneId: 'act1',
+                        bookmarkName: 'First Save',
+                        locale: 'en',
+                        createdAt: 1,
+                        updatedAt: 1,
+                    },
+                    {
+                        id: 'local-2',
+                        storyId: 'train_adventure',
+                        sceneId: 'act2',
+                        bookmarkName: 'Second Save',
+                        locale: 'en',
+                        createdAt: 2,
+                        updatedAt: 2,
+                    },
+                ]);
+                let resolveFetch!: (response: unknown) => void;
+                global.fetch = vi.fn(
+                    () =>
+                        new Promise(resolve => {
+                            resolveFetch = resolve;
+                        })
+                );
+
+                const loading = new BookmarksManager(
+                    'en',
+                    'signed-in'
+                ).loadBookmarks();
+
+                const firstDelete = getContainer().querySelector<HTMLElement>(
+                    '[data-bookmark-id="local-1"] [data-bookmark-action="delete"]'
+                )!;
+                firstDelete.focus();
+                expect(document.activeElement).toBe(firstDelete);
+
+                mockShowConfirm.mockImplementationOnce(async () => {
+                    const dialogBtn = document.createElement('button');
+                    document.body.appendChild(dialogBtn);
+                    dialogBtn.focus();
+                    resolveFetch({
+                        ok: true,
+                        json: async () => sampleBookmarks,
+                    });
+                    await loading;
+                    dialogBtn.remove();
+                    return confirmed;
+                });
+
+                firstDelete.click();
+                await vi.runAllTimersAsync();
+
+                const expectedId = confirmed ? 'local-2' : 'local-1';
+                const expectedBtn = getContainer().querySelector(
+                    `[data-bookmark-id="${expectedId}"] [data-bookmark-action="delete"]`
+                );
+                expect(expectedBtn).not.toBeNull();
+                expect(document.activeElement).toBe(expectedBtn);
+            }
+        );
+
         it('keeps a loading surface for unavailable auth with no local cards', async () => {
             setupContainer();
             let resolveFetch!: (response: unknown) => void;

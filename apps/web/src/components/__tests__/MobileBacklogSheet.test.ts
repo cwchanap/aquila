@@ -62,6 +62,35 @@ describe('MobileBacklogSheet', () => {
         await fireEvent.keyDown(window, { key: 'Escape' });
         expect(onClose).toHaveBeenCalled();
     });
+
+    it('scrolls the list to the most recent line when opened', () => {
+        const original = Object.getOwnPropertyDescriptor(
+            HTMLElement.prototype,
+            'scrollHeight'
+        );
+        Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+            configurable: true,
+            get: () => 480,
+        });
+        try {
+            render(MobileBacklogSheet, {
+                props: { lines, open: true, onClose, locale: 'en' },
+            });
+            const list = screen.getByRole('list');
+            expect(list.scrollTop).toBe(480);
+        } finally {
+            if (original) {
+                Object.defineProperty(
+                    HTMLElement.prototype,
+                    'scrollHeight',
+                    original
+                );
+            } else {
+                delete (HTMLElement.prototype as { scrollHeight?: number })
+                    .scrollHeight;
+            }
+        }
+    });
 });
 
 describe('MobileBacklogSheet second language', () => {

@@ -161,6 +161,9 @@ describe('translations', () => {
                 expect(storyMap.decisionNode).toContain('{options}');
                 expect(reader.actRangeLabel).toContain('{first}');
                 expect(reader.actRangeLabel).toContain('{last}');
+                expect(
+                    getTranslations(locale).languages.switcherLabel
+                ).toContain('{language}');
             }
             expect(getTranslations('en').reader.actRangeLabel).toBe(
                 'Acts {first}–{last}'

@@ -458,11 +458,13 @@ function fakeAudio(src: string): FakeAudio {
     };
 }
 
-function stubMatchMedia(initial: boolean) {
+const originalMatchMedia = window.matchMedia;
+
+function createMockMql(media: string, initial: boolean) {
     let listeners: Array<(e: { matches: boolean }) => void> = [];
     const mql = {
         matches: initial,
-        media: '(max-width: 1023px)',
+        media,
         onchange: null,
         addEventListener: (_: string, cb: (e: { matches: boolean }) => void) =>
             listeners.push(cb),
@@ -479,18 +481,43 @@ function stubMatchMedia(initial: boolean) {
         },
         dispatchEvent: () => true,
     };
-    Object.defineProperty(window, 'matchMedia', {
-        value: vi.fn(() => mql),
-        writable: true,
-        configurable: true,
-    });
     return {
+        mql,
         setMatches(v: boolean) {
             mql.matches = v;
             listeners.forEach(l => l({ matches: v }));
         },
+        listenerCount: () => listeners.length,
     };
 }
+
+function stubMatchMedia(initial: boolean, reducedMotion = false) {
+    const mobile = createMockMql('(max-width: 1023px)', initial);
+    const motion = createMockMql(
+        '(prefers-reduced-motion: reduce)',
+        reducedMotion
+    );
+    Object.defineProperty(window, 'matchMedia', {
+        value: vi.fn((query: string) =>
+            query.includes('reduced-motion') ? motion.mql : mobile.mql
+        ),
+        writable: true,
+        configurable: true,
+    });
+    return {
+        setMatches: mobile.setMatches,
+        setReducedMotion: motion.setMatches,
+        motionListenerCount: motion.listenerCount,
+    };
+}
+
+afterEach(() => {
+    Object.defineProperty(window, 'matchMedia', {
+        value: originalMatchMedia,
+        writable: true,
+        configurable: true,
+    });
+});
 
 async function chooseReaderMode(mode: 'Text' | 'Visual Novel'): Promise<void> {
     await fireEvent.click(
@@ -532,29 +559,7 @@ describe('ReaderShell', () => {
     });
 
     it('defaults to instant for reduced motion and persists explicit speed over that default', async () => {
-        const listeners = new Set<(event: { matches: boolean }) => void>();
-        const motion = {
-            matches: true,
-            addEventListener: (
-                _: string,
-                cb: (event: { matches: boolean }) => void
-            ) => listeners.add(cb),
-            removeEventListener: (
-                _: string,
-                cb: (event: { matches: boolean }) => void
-            ) => listeners.delete(cb),
-        };
-        const desktop = {
-            matches: false,
-            addEventListener: () => {},
-            removeEventListener: () => {},
-        };
-        Object.defineProperty(window, 'matchMedia', {
-            value: vi.fn((query: string) =>
-                query.includes('reduced-motion') ? motion : desktop
-            ),
-            configurable: true,
-        });
+        const mm = stubMatchMedia(false, true);
         const view = render(ReaderShell);
         await fireEvent.click(
             screen.getByRole('button', { name: 'Open reader settings' })
@@ -565,14 +570,14 @@ describe('ReaderShell', () => {
         );
         await fireEvent.click(screen.getByRole('button', { name: 'Normal' }));
         expect(localStorage.getItem(READER_TYPING_SPEED_KEY)).toBe('normal');
-        listeners.forEach(listener => listener({ matches: false }));
+        mm.setReducedMotion(false);
         await tick();
         expect(screen.getByRole('button', { name: 'Normal' })).toHaveAttribute(
             'aria-pressed',
             'true'
         );
         view.unmount();
-        expect(listeners.size).toBe(0);
+        expect(mm.motionListenerCount()).toBe(0);
     });
 
     it.each(['desktop', 'mobile', 'visual'])(

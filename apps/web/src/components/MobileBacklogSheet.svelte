@@ -27,6 +27,13 @@
   } = $props();
 
   let t = $derived(getTranslations(locale));
+  let listEl: HTMLElement | null = $state(null);
+
+  $effect(() => {
+    if (open && listEl) {
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+  });
 
   function handleEscape(e: KeyboardEvent) {
     if (e.key === 'Escape' && open) {
@@ -49,10 +56,10 @@
     aria-modal="true"
     aria-labelledby="backlog-title"
     use:focusTrap={{ enabled: open, restoreFocus: restoreFocusTarget }}
-    class="fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-3xl bg-white/95 p-6 shadow-2xl backdrop-blur-xl"
+    class="fixed inset-x-0 bottom-0 z-50 flex max-h-[70vh] flex-col overflow-hidden rounded-t-3xl bg-white/95 p-6 shadow-2xl backdrop-blur-xl"
     style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));"
   >
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-4 flex shrink-0 items-center justify-between">
       <h2 id="backlog-title" class="text-lg font-bold text-slate-800">{t.reader.historyTitle}</h2>
       <button
         type="button"
@@ -63,7 +70,7 @@
         ✕
       </button>
     </div>
-    <ul class="space-y-4">
+    <ul bind:this={listEl} class="min-h-0 flex-1 space-y-4 overflow-y-auto">
       {#each lines as line, i (i)}
         <li>
           {#if line.separator}<h3 class="mb-2 font-bold text-slate-700">{line.separator}</h3>{/if}

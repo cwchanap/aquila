@@ -162,6 +162,37 @@ describe('VisualBacklog', () => {
             expect(close).toHaveFocus();
         }
     );
+
+    it('scrolls the list to the most recent line on open', () => {
+        const original = Object.getOwnPropertyDescriptor(
+            HTMLElement.prototype,
+            'scrollHeight'
+        );
+        Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+            configurable: true,
+            get: () => 620,
+        });
+        try {
+            render(VisualBacklog, {
+                props: {
+                    lines: threeLines,
+                    onClose: vi.fn(),
+                },
+            });
+            expect(screen.getByRole('list').scrollTop).toBe(620);
+        } finally {
+            if (original) {
+                Object.defineProperty(
+                    HTMLElement.prototype,
+                    'scrollHeight',
+                    original
+                );
+            } else {
+                delete (HTMLElement.prototype as { scrollHeight?: number })
+                    .scrollHeight;
+            }
+        }
+    });
 });
 
 describe('VisualBacklog second language', () => {

@@ -331,6 +331,7 @@
   },
   "languages": {
     "switcher": "言語を選択",
+    "switcherLabel": "{language} — 言語を選択",
     "english": "English",
     "chinese": "中文",
     "japanese": "日本語"

@@ -82,17 +82,8 @@ const authState = authStateFromSession(sessionResult);
   </OceanBackground>
 
   <script>
-    import { BookmarksManager } from '@/lib/bookmarks-manager';
-    import { authStateFromAttr } from '@/lib/auth-state-attr';
+    import { startBookmarks } from '@/lib/bookmarks-bootstrap';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const container = document.getElementById('bookmarks-container');
-      const locale = container?.getAttribute('data-locale') || 'en';
-      const authState = authStateFromAttr(
-        container?.getAttribute('data-auth-state') ?? null
-      );
-      const manager = new BookmarksManager(locale, authState);
-      void manager.loadBookmarks();
-    });
+    document.addEventListener('DOMContentLoaded', () => startBookmarks());
   </script>
 </MainLayout>

@@ -44,6 +44,10 @@ export class BookmarksManager {
     private cloudLoading = false;
     private cloudLoaded = false;
     private cloudError = false;
+    // Bumped whenever cloudBookmarks is mutated locally or a new recovery GET
+    // starts, so a stale in-flight recovery response cannot overwrite fresher
+    // state.
+    private cloudGeneration = 0;
     private readonly t: ReturnType<typeof getTranslations>;
     private readonly locale: Locale;
     private readonly localStore: LocalBookmarksStore;
@@ -88,7 +92,9 @@ export class BookmarksManager {
         }
     }
 
-    private async fetchCloudBookmarks(): Promise<'ok' | 'unauthorized'> {
+    private async fetchCloudBookmarks(
+        generation?: number
+    ): Promise<'ok' | 'unauthorized'> {
         const response = await fetch('/api/bookmarks');
 
         if (response.status === 401) {
@@ -100,18 +106,21 @@ export class BookmarksManager {
         }
 
         const data = await response.json();
-        this.cloudBookmarks = Array.isArray(data) ? data : data.data || [];
+        if (generation === undefined || generation === this.cloudGeneration) {
+            this.cloudBookmarks = Array.isArray(data) ? data : data.data || [];
+        }
         return 'ok';
     }
 
     private async refreshCloudAfterError(): Promise<void> {
         if (!this.cloudError || this.cloudLoaded) return;
+        const generation = ++this.cloudGeneration;
         try {
-            const status = await this.fetchCloudBookmarks();
+            const status = await this.fetchCloudBookmarks(generation);
             if (status === 'unauthorized') {
                 this.authState = 'signed-out';
                 this.cloudError = false;
-            } else {
+            } else if (generation === this.cloudGeneration) {
                 this.cloudLoaded = true;
                 this.cloudError = false;
             }
@@ -215,7 +224,16 @@ export class BookmarksManager {
             container.appendChild(card);
         }
 
-        if (focusTarget) {
+        const active = document.activeElement;
+        // An open dialog outside the container owns focus — a background
+        // re-render must not pull focus behind it. The dialog's own close
+        // path restores focus to its opener instead.
+        const focusOwnedElsewhere =
+            active instanceof HTMLElement &&
+            active !== document.body &&
+            active !== document.documentElement &&
+            !container.contains(active);
+        if (focusTarget && !focusOwnedElsewhere) {
             this.restoreFocusTarget(container, focusTarget);
         }
     }
@@ -516,6 +534,7 @@ export class BookmarksManager {
                         b => b.id !== data.id
                     );
                     this.cloudBookmarks.unshift(data);
+                    this.cloudGeneration++;
                 }
                 await this.refreshCloudAfterError();
                 this.renderAll();
@@ -553,6 +572,7 @@ export class BookmarksManager {
                             b => b.id !== data.id
                         );
                         this.cloudBookmarks.unshift(data);
+                        this.cloudGeneration++;
                     }
                     synced++;
                 } else {
@@ -635,6 +655,7 @@ export class BookmarksManager {
                 this.cloudBookmarks = this.cloudBookmarks.filter(
                     b => b.id !== id
                 );
+                this.cloudGeneration++;
                 this.renderAll(focusTarget);
             } else {
                 await showAlert(this.t.bookmarks.deleteFailed);

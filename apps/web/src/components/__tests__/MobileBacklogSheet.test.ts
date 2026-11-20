@@ -63,6 +63,28 @@ describe('MobileBacklogSheet', () => {
         expect(onClose).toHaveBeenCalled();
     });
 
+    it('lets keyboard focus reach the scrollable list inside the focus trap', async () => {
+        render(MobileBacklogSheet, {
+            props: { lines, open: true, onClose, locale: 'en' },
+        });
+        const dialog = screen.getByRole('dialog');
+        const list = screen.getByRole('list');
+        expect(list).toHaveAttribute('tabindex', '0');
+
+        const closeBtn = screen
+            .getAllByLabelText('Close history')
+            .find(el => dialog.contains(el))!;
+        closeBtn.focus();
+
+        // Shift+Tab from the first focusable wraps to the last: the list.
+        await fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
+        expect(document.activeElement).toBe(list);
+
+        // Tab from the last focusable wraps back to the first.
+        await fireEvent.keyDown(dialog, { key: 'Tab' });
+        expect(document.activeElement).toBe(closeBtn);
+    });
+
     it('scrolls the list to the most recent line when opened', () => {
         const original = Object.getOwnPropertyDescriptor(
             HTMLElement.prototype,

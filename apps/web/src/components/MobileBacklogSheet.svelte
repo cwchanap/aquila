@@ -70,7 +70,8 @@
         ✕
       </button>
     </div>
-    <ul bind:this={listEl} class="min-h-0 flex-1 space-y-4 overflow-y-auto">
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <ul bind:this={listEl} tabindex="0" aria-label={t.reader.historyTitle} class="min-h-0 flex-1 space-y-4 overflow-y-auto">
       {#each lines as line, i (i)}
         <li>
           {#if line.separator}<h3 class="mb-2 font-bold text-slate-700">{line.separator}</h3>{/if}

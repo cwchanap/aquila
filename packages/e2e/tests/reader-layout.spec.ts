@@ -69,6 +69,80 @@ async function openReader(page: Page, mode: string): Promise<void> {
     });
 }
 
+for (const { mode, viewport } of [
+    { mode: 'visual', viewport: { width: 390, height: 844 } },
+    { mode: 'text', viewport: { width: 844, height: 390 } },
+]) {
+    test(`${mode} starts the next overflowing passage at the top`, async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewport);
+        await page.addInitScript(mode => {
+            localStorage.setItem('aquila:reader-mode:v1', mode);
+            localStorage.setItem('aquila:reader-second-language:v1', 'zh');
+            localStorage.setItem('aquila:reader-typing-speed:v1', 'normal');
+        }, mode);
+        await page.goto(
+            '/en/reader?story=train_adventure&scene=act1&dialogue=32'
+        );
+        await expect(page.getByTestId('reader-ready')).toBeVisible({
+            timeout: 15_000,
+        });
+        await page.addStyleTag({
+            content: 'astro-dev-toolbar { display: none !important; }',
+        });
+        const scroller =
+            mode === 'visual'
+                ? page.getByTestId('visual-dialogue-body')
+                : page.locator('.mobile-reader p.pointer-events-auto');
+        await expect
+            .poll(() =>
+                scroller.evaluate(el => el.scrollHeight - el.clientHeight)
+            )
+            .toBeGreaterThan(0);
+        const bottom = await scroller.evaluate(el => {
+            el.scrollTop = el.scrollHeight;
+            return el.scrollTop;
+        });
+        expect(bottom).toBeGreaterThan(0);
+        if (mode === 'visual') {
+            await page
+                .getByRole('button', { name: 'Open reader settings' })
+                .click();
+        } else {
+            await page.getByRole('button', { name: 'Open menu' }).click();
+            await page
+                .getByRole('button', { name: 'Reading settings' })
+                .click();
+        }
+        await page
+            .getByRole('group', { name: 'Typing speed' })
+            .getByRole('button', { name: 'Fast', exact: true })
+            .click();
+        if (mode === 'visual') {
+            await page
+                .getByRole('button', { name: 'Close reader settings' })
+                .click();
+        } else {
+            await page.getByRole('button', { name: 'Close menu' }).click();
+        }
+        expect(await scroller.evaluate(el => el.scrollTop)).toBe(bottom);
+        if (mode === 'visual') {
+            await page
+                .getByRole('button', { name: 'Continue', exact: true })
+                .click();
+        } else {
+            await page
+                .getByRole('button', { name: 'Tap to continue' })
+                .click({ position: { x: 750, y: 200 } });
+        }
+        await expect(
+            page.getByRole('button', { name: 'Reveal text' })
+        ).toBeVisible();
+        await expect.poll(() => scroller.evaluate(el => el.scrollTop)).toBe(0);
+    });
+}
+
 for (const viewport of viewports) {
     for (const mode of ['visual', 'text']) {
         test(`${mode} bilingual dialogue stays usable at ${viewport.width}x${viewport.height}`, async ({

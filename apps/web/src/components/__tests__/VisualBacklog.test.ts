@@ -55,6 +55,41 @@ describe('VisualBacklog', () => {
         expect(screen.getByText('Guide')).toBeInTheDocument();
     });
 
+    it('hides leading stage directions and keeps readings on the right text', () => {
+        render(VisualBacklog, {
+            props: {
+                dialogue: [
+                    { dialogue: '(內心)好。' },
+                    {
+                        dialogue: '（心の声）今日は雨。',
+                        ruby: [
+                            { start: 1, end: 2, reading: 'こころ' },
+                            { start: 5, end: 7, reading: 'きょう' },
+                        ],
+                    },
+                ],
+                secondDialogue: [
+                    { dialogue: '(thinking) Fine.' },
+                    { dialogue: 'Rain today.' },
+                ],
+                dialogueIndex: 1,
+                locale: 'en',
+                onClose: vi.fn(),
+            },
+        });
+
+        const history = screen.getByRole('dialog');
+        expect(history).toHaveTextContent('好。');
+        expect(history).toHaveTextContent('Fine.');
+        expect(history).not.toHaveTextContent('內心');
+        expect(history).not.toHaveTextContent('心の声');
+        expect(history).not.toHaveTextContent('thinking');
+        const readings = [...history.querySelectorAll('rt')].map(
+            rt => rt.textContent
+        );
+        expect(readings).toEqual(['きょう']);
+    });
+
     it('moves focus inside on open and returns focus to the trigger on close', async () => {
         const trigger = document.createElement('button');
         document.body.append(trigger);

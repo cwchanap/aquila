@@ -16,6 +16,7 @@
     getReaderAdvanceLabel,
     isReaderInteractiveTarget,
   } from '@/lib/reader-interaction';
+  import { hideStageDirections } from '@/lib/reader-stage-directions';
   import { typeText } from '@/lib/typewriter';
   import type {
     VisualSnapshot,
@@ -116,6 +117,15 @@
 
   let t = $derived(getTranslations(locale));
   let currentDialogue = $derived(dialogue[dialogueIndex]);
+  // The reader shows the lines without their bracketed stage directions.
+  let currentLine = $derived(
+    currentDialogue ? hideStageDirections(currentDialogue) : null
+  );
+  let secondLine = $derived(
+    secondDialogue?.[dialogueIndex]
+      ? hideStageDirections(secondDialogue[dialogueIndex])
+      : null
+  );
   let currentName = $derived(resolveCharacterName(currentDialogue, t));
   let advanceLabel = $derived(
     getReaderAdvanceLabel(
@@ -205,12 +215,13 @@
       return;
     }
 
+    const text = hideStageDirections(entry).dialogue;
     typingText = '';
     isTyping = true;
     skipTyping = false;
     const version = sceneVersion;
     const result = await typeText({
-      text: entry.dialogue,
+      text,
       speed: 30,
       onTick: (partial) => {
         typingText = partial;
@@ -219,7 +230,7 @@
       isCancelled: () => version !== sceneVersion,
     });
     if (result === 'cancelled') return;
-    typingText = entry.dialogue;
+    typingText = text;
     isTyping = false;
   }
 
@@ -492,7 +503,7 @@
           <p class="speaker">{currentName}</p>
         {/if}
 
-        {#if currentDialogue}
+        {#if currentDialogue && currentLine}
           <p class="dialogue-text" lang={textLang}>
             {#if isTyping}
               {typingText}<span
@@ -501,12 +512,12 @@
                 aria-hidden="true"
               ></span>
             {:else}
-              <RubyText text={currentDialogue.dialogue} ruby={currentDialogue.ruby} show={furigana} />
+              <RubyText text={currentLine.dialogue} ruby={currentLine.ruby} show={furigana} />
             {/if}
           </p>
-          {#if !isTyping && secondDialogue?.[dialogueIndex]}
+          {#if !isTyping && secondLine}
             <p class="second-text" lang={secondLang} data-testid="second-line">
-              <RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} />
+              <RubyText text={secondLine.dialogue} ruby={secondLine.ruby} show={furigana} />
             </p>
           {/if}
         {/if}

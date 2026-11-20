@@ -150,6 +150,14 @@
   // so closing a drawer/sheet lands focus on a stable control instead of <body>
   // (the opener icon unmounts with the chrome bar in the same batch as open).
   let menuToggleButton: HTMLElement | undefined = $state();
+  let dialogueBody: globalThis.HTMLParagraphElement | undefined = $state();
+
+  $effect(() => {
+    void storyId;
+    void currentSceneId;
+    void dialogueIndex;
+    if (dialogueBody) dialogueBody.scrollTop = 0;
+  });
 
   // Derived view state — the visible reader is a pure function of the index.
   let currentDialogue = $derived(dialogue[dialogueIndex]);
@@ -594,6 +602,7 @@
         {/if}
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <p
+          bind:this={dialogueBody}
           class="reader-scroll pointer-events-auto min-h-0 flex-1 overflow-y-auto text-lg leading-relaxed text-slate-800"
           onclick={advance}
           onkeydown={(e) => {

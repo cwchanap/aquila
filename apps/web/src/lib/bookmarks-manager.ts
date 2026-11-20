@@ -36,6 +36,7 @@ export class BookmarksManager {
     private authState: AuthState;
     private cloudLoading = false;
     private cloudLoaded = false;
+    private cloudError = false;
     private readonly t: ReturnType<typeof getTranslations>;
     private readonly locale: Locale;
     private readonly localStore: LocalBookmarksStore;
@@ -55,6 +56,7 @@ export class BookmarksManager {
         }
 
         this.cloudLoading = true;
+        this.cloudError = false;
         this.renderAll();
 
         try {
@@ -80,11 +82,8 @@ export class BookmarksManager {
         } catch (error) {
             console.error('Failed to load bookmarks:', error);
             this.cloudLoading = false;
+            this.cloudError = true;
             this.renderAll();
-            const container = document.getElementById('bookmarks-container');
-            if (container) {
-                this.renderCloudErrorBanner(container);
-            }
         }
     }
 
@@ -108,12 +107,21 @@ export class BookmarksManager {
         const container = document.getElementById('bookmarks-container');
         if (!container) return;
 
+        const focused = document.activeElement as HTMLElement | null;
+        const focusedCard =
+            focused && container.contains(focused)
+                ? focused.closest<HTMLElement>('[data-bookmark-id]')
+                : null;
+        const bookmarkId = focusedCard?.dataset.bookmarkId;
+        const cardType = focusedCard?.dataset.testid;
+        const action = focused?.dataset.bookmarkAction;
         container.textContent = '';
 
+        if (this.cloudError) this.renderCloudErrorBanner(container);
         if (this.authState === 'signed-in') {
             if (this.cloudLoading) {
                 this.renderCloudLoadingSection(container);
-            } else if (this.cloudLoaded) {
+            } else if (this.cloudLoaded || this.cloudBookmarks.length > 0) {
                 this.renderSection(
                     container,
                     this.t.bookmarks.cloudBookmarks,
@@ -141,6 +149,21 @@ export class BookmarksManager {
             card.appendChild(message);
             card.appendChild(loginBtn);
             container.appendChild(card);
+        }
+
+        if (bookmarkId && cardType && action) {
+            const card = [
+                ...container.querySelectorAll<HTMLElement>(
+                    '[data-bookmark-id]'
+                ),
+            ].find(
+                node =>
+                    node.dataset.bookmarkId === bookmarkId &&
+                    node.dataset.testid === cardType
+            );
+            card?.querySelector<HTMLElement>(
+                `[data-bookmark-action="${action}"]`
+            )?.focus({ preventScroll: true });
         }
     }
 
@@ -267,7 +290,7 @@ export class BookmarksManager {
     }
 
     private buildBookmarkCard(
-        bookmark: BookmarkCardData,
+        bookmark: BookmarkCardData & { id: string },
         options: {
             cardClassName: string;
             cardTestId: string;
@@ -279,6 +302,7 @@ export class BookmarksManager {
         const card = document.createElement('div');
         card.className = options.cardClassName;
         card.dataset.testid = options.cardTestId;
+        card.dataset.bookmarkId = bookmark.id;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'flex items-start justify-between';
@@ -330,6 +354,7 @@ export class BookmarksManager {
         continueLink.className =
             'px-4 py-2 rounded-lg bg-linear-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-medium text-center text-sm shadow-lg transition-all duration-300';
         continueLink.textContent = this.t.bookmarks.continueReading;
+        continueLink.dataset.bookmarkAction = 'continue';
         actions.appendChild(continueLink);
 
         actions.appendChild(options.deleteButton);
@@ -357,6 +382,7 @@ export class BookmarksManager {
         deleteBtn.className =
             'px-4 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-300/30 text-rose-100 font-medium text-sm transition-all duration-300';
         deleteBtn.dataset.testid = 'delete-cloud-bookmark';
+        deleteBtn.dataset.bookmarkAction = 'delete';
         deleteBtn.onclick = () => this.deleteBookmark(bookmark.id);
 
         return this.buildBookmarkCard(bookmark, {
@@ -383,6 +409,7 @@ export class BookmarksManager {
             syncBtn.className =
                 'px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-300/30 text-emerald-100 font-medium text-sm transition-all duration-300';
             syncBtn.textContent = this.t.bookmarks.syncToCloud;
+            syncBtn.dataset.bookmarkAction = 'sync';
             syncBtn.onclick = () => this.syncSingleToCloud(bookmark.id);
             leadingActions.push(syncBtn);
         }
@@ -392,6 +419,7 @@ export class BookmarksManager {
         deleteBtn.className =
             'px-4 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-300/30 text-rose-100 font-medium text-sm transition-all duration-300';
         deleteBtn.dataset.testid = 'delete-local-bookmark';
+        deleteBtn.dataset.bookmarkAction = 'delete';
         deleteBtn.onclick = () => this.deleteLocalBookmark(bookmark.id);
 
         return this.buildBookmarkCard(bookmark, {
@@ -425,7 +453,6 @@ export class BookmarksManager {
             });
 
             if (response.ok) {
-                this.cloudLoaded = true;
                 this.localStore.remove(id);
                 this.localBookmarksList = this.localBookmarksList.filter(
                     b => b.id !== id
@@ -465,7 +492,6 @@ export class BookmarksManager {
                 });
 
                 if (response.ok) {
-                    this.cloudLoaded = true;
                     this.localStore.remove(bookmark.id);
                     const data = await response.json().catch(() => null);
                     if (data) {

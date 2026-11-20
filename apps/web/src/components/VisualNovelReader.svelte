@@ -154,6 +154,13 @@
   let selfAdvanceTarget: number | null = null;
 
   $effect(() => {
+    void storyId;
+    void currentSceneId;
+    void dialogueIndex;
+    if (dialogueBody) dialogueBody.scrollTop = 0;
+  });
+
+  $effect(() => {
     if (!controller) {
       snapshot = emptySnapshot;
       return;

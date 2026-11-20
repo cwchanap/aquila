@@ -189,6 +189,87 @@ describe('BookmarksManager', () => {
             expect(container.textContent).not.toContain('Loading...');
         });
 
+        it('keeps focus on the same local action when the cloud response arrives', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'Local Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ]);
+            let resolveFetch!: (response: unknown) => void;
+            global.fetch = vi.fn(
+                () =>
+                    new Promise(resolve => {
+                        resolveFetch = resolve;
+                    })
+            );
+            const loading = new BookmarksManager(
+                'en',
+                'signed-in'
+            ).loadBookmarks();
+            const link = getContainer().querySelector<HTMLAnchorElement>(
+                '[data-testid="local-bookmark-card"] a'
+            )!;
+            link.focus();
+            expect(document.activeElement).toBe(link);
+            resolveFetch({
+                ok: true,
+                json: vi.fn().mockResolvedValue(sampleBookmarks),
+            });
+            await loading;
+            const currentLink = getContainer().querySelector(
+                '[data-testid="local-bookmark-card"] a'
+            );
+            expect(document.activeElement).toBe(currentLink);
+        });
+
+        it.each(['Sync to Cloud', 'Sync All to Cloud'])(
+            'retains the listing error after a successful %s',
+            async action => {
+                setupContainer();
+                localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                    {
+                        id: 'local-1',
+                        storyId: 'train_adventure',
+                        sceneId: 'act1',
+                        bookmarkName: 'Local Save',
+                        locale: 'en',
+                        createdAt: 1,
+                        updatedAt: 1,
+                    },
+                ]);
+                global.fetch = vi
+                    .fn()
+                    .mockResolvedValueOnce({ ok: false, status: 500 } as any)
+                    .mockResolvedValueOnce({
+                        ok: true,
+                        json: async () => sampleBookmarks[0],
+                    } as any);
+                await new BookmarksManager('en', 'signed-in').loadBookmarks();
+                const button = [
+                    ...getContainer().querySelectorAll('button'),
+                ].find(b => b.textContent === action)!;
+                button.click();
+                await vi.runAllTimersAsync();
+                expect(getContainer().textContent).toContain(
+                    'Failed to load bookmarks. Please try again.'
+                );
+                expect(getContainer().textContent).toContain('Chapter 1');
+                expect(getContainer().textContent).not.toContain(
+                    'No bookmarks yet.'
+                );
+                expect(
+                    JSON.parse(localStorageStore['aquila:bookmarks:en'])
+                ).toEqual([]);
+            }
+        );
+
         it('keeps a loading surface for unavailable auth with no local cards', async () => {
             setupContainer();
             let resolveFetch!: (response: unknown) => void;

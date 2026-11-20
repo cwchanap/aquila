@@ -46,6 +46,12 @@ function createButtonRow(): HTMLDivElement {
     return row;
 }
 
+function restoreFocus(target: Element | null): void {
+    if (target instanceof HTMLElement && target.isConnected) {
+        target.focus();
+    }
+}
+
 export function showAlert(message: string): Promise<void> {
     return new Promise(resolve => {
         const overlay = createOverlay();
@@ -64,10 +70,12 @@ export function showAlert(message: string): Promise<void> {
 
         const row = createButtonRow();
         const ok = createButton('OK', true);
+        const previouslyFocused = document.activeElement;
 
         function cleanup() {
             document.removeEventListener('keydown', onKeyDown);
             overlay.remove();
+            restoreFocus(previouslyFocused);
         }
 
         function onKeyDown(e: KeyboardEvent) {
@@ -115,10 +123,12 @@ export function showConfirm(message: string): Promise<boolean> {
         const row = createButtonRow();
         const cancel = createButton('Cancel', false);
         const ok = createButton('OK', true);
+        const previouslyFocused = document.activeElement;
 
         function cleanup() {
             document.removeEventListener('keydown', onKeyDown);
             overlay.remove();
+            restoreFocus(previouslyFocused);
         }
 
         function onKeyDown(e: KeyboardEvent) {
@@ -196,10 +206,12 @@ export function showPrompt(
         const row = createButtonRow();
         const cancel = createButton('Cancel', false);
         const ok = createButton('OK', true);
+        const previouslyFocused = document.activeElement;
 
         function cleanup() {
             document.removeEventListener('keydown', onKeyDown);
             overlay.remove();
+            restoreFocus(previouslyFocused);
         }
 
         function onKeyDown(e: KeyboardEvent) {

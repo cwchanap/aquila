@@ -1568,6 +1568,52 @@ describe('BookmarksManager', () => {
 
             expect(getContainer().textContent).toContain('Local Save');
         });
+
+        it("moves focus to the card that took the deleted card's place", async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'First Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+                {
+                    id: 'local-2',
+                    storyId: 'train_adventure',
+                    sceneId: 'act2',
+                    bookmarkName: 'Second Save',
+                    locale: 'en',
+                    createdAt: 2,
+                    updatedAt: 2,
+                },
+            ]);
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: false,
+                status: 401,
+            } as any);
+
+            const manager = new BookmarksManager('en');
+            await manager.loadBookmarks();
+
+            const firstDelete = getContainer().querySelector<HTMLElement>(
+                '[data-bookmark-id="local-1"] [data-bookmark-action="delete"]'
+            )!;
+            firstDelete.focus();
+
+            mockShowConfirm.mockResolvedValue(true);
+            firstDelete.click();
+            await vi.runAllTimersAsync();
+
+            const nextDelete = getContainer().querySelector(
+                '[data-bookmark-id="local-2"] [data-bookmark-action="delete"]'
+            );
+            expect(nextDelete).not.toBeNull();
+            expect(document.activeElement).toBe(nextDelete);
+        });
     });
 
     describe('renderAll no container', () => {

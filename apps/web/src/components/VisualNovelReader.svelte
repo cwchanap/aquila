@@ -552,7 +552,7 @@
 
       <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
         <div class="action-slot">
-          {#if currentDialogue && (isTyping || advanceLabel)}
+          {#if isTyping || advanceLabel}
             <Button
               variant="menu"
               className="next-control block ml-auto w-auto rounded-full {controlBase}"

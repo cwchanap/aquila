@@ -617,6 +617,21 @@ describe('VisualNovelReader', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('keeps the Next Scene footer action for an empty scene that can advance', async () => {
+        // An empty linear scene is valid input and keyboard advance still
+        // works, so the footer progression action must not depend on
+        // currentDialogue being present.
+        setReducedMotion(false);
+        const onNext = vi.fn();
+        renderReader({ dialogue: [], canGoNext: true, onNext });
+        await vi.runAllTimersAsync();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Next Scene' })
+        );
+        expect(onNext).toHaveBeenCalledOnce();
+    });
+
     it('makes reader content inert while backlog owns focus and restores the trigger', async () => {
         setReducedMotion(false);
         renderReader({ isInitialMount: false });

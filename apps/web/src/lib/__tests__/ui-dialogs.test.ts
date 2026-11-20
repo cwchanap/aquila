@@ -384,6 +384,61 @@ describe('ui-dialogs', () => {
         });
     });
 
+    describe('focus restoration', () => {
+        function openerButton() {
+            const opener = document.createElement('button');
+            document.body.appendChild(opener);
+            opener.focus();
+            expect(document.activeElement).toBe(opener);
+            return opener;
+        }
+
+        it('returns focus to the opener when a confirm is cancelled', async () => {
+            const opener = openerButton();
+            const promise = showConfirm('Confirm?');
+            expect(document.activeElement).not.toBe(opener);
+
+            const dialog = document.querySelector('[role="dialog"]')!;
+            (dialog.querySelector('button') as HTMLButtonElement).click();
+            await expect(promise).resolves.toBe(false);
+            expect(document.activeElement).toBe(opener);
+        });
+
+        it('returns focus to the opener when a confirm resolves via OK', async () => {
+            const opener = openerButton();
+            const promise = showConfirm('Confirm?');
+
+            const dialog = document.querySelector('[role="dialog"]')!;
+            const buttons = dialog.querySelectorAll('button');
+            (buttons[buttons.length - 1] as HTMLButtonElement).click();
+            await expect(promise).resolves.toBe(true);
+            expect(document.activeElement).toBe(opener);
+        });
+
+        it('returns focus to the opener on Escape', async () => {
+            const opener = openerButton();
+            const promise = showConfirm('Confirm?');
+
+            document.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape' })
+            );
+            await promise;
+            expect(document.activeElement).toBe(opener);
+        });
+
+        it('does not throw when the opener was removed while the dialog was open', async () => {
+            const opener = openerButton();
+            const promise = showConfirm('Confirm?');
+            opener.remove();
+
+            document.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape' })
+            );
+            await promise;
+            expect(document.activeElement).not.toBe(opener);
+        });
+    });
+
     describe('button hover effects', () => {
         it('applies opacity on button mouseenter', async () => {
             const promise = showAlert('Test hover');

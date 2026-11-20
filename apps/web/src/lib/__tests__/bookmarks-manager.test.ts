@@ -381,6 +381,248 @@ describe('BookmarksManager', () => {
             }
         );
 
+        it('ignores an older recovery response that resolves after a newer one', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'First Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+                {
+                    id: 'local-2',
+                    storyId: 'train_adventure',
+                    sceneId: 'act2',
+                    bookmarkName: 'Second Save',
+                    locale: 'en',
+                    createdAt: 2,
+                    updatedAt: 2,
+                },
+            ]);
+            const bmA = {
+                ...sampleBookmarks[0],
+                id: 'bm-a',
+                bookmarkName: 'Synced A',
+            };
+            const bmB = {
+                ...sampleBookmarks[0],
+                id: 'bm-b',
+                bookmarkName: 'Synced B',
+            };
+            const pendingGets: Array<(v: unknown) => void> = [];
+            global.fetch = vi
+                .fn()
+                .mockImplementationOnce(
+                    async () => ({ ok: false, status: 500 }) as any
+                )
+                .mockImplementation((input: unknown, opts?: RequestInit) => {
+                    if (opts?.method === 'POST') {
+                        const body = JSON.parse(String(opts.body));
+                        return Promise.resolve({
+                            ok: true,
+                            json: async () => ({
+                                id: body.sceneId === 'act1' ? 'bm-a' : 'bm-b',
+                                storyId: body.storyId,
+                                sceneId: body.sceneId,
+                                bookmarkName:
+                                    body.sceneId === 'act1'
+                                        ? 'Synced A'
+                                        : 'Synced B',
+                                locale: body.locale,
+                                createdAt: '2024-01-01',
+                                updatedAt: '2024-01-01',
+                            }),
+                        } as any);
+                    }
+                    return new Promise(resolve => pendingGets.push(resolve));
+                });
+
+            await new BookmarksManager('en', 'signed-in').loadBookmarks();
+
+            const syncBtn = (id: string) =>
+                getContainer().querySelector<HTMLElement>(
+                    `[data-bookmark-id="${id}"] [data-bookmark-action="sync"]`
+                )!;
+
+            syncBtn('local-1').click();
+            await vi.runAllTimersAsync();
+            syncBtn('local-2').click();
+            await vi.runAllTimersAsync();
+            expect(pendingGets).toHaveLength(2);
+
+            // The newer GET resolves first; the older one lands last with a
+            // smaller list and must not overwrite it.
+            pendingGets[1]({ ok: true, json: async () => [bmA, bmB] });
+            await vi.runAllTimersAsync();
+            pendingGets[0]({ ok: true, json: async () => [bmA] });
+            await vi.runAllTimersAsync();
+
+            expect(
+                getContainer().querySelectorAll('[data-testid="bookmark-card"]')
+            ).toHaveLength(2);
+            expect(getContainer().textContent).toContain('Synced A');
+            expect(getContainer().textContent).toContain('Synced B');
+        });
+
+        it('ignores a recovery response that resolves after a cloud delete', async () => {
+            setupContainer();
+            localStorageStore['aquila:bookmarks:en'] = JSON.stringify([
+                {
+                    id: 'local-1',
+                    storyId: 'train_adventure',
+                    sceneId: 'act1',
+                    bookmarkName: 'First Save',
+                    locale: 'en',
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+                {
+                    id: 'local-2',
+                    storyId: 'train_adventure',
+                    sceneId: 'act2',
+                    bookmarkName: 'Second Save',
+                    locale: 'en',
+                    createdAt: 2,
+                    updatedAt: 2,
+                },
+            ]);
+            const bmA = {
+                ...sampleBookmarks[0],
+                id: 'bm-a',
+                bookmarkName: 'Synced A',
+            };
+            const bmB = {
+                ...sampleBookmarks[0],
+                id: 'bm-b',
+                bookmarkName: 'Synced B',
+            };
+            const pendingGets: Array<(v: unknown) => void> = [];
+            global.fetch = vi
+                .fn()
+                .mockImplementationOnce(
+                    async () => ({ ok: false, status: 500 }) as any
+                )
+                .mockImplementation((input: unknown, opts?: RequestInit) => {
+                    if (opts?.method === 'DELETE') {
+                        return Promise.resolve({ ok: true } as any);
+                    }
+                    if (opts?.method === 'POST') {
+                        const body = JSON.parse(String(opts.body));
+                        return Promise.resolve({
+                            ok: true,
+                            json: async () => ({
+                                id: body.sceneId === 'act1' ? 'bm-a' : 'bm-b',
+                                storyId: body.storyId,
+                                sceneId: body.sceneId,
+                                bookmarkName:
+                                    body.sceneId === 'act1'
+                                        ? 'Synced A'
+                                        : 'Synced B',
+                                locale: body.locale,
+                                createdAt: '2024-01-01',
+                                updatedAt: '2024-01-01',
+                            }),
+                        } as any);
+                    }
+                    return new Promise(resolve => pendingGets.push(resolve));
+                });
+
+            await new BookmarksManager('en', 'signed-in').loadBookmarks();
+
+            const syncBtn = (id: string) =>
+                getContainer().querySelector<HTMLElement>(
+                    `[data-bookmark-id="${id}"] [data-bookmark-action="sync"]`
+                )!;
+
+            // Sync A: its recovery GET fails, keeping cloudError so the card
+            // renders from the POST upsert alone.
+            syncBtn('local-1').click();
+            await vi.runAllTimersAsync();
+            expect(pendingGets).toHaveLength(1);
+            pendingGets[0]({ ok: false, status: 500 });
+            await vi.runAllTimersAsync();
+
+            // Sync B starts a second recovery GET and suspends before
+            // re-rendering; delete A while that GET is in flight.
+            syncBtn('local-2').click();
+            await vi.runAllTimersAsync();
+            expect(pendingGets).toHaveLength(2);
+            mockShowConfirm.mockResolvedValue(true);
+            getContainer()
+                .querySelector<HTMLElement>(
+                    '[data-bookmark-id="bm-a"] [data-bookmark-action="delete"]'
+                )!
+                .click();
+            await vi.runAllTimersAsync();
+
+            // The in-flight GET still lists A — it must not resurrect it.
+            pendingGets[1]({ ok: true, json: async () => [bmA, bmB] });
+            await vi.runAllTimersAsync();
+
+            expect(
+                getContainer().querySelectorAll('[data-testid="bookmark-card"]')
+            ).toHaveLength(1);
+            expect(getContainer().textContent).toContain('Synced B');
+            expect(getContainer().textContent).not.toContain('Synced A');
+        });
+
+        it('does not move focus behind a dialog open for another delete', async () => {
+            setupContainer();
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: async () => sampleBookmarks,
+            } as any);
+
+            await new BookmarksManager('en', 'signed-in').loadBookmarks();
+
+            let resolveDelete!: (v: unknown) => void;
+            global.fetch = vi.fn(
+                () =>
+                    new Promise(resolve => {
+                        resolveDelete = resolve;
+                    })
+            ) as any;
+
+            const delBtn = (id: string) =>
+                getContainer().querySelector<HTMLElement>(
+                    `[data-bookmark-id="${id}"] [data-bookmark-action="delete"]`
+                )!;
+
+            delBtn('bm-1').focus();
+            delBtn('bm-1').click();
+            await vi.runAllTimersAsync();
+
+            // Open a second confirmation and hold it open with focus inside.
+            const dialogBtn = document.createElement('button');
+            document.body.appendChild(dialogBtn);
+            let resolveConfirm!: (v: boolean) => void;
+            mockShowConfirm.mockImplementationOnce(() => {
+                dialogBtn.focus();
+                return new Promise(resolve => {
+                    resolveConfirm = resolve;
+                });
+            });
+            delBtn('bm-2').click();
+            await vi.runAllTimersAsync();
+            expect(document.activeElement).toBe(dialogBtn);
+
+            // bm-1's DELETE completes while the second dialog owns focus:
+            // the re-render must not pull focus behind the dialog.
+            resolveDelete({ ok: true });
+            await vi.runAllTimersAsync();
+
+            expect(document.activeElement).toBe(dialogBtn);
+            expect(getContainer().textContent).not.toContain('Chapter 1');
+
+            resolveConfirm(false);
+            dialogBtn.remove();
+            await vi.runAllTimersAsync();
+        });
+
         it('keeps a loading surface for unavailable auth with no local cards', async () => {
             setupContainer();
             let resolveFetch!: (response: unknown) => void;

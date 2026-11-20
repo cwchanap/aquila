@@ -229,16 +229,26 @@ test.describe('Visual novel reader', () => {
             'data-portrait-active',
             'true'
         );
-        expect(
-            await visual.leftPortrait.evaluate(
-                el => el.ownerDocument.defaultView!.getComputedStyle(el).filter
+        // The active-speaker filter animates over 180ms; poll the computed
+        // value instead of snapshotting mid-transition.
+        await expect
+            .poll(() =>
+                visual.leftPortrait.evaluate(
+                    el =>
+                        el.ownerDocument.defaultView!.getComputedStyle(el)
+                            .filter
+                )
             )
-        ).toContain('brightness(0.55)');
-        expect(
-            await visual.rightPortrait.evaluate(
-                el => el.ownerDocument.defaultView!.getComputedStyle(el).filter
+            .toContain('brightness(0.55)');
+        await expect
+            .poll(() =>
+                visual.rightPortrait.evaluate(
+                    el =>
+                        el.ownerDocument.defaultView!.getComputedStyle(el)
+                            .filter
+                )
             )
-        ).toContain('brightness(1)');
+            .toContain('brightness(1)');
         await expect(visual.leftPortrait).toHaveCSS('opacity', '0.82');
         await expect(visual.rightPortrait).toHaveCSS('opacity', '1');
     });

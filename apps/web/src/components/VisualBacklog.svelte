@@ -26,6 +26,13 @@
   } = $props();
 
   let t = $derived(getTranslations(locale));
+  let listEl: HTMLElement | null = $state(null);
+
+  $effect(() => {
+    if (listEl) {
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+  });
 
   function close(): void {
     trigger?.focus();
@@ -62,7 +69,7 @@
     </button>
   </header>
 
-  <ol>
+  <ol bind:this={listEl}>
     {#each lines as line, index (index)}
       {@const text = hideStageDirections({
         dialogue: line.text,
@@ -144,6 +151,7 @@
   }
 
   ol {
+    min-height: 0;
     padding: 1.25rem;
     margin: 0;
     overflow-y: auto;

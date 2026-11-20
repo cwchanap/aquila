@@ -116,4 +116,23 @@ describe('session history', () => {
         );
         expect(chinese.map(line => line.text)).toEqual(['你好', '你好']);
     });
+
+    it('includes chapter labels for chaptered scenes and omits headings for unpatterned ids', () => {
+        const segments = [
+            { sceneId: 'ch1_act1', lastIndex: 0 },
+            { sceneId: 'ch10_act1', lastIndex: 0 },
+            { sceneId: 'intro', lastIndex: 0 },
+        ];
+        const lines = buildHistoryLines(
+            segments,
+            sceneId => [{ dialogue: sceneId }],
+            undefined,
+            getTranslations('en')
+        );
+        expect(lines.map(line => line.separator)).toEqual([
+            'Chapter 1 · Act 1',
+            'Chapter 10 · Act 1',
+            undefined,
+        ]);
+    });
 });

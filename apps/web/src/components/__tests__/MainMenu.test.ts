@@ -26,6 +26,7 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             chinese: '中文',
             japanese: '日本語',
             switcher: 'Choose language',
+            switcherLabel: '{language} — Choose language',
         },
         common: {
             logout: 'Logout',

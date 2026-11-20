@@ -220,6 +220,7 @@ export function showPrompt(
                 resolve(null);
             }
             if (e.key === 'Enter' && document.activeElement !== cancel) {
+                e.preventDefault();
                 cleanup();
                 resolve(input.value);
             }

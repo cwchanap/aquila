@@ -615,7 +615,7 @@
           <span class="passage-grid">
           {#if isTyping}
             <span class="passage-reserve" aria-hidden="true">
-              <span lang={textLang}><RubyText text={currentDialogue?.dialogue ?? ''} ruby={currentDialogue?.ruby} show={furigana} /></span>
+              <span lang={textLang}><RubyText text={currentDialogue?.dialogue ?? ''} ruby={currentDialogue?.ruby} show={furigana} /></span><span class="ml-0.5 inline-block h-5 w-2 align-middle" aria-hidden="true"></span>
               {#if secondDialogue?.[dialogueIndex]}
                 <span class="mt-2 block text-base text-slate-500" lang={secondLang}>
                   <RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} />

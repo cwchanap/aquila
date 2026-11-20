@@ -90,7 +90,7 @@
   <div class="absolute top-5 left-5 z-20">
     <details class="bg-white/60 backdrop-blur-md rounded-xl px-1 py-1 shadow-sm border border-white/50">
       <summary
-        aria-label={`${activeLanguage} — ${translations.languages.switcher}`}
+        aria-label={translations.languages.switcherLabel.replace('{language}', activeLanguage)}
         class="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white/70"
         style="font-family: 'Exo 2', sans-serif;"
       >

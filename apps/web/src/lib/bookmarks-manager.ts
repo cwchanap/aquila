@@ -30,6 +30,13 @@ interface BookmarkCardData {
     locale: string;
 }
 
+interface CardFocusTarget {
+    bookmarkId: string;
+    cardType: string;
+    action: string;
+    cardIndex: number;
+}
+
 export class BookmarksManager {
     private cloudBookmarks: Bookmark[] = [];
     private localBookmarksList: LocalBookmark[] = [];
@@ -60,22 +67,16 @@ export class BookmarksManager {
         this.renderAll();
 
         try {
-            const response = await fetch('/api/bookmarks');
+            const status = await this.fetchCloudBookmarks();
 
-            if (response.status === 401) {
+            if (status === 'unauthorized') {
                 this.authState = 'signed-out';
                 this.cloudLoading = false;
                 this.renderAll();
                 return;
             }
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch bookmarks');
-            }
-
             this.authState = 'signed-in';
-            const data = await response.json();
-            this.cloudBookmarks = Array.isArray(data) ? data : data.data || [];
             this.cloudLoaded = true;
             this.cloudLoading = false;
             this.renderAll();
@@ -84,6 +85,38 @@ export class BookmarksManager {
             this.cloudLoading = false;
             this.cloudError = true;
             this.renderAll();
+        }
+    }
+
+    private async fetchCloudBookmarks(): Promise<'ok' | 'unauthorized'> {
+        const response = await fetch('/api/bookmarks');
+
+        if (response.status === 401) {
+            return 'unauthorized';
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch bookmarks');
+        }
+
+        const data = await response.json();
+        this.cloudBookmarks = Array.isArray(data) ? data : data.data || [];
+        return 'ok';
+    }
+
+    private async refreshCloudAfterError(): Promise<void> {
+        if (!this.cloudError || this.cloudLoaded) return;
+        try {
+            const status = await this.fetchCloudBookmarks();
+            if (status === 'unauthorized') {
+                this.authState = 'signed-out';
+                this.cloudError = false;
+            } else {
+                this.cloudLoaded = true;
+                this.cloudError = false;
+            }
+        } catch {
+            // Keep cloudError true and retain the newly synced bookmark(s).
         }
     }
 
@@ -103,10 +136,7 @@ export class BookmarksManager {
         return link;
     }
 
-    private renderAll(): void {
-        const container = document.getElementById('bookmarks-container');
-        if (!container) return;
-
+    private captureFocusTarget(container: HTMLElement): CardFocusTarget | null {
         const focused = document.activeElement as HTMLElement | null;
         const focusedCard =
             focused && container.contains(focused)
@@ -115,16 +145,40 @@ export class BookmarksManager {
         const bookmarkId = focusedCard?.dataset.bookmarkId;
         const cardType = focusedCard?.dataset.testid;
         const action = focused?.dataset.bookmarkAction;
+        if (!bookmarkId || !cardType || !action) return null;
         // Position within its card type, so a re-render that removed the card
         // (a confirmed delete) can move focus to the card that took its place.
-        const cardIndex =
-            focusedCard && cardType
-                ? [
-                      ...container.querySelectorAll<HTMLElement>(
-                          `[data-testid="${cardType}"]`
-                      ),
-                  ].indexOf(focusedCard)
-                : -1;
+        const cardIndex = [
+            ...container.querySelectorAll<HTMLElement>(
+                `[data-testid="${cardType}"]`
+            ),
+        ].indexOf(focusedCard);
+        return { bookmarkId, cardType, action, cardIndex };
+    }
+
+    private restoreFocusTarget(
+        container: HTMLElement,
+        target: CardFocusTarget
+    ): void {
+        const sameType = [
+            ...container.querySelectorAll<HTMLElement>(
+                `[data-testid="${target.cardType}"]`
+            ),
+        ];
+        const card =
+            sameType.find(
+                node => node.dataset.bookmarkId === target.bookmarkId
+            ) ?? sameType[Math.min(target.cardIndex, sameType.length - 1)];
+        card?.querySelector<HTMLElement>(
+            `[data-bookmark-action="${target.action}"]`
+        )?.focus({ preventScroll: true });
+    }
+
+    private renderAll(fallbackFocus: CardFocusTarget | null = null): void {
+        const container = document.getElementById('bookmarks-container');
+        if (!container) return;
+
+        const focusTarget = this.captureFocusTarget(container) ?? fallbackFocus;
         container.textContent = '';
 
         if (this.cloudError) this.renderCloudErrorBanner(container);
@@ -161,18 +215,8 @@ export class BookmarksManager {
             container.appendChild(card);
         }
 
-        if (bookmarkId && cardType && action) {
-            const sameType = [
-                ...container.querySelectorAll<HTMLElement>(
-                    `[data-testid="${cardType}"]`
-                ),
-            ];
-            const card =
-                sameType.find(node => node.dataset.bookmarkId === bookmarkId) ??
-                sameType[Math.min(cardIndex, sameType.length - 1)];
-            card?.querySelector<HTMLElement>(
-                `[data-bookmark-action="${action}"]`
-            )?.focus({ preventScroll: true });
+        if (focusTarget) {
+            this.restoreFocusTarget(container, focusTarget);
         }
     }
 
@@ -473,6 +517,7 @@ export class BookmarksManager {
                     );
                     this.cloudBookmarks.unshift(data);
                 }
+                await this.refreshCloudAfterError();
                 this.renderAll();
             } else {
                 await showAlert(this.t.bookmarks.syncFailed);
@@ -521,6 +566,9 @@ export class BookmarksManager {
         this.localBookmarksList = this.localBookmarksList.filter(b =>
             failedIds.includes(b.id)
         );
+        if (synced > 0) {
+            await this.refreshCloudAfterError();
+        }
         this.renderAll();
 
         if (synced === total) {
@@ -536,8 +584,31 @@ export class BookmarksManager {
         }
     }
 
+    private async confirmWithFocus(message: string): Promise<{
+        confirmed: boolean;
+        focusTarget: CardFocusTarget | null;
+    }> {
+        const container = document.getElementById('bookmarks-container');
+        const focusTarget = container
+            ? this.captureFocusTarget(container)
+            : null;
+        const confirmed = await showConfirm(message);
+        if (!confirmed && focusTarget) {
+            const currentContainer = document.getElementById(
+                'bookmarks-container'
+            );
+            if (
+                currentContainer &&
+                !currentContainer.contains(document.activeElement)
+            ) {
+                this.restoreFocusTarget(currentContainer, focusTarget);
+            }
+        }
+        return { confirmed, focusTarget };
+    }
+
     private async deleteLocalBookmark(id: string): Promise<void> {
-        const confirmed = await showConfirm(
+        const { confirmed, focusTarget } = await this.confirmWithFocus(
             this.t.bookmarks.deleteLocalConfirm
         );
         if (!confirmed) return;
@@ -546,11 +617,13 @@ export class BookmarksManager {
         this.localBookmarksList = this.localBookmarksList.filter(
             b => b.id !== id
         );
-        this.renderAll();
+        this.renderAll(focusTarget);
     }
 
     private async deleteBookmark(id: string): Promise<void> {
-        const confirmed = await showConfirm(this.t.bookmarks.deleteConfirm);
+        const { confirmed, focusTarget } = await this.confirmWithFocus(
+            this.t.bookmarks.deleteConfirm
+        );
         if (!confirmed) return;
 
         try {
@@ -562,7 +635,7 @@ export class BookmarksManager {
                 this.cloudBookmarks = this.cloudBookmarks.filter(
                     b => b.id !== id
                 );
-                this.renderAll();
+                this.renderAll(focusTarget);
             } else {
                 await showAlert(this.t.bookmarks.deleteFailed);
             }

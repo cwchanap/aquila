@@ -1,5 +1,10 @@
 import type { DialogueEntry, RubySpan, Translations } from '@aquila/stories';
-import { actLabel, extractActName } from './act-navigation';
+import {
+    actLabel,
+    chapterLabel,
+    extractActName,
+    extractChapterNum,
+} from './act-navigation';
 import { resolveCharacterName } from './character-name';
 import { alignSecondDialogue } from './reader-second-language';
 
@@ -62,6 +67,14 @@ export function sceneHistoryLines(
     }));
 }
 
+function historyHeading(sceneId: string, t: Translations): string | undefined {
+    const act = actLabel(extractActName(sceneId), t);
+    const chapter = extractChapterNum(sceneId);
+    if (chapter !== null && act) return `${chapterLabel(chapter, t)} · ${act}`;
+    if (chapter !== null) return chapterLabel(chapter, t);
+    return act || undefined;
+}
+
 export function buildHistoryLines(
     segments: readonly HistorySegment[],
     getDialogue: (sceneId: string) => readonly DialogueEntry[] | null,
@@ -71,7 +84,7 @@ export function buildHistoryLines(
     return segments.flatMap(({ sceneId, lastIndex }) => {
         const dialogue = getDialogue(sceneId);
         if (!dialogue) return [];
-        const label = actLabel(extractActName(sceneId), t) || sceneId;
+        const label = historyHeading(sceneId, t);
         return sceneHistoryLines(
             dialogue,
             lastIndex,

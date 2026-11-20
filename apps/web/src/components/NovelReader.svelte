@@ -361,7 +361,7 @@
             <div class="passage-grid flex-1 text-lg text-slate-800 leading-relaxed min-h-[60px] min-w-0">
               {#if isTyping}
                 <div class="passage-reserve" aria-hidden="true">
-                  <span lang={textLang}><RubyText text={currentDialogue.dialogue} ruby={currentDialogue.ruby} show={furigana} /></span>
+                  <span lang={textLang}><RubyText text={currentDialogue.dialogue} ruby={currentDialogue.ruby} show={furigana} /></span><span class="inline-block w-2 h-5 ml-1" aria-hidden="true"></span>
                   {#if secondDialogue?.[dialogueIndex]}
                     <span class="mt-1 block text-base text-slate-500" lang={secondLang}><RubyText text={secondDialogue[dialogueIndex].dialogue} ruby={secondDialogue[dialogueIndex].ruby} show={furigana} /></span>
                   {/if}
@@ -369,8 +369,7 @@
               {/if}
               <div class={['passage-visible', { 'typing-overlay': isTyping }]}>
               {#if isTyping}
-                <span lang={textLang}>{typingText}</span>
-                <span class="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"
+                <span lang={textLang}>{typingText}</span><span class="inline-block w-2 h-5 bg-blue-600 ml-1 animate-pulse"
                 ></span>
               {:else}
                 <span lang={textLang}><RubyText text={currentDialogue.dialogue} ruby={currentDialogue.ruby} show={furigana} /></span>

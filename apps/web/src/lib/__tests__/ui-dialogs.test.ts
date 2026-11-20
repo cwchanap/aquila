@@ -437,6 +437,23 @@ describe('ui-dialogs', () => {
             await promise;
             expect(document.activeElement).not.toBe(opener);
         });
+
+        it('prevents default on Enter in showPrompt so focus restoration cannot re-activate the opener', async () => {
+            const opener = openerButton();
+            const promise = showPrompt('Bookmark name:', 'Save 1');
+            const input = document.querySelector('input') as HTMLInputElement;
+
+            const enterEvent = new KeyboardEvent('keydown', {
+                key: 'Enter',
+                bubbles: true,
+                cancelable: true,
+            });
+            input.dispatchEvent(enterEvent);
+
+            expect(enterEvent.defaultPrevented).toBe(true);
+            await expect(promise).resolves.toBe('Save 1');
+            expect(document.activeElement).toBe(opener);
+        });
     });
 
     describe('button hover effects', () => {

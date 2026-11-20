@@ -195,7 +195,11 @@ Used before a character is named. All are registered as aliases in
 | 年長精靈 | Elder Elf | 年長のエルフ | `elf` |
 | 精靈劍士 | Elf Swordsman | エルフの剣士 | `elf_guard` |
 | 精靈守衛 | Elf Guard | エルフの衛兵 | `elf_guard` |
+| 精靈守衛A / B / C | Elf Guard A / B / C | エルフの衛兵A / B / C | `elf_guard` |
 | 精靈幼童 | Elf Child | エルフの子ども | `elf` |
+| 精靈居民 / 精靈村民 A / B / C | Elf Villager A / B / C | エルフの住民A / B / C | `elf` |
+| 精靈孩子們 / 精靈孩子A | Elf Children / Elf Child A | エルフの子どもたち / エルフの子どもA | `elf` |
+| 門前守衛 | Gate Guard | 門前の衛兵 | `guard` |
 | 精靈母親 | Elf Mother | エルフの母親 | `elf` |
 | 年輕精靈A / B / C | Young Elf A / B / C | 若いエルフA / B / C | `elf` |
 | 年輕精靈 / 年輕精靈劍士 | Young Elf / Young Elf Swordsman | 若いエルフ / 若いエルフの剣士 | `elf` |
@@ -275,6 +279,17 @@ Used before a character is named. All are registered as aliases in
 | 星露燉肉 / 星露香草 | star-dew stew / star-dew herb | 星露の煮込み（せいろのにこみ） / 星露草（せいろそう） |
 | 春生祭 | the Springbirth Festival | 春生祭（しゅんせいさい） |
 | 月華慶典 | the Moonglow Festival | 月華祭（げっかさい） |
+| 月華村 | Moonglow Village | 月華村（げっかむら） |
+| 星辰殿 | the Starhall (Nisara's palace) | 星辰殿（せいしんでん） |
+| 主島 | the main island | 主島（しゅとう） |
+| 月光蟲 | moonlight bugs (the festival lanterns) | 月光虫（げっこうむし） |
+| 屏障（at the tunnel mouth） | the barrier | 結界（けっかい） |
+| 石像守衛 | the stone-statue guards | 石像の守衛（せきぞうのしゅえい） |
+| 獸人 | beastfolk | 獣人（じゅうじん） |
+| 精靈聯盟 | the Elven League | エルフ連盟（えるふれんめい） |
+| 和平協議 | the peace accord | 和平協定（わへいきょうてい） |
+| 永恆列車 | the Eternal Train | 永遠列車（えいえんれっしゃ） |
+| 安神草 | calming herb | 安らぎ草（やすらぎそう） |
 | 星辰之夜 | the Night of Stars | 星辰の夜（せいしんのよる） |
 | 終焉祭壇 | the Altar of the End | 終焉の祭壇（しゅうえんのさいだん） |
 | 劍士（精靈） | swordsmen | 剣士（けんし） |
@@ -483,8 +498,8 @@ Used before a character is named. All are registered as aliases in
 
 ## Route notes: branch_1b → branch_2a (cabin route, ja to the dark ending)
 
-- **Coverage**: acts 9–14 (route 2a), 3a acts 15–16 and 終幕. Route 2a → 3b
-  (acts 15 onward) and route 2b are still zh.
+- **Coverage**: acts 9–14 (route 2a), 3a acts 15–16 and 終幕, and the 3b chain
+  below (acts 15–21 and the 6a 終幕). The 3b side route 4b is still zh.
 - **Shape**: unlike branch_1b → branch_2c, Li Jie stays with the Kobayashi
   mother and children and walks them north to the cabin; the family *is* named
   here. In act 9 she introduces herself (小林智子, 陽菜, 翔太), so the labels
@@ -499,4 +514,36 @@ Used before a character is named. All are registered as aliases in
 - **The notebook** (終幕): the plan's five steps, the eight names and the
   struck-through lines are quoted as written; 迷霧の森, 月光の林, 銀月湖 and
   終焉の祭壇 follow the places table.
+- **No line in these acts is voiced.**
+
+## Route notes: branch_1b → branch_2b (the elf village) and branch_2a → 3b → 6a (the Eternal Forest)
+
+- **Coverage**: route 2b acts 9–17, 3a acts 18–30 (zh has no act 22), and the
+  3b 終幕 (the right-hand tunnel and the black-blade death). Route 2a → 3b
+  acts 15–16, 4a acts 17–20, 5a act 21 and the 6a 終幕 (the opening replayed).
+  Both routes are now ja to their endings except 2a → 3b → 4b.
+- **Elves**: the village chiefs and helpers are named in the characters table
+  (エリシア, リアナ, セリナ, エーテル, ニサラ, アイラル, オリオン, イラニル).
+  They speak ですます, 私, and bare given names. Every elf line in the village
+  acts is Elvish; the stage direction `エルフ語で` marks it, as the zh
+  `精靈語` does. Li Jie is the only one who understands it until act 24; Misaki
+  learns it over the following year and says あたし.
+- **Misaki's sister** is named only in 3a act 26 (zh 高橋愛美); ja reads
+  愛美（まなみ）. Misaki calls her お姉ちゃん, and her parents パパ / ママ.
+  Li Jie's family is 父さん / 母さん in thought and 父 / 母 to others.
+- **Time**: Elven years are not human years. In the Eternal Forest route the
+  train comes every "two years" (エルフの二年) and the board reads 2045年; the
+  calendar line stays as zh has it (エルフ暦5000年, 人間の暦では2045年, digits).
+- **Chiefs**: 長 reads おさ, 長老 ちょうろう; Nisara is 長 and 様 to Li Jie.
+- **zh slips kept and reported, not fixed**: 2b act 11 mentions a black shadow
+  that jumped from a tree which Emi never described in act 10; 2b 終幕 has
+  Li Jie mourn 東京 although he is from 上海; 3a act 28 repeats the "rest, then
+  we think together" exchange twice in a row.
+- **Voice collisions**: a new unvoiced line with the same speaker and wording
+  as a recorded take counts as voiced, which makes the committed voice index
+  stale. The 6a 終幕 replays the opening dialogue of acts 1–2, so ten of its
+  lines are worded a little differently from the recorded ones. Short Li Jie
+  reactions such as これは…… / ここは…… / 待ってくれ！ collided too and got a
+  small addition (これは、いったい…… and the like); keep that in mind when
+  translating more of these routes, and run `voice:check` before the PR.
 - **No line in these acts is voiced.**

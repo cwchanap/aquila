@@ -13,7 +13,7 @@ const DIRECTION = /\s*[（(]([^（）()]*)[）)]\s*/y;
 // from afar, or the language spoken. It stays visible, together with anything
 // else inside the same brackets, e.g. （隔著門，精靈語）.
 const CONTENT_LABEL =
-    /^(?:訊息|メッセージ|message)$|(?:精靈|日|英)語|エルフ語|elvish/i;
+    /^(?:訊息|メッセージ|message)$|(?:精靈|日|英|中)[語文]|エルフ語|日本語|中国語|elvish|japanese|chinese|english/i;
 
 /**
  * The line without its leading bracketed stage directions, for the visual

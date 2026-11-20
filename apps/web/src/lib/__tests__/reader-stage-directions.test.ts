@@ -32,6 +32,9 @@ describe('hideStageDirections', () => {
         '（精靈語）我們需要食物和水。',
         '（隔著門，精靈語）我們需要食物和水。',
         '（用日語，有些不好意思）你好。',
+        '（中文和日文）飛往東京成田機場的JL886次航班現在開始登機。',
+        '（用標準中文）你好。',
+        '（日本語で）こんにちは。',
         '（メッセージ）今夜は遅くなる。',
         '(Elvish) We need food and water.',
     ])('keeps the message or language label of %s', dialogue => {

@@ -1227,6 +1227,39 @@ describe('VisualNovelReader stage directions', () => {
         );
     });
 
+    it('keeps message and language labels on the line and in History', async () => {
+        setReducedMotion(true);
+        const { container, rerender } = renderReader({
+            dialogue: [
+                {
+                    characterId: 'narrator',
+                    dialogue: '（訊息）好！媽在家等你！',
+                },
+                {
+                    characterId: 'narrator',
+                    dialogue: '（點頭，精靈語）我們需要食物和水。',
+                },
+            ],
+            dialogueIndex: 0,
+            isInitialMount: false,
+        });
+        await vi.runAllTimersAsync();
+        expect(container.querySelector('.dialogue-text')).toHaveTextContent(
+            '（訊息）好！媽在家等你！'
+        );
+
+        await rerender({ dialogueIndex: 1 });
+        expect(container.querySelector('.dialogue-text')).toHaveTextContent(
+            '（點頭，精靈語）我們需要食物和水。'
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        expect(screen.getByRole('dialog')).toHaveTextContent(
+            '（訊息）好！媽在家等你！'
+        );
+    });
+
     it('hides the direction on the second-language line', async () => {
         setReducedMotion(true);
         renderReader({

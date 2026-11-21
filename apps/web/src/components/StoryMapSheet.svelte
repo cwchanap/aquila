@@ -515,10 +515,10 @@
           {:else if selection.kind === 'decision'}
             {@const d = selection.decision}
             <div class="min-w-0 lg:max-w-[220px]">
-              <h3 class="truncate text-xs font-bold uppercase tracking-wide text-amber-700">{sm.decision} · {statText(sm.options, d.options.length)}</h3>
+              <h3 class="truncate text-xs font-bold uppercase tracking-wide text-amber-700">{sm.decisionNode.replace('{decision}', sm.decision).replace('{options}', statText(sm.options, d.options.length))}</h3>
               {#if choices[d.choiceId]?.prompt}<p class="line-clamp-2 text-sm font-semibold leading-snug">{choices[d.choiceId].prompt}</p>{/if}
             </div>
-            <ul class="hidden min-w-0 flex-wrap gap-1 overflow-hidden lg:flex lg:max-w-[220px]">
+            <ul class="hidden min-w-0 gap-1 overflow-hidden lg:grid lg:max-w-[220px] lg:grid-cols-2">
               {#each d.options as option (option.id)}
                 {@const status = option.child.kind === 'unknown' ? 'unread' : option.child.status}
                 {@const label = status === 'route' ? sm.yourRoute : status === 'explored' ? sm.explored : sm.unreadLabel}
@@ -580,6 +580,7 @@
                 <path
                   d={edge.d}
                   fill="none"
+                  data-edge-id={edge.id}
                   data-edge-kind={edge.kind}
                   data-edge-status={status}
                   stroke={status === 'route'

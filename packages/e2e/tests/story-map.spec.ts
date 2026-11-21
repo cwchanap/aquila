@@ -202,7 +202,9 @@ function localizedStoryMapText(locale: Locale) {
         decisionNodeName: storyMap.decisionNode
             .replace('{decision}', storyMap.decision)
             .replace('{options}', options),
-        decisionHeading: `${storyMap.decision} · ${options}`,
+        decisionHeading: storyMap.decisionNode
+            .replace('{decision}', storyMap.decision)
+            .replace('{options}', options),
         endingHeading: storyMap.endingLabel.replace('{label}', reader.actFinal),
     };
 }
@@ -334,6 +336,50 @@ async function expectActionInsideCard(
     );
 }
 
+/** The border-box check alone cannot see the keyboard focus indicator: an
+ * outline drawn outside the box is still clipped by the card's
+ * overflow-hidden. Focus the action like a keyboard user and verify the
+ * indicator's extent stays inside the card's visible region. */
+async function expectFocusInsideCard(
+    action: Locator,
+    card: Locator
+): Promise<void> {
+    // A real keypress puts the document in keyboard modality, so the
+    // programmatic focus below also matches :focus-visible and reports the
+    // indicator metrics a keyboard user would get.
+    await action.page().keyboard.press('Tab');
+    await action.evaluate(element => {
+        (element as unknown as { focus(): void }).focus();
+    });
+    await expect(action).toBeFocused();
+    const extent = await action.evaluate(element => {
+        const style = getComputedStyle(element);
+        const box = element.getBoundingClientRect();
+        const grow =
+            (parseFloat(style.outlineOffset) || 0) +
+            (parseFloat(style.outlineWidth) || 0);
+        return {
+            left: box.left - grow,
+            top: box.top - grow,
+            right: box.right + grow,
+            bottom: box.bottom + grow,
+        };
+    });
+    const usable = await card.evaluate(element => {
+        const rect = element.getBoundingClientRect();
+        return {
+            left: rect.left + element.clientLeft,
+            top: rect.top + element.clientTop,
+            right: rect.left + element.clientLeft + element.clientWidth,
+            bottom: rect.top + element.clientTop + element.clientHeight,
+        };
+    });
+    expect(extent.left).toBeGreaterThanOrEqual(usable.left - 1);
+    expect(extent.top).toBeGreaterThanOrEqual(usable.top - 1);
+    expect(extent.right).toBeLessThanOrEqual(usable.right + 1);
+    expect(extent.bottom).toBeLessThanOrEqual(usable.bottom + 1);
+}
+
 /** Activates a map node without letting Playwright scroll the surface first,
  * so the comparison isolates the selection itself. */
 async function activateMapNode(node: Locator): Promise<void> {
@@ -367,6 +413,9 @@ async function expectDecisionChip(
             exact: true,
         })
     ).toHaveCount(1);
+    // Exactly one descendant carries the status-and-option announcement: the
+    // visible label and dot stay aria-hidden, the sr-only span does not.
+    await expect(chip.locator('span:not([aria-hidden="true"])')).toHaveCount(1);
     await expect(chip.locator('[aria-hidden="true"]')).toHaveCount(2);
     const dot = await chip
         .locator('span')
@@ -582,10 +631,6 @@ test.describe('Story map', () => {
                 .boundingBox();
             expect(prompt?.width).toBeGreaterThanOrEqual(190);
         }
-        await testInfo.attach('story-map-decision-follow-up.png', {
-            body: await page.screenshot(),
-            contentType: 'image/png',
-        });
         await jump.click({ position: { x: 24, y: 22 } });
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(CHOICE_SCENE_ID));
@@ -1088,6 +1133,9 @@ test.describe('Story map', () => {
             await expect(decision).toHaveCount(1);
             await activateMapNode(decision);
             await expect(card.locator('li')).toHaveCount(optionCount);
+            // getByRole resolves through the accessibility tree, so an
+            // aria-hidden chip list fails here instead of passing silently.
+            await expect(card.getByRole('listitem')).toHaveCount(optionCount);
             await expectDecisionChip(card.locator('li').nth(0), {
                 status: 'Explored',
                 label: taken.label,
@@ -1151,6 +1199,11 @@ test.describe('Story map', () => {
         expect(positions.child.y).toBe(positions.scene.y);
         // sceneWidth 44 + sceneGap 16: the child is the next node on the row.
         expect(positions.child.x - positions.scene.x).toBe(60);
+        // Adjacent nodes must also be joined: a 'link' edge carries the linear
+        // connection that a collapsed one-option choice implies.
+        await expect(
+            surface.locator(`path[data-edge-id="${variant.sceneId}->${next}"]`)
+        ).toHaveCount(1);
     });
 
     test('jumps to a run start with an unclipped action at the critical desktop width', async ({
@@ -1172,6 +1225,7 @@ test.describe('Story map', () => {
         expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
         const jump = card.getByRole('button', { name: 'Jump to Act 4' });
         await expectActionInsideCard(jump, card);
+        await expectFocusInsideCard(jump, card);
         await jump.click();
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(child));
@@ -1224,6 +1278,7 @@ test.describe('Story map', () => {
         expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
         const jump = card.getByRole('button', { name: 'Jump to Act 2' });
         await expectActionInsideCard(jump, card);
+        await expectFocusInsideCard(jump, card);
         await jump.click();
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl('act2'));
@@ -1238,7 +1293,9 @@ test.describe('Story map', () => {
         await page.setViewportSize({ width: 1024, height: 768 });
         const four = TRAIN.four;
         const endingScene = four.choice.options[0].nextScene;
-        await seedTrainMap(page, [four.sceneId, endingScene], endingScene, [
+        // Starting on the ending itself would make the post-Jump URL assertions
+        // pass without any navigation.
+        await seedTrainMap(page, [four.sceneId, endingScene], four.sceneId, [
             endingScene,
         ]);
         const sheet = await openStoryMap(page, testInfo.project.name);
@@ -1252,6 +1309,7 @@ test.describe('Story map', () => {
         expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
         const jump = card.getByRole('button', { name: JUMP_TO_ENDING });
         await expectActionInsideCard(jump, card);
+        await expectFocusInsideCard(jump, card);
         await jump.click();
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(endingScene));
@@ -1330,7 +1388,7 @@ test.describe('Story map', () => {
             expect(close).not.toBeNull();
             if (title && close) {
                 expect(currentCard.y).toBeGreaterThanOrEqual(
-                    Math.min(title.y + title.height, close.y + close.height) - 1
+                    Math.max(title.y + title.height, close.y + close.height) - 1
                 );
             }
 
@@ -1440,6 +1498,14 @@ test.describe('Story map', () => {
             await surface.evaluate(element => {
                 element.scrollTo({ left: 0, top: 0 });
             });
+            const range = await surface.evaluate(element => ({
+                left: element.scrollWidth - element.clientWidth,
+                top: element.scrollHeight - element.clientHeight,
+            }));
+            // The fixture must leave room on both axes or the per-axis input
+            // checks below cannot prove user scrolling.
+            expect(range.left).toBeGreaterThan(0);
+            expect(range.top).toBeGreaterThan(0);
             const before = await surface.evaluate(element => ({
                 left: element.scrollLeft,
                 top: element.scrollTop,
@@ -1448,25 +1514,38 @@ test.describe('Story map', () => {
                 await page.keyboard.press('ArrowRight');
             } else {
                 await surface.hover();
-                await page.mouse.wheel(200, 160);
+                await page.mouse.wheel(200, 0);
             }
             // Browser input is asynchronous: poll for the real browser scroll
             // instead of reading once, and never substitute a programmatic
             // scroll for input that the browser refused.
             await expect
                 .poll(
-                    async () => {
-                        const after = await surface.evaluate(element => ({
-                            left: element.scrollLeft,
-                            top: element.scrollTop,
-                        }));
-                        return (
-                            after.left > before.left || after.top > before.top
-                        );
-                    },
+                    async () =>
+                        (await surface.evaluate(
+                            element => element.scrollLeft
+                        )) > before.left,
                     {
                         message:
-                            'map surface scrolls from user input before Locate',
+                            'map surface scrolls horizontally from user input',
+                        timeout: 5_000,
+                    }
+                )
+                .toBe(true);
+            if (testInfo.project.name === 'mobile-safari') {
+                await page.keyboard.press('ArrowDown');
+            } else {
+                await surface.hover();
+                await page.mouse.wheel(0, 160);
+            }
+            await expect
+                .poll(
+                    async () =>
+                        (await surface.evaluate(element => element.scrollTop)) >
+                        before.top,
+                    {
+                        message:
+                            'map surface scrolls vertically from user input',
                         timeout: 5_000,
                     }
                 )

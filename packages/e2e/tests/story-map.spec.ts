@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { getTranslations, type Locale } from '@aquila/stories/translations';
 import { elevatorGameFlow } from '../../stories/src/generated/elevatorGame/flow';
 import { scene as act3Dialogue } from '../../stories/src/generated/elevatorGame/scenes/en/act3';
 import { scene as endingDialogue } from '../../stories/src/generated/elevatorGame/scenes/en/b1a_act4';
@@ -62,11 +63,6 @@ const CURRENT_CAPTION = 'You are here';
 const LOCATE_CURRENT = 'Locate current position';
 
 const t = {
-    openSettings: 'Open reader settings',
-    settingsTitle: 'Reader settings',
-    storyMap: 'Story map',
-    openMenu: 'Open menu',
-    openStoryMap: 'Open story map',
     closeStoryMap: 'Close story map',
     unread: 'Not read yet',
 } as const;
@@ -78,17 +74,25 @@ const sceneUrl = (sceneId: string) => new RegExp(`[?&]scene=${sceneId}(?:&|$)`);
 
 const isDesktop = (projectName: string) => projectName === 'chromium';
 
-async function openStoryMap(page: Page, projectName: string): Promise<Locator> {
+async function openStoryMap(
+    page: Page,
+    projectName: string,
+    locale: Locale = 'en'
+): Promise<Locator> {
+    const reader = getTranslations(locale).reader;
+    const storyMap = reader.storyMap;
     if (isDesktop(projectName)) {
-        await page.getByLabel(t.openSettings).click();
-        const settings = page.getByRole('dialog', { name: t.settingsTitle });
+        await page.getByLabel(reader.openSettings).click();
+        const settings = page.getByRole('dialog', {
+            name: reader.settingsTitle,
+        });
         await expect(settings).toBeVisible();
-        await settings.getByRole('button', { name: t.storyMap }).click();
+        await settings.getByRole('button', { name: storyMap.title }).click();
     } else {
-        await page.getByLabel(t.openMenu).click();
-        await page.getByLabel(t.openStoryMap).click();
+        await page.getByLabel(reader.openMenu).click();
+        await page.getByLabel(storyMap.open).click();
     }
-    const sheet = page.getByRole('dialog', { name: t.storyMap });
+    const sheet = page.getByRole('dialog', { name: storyMap.title });
     await expect(sheet).toBeVisible();
     return sheet;
 }
@@ -133,7 +137,8 @@ async function seedTrainMap(
     page: Page,
     sceneIds: string[],
     currentSceneId: string,
-    endings: string[] = []
+    endings: string[] = [],
+    locale: Locale = 'en'
 ): Promise<void> {
     await new MobileReaderPage(page).seedVisitedScenes(
         TRAIN_STORY_ID,
@@ -142,12 +147,29 @@ async function seedTrainMap(
         endings
     );
     await page.goto(
-        `/en/reader?story=${TRAIN_STORY_ID}&scene=${currentSceneId}&dialogue=1`,
+        `/${locale}/reader?story=${TRAIN_STORY_ID}&scene=${currentSceneId}&dialogue=1`,
         { waitUntil: 'domcontentloaded' }
     );
     await expect(page.getByTestId('reader-ready')).toBeVisible({
         timeout: 15_000,
     });
+}
+
+/** Localized labels for the bounded zh/ja coverage: the map node and the
+ * status-card heading format the four-option decision slightly differently in
+ * Japanese, and the ending is the actFinal scene of the train fixture. */
+function localizedStoryMapText(locale: Locale) {
+    const reader = getTranslations(locale).reader;
+    const storyMap = reader.storyMap;
+    const options = storyMap.options.other.replace('{n}', '4');
+    return {
+        storyMap,
+        decisionNodeName: storyMap.decisionNode
+            .replace('{decision}', storyMap.decision)
+            .replace('{options}', options),
+        decisionHeading: `${storyMap.decision} · ${options}`,
+        endingHeading: storyMap.endingLabel.replace('{label}', reader.actFinal),
+    };
 }
 
 interface SurfaceState {
@@ -861,6 +883,10 @@ test.describe('Story map', () => {
         expect(narrow.svgWidth).toBe(wide.svgWidth);
         expect(narrow.svgHeight).toBe(wide.svgHeight);
         expect(narrowCard.width).toBeLessThanOrEqual(1024 * 0.65 + 1);
+        await testInfo.attach('story-map-desktop-decision.png', {
+            body: await page.screenshot(),
+            contentType: 'image/png',
+        });
     });
 
     test('keeps the map surface fixed across current, decision, unread and completed ending', async ({
@@ -1236,6 +1262,15 @@ test.describe('Story map', () => {
                 card.getByRole('button', { name: JUMP_TO_DECISION }),
                 card
             );
+            if (
+                size.width === 390 &&
+                testInfo.project.name === 'mobile-chrome'
+            ) {
+                await testInfo.attach('story-map-phone-decision.png', {
+                    body: await page.screenshot(),
+                    contentType: 'image/png',
+                });
+            }
 
             // Run, scene and completed-ending cards share the same bounded
             // seed but exercise the widest actions left on a phone card.
@@ -1346,8 +1381,166 @@ test.describe('Story map', () => {
                 surface,
                 'caption inside the phone surface after Locate current'
             );
+            if (
+                size.width === 390 &&
+                testInfo.project.name === 'mobile-chrome'
+            ) {
+                await testInfo.attach('story-map-phone-current.png', {
+                    body: await page.screenshot(),
+                    contentType: 'image/png',
+                });
+            }
             await page.keyboard.press('Escape');
             await expect(sheet).not.toBeVisible();
         }
     });
+
+    for (const locale of ['zh', 'ja'] as const) {
+        test(`keeps the ${locale} current, four-option decision and ending cards unclipped at 1024px`, async ({
+            page,
+        }, testInfo) => {
+            test.skip(
+                !isDesktop(testInfo.project.name),
+                'Desktop locale layout'
+            );
+            test.setTimeout(90_000);
+            await page.emulateMedia({ reducedMotion: 'reduce' });
+            const {
+                storyMap,
+                decisionNodeName,
+                decisionHeading,
+                endingHeading,
+            } = localizedStoryMapText(locale);
+            const variant = TRAIN.four;
+            const [taken, second] = variant.choice.options;
+            await seedTrainMap(
+                page,
+                [variant.sceneId, taken.nextScene, second.nextScene],
+                variant.sceneId,
+                [taken.nextScene],
+                locale
+            );
+            await page.setViewportSize({ width: 1024, height: 768 });
+            const sheet = await openStoryMap(
+                page,
+                testInfo.project.name,
+                locale
+            );
+            const card = sheet.getByTestId('story-map-status-card');
+            const surface = page.getByTestId('story-map-surface');
+
+            await expect(
+                card.getByText(storyMap.youAreHere, { exact: true })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+            await expectNoHorizontalOverflow(page);
+
+            await activateMapNode(
+                surface.getByRole('button', {
+                    name: new RegExp(`^${decisionNodeName}`),
+                })
+            );
+            await expect(
+                card.getByRole('heading', {
+                    name: decisionHeading,
+                    exact: true,
+                })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+            const decisionJump = card.getByRole('button', {
+                name: storyMap.jumpToDecision,
+            });
+            await expect(decisionJump).toBeVisible();
+            await expectActionInsideCard(decisionJump, card);
+
+            await expect(surface.locator('[data-kind="ending"]')).toHaveCount(
+                1
+            );
+            await activateMapNode(surface.locator('[data-kind="ending"]'));
+            await expect(
+                card.getByRole('heading', {
+                    name: endingHeading,
+                    exact: true,
+                })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+            const endingJump = card.getByRole('button', {
+                name: storyMap.jumpToEnding,
+            });
+            await expect(endingJump).toBeVisible();
+            await expectActionInsideCard(endingJump, card);
+        });
+
+        test(`keeps the ${locale} current, four-option decision and ending cards unclipped at 390px`, async ({
+            page,
+        }, testInfo) => {
+            test.skip(isDesktop(testInfo.project.name), 'Phone locale layout');
+            test.setTimeout(90_000);
+            await page.emulateMedia({ reducedMotion: 'reduce' });
+            const {
+                storyMap,
+                decisionNodeName,
+                decisionHeading,
+                endingHeading,
+            } = localizedStoryMapText(locale);
+            const variant = TRAIN.four;
+            const [taken, second] = variant.choice.options;
+            await seedTrainMap(
+                page,
+                [variant.sceneId, taken.nextScene, second.nextScene],
+                variant.sceneId,
+                [taken.nextScene],
+                locale
+            );
+            await page.setViewportSize({ width: 390, height: 844 });
+            const sheet = await openStoryMap(
+                page,
+                testInfo.project.name,
+                locale
+            );
+            const card = sheet.getByTestId('story-map-status-card');
+            const surface = page.getByTestId('story-map-surface');
+
+            await expect(
+                card.getByText(storyMap.youAreHere, { exact: true })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectNoHorizontalOverflow(page);
+
+            await activateMapNode(
+                surface.getByRole('button', {
+                    name: new RegExp(`^${decisionNodeName}`),
+                })
+            );
+            await expect(
+                card.getByRole('heading', {
+                    name: decisionHeading,
+                    exact: true,
+                })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            const decisionJump = card.getByRole('button', {
+                name: storyMap.jumpToDecision,
+            });
+            await expect(decisionJump).toBeVisible();
+            await expectActionInsideCard(decisionJump, card);
+
+            await expect(surface.locator('[data-kind="ending"]')).toHaveCount(
+                1
+            );
+            await activateMapNode(surface.locator('[data-kind="ending"]'));
+            await expect(
+                card.getByRole('heading', {
+                    name: endingHeading,
+                    exact: true,
+                })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            const endingJump = card.getByRole('button', {
+                name: storyMap.jumpToEnding,
+            });
+            await expect(endingJump).toBeVisible();
+            await expectActionInsideCard(endingJump, card);
+        });
+    }
 });

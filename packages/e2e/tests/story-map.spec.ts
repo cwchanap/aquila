@@ -1288,6 +1288,8 @@ test.describe('Story map', () => {
         await page.emulateMedia({ reducedMotion: 'reduce' });
         const variant = TRAIN.four;
         const [taken, second] = variant.choice.options;
+        // WebKit keeps the old document hit-test height when enlarged after navigation.
+        await page.setViewportSize({ width: 390, height: 844 });
         await seedTrainMap(
             page,
             [variant.sceneId, taken.nextScene, second.nextScene],
@@ -1469,7 +1471,7 @@ test.describe('Story map', () => {
                     }
                 )
                 .toBe(true);
-            await locate.click();
+            await locate.tap();
             await expect(
                 card.getByText(CURRENT_CAPTION, { exact: true })
             ).toBeVisible();

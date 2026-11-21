@@ -1,6 +1,6 @@
-import enTranslations from './en.json';
-import zhTranslations from './zh.json';
-import jaTranslations from './ja.json';
+import enTranslations from './en.json' with { type: 'json' };
+import zhTranslations from './zh.json' with { type: 'json' };
+import jaTranslations from './ja.json' with { type: 'json' };
 
 export const translations = {
     en: enTranslations,

@@ -194,11 +194,125 @@ describe('StoryMapSheet', () => {
         const chip = within(card).getByText(
             'Your route — Left path'
         ).parentElement!;
-        expect(within(chip).getByText('Left path')).toHaveAttribute(
-            'aria-hidden',
-            'true'
+        const visibleLabel = within(chip).getByText('Left path');
+        expect(visibleLabel).toHaveAttribute('aria-hidden', 'true');
+        expect(visibleLabel).toHaveAttribute('title', 'Left path');
+        expect(chip.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+        expect(chip.querySelectorAll('[aria-hidden="true"]')).toHaveLength(2);
+        expect(within(card).getByText('Which fork?')).toHaveAttribute(
+            'title',
+            'Which fork?'
         );
-        expect(chip.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+        const list = card.querySelector('ul')!;
+        expect(list.classList.contains('max-lg:sr-only')).toBe(true);
+        expect(list.classList.contains('hidden')).toBe(false);
+
+        const routeDot = chip.firstElementChild as HTMLElement;
+        const exploredDot = within(card).getByText('Explored — Middle path')
+            .parentElement!.firstElementChild as HTMLElement;
+        const unreadDot = within(card).getByText('Not read yet — Right path')
+            .parentElement!.firstElementChild as HTMLElement;
+        expect(routeDot.className).toContain('bg-blue-500');
+        expect(exploredDot.className).toContain('border-teal-500');
+        expect(exploredDot.className).toContain('bg-white');
+        expect(unreadDot.className).toContain('border-dotted');
+    });
+
+    it('caps visible decision chips at 3 plus a +K summary chip when more than 4 options exist', async () => {
+        const fiveFlow = {
+            start: 'act1',
+            nodes: [
+                {
+                    kind: 'scene',
+                    id: 'act1',
+                    sceneId: 'act1',
+                    next: 'choice:c5',
+                },
+                {
+                    kind: 'choice',
+                    id: 'choice:c5',
+                    choiceId: 'c5',
+                    nextByOption: {
+                        o1: 'b1_act2',
+                        o2: 'b2_act2',
+                        o3: 'b3_act2',
+                        o4: 'b4_act2',
+                        o5: 'b5_act2',
+                    },
+                },
+                {
+                    kind: 'scene',
+                    id: 'b1_act2',
+                    sceneId: 'b1_act2',
+                    next: null,
+                },
+                {
+                    kind: 'scene',
+                    id: 'b2_act2',
+                    sceneId: 'b2_act2',
+                    next: null,
+                },
+                {
+                    kind: 'scene',
+                    id: 'b3_act2',
+                    sceneId: 'b3_act2',
+                    next: null,
+                },
+                {
+                    kind: 'scene',
+                    id: 'b4_act2',
+                    sceneId: 'b4_act2',
+                    next: null,
+                },
+                {
+                    kind: 'scene',
+                    id: 'b5_act2',
+                    sceneId: 'b5_act2',
+                    next: null,
+                },
+            ],
+        } as unknown as StoryFlowConfig;
+        const fiveChoices: ChoiceMap = {
+            c5: {
+                prompt: 'Five doors?',
+                options: [
+                    { id: 'o1', nextScene: 'b1_act2', label: 'Door 1' },
+                    { id: 'o2', nextScene: 'b2_act2', label: 'Door 2' },
+                    { id: 'o3', nextScene: 'b3_act2', label: 'Door 3' },
+                    { id: 'o4', nextScene: 'b4_act2', label: 'Door 4' },
+                    { id: 'o5', nextScene: 'b5_act2', label: 'Door 5' },
+                ],
+            },
+        };
+        const fiveProgress = progress(['act1', 'b1_act2', 'b4_act2']);
+        render(StoryMapSheet, {
+            props: baseProps({
+                flow: fiveFlow,
+                choices: fiveChoices,
+                progress: fiveProgress,
+                currentSceneId: 'b1_act2',
+                visibleSceneIds: visibleSceneIds(
+                    fiveFlow,
+                    fiveProgress,
+                    'b1_act2'
+                ),
+            }),
+        });
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Decision · 5 options' })
+        );
+        const card = statusCard();
+        expect(within(card).getAllByRole('listitem')).toHaveLength(4);
+        const overflowBadge = within(card).getByText('+2');
+        expect(overflowBadge).toHaveAttribute('aria-hidden', 'true');
+        expect(overflowBadge).toHaveAttribute('title', 'Door 4, Door 5');
+        expect(
+            within(card).getByText('Your route — Door 1')
+        ).toBeInTheDocument();
+        expect(within(card).getByText('Explored — Door 4')).toBeInTheDocument();
+        expect(
+            within(card).getByText('Not read yet — Door 5')
+        ).toBeInTheDocument();
     });
 
     it('renders nothing when closed', () => {
@@ -583,6 +697,7 @@ describe('StoryMapSheet', () => {
         ).toBeTruthy();
         expect(within(ending as HTMLElement).getByText('Ending')).toBeVisible();
         await fireEvent.click(ending as HTMLElement);
+        expect(statusCard()).toHaveAttribute('data-accent', 'route');
         expect(within(statusCard()).getByText('Ending Act 3')).toBeTruthy();
         await fireEvent.click(
             within(statusCard()).getByRole('button', {
@@ -590,6 +705,22 @@ describe('StoryMapSheet', () => {
             })
         );
         expect(onJump).toHaveBeenCalledWith('b1b_act3', 'start');
+    });
+
+    it('uses the explored accent when a completed ending is off the current route', async () => {
+        const { container } = render(StoryMapSheet, {
+            props: baseProps({
+                progress: progress(
+                    ['act1', 'act2', 'b1a_act3', 'b1b_act3'],
+                    ['b1b_act3']
+                ),
+                currentSceneId: 'b1a_act3',
+            }),
+        });
+        const ending = container.querySelector('[data-kind="ending"]');
+        expect(ending).not.toBeNull();
+        await fireEvent.click(ending as HTMLElement);
+        expect(statusCard()).toHaveAttribute('data-accent', 'explored');
     });
 
     it('keeps an uncompleted terminal behind a Not read yet marker', () => {
@@ -835,9 +966,17 @@ describe('StoryMapSheet', () => {
         matchSpy.mockRestore();
     });
 
-    it('keeps Tab cycling inside the sheet', async () => {
+    it('places the status card before the close button in DOM order and keeps Tab cycling', async () => {
         render(StoryMapSheet, { props: baseProps() });
         const dialog = screen.getByRole('dialog');
+        const card = statusCard();
+        const close = screen.getByRole('button', { name: 'Close story map' });
+        expect(
+            Boolean(
+                card.compareDocumentPosition(close) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+            )
+        ).toBe(true);
         const buttons = dialog.querySelectorAll('button');
         const last = buttons[buttons.length - 1] as HTMLElement;
         last.focus();

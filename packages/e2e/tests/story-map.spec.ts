@@ -190,19 +190,20 @@ async function seedTrainMap(
     });
 }
 
-/** Localized labels for the bounded zh/ja coverage: the map node and the
- * status-card heading format the four-option decision slightly differently in
- * Japanese, and the ending is the actFinal scene of the train fixture. */
+function escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Localized labels for the bounded zh/ja coverage: the map node prefixes the
+ * decision label before any branch context, and the ending is the actFinal
+ * scene of the train fixture. */
 function localizedStoryMapText(locale: Locale) {
     const reader = getTranslations(locale).reader;
     const storyMap = reader.storyMap;
     const options = storyMap.options.other.replace('{n}', '4');
     return {
         storyMap,
-        decisionNodeName: storyMap.decisionNode
-            .replace('{decision}', storyMap.decision)
-            .replace('{options}', options),
-        decisionHeading: storyMap.decisionNode
+        decisionLabel: storyMap.decisionNode
             .replace('{decision}', storyMap.decision)
             .replace('{options}', options),
         endingHeading: storyMap.endingLabel.replace('{label}', reader.actFinal),
@@ -446,13 +447,20 @@ async function expectDecisionChip(
                         : '',
                 background: style.backgroundColor,
                 borderStyle: style.borderStyle,
+                borderWidth: style.borderTopWidth,
             };
         });
     expect(dot.className).toContain(expected.dot);
     if (expected.dot === 'border-dotted') {
         expect(dot.borderStyle).toBe('dotted');
+        expect(dot.borderWidth).toBe('2px');
         expect(dot.background).toBe('rgba(0, 0, 0, 0)');
+    } else if (expected.dot === 'border-teal-500') {
+        expect(dot.borderStyle).toBe('solid');
+        expect(dot.borderWidth).toBe('2px');
+        expect(dot.background).toBe('rgb(255, 255, 255)');
     } else {
+        expect(dot.borderWidth).toBe('0px');
         expect(dot.background).not.toBe('rgba(0, 0, 0, 0)');
     }
 }
@@ -1075,7 +1083,7 @@ test.describe('Story map', () => {
         await expectDecisionChip(card.locator('li').nth(1), {
             status: 'Explored',
             label: second.label,
-            dot: 'bg-teal-500',
+            dot: 'border-teal-500',
         });
         for (const [index, option] of TRAIN.four.choice.options
             .slice(2)
@@ -1103,7 +1111,7 @@ test.describe('Story map', () => {
 
         await expect(surface.locator('[data-kind="ending"]')).toHaveCount(1);
         await activateMapNode(surface.locator('[data-kind="ending"]'));
-        await expect(card).toHaveAttribute('data-accent', 'explored');
+        await expect(card).toHaveAttribute('data-accent', 'route');
         await expect(
             card.getByRole('heading', { name: /^Ending / })
         ).toBeVisible();
@@ -1150,7 +1158,7 @@ test.describe('Story map', () => {
             await expectDecisionChip(card.locator('li').nth(0), {
                 status: 'Explored',
                 label: taken.label,
-                dot: 'bg-teal-500',
+                dot: 'border-teal-500',
             });
             for (const [index, option] of unread.entries()) {
                 await expectDecisionChip(card.locator('li').nth(index + 1), {
@@ -1414,10 +1422,27 @@ test.describe('Story map', () => {
             );
             const chips = card.locator('ul');
             await expect(chips).toHaveCount(1);
-            await expect(chips).toHaveCSS('display', 'none');
+            const chipMetrics = await chips.evaluate(element => {
+                const style = getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return {
+                    position: style.position,
+                    overflow: style.overflow,
+                    width: rect.width,
+                    height: rect.height,
+                };
+            });
+            expect(chipMetrics.position).toBe('absolute');
+            expect(chipMetrics.overflow).toBe('hidden');
+            expect(chipMetrics.width).toBeLessThanOrEqual(1);
+            expect(chipMetrics.height).toBeLessThanOrEqual(1);
+            await expect(card.getByRole('listitem')).toHaveCount(4);
             await expect(
-                card.getByText(taken.label, { exact: true })
-            ).toBeHidden();
+                card.getByText(`Explored — ${taken.label}`, { exact: true })
+            ).toHaveCount(1);
+            await expect(
+                card.getByText(`Explored — ${second.label}`, { exact: true })
+            ).toHaveCount(1);
             expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
             await expectActionInsideCard(
                 card.getByRole('button', { name: JUMP_TO_DECISION }),
@@ -1594,12 +1619,8 @@ test.describe('Story map', () => {
             );
             test.setTimeout(90_000);
             await page.emulateMedia({ reducedMotion: 'reduce' });
-            const {
-                storyMap,
-                decisionNodeName,
-                decisionHeading,
-                endingHeading,
-            } = localizedStoryMapText(locale);
+            const { storyMap, decisionLabel, endingHeading } =
+                localizedStoryMapText(locale);
             const variant = TRAIN.four;
             const [taken, second] = variant.choice.options;
             await seedTrainMap(
@@ -1626,18 +1647,18 @@ test.describe('Story map', () => {
 
             await activateMapNode(
                 surface.getByRole('button', {
-                    name: new RegExp(`^${decisionNodeName}`),
+                    name: new RegExp(`^${escapeRegExp(decisionLabel)}`),
                 })
             );
             await expect(
                 card.getByRole('heading', {
-                    name: decisionHeading,
+                    name: decisionLabel,
                     exact: true,
                 })
             ).toBeVisible();
             await expectHeadingUnclipped(
                 card.getByRole('heading', {
-                    name: decisionHeading,
+                    name: decisionLabel,
                     exact: true,
                 })
             );
@@ -1672,12 +1693,8 @@ test.describe('Story map', () => {
             test.skip(isDesktop(testInfo.project.name), 'Phone locale layout');
             test.setTimeout(90_000);
             await page.emulateMedia({ reducedMotion: 'reduce' });
-            const {
-                storyMap,
-                decisionNodeName,
-                decisionHeading,
-                endingHeading,
-            } = localizedStoryMapText(locale);
+            const { storyMap, decisionLabel, endingHeading } =
+                localizedStoryMapText(locale);
             const variant = TRAIN.four;
             const [taken, second] = variant.choice.options;
             await seedTrainMap(
@@ -1705,18 +1722,18 @@ test.describe('Story map', () => {
 
             await activateMapNode(
                 surface.getByRole('button', {
-                    name: new RegExp(`^${decisionNodeName}`),
+                    name: new RegExp(`^${escapeRegExp(decisionLabel)}`),
                 })
             );
             await expect(
                 card.getByRole('heading', {
-                    name: decisionHeading,
+                    name: decisionLabel,
                     exact: true,
                 })
             ).toBeVisible();
             await expectHeadingUnclipped(
                 card.getByRole('heading', {
-                    name: decisionHeading,
+                    name: decisionLabel,
                     exact: true,
                 })
             );
@@ -1747,12 +1764,12 @@ test.describe('Story map', () => {
             await page.setViewportSize({ width: 844, height: 390 });
             await activateMapNode(
                 surface.getByRole('button', {
-                    name: new RegExp(`^${decisionNodeName}`),
+                    name: new RegExp(`^${escapeRegExp(decisionLabel)}`),
                 })
             );
             await expectHeadingUnclipped(
                 card.getByRole('heading', {
-                    name: decisionHeading,
+                    name: decisionLabel,
                     exact: true,
                 })
             );

@@ -3875,8 +3875,8 @@ describe('ReaderShell furigana', () => {
             );
         }
 
-        function details(): HTMLElement {
-            return screen.getByTestId('story-map-details');
+        function statusCard(): HTMLElement {
+            return screen.getByTestId('story-map-status-card');
         }
 
         it('offers Story map in Settings only for branching stories', async () => {
@@ -4062,7 +4062,7 @@ describe('ReaderShell furigana', () => {
             const dialog = screen.getByRole('dialog', { name: 'Story map' });
             expect(dialog.querySelector('[data-kind="ending"]')).not.toBeNull();
             expect(
-                within(details()).getByLabelText('1 ending')
+                within(statusCard()).getByLabelText('1 ending')
             ).toBeInTheDocument();
         });
 
@@ -4083,7 +4083,7 @@ describe('ReaderShell furigana', () => {
                 screen.getByRole('button', { name: 'Decision · 2 options' })
             );
             await fireEvent.click(
-                within(details()).getByRole('button', {
+                within(statusCard()).getByRole('button', {
                     name: 'Jump to this decision',
                 })
             );

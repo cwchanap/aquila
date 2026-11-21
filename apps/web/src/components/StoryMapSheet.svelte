@@ -168,6 +168,7 @@
           sceneId: string;
           label: string;
           current: boolean;
+          status: 'route' | 'explored';
       }
     | {
           kind: 'decision';
@@ -176,6 +177,22 @@
       }
     | { kind: 'ending'; ending: StoryMapEnding }
     | { kind: 'unknown' };
+
+  const statusStyles = {
+    route: { edge: 'border-l-blue-500', chip: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
+    explored: { edge: 'border-l-teal-500', chip: 'bg-teal-100 text-teal-800', dot: 'bg-teal-500' },
+    unread: { edge: 'border-l-slate-400', chip: 'bg-slate-100 text-slate-600', dot: 'border-2 border-dotted border-slate-400' },
+    decision: { edge: 'border-l-amber-500' },
+  };
+
+  function accentKey(value: Selection): keyof typeof statusStyles {
+    if (value.kind === 'current') return 'route';
+    if (value.kind === 'run') return value.run.status;
+    if (value.kind === 'scene') return value.status;
+    if (value.kind === 'decision') return 'decision';
+    if (value.kind === 'ending') return 'explored';
+    return 'unread';
+  }
 
   function sceneLabel(sceneId: string, run: StoryMapRun | undefined): string {
     const raw = extractActName(sceneId);
@@ -201,6 +218,7 @@
         sceneId: id,
         label: sceneLabel(id, sceneRun),
         current: id === currentSceneId,
+        status: sceneRun.sceneIds.indexOf(id) < sceneRun.routeCount ? 'route' : 'explored',
       };
     }
     return { kind: 'current' };
@@ -432,17 +450,17 @@
     onclick={onClose}
   ></button>
   <div
-    class="pointer-events-none fixed inset-0 z-[96] flex items-center justify-center lg:p-8"
+    class="pointer-events-none fixed inset-0 z-[96] flex items-center justify-center"
   >
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="story-map-title"
       use:focusTrap={{ enabled: true, restoreFocus: restoreFocusTarget }}
-      class="pointer-events-auto flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-[#bae6fd] via-[#7dd3fc] to-[#60a5fa] lg:h-[85vh] lg:max-w-5xl lg:rounded-3xl lg:shadow-2xl lg:ring-1 lg:ring-white/50"
+      class="pointer-events-auto flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-[#bae6fd] via-[#7dd3fc] to-[#60a5fa] lg:h-[85vh] lg:w-[95vw] lg:max-w-none lg:rounded-3xl lg:shadow-2xl lg:ring-1 lg:ring-white/50"
     >
-      <div class="flex items-start justify-between gap-3 px-4 pt-4 sm:px-6">
-        <div class="min-w-0">
+      <div class="grid shrink-0 grid-cols-[minmax(0,1fr)_44px] items-start gap-3 px-4 pt-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto_44px] lg:items-center">
+        <div class="min-w-0 lg:mr-2">
           <p
             id="story-map-title"
             class="text-xs font-bold uppercase tracking-widest text-blue-700"
@@ -453,9 +471,70 @@
             {storyTitle}
           </h2>
         </div>
+        <div
+          data-testid="story-map-status-card"
+          aria-live="polite"
+          data-accent={accentKey(selection)}
+          class={cn('col-span-2 row-start-2 flex h-[92px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-l-[5px] bg-white/80 px-3 text-slate-800 shadow-sm lg:col-span-1 lg:row-start-1 lg:h-[84px] lg:max-w-[min(65vw,850px)]', statusStyles[accentKey(selection)].edge)}
+        >
+          {#if selection.kind === 'current'}
+            <div class="min-w-0">
+              <h3 class="text-xs font-bold uppercase tracking-wide text-blue-700">{sm.youAreHere}</h3>
+              <p class="truncate text-lg font-bold">{currentActLabel}</p>
+              {#if lineCount > 0}<p class="truncate text-xs text-slate-600">{lineProgressText}</p>{/if}
+            </div>
+            <ul class="ml-auto flex shrink-0 items-center gap-2 text-center text-slate-600 sm:gap-4">
+              {#each stats as stat (stat.caption)}
+                <li aria-label={statText(stat.label, stat.count)}>
+                  <strong aria-hidden="true" class="block text-base font-bold text-slate-800">{stat.count}</strong>
+                  <span aria-hidden="true" class="text-[10px] sm:text-xs">{stat.caption}</span>
+                </li>
+              {/each}
+            </ul>
+          {:else if selection.kind === 'run'}
+            {@const run = selection.run}
+            <div class="min-w-0">
+              <h3 class="truncate text-base font-bold">{run.label}</h3>
+              {#if run.current}<p class="text-xs font-semibold text-blue-700">{sm.currentPosition}</p>{/if}
+            </div>
+            <button type="button" class="ml-auto min-h-11 max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-3 text-sm font-semibold leading-tight text-white" onclick={() => onJump(run.entrySceneId, 'start')}>{sm.jumpTo.replace('{label}', run.label)}</button>
+          {:else if selection.kind === 'scene'}
+            <div class="min-w-0">
+              <h3 class="truncate text-base font-bold">{selection.label}</h3>
+              {#if selection.current}<p class="text-xs font-semibold text-blue-700">{sm.currentPosition}</p>{/if}
+            </div>
+            <button type="button" class="ml-auto min-h-11 max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-3 text-sm font-semibold leading-tight text-white" onclick={() => onJump(selection.sceneId, 'start')}>{sm.jumpTo.replace('{label}', selection.label)}</button>
+          {:else if selection.kind === 'decision'}
+            {@const d = selection.decision}
+            <div class="min-w-0">
+              <h3 class="truncate text-xs font-bold uppercase tracking-wide text-amber-700">{sm.decision} · {statText(sm.options, d.options.length)}</h3>
+              {#if choices[d.choiceId]?.prompt}<p class="line-clamp-2 text-sm font-semibold leading-snug">{choices[d.choiceId].prompt}</p>{/if}
+            </div>
+            <ul class="hidden min-w-0 flex-wrap gap-1 overflow-hidden lg:flex">
+              {#each d.options as option (option.id)}
+                {@const status = option.child.kind === 'unknown' ? 'unread' : option.child.status}
+                {@const label = status === 'route' ? sm.yourRoute : status === 'explored' ? sm.explored : sm.unreadLabel}
+                <li class={cn('flex min-w-0 items-center gap-1 rounded-full px-2 py-1 text-xs', statusStyles[status].chip)}>
+                  <span class={cn('h-2 w-2 shrink-0 rounded-full', statusStyles[status].dot)} aria-hidden="true"></span>
+                  <span aria-hidden="true" class="truncate">{option.label}</span>
+                  <span class="sr-only">{sm.withBranch.replace('{label}', label).replace('{branch}', option.label)}</span>
+                </li>
+              {/each}
+            </ul>
+            {#if selection.precedingSceneId}
+              {@const preceding = selection.precedingSceneId}
+              <button type="button" class="ml-auto min-h-11 max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-3 text-sm font-semibold leading-tight text-white" onclick={() => onJump(preceding, 'end')}>{sm.jumpToDecision}</button>
+            {/if}
+          {:else if selection.kind === 'ending'}
+            <h3 class="min-w-0 truncate text-base font-bold">{sm.endingLabel.replace('{label}', selection.ending.label)}</h3>
+            <button type="button" class="ml-auto min-h-11 max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-3 text-sm font-semibold leading-tight text-white" onclick={() => onJump(selection.ending.sceneId, 'start')}>{sm.jumpToEnding}</button>
+          {:else}
+            <p class="text-sm italic text-slate-500">{sm.unreadLabel}</p>
+          {/if}
+        </div>
         <button
           type="button"
-          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-md hover:bg-white"
+          class="col-start-2 row-start-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-md hover:bg-white lg:col-start-3"
           aria-label={sm.close}
           onclick={onClose}
         >
@@ -463,7 +542,7 @@
         </button>
       </div>
 
-      <div class="flex min-h-0 flex-1 flex-col gap-3 p-4 sm:p-6 lg:flex-row">
+      <div class="flex min-h-0 flex-1 flex-col p-4 sm:p-6">
         <div
           class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] bg-white/55 ring-1 ring-white/70 backdrop-blur-md"
         >
@@ -686,146 +765,6 @@
           </div>
         </div>
 
-        <aside
-          data-testid="story-map-details"
-          aria-live="polite"
-          class="flex max-h-[50%] w-full shrink-0 flex-col overflow-y-auto rounded-[20px] bg-white/92 p-5 text-slate-800 shadow-lg lg:max-h-none lg:w-60"
-        >
-          {#if selection.kind === 'current'}
-            <h3
-              class="text-xs font-bold uppercase tracking-widest text-blue-600"
-            >
-              {sm.youAreHere}
-            </h3>
-            <p class="mt-2 text-3xl font-bold">{currentActLabel}</p>
-            {#if lineCount > 0}
-              <p class="mt-1 text-sm text-slate-600">{lineProgressText}</p>
-            {/if}
-            <ul class="mt-4 grid grid-cols-3 gap-2 text-slate-600">
-              {#each stats as stat (stat.caption)}
-                <li aria-label={statText(stat.label, stat.count)} class="border-t border-slate-200 pt-2">
-                  <strong aria-hidden="true" class="block text-2xl font-bold text-slate-800">{stat.count}</strong>
-                  <span aria-hidden="true" class="text-xs">{stat.caption}</span>
-                </li>
-              {/each}
-            </ul>
-          {:else if selection.kind === 'run'}
-            {@const run = selection.run}
-            <h3 class="text-lg font-bold">{run.label}</h3>
-            {#if run.current}
-              <p
-                class="mt-1 text-xs font-semibold uppercase tracking-wide text-blue-700"
-              >
-                {sm.currentPosition}
-              </p>
-            {/if}
-            <div class="mt-3 flex flex-col gap-2">
-              <button
-                type="button"
-                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
-                onclick={() => onJump(run.entrySceneId, 'start')}
-              >
-                {sm.jumpTo.replace('{label}', run.label)}
-              </button>
-              {#if canFold(run)}
-                <button
-                  type="button"
-                  class="flex min-h-11 w-full items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50"
-                  onclick={() => toggleFold(run)}
-                >
-                  {(isExpanded(run) ? sm.collapseRun : sm.expandRun).replace(
-                    '{label}',
-                    run.label
-                  )}
-                </button>
-              {/if}
-            </div>
-          {:else if selection.kind === 'scene'}
-            <h3 class="text-lg font-bold">{selection.label}</h3>
-            {#if selection.current}
-              <p
-                class="mt-1 text-xs font-semibold uppercase tracking-wide text-blue-700"
-              >
-                {sm.currentPosition}
-              </p>
-            {/if}
-            <div class="mt-3">
-              <button
-                type="button"
-                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
-                onclick={() => onJump(selection.sceneId, 'start')}
-              >
-                {sm.jumpTo.replace('{label}', selection.label)}
-              </button>
-            </div>
-          {:else if selection.kind === 'decision'}
-            {@const d = selection.decision}
-            <h3 class="text-xs font-bold uppercase tracking-widest text-blue-600">{sm.decision}</h3>
-            {#if choices[d.choiceId]?.prompt}
-              <p class="mt-2 text-lg font-semibold leading-snug text-slate-700">
-                {choices[d.choiceId].prompt}
-              </p>
-            {/if}
-            <ul class="mt-4 space-y-3 text-sm">
-              {#each d.options as option (option.id)}
-                <li class="flex items-start gap-2">
-                  <span
-                    aria-hidden="true"
-                    class={cn(
-                      'mt-2 w-5 shrink-0',
-                      option.child.kind === 'unknown'
-                        ? 'border-t-[3px] border-dotted border-slate-400'
-                        : option.child.status === 'route'
-                          ? 'h-1 rounded-full bg-blue-500'
-                          : 'h-1 rounded-full bg-teal-500'
-                    )}
-                  ></span>
-                  <div class="min-w-0">
-                    <span class="block font-semibold">{option.label}</span>
-                    <span class="block text-xs text-slate-500">
-                      <span>{option.child.kind === 'unknown'
-                        ? sm.unreadLabel
-                        : option.child.status === 'route'
-                          ? sm.yourRoute
-                          : sm.explored}</span>
-                      {#if option.child.kind === 'run'}
-                        <span aria-hidden="true"> &middot; </span>
-                        <span>{option.child.label}</span>
-                      {/if}
-                    </span>
-                  </div>
-                </li>
-              {/each}
-            </ul>
-            {#if selection.precedingSceneId}
-              {@const preceding = selection.precedingSceneId}
-              <div class="sticky bottom-0 mt-auto bg-[#f4f9fc] pt-3 lg:static lg:bg-transparent lg:pt-4">
-                <button
-                  type="button"
-                  class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
-                  onclick={() => onJump(preceding, 'end')}
-                >
-                  {sm.jumpToDecision}
-                </button>
-              </div>
-            {/if}
-          {:else if selection.kind === 'ending'}
-            <h3 class="text-lg font-bold">
-              {sm.endingLabel.replace('{label}', selection.ending.label)}
-            </h3>
-            <div class="sticky bottom-0 mt-auto bg-[#f4f9fc] pt-3 lg:static lg:bg-transparent lg:pt-4">
-              <button
-                type="button"
-                class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-400 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:from-blue-600 hover:to-cyan-500"
-                onclick={() => onJump(selection.ending.sceneId, 'start')}
-              >
-                {sm.jumpToEnding}
-              </button>
-            </div>
-          {:else}
-            <p class="text-sm italic text-slate-500">{sm.unreadLabel}</p>
-          {/if}
-        </aside>
       </div>
     </div>
   </div>

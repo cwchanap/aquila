@@ -264,6 +264,14 @@ function expectCardFits(card: CardMetrics, height: number): void {
     expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth + 1);
 }
 
+async function expectHeadingUnclipped(heading: Locator): Promise<void> {
+    const size = await heading.evaluate(element => ({
+        scroll: element.scrollWidth,
+        client: element.clientWidth,
+    }));
+    expect(size.scroll).toBeLessThanOrEqual(size.client + 1);
+}
+
 async function expectActionInsideCard(
     action: Locator,
     card: Locator
@@ -274,6 +282,13 @@ async function expectActionInsideCard(
     expect(cardBox, 'status card is measurable').not.toBeNull();
     if (!actionBox || !cardBox) return;
     expect(actionBox.height).toBeGreaterThanOrEqual(44);
+    expect(actionBox.width).toBeGreaterThanOrEqual(44);
+    const overflow = await action.evaluate(element => ({
+        horizontal: element.scrollWidth - element.clientWidth,
+        vertical: element.scrollHeight - element.clientHeight,
+    }));
+    expect(overflow.horizontal).toBeLessThanOrEqual(1);
+    expect(overflow.vertical).toBeLessThanOrEqual(1);
     expect(actionBox.x).toBeGreaterThanOrEqual(cardBox.x - 1);
     expect(actionBox.y).toBeGreaterThanOrEqual(cardBox.y - 1);
     expect(actionBox.x + actionBox.width).toBeLessThanOrEqual(
@@ -492,6 +507,11 @@ test.describe('Story map', () => {
     test('keeps the unchosen route unread and jumps back to the choice prompt', async ({
         page,
     }, testInfo) => {
+        await page.setViewportSize(
+            isDesktop(testInfo.project.name)
+                ? { width: 1440, height: 900 }
+                : { width: 390, height: 844 }
+        );
         await readThroughChoice(page);
         const sheet = await openStoryMap(page, testInfo.project.name);
         const surface = page.getByTestId('story-map-surface');
@@ -507,6 +527,30 @@ test.describe('Story map', () => {
         await expect(statusCard.getByText(choice.prompt)).toBeVisible();
         const jump = statusCard.getByRole('button', { name: JUMP_TO_DECISION });
         await expect(jump).toBeVisible();
+        await expectHeadingUnclipped(
+            statusCard.getByRole('heading', { name: DECISION_NAME })
+        );
+        const cardMetrics = await readCardMetrics(statusCard);
+        expectCardFits(
+            cardMetrics,
+            isDesktop(testInfo.project.name)
+                ? DESKTOP_CARD_HEIGHT
+                : MOBILE_CARD_HEIGHT
+        );
+        await expectActionInsideCard(jump, statusCard);
+        if (isDesktop(testInfo.project.name)) {
+            expect(cardMetrics.width).toBeLessThanOrEqual(700);
+            await expectDesktopHeaderOrder(sheet);
+        } else {
+            const prompt = await statusCard
+                .getByText(choice.prompt)
+                .boundingBox();
+            expect(prompt?.width).toBeGreaterThanOrEqual(190);
+        }
+        await testInfo.attach('story-map-decision-follow-up.png', {
+            body: await page.screenshot(),
+            contentType: 'image/png',
+        });
         await jump.click({ position: { x: 24, y: 22 } });
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(CHOICE_SCENE_ID));
@@ -925,6 +969,13 @@ test.describe('Story map', () => {
         await expect(card).toHaveAttribute('data-accent', 'decision');
         await expect(card).toContainText(TRAIN.four.choice.prompt);
         await expect(card.locator('li')).toHaveCount(4);
+        const chipList = card.locator('ul');
+        const chipOverflow = await chipList.evaluate(element => ({
+            width: element.scrollWidth - element.clientWidth,
+            height: element.scrollHeight - element.clientHeight,
+        }));
+        expect(chipOverflow.width).toBeLessThanOrEqual(1);
+        expect(chipOverflow.height).toBeLessThanOrEqual(1);
         await expectDecisionChip(card.locator('li').nth(0), {
             status: 'Your route',
             label: first.label,
@@ -1251,6 +1302,9 @@ test.describe('Story map', () => {
             await expect(
                 card.getByRole('heading', { name: /Decision · 4 options/i })
             ).toBeVisible();
+            await expectHeadingUnclipped(
+                card.getByRole('heading', { name: /Decision · 4 options/i })
+            );
             const chips = card.locator('ul');
             await expect(chips).toHaveCount(1);
             await expect(chips).toHaveCSS('display', 'none');
@@ -1446,6 +1500,12 @@ test.describe('Story map', () => {
                     exact: true,
                 })
             ).toBeVisible();
+            await expectHeadingUnclipped(
+                card.getByRole('heading', {
+                    name: decisionHeading,
+                    exact: true,
+                })
+            );
             expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
             const decisionJump = card.getByRole('button', {
                 name: storyMap.jumpToDecision,
@@ -1518,6 +1578,12 @@ test.describe('Story map', () => {
                     exact: true,
                 })
             ).toBeVisible();
+            await expectHeadingUnclipped(
+                card.getByRole('heading', {
+                    name: decisionHeading,
+                    exact: true,
+                })
+            );
             expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
             const decisionJump = card.getByRole('button', {
                 name: storyMap.jumpToDecision,
@@ -1541,6 +1607,25 @@ test.describe('Story map', () => {
             });
             await expect(endingJump).toBeVisible();
             await expectActionInsideCard(endingJump, card);
+
+            await page.setViewportSize({ width: 844, height: 390 });
+            await activateMapNode(
+                surface.getByRole('button', {
+                    name: new RegExp(`^${decisionNodeName}`),
+                })
+            );
+            await expectHeadingUnclipped(
+                card.getByRole('heading', {
+                    name: decisionHeading,
+                    exact: true,
+                })
+            );
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectActionInsideCard(
+                card.getByRole('button', { name: storyMap.jumpToDecision }),
+                card
+            );
+            await expectNoHorizontalOverflow(page);
         });
     }
 });

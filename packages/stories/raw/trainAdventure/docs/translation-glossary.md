@@ -219,7 +219,7 @@ Used before a character is named. All are registered as aliases in
 | 服務人員 | Hotel Staff | 係員 | `clerk` |
 | 小男孩 / 小女孩 | Little Boy / Little Girl | 男の子 / 女の子 | `child` |
 | 母親 / 父親 (the unnamed family in the 3b → 4a 終幕) | Mother / Father | 母親 / 父親 | `parent` |
-| 老闆 (a diner in Shanghai) | Owner | 店主 | `inn_keeper` |
+| 老闆 (a diner in Shanghai) | Owner | 食堂の店主 (not bare 店主, which is `clerk`) | `inn_keeper` |
 | 語音信箱 | Voicemail | 留守番電話 | `message` |
 
 ## Places and terms
@@ -602,7 +602,7 @@ Used before a character is named. All are registered as aliases in
   これは……！ / ここは、まさか…… and so on). The repeated openings of the 4a
   終幕 needed none. Run `voice:check` before the PR when adding more of 4b.
 - **Aliases added in `characters.md`**: 母親 / 父親 (`parent`), 男の子 /
-  女の子 (`child`), 店主 (`inn_keeper`), 留守番電話 (`message`) and
+  女の子 (`child`), 食堂の店主 (`inn_keeper`), 留守番電話 (`message`) and
   リー・ミンユエン (`li_mingyuan`).
 - **zh slips kept and reported, not fixed**: 1a → 2b → 3b act 26 has a stray
   bold mark in `**小林**太太`; 4b act 29 writes "CLINE" for LINE; 4b act 30

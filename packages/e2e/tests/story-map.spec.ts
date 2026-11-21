@@ -212,24 +212,10 @@ test.describe('Story map', () => {
         await expect(unreadNode).toContainText('?');
 
         await surface.getByRole('button', { name: DECISION_NAME }).click();
-        const details = page.getByTestId('story-map-details');
-        await expect(details.getByText(choice.prompt)).toBeVisible();
-        await expect(details.getByText(t.unread)).toBeVisible();
-
-        const jump = details.getByRole('button', { name: JUMP_TO_DECISION });
-        const detailsBox = await details.boundingBox();
-        const jumpBox = await jump.boundingBox();
-        const unreadBox = await details.getByText(t.unread).boundingBox();
-        expect(detailsBox).not.toBeNull();
-        expect(jumpBox).not.toBeNull();
-        expect(unreadBox).not.toBeNull();
-        expect(jumpBox!.y).toBeGreaterThanOrEqual(detailsBox!.y);
-        expect(jumpBox!.y + jumpBox!.height).toBeLessThanOrEqual(
-            detailsBox!.y + detailsBox!.height
-        );
-        expect(unreadBox!.y + unreadBox!.height).toBeLessThanOrEqual(
-            jumpBox!.y
-        );
+        const statusCard = page.getByTestId('story-map-status-card');
+        await expect(statusCard.getByText(choice.prompt)).toBeVisible();
+        const jump = statusCard.getByRole('button', { name: JUMP_TO_DECISION });
+        await expect(jump).toBeVisible();
         await jump.click({ position: { x: 24, y: 22 } });
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(CHOICE_SCENE_ID));

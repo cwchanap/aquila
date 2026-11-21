@@ -953,14 +953,14 @@ test.describe('Story map', () => {
         await expectSurfaceUnchanged();
     });
 
-    test('shows 2, 3 and 4 option decisions with status-dot chips', async ({
-        page,
-    }, testInfo) => {
-        test.skip(!isDesktop(testInfo.project.name), 'Desktop chips');
-        test.setTimeout(90_000);
-        await page.emulateMedia({ reducedMotion: 'reduce' });
-        for (const key of ['two', 'three', 'four'] as const) {
-            const variant = TRAIN[key];
+    for (const key of ['two', 'three', 'four'] as const) {
+        const variant = TRAIN[key];
+        const optionCount = variant.choice.options.length;
+        test(`shows ${optionCount} option decisions with status-dot chips`, async ({
+            page,
+        }, testInfo) => {
+            test.skip(!isDesktop(testInfo.project.name), 'Desktop chips');
+            await page.emulateMedia({ reducedMotion: 'reduce' });
             const [taken, ...unread] = variant.choice.options;
             await seedTrainMap(
                 page,
@@ -970,13 +970,12 @@ test.describe('Story map', () => {
             const sheet = await openStoryMap(page, testInfo.project.name);
             const surface = page.getByTestId('story-map-surface');
             const card = sheet.getByTestId('story-map-status-card');
-            const count = variant.choice.options.length;
             const decision = surface.getByRole('button', {
-                name: new RegExp(`^Decision · ${count} option`),
+                name: new RegExp(`^Decision · ${optionCount} option`),
             });
             await expect(decision).toHaveCount(1);
             await activateMapNode(decision);
-            await expect(card.locator('li')).toHaveCount(count);
+            await expect(card.locator('li')).toHaveCount(optionCount);
             await expectDecisionChip(card.locator('li').nth(0), {
                 status: 'Explored',
                 label: taken.label,
@@ -990,10 +989,8 @@ test.describe('Story map', () => {
                 });
             }
             expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
-            await page.keyboard.press('Escape');
-            await expect(sheet).not.toBeVisible();
-        }
-    });
+        });
+    }
 
     test('keeps a one-option choice a linear map link, not a decision card', async ({
         page,
@@ -1044,41 +1041,57 @@ test.describe('Story map', () => {
         expect(positions.child.x - positions.scene.x).toBe(60);
     });
 
-    test('jumps to run, scene and completed ending starts', async ({
+    test('jumps to a run start with an unclipped action at the critical desktop width', async ({
         page,
     }, testInfo) => {
         test.skip(!isDesktop(testInfo.project.name), 'Desktop jump semantics');
-        test.setTimeout(90_000);
         await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.setViewportSize({ width: 1024, height: 768 });
         const two = TRAIN.two;
-        const twoChild = two.choice.options[0].nextScene;
-        await seedTrainMap(page, [two.sceneId, twoChild], two.sceneId);
-        let sheet = await openStoryMap(page, testInfo.project.name);
-        let surface = page.getByTestId('story-map-surface');
+        const child = two.choice.options[0].nextScene;
+        await seedTrainMap(page, [two.sceneId, child], two.sceneId);
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const surface = page.getByTestId('story-map-surface');
         const card = sheet.getByTestId('story-map-status-card');
         await surface.getByRole('button', { name: /^Act 4/ }).click();
         await expect(
             card.getByRole('heading', { name: 'Act 4', exact: true })
         ).toBeVisible();
-        await card.getByRole('button', { name: 'Jump to Act 4' }).click();
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+        const jump = card.getByRole('button', { name: 'Jump to Act 4' });
+        await expectActionInsideCard(jump, card);
+        await jump.click();
         await expect(sheet).not.toBeVisible();
-        await expect(page).toHaveURL(sceneUrl(twoChild));
+        await expect(page).toHaveURL(sceneUrl(child));
         await expect(page).toHaveURL(/[?&]dialogue=1(?:&|$)/);
         await expect(page.locator(SETTINGS_TRIGGER)).toBeFocused();
+    });
 
+    test('folds a run and jumps to a scene start with an unclipped action at the critical desktop width', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop jump semantics');
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.setViewportSize({ width: 1024, height: 768 });
         const four = TRAIN.four;
         const endingScene = four.choice.options[0].nextScene;
         await seedTrainMap(page, [four.sceneId, endingScene], endingScene, [
             endingScene,
         ]);
-        sheet = await openStoryMap(page, testInfo.project.name);
-        surface = page.getByTestId('story-map-surface');
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const surface = page.getByTestId('story-map-surface');
+        const card = sheet.getByTestId('story-map-status-card');
         await surface
             .getByRole('button', { name: 'Expand Acts 1–3', exact: true })
             .click();
         await expect(
-            surface.getByRole('button', { name: 'Collapse Acts 1–3' })
+            card.getByRole('heading', { name: 'Acts 1–3', exact: true })
         ).toBeVisible();
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+        await expectActionInsideCard(
+            card.getByRole('button', { name: 'Jump to Acts 1–3' }),
+            card
+        );
         await surface
             .getByRole('button', { name: 'Collapse Acts 1–3' })
             .click();
@@ -1088,6 +1101,7 @@ test.describe('Story map', () => {
         });
         await expect(folded).toBeVisible();
         await expect(folded).toBeFocused();
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
         await folded.click();
         await surface
             .getByRole('button', { name: 'Act 2', exact: true })
@@ -1095,22 +1109,38 @@ test.describe('Story map', () => {
         await expect(
             card.getByRole('heading', { name: 'Act 2', exact: true })
         ).toBeVisible();
-        await card.getByRole('button', { name: 'Jump to Act 2' }).click();
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+        const jump = card.getByRole('button', { name: 'Jump to Act 2' });
+        await expectActionInsideCard(jump, card);
+        await jump.click();
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl('act2'));
         await expect(page).toHaveURL(/[?&]dialogue=1(?:&|$)/);
+    });
 
+    test('jumps to a completed ending start with an unclipped action at the critical desktop width', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop jump semantics');
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.setViewportSize({ width: 1024, height: 768 });
+        const four = TRAIN.four;
+        const endingScene = four.choice.options[0].nextScene;
         await seedTrainMap(page, [four.sceneId, endingScene], endingScene, [
             endingScene,
         ]);
-        sheet = await openStoryMap(page, testInfo.project.name);
-        surface = page.getByTestId('story-map-surface');
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const surface = page.getByTestId('story-map-surface');
+        const card = sheet.getByTestId('story-map-status-card');
         await expect(surface.locator('[data-kind="ending"]')).toHaveCount(1);
         await surface.locator('[data-kind="ending"]').click();
         await expect(
             card.getByRole('heading', { name: /^Ending / })
         ).toBeVisible();
-        await card.getByRole('button', { name: JUMP_TO_ENDING }).click();
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+        const jump = card.getByRole('button', { name: JUMP_TO_ENDING });
+        await expectActionInsideCard(jump, card);
+        await jump.click();
         await expect(sheet).not.toBeVisible();
         await expect(page).toHaveURL(sceneUrl(endingScene));
         await expect(page).toHaveURL(/[?&]dialogue=1(?:&|$)/);
@@ -1207,6 +1237,54 @@ test.describe('Story map', () => {
                 card
             );
 
+            // Run, scene and completed-ending cards share the same bounded
+            // seed but exercise the widest actions left on a phone card.
+            await surface
+                .getByRole('button', { name: 'Expand Acts 1–3', exact: true })
+                .click();
+            await expect(
+                card.getByRole('heading', { name: 'Acts 1–3', exact: true })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectActionInsideCard(
+                card.getByRole('button', { name: 'Jump to Acts 1–3' }),
+                card
+            );
+            await surface
+                .getByRole('button', { name: 'Collapse Acts 1–3' })
+                .click();
+            await expect(
+                card.getByRole('heading', { name: 'Acts 1–3', exact: true })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectActionInsideCard(
+                card.getByRole('button', { name: 'Jump to Acts 1–3' }),
+                card
+            );
+            await surface
+                .getByRole('button', { name: 'Expand Acts 1–3', exact: true })
+                .click();
+            await surface
+                .getByRole('button', { name: 'Act 2', exact: true })
+                .click();
+            await expect(
+                card.getByRole('heading', { name: 'Act 2', exact: true })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectActionInsideCard(
+                card.getByRole('button', { name: 'Jump to Act 2' }),
+                card
+            );
+            await surface.locator('[data-kind="ending"]').click();
+            await expect(
+                card.getByRole('heading', { name: /^Ending / })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectActionInsideCard(
+                card.getByRole('button', { name: JUMP_TO_ENDING }),
+                card
+            );
+
             await expect(
                 sheet.getByRole('group', { name: 'Story map legend' })
             ).toBeVisible();
@@ -1214,12 +1292,49 @@ test.describe('Story map', () => {
                 name: LOCATE_CURRENT,
             });
             await expect(locate).toBeVisible();
+            const overflow = await surface.evaluate(element => {
+                const browser = globalThis as unknown as {
+                    getComputedStyle(target: unknown): {
+                        overflowX: string;
+                        overflowY: string;
+                    };
+                };
+                const style = browser.getComputedStyle(element);
+                return {
+                    overflowX: style.overflowX,
+                    overflowY: style.overflowY,
+                };
+            });
+            expect(overflow.overflowX).toMatch(/^(auto|scroll)$/);
+            expect(overflow.overflowY).toMatch(/^(auto|scroll)$/);
+            await surface.evaluate(element => {
+                element.scrollTo({ left: 0, top: 0 });
+            });
+            const before = await surface.evaluate(element => ({
+                left: element.scrollLeft,
+                top: element.scrollTop,
+            }));
+            await surface.hover();
+            await page.mouse.wheel(200, 160);
+            let after = await surface.evaluate(element => ({
+                left: element.scrollLeft,
+                top: element.scrollTop,
+            }));
+            if (after.left === before.left && after.top === before.top) {
+                // Mobile WebKit ignores wheel input in emulation; scrollable
+                // overflow above plus this movement still proves the surface
+                // moves instead of being clipped by overflow: hidden.
+                await surface.evaluate(element => {
+                    element.scrollBy(200, 160);
+                });
+                after = await surface.evaluate(element => ({
+                    left: element.scrollLeft,
+                    top: element.scrollTop,
+                }));
+            }
             expect(
-                await surface.evaluate(
-                    element =>
-                        element.scrollWidth > element.clientWidth ||
-                        element.scrollHeight > element.clientHeight
-                )
+                after.left > before.left || after.top > before.top,
+                'map surface scrolls before Locate'
             ).toBe(true);
             await locate.click();
             await expect(

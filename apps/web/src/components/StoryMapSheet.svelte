@@ -533,7 +533,7 @@
               <h3 class="truncate text-xs font-bold uppercase tracking-wide text-amber-700">{sm.decisionNode.replace('{decision}', sm.decision).replace('{options}', statText(sm.options, d.options.length))}</h3>
               {#if prompt}<p title={prompt} class="line-clamp-2 text-sm font-semibold leading-snug">{prompt}</p>{/if}
             </div>
-            <ul class="max-lg:sr-only min-w-0 gap-1 overflow-hidden lg:grid lg:grid-cols-2">
+            <ul role="list" class="max-lg:sr-only min-w-0 gap-1 overflow-hidden lg:grid lg:grid-cols-2">
               {#each visibleOptions as option (option.id)}
                 {@const status = optionStatus(option)}
                 <li class={cn('flex min-w-0 items-center gap-1 rounded-full px-2 py-1 text-xs', statusStyles[status].chip)}>

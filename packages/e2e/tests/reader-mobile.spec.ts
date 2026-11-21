@@ -18,7 +18,25 @@ test.describe('Mobile reader', () => {
         });
         const reveal = page.getByRole('button', { name: 'Reveal text' });
         await expect(reveal).toBeVisible();
-        await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 1);
+        // Freeze the fake clock at its current time. pauseAt() rejects a
+        // target behind the running clock ("Cannot fast-forward to the
+        // past"), and a Date.now() read through a second protocol round-trip
+        // is already stale once the clock's next real-time sync lands —
+        // mobile-safari lost that race in CI. Pausing inside one evaluate is
+        // atomic: Date.now() is the faked clock time and a zero delta only
+        // fires already-due timers.
+        await page.evaluate(async () => {
+            const { controller } = (
+                globalThis as {
+                    __pwClock: {
+                        controller: {
+                            pauseAt: (time: number) => Promise<unknown>;
+                        };
+                    };
+                }
+            ).__pwClock;
+            await controller.pauseAt(Date.now());
+        });
         const passage = page.locator(
             '.mobile-reader p.pointer-events-auto .passage-visible'
         );

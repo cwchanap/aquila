@@ -277,7 +277,7 @@
 ## 43. 李明遠（Li Mingyuan）
 
 - **ID**: `li_mingyuan`
-- **Aliases**: Li Mingyuan
+- **Aliases**: Li Mingyuan, リー・ミンユエン
 
 ## 44. 林婉如（Lin Wanru）
 
@@ -502,7 +502,7 @@
 ## 88. 訊息（Message）
 
 - **ID**: `message`
-- **Aliases**: Message, メッセージ, メモ
+- **Aliases**: Message, メッセージ, メモ, 留守番電話
 
 ## 89. 圖書館員（Librarian）
 
@@ -527,12 +527,12 @@
 ## 93. 老闆娘（Inn Keeper）
 
 - **ID**: `inn_keeper`
-- **Aliases**: Innkeeper, 女将
+- **Aliases**: Innkeeper, 女将, 店主
 
 ## 94. 小孩（Child）
 
 - **ID**: `child`
-- **Aliases**: Child, 子ども
+- **Aliases**: Child, 子ども, 男の子, 女の子
 
 ## 95. 眾人（Crowd）
 
@@ -542,7 +542,7 @@
 ## 96. 家長（Parent）
 
 - **ID**: `parent`
-- **Aliases**: Parent, 親
+- **Aliases**: Parent, 親, 母親, 父親
 
 ## 97. 男子（Man）
 

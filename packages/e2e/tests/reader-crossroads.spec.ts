@@ -1,13 +1,8 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { trainAdventureFlow } from '../../stories/src/generated/trainAdventure/flow';
-import { scene as act3Dialogue } from '../../stories/src/generated/trainAdventure/scenes/en/act3';
-import { scene as oneOptionDialogue } from '../../stories/src/generated/trainAdventure/scenes/b1a_b2a_act8';
-import { scene as threeOptionDialogue } from '../../stories/src/generated/trainAdventure/scenes/en/b1b_act8';
-import { scene as fourOptionDialogue } from '../../stories/src/generated/trainAdventure/scenes/b1a_b2b_b3b_b4b_b5a_act70';
-import { trainAdventureChoiceTextEn } from '../../stories/src/stories/trainAdventure/choices.en';
-import { buildChoiceMap } from '../../stories/src/stories/choice-utils';
+import { expect, test, type Locator } from '@playwright/test';
+import { VARIANTS } from './support/train-adventure-choices';
 import {
     chooseRoute,
+    expectNoHorizontalOverflow,
     MobileReaderPage,
     openCrossroads,
     selectCrossroadsRoute,
@@ -17,60 +12,6 @@ const STORY_ID = 'train_adventure';
 const PROGRESS_KEY = 'aquila:storyProgress:v1';
 const TOOLBAR_STYLE = 'astro-dev-toolbar { display: none !important; }';
 
-const flow = trainAdventureFlow;
-const choices = buildChoiceMap(flow, trainAdventureChoiceTextEn);
-
-function choiceAfter(sceneId: string) {
-    const node = flow.nodes.find(
-        (entry): entry is Extract<typeof entry, { kind: 'scene' }> =>
-            entry.kind === 'scene' && entry.sceneId === sceneId
-    );
-    const ref = node?.next ?? '';
-    const choice = ref.startsWith('choice:')
-        ? choices[ref.slice('choice:'.length)]
-        : undefined;
-    if (!choice?.options.length) {
-        throw new Error(
-            `reader-crossroads.spec.ts: "${sceneId}" must end at a choice`
-        );
-    }
-    return choice;
-}
-
-const VARIANTS = [
-    {
-        key: 'one-option',
-        sceneId: 'b1a_b2a_act8',
-        lastLine: oneOptionDialogue.length,
-    },
-    { key: 'two-option', sceneId: 'act3', lastLine: act3Dialogue.length },
-    {
-        key: 'three-option',
-        sceneId: 'b1b_act8',
-        lastLine: threeOptionDialogue.length,
-    },
-    {
-        key: 'four-option',
-        sceneId: 'b1a_b2b_b3b_b4b_b5a_act70',
-        lastLine: fourOptionDialogue.length,
-    },
-].map(variant => ({ ...variant, choice: choiceAfter(variant.sceneId) }));
-
-const EXPECTED_COUNTS: Record<string, number> = {
-    'one-option': 1,
-    'two-option': 2,
-    'three-option': 3,
-    'four-option': 4,
-};
-for (const variant of VARIANTS) {
-    if (variant.choice.options.length !== EXPECTED_COUNTS[variant.key]) {
-        throw new Error(
-            `reader-crossroads.spec.ts: "${variant.sceneId}" should offer ` +
-                `${EXPECTED_COUNTS[variant.key]} options`
-        );
-    }
-}
-
 const isDesktop = (projectName: string) => projectName === 'chromium';
 
 const lastLineUrl = (sceneId: string, lastLine: number, locale = 'en') =>
@@ -79,23 +20,6 @@ const lastLineUrl = (sceneId: string, lastLine: number, locale = 'en') =>
 const sceneUrl = (sceneId: string) => new RegExp(`[?&]scene=${sceneId}(?:&|$)`);
 
 const dialogueUrl = (line: number) => new RegExp(`[?&]dialogue=${line}(?:&|$)`);
-
-async function expectNoHorizontalOverflow(page: Page): Promise<void> {
-    const { scrollWidth, innerWidth } = await page.evaluate(() => {
-        const browser = globalThis as unknown as {
-            document: { documentElement: { scrollWidth: number } };
-            innerWidth: number;
-        };
-        return {
-            scrollWidth: browser.document.documentElement.scrollWidth,
-            innerWidth: browser.innerWidth,
-        };
-    });
-    expect(
-        scrollWidth,
-        'page must not overflow horizontally'
-    ).toBeLessThanOrEqual(innerWidth + 1);
-}
 
 async function expectSafeAreaRule(back: Locator): Promise<void> {
     type StyleRule = {
@@ -555,13 +479,12 @@ test.describe('Crossroads choice overlay', () => {
         await page.addInitScript(() => {
             localStorage.setItem('aquila:reader-second-language:v1', 'en');
         });
-        const sceneId = 'b1b_act8';
-        await page.goto(
-            lastLineUrl(sceneId, threeOptionDialogue.length, 'ja'),
-            {
-                waitUntil: 'domcontentloaded',
-            }
-        );
+        const variant = VARIANTS.find(entry => entry.key === 'three-option');
+        expect(variant, 'three-option variant exists').toBeDefined();
+        if (!variant) return;
+        await page.goto(lastLineUrl(variant.sceneId, variant.lastLine, 'ja'), {
+            waitUntil: 'domcontentloaded',
+        });
         await page.addStyleTag({ content: TOOLBAR_STYLE });
         await page.setViewportSize({ width: 390, height: 480 });
         await expect(page.getByTestId('reader-ready')).toBeVisible({

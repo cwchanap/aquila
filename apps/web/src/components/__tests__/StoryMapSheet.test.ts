@@ -158,8 +158,8 @@ function baseProps(overrides: Record<string, unknown> = {}) {
     };
 }
 
-function details() {
-    return screen.getByTestId('story-map-details');
+function statusCard() {
+    return screen.getByTestId('story-map-status-card');
 }
 
 function surface() {
@@ -171,6 +171,36 @@ afterEach(() => {
 });
 
 describe('StoryMapSheet', () => {
+    it('announces each decision branch and its status once in the live status card', async () => {
+        render(StoryMapSheet, {
+            props: baseProps({
+                progress: progress(['act1', 'act2', 'b1a_act3', 'b1b_act3']),
+            }),
+        });
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Decision · 3 options' })
+        );
+        const card = screen.getByTestId('story-map-status-card');
+        expect(card).toHaveAttribute('aria-live', 'polite');
+        expect(
+            within(card).getByText('Your route — Left path')
+        ).toBeInTheDocument();
+        expect(
+            within(card).getByText('Explored — Middle path')
+        ).toBeInTheDocument();
+        expect(
+            within(card).getByText('Not read yet — Right path')
+        ).toBeInTheDocument();
+        const chip = within(card).getByText(
+            'Your route — Left path'
+        ).parentElement!;
+        expect(within(chip).getByText('Left path')).toHaveAttribute(
+            'aria-hidden',
+            'true'
+        );
+        expect(chip.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+    });
+
     it('renders nothing when closed', () => {
         render(StoryMapSheet, { props: baseProps({ open: false }) });
         expect(screen.queryByRole('dialog')).toBeNull();
@@ -191,15 +221,15 @@ describe('StoryMapSheet', () => {
 
     it('shows the current act, line and discovered stats by default', () => {
         render(StoryMapSheet, { props: baseProps() });
-        expect(within(details()).getByText('You are here')).toBeTruthy();
-        expect(within(details()).getByText('Act 3')).toBeTruthy();
-        expect(within(details()).getByText('Line 3 of 5')).toBeTruthy();
-        expect(within(details()).getByLabelText('3 acts')).toBeTruthy();
-        expect(within(details()).getByLabelText('1 decision')).toBeTruthy();
-        expect(within(details()).getByLabelText('0 endings')).toBeTruthy();
-        expect(within(details()).getByText('Acts')).toBeTruthy();
-        expect(within(details()).getByText('Decisions')).toBeTruthy();
-        expect(within(details()).getByText('Endings')).toBeTruthy();
+        expect(within(statusCard()).getByText('You are here')).toBeTruthy();
+        expect(within(statusCard()).getByText('Act 3')).toBeTruthy();
+        expect(within(statusCard()).getByText('Line 3 of 5')).toBeTruthy();
+        expect(within(statusCard()).getByLabelText('3 acts')).toBeTruthy();
+        expect(within(statusCard()).getByLabelText('1 decision')).toBeTruthy();
+        expect(within(statusCard()).getByLabelText('0 endings')).toBeTruthy();
+        expect(within(statusCard()).getByText('Acts')).toBeTruthy();
+        expect(within(statusCard()).getByText('Decisions')).toBeTruthy();
+        expect(within(statusCard()).getByText('Endings')).toBeTruthy();
     });
 
     it('marks the current node and moves focus inside the dialog', () => {
@@ -260,12 +290,42 @@ describe('StoryMapSheet', () => {
             })
         );
         await fireEvent.click(
-            within(details()).getByRole('button', { name: 'Jump to Act 3' })
+            within(statusCard()).getByRole('button', { name: 'Jump to Act 3' })
         );
         expect(onJump).toHaveBeenCalledWith('b1a_act3', 'start');
     });
 
-    it('unfolds a collapsed run when selected and folds it back from details', async () => {
+    it('uses each scene status rather than its run status for the card accent', async () => {
+        render(StoryMapSheet, {
+            props: baseProps({
+                currentSceneId: 'act1',
+                progress: progress(['act1', 'act2']),
+            }),
+        });
+        await fireEvent.click(
+            within(surface()).getByRole('button', {
+                name: 'Current position: Act 1',
+            })
+        );
+        expect(statusCard()).toHaveAttribute('data-accent', 'route');
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Act 2' })
+        );
+        expect(statusCard()).toHaveAttribute('data-accent', 'explored');
+    });
+
+    it('uses the route accent for a non-current scene on the active route', async () => {
+        render(StoryMapSheet, { props: baseProps() });
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
+        );
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Act 1' })
+        );
+        expect(statusCard()).toHaveAttribute('data-accent', 'route');
+    });
+
+    it('unfolds a collapsed run and offers a jump to its start', async () => {
         const onJump = vi.fn();
         render(StoryMapSheet, { props: baseProps({ onJump }) });
         await fireEvent.click(
@@ -273,30 +333,13 @@ describe('StoryMapSheet', () => {
         );
         expect(screen.getByRole('button', { name: 'Act 1' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Act 2' })).toBeTruthy();
-        expect(within(details()).getByText('Acts 1–2')).toBeTruthy();
+        expect(within(statusCard()).getByText('Acts 1–2')).toBeTruthy();
         await fireEvent.click(
-            within(details()).getByRole('button', {
+            within(statusCard()).getByRole('button', {
                 name: 'Jump to Acts 1–2',
             })
         );
         expect(onJump).toHaveBeenCalledWith('act1', 'start');
-        await fireEvent.click(
-            within(details()).getByRole('button', {
-                name: 'Collapse Acts 1–2',
-            })
-        );
-        expect(
-            within(surface()).queryByRole('button', { name: 'Act 2' })
-        ).toBeNull();
-        expect(
-            within(details()).getByRole('button', { name: 'Expand Acts 1–2' })
-        ).toBeTruthy();
-        await fireEvent.click(
-            within(details()).getByRole('button', { name: 'Expand Acts 1–2' })
-        );
-        expect(
-            within(surface()).getByRole('button', { name: 'Act 2' })
-        ).toBeVisible();
     });
 
     it('folds an expanded run from its visible map label and keeps focus on the run', async () => {
@@ -343,7 +386,7 @@ describe('StoryMapSheet', () => {
             within(surface()).getByRole('button', { name: 'Act 1' })
         );
         await fireEvent.click(
-            within(details()).getByRole('button', { name: 'Jump to Act 1' })
+            within(statusCard()).getByRole('button', { name: 'Jump to Act 1' })
         );
         expect(onJump).toHaveBeenCalledWith('act1', 'start');
     });
@@ -380,15 +423,21 @@ describe('StoryMapSheet', () => {
         await fireEvent.click(
             screen.getByRole('button', { name: 'Decision · 3 options' })
         );
-        expect(within(details()).getByText('Which fork?')).toBeTruthy();
-        expect(within(details()).getByText('Left path')).toBeTruthy();
-        expect(within(details()).getByText('Middle path')).toBeTruthy();
-        expect(within(details()).getByText('Right path')).toBeTruthy();
-        expect(within(details()).getAllByText('Not read yet')).toHaveLength(2);
-        expect(within(details()).getByText('Your route')).toBeTruthy();
-        expect(within(details()).getByText('Act 3')).toBeTruthy();
+        expect(within(statusCard()).getByText('Which fork?')).toBeTruthy();
+        expect(within(statusCard()).getByText('Left path')).toBeTruthy();
+        expect(within(statusCard()).getByText('Middle path')).toBeTruthy();
+        expect(within(statusCard()).getByText('Right path')).toBeTruthy();
+        expect(
+            within(statusCard()).getByText('Your route — Left path')
+        ).toBeTruthy();
+        expect(
+            within(statusCard()).getByText('Not read yet — Middle path')
+        ).toBeTruthy();
+        expect(
+            within(statusCard()).getByText('Not read yet — Right path')
+        ).toBeTruthy();
         await fireEvent.click(
-            within(details()).getByRole('button', {
+            within(statusCard()).getByRole('button', {
                 name: 'Jump to this decision',
             })
         );
@@ -404,10 +453,16 @@ describe('StoryMapSheet', () => {
         await fireEvent.click(
             screen.getByRole('button', { name: 'Decision · 3 options' })
         );
-        expect(within(details()).getByText('Your route')).toBeVisible();
-        expect(within(details()).getByText('Explored')).toBeVisible();
-        expect(within(details()).getByText('Not read yet')).toBeVisible();
-        expect(details().textContent).not.toContain('b1c_act3');
+        expect(
+            within(statusCard()).getByText('Your route — Left path')
+        ).toBeInTheDocument();
+        expect(
+            within(statusCard()).getByText('Explored — Middle path')
+        ).toBeInTheDocument();
+        expect(
+            within(statusCard()).getByText('Not read yet — Right path')
+        ).toBeInTheDocument();
+        expect(statusCard().textContent).not.toContain('b1c_act3');
     });
 
     it('shows decision options even when the localized prompt is empty', async () => {
@@ -424,11 +479,16 @@ describe('StoryMapSheet', () => {
                 name: 'Decision · 3 options',
             })
         );
-        expect(within(details()).queryByText('Which fork?')).toBeNull();
-        expect(within(details()).getByText('Left path')).toBeVisible();
-        expect(within(details()).getAllByText('Not read yet')).toHaveLength(2);
+        expect(within(statusCard()).queryByText('Which fork?')).toBeNull();
+        expect(within(statusCard()).getByText('Left path')).toBeVisible();
         expect(
-            within(details()).getByRole('button', {
+            within(statusCard()).getByText('Not read yet — Middle path')
+        ).toBeInTheDocument();
+        expect(
+            within(statusCard()).getByText('Not read yet — Right path')
+        ).toBeInTheDocument();
+        expect(
+            within(statusCard()).getByRole('button', {
                 name: 'Jump to this decision',
             })
         ).toBeVisible();
@@ -441,13 +501,13 @@ describe('StoryMapSheet', () => {
                 name: 'Decision · 3 options',
             })
         );
-        expect(within(details()).getByText('Which fork?')).toBeVisible();
+        expect(within(statusCard()).getByText('Which fork?')).toBeVisible();
         await rerender(
             baseProps({ currentSceneId: 'act1', progress: progress(['act1']) })
         );
-        expect(within(details()).getByText('You are here')).toBeVisible();
-        expect(within(details()).getByText('Act 1')).toBeVisible();
-        expect(within(details()).queryByText('Which fork?')).toBeNull();
+        expect(within(statusCard()).getByText('You are here')).toBeVisible();
+        expect(within(statusCard()).getByText('Act 1')).toBeVisible();
+        expect(within(statusCard()).queryByText('Which fork?')).toBeNull();
     });
 
     it('handles an unknown current scene without a map node or line count', async () => {
@@ -458,8 +518,8 @@ describe('StoryMapSheet', () => {
                 lineCount: 0,
             }),
         });
-        expect(within(details()).getByText('You are here')).toBeVisible();
-        expect(within(details()).queryByText(/Line \d/)).toBeNull();
+        expect(within(statusCard()).getByText('You are here')).toBeVisible();
+        expect(within(statusCard()).queryByText(/Line \d/)).toBeNull();
         expect(surface().querySelector('[data-current]')).toBeNull();
         await fireEvent.click(
             screen.getByRole('button', { name: 'Locate current position' })
@@ -498,9 +558,9 @@ describe('StoryMapSheet', () => {
             name: /^Not read yet/,
         })[0];
         await fireEvent.click(unknown);
-        expect(within(details()).getByText('Not read yet')).toBeTruthy();
+        expect(within(statusCard()).getByText('Not read yet')).toBeTruthy();
         expect(
-            within(details()).queryByRole('button', { name: /^Jump to/ })
+            within(statusCard()).queryByRole('button', { name: /^Jump to/ })
         ).toBeNull();
     });
 
@@ -523,9 +583,9 @@ describe('StoryMapSheet', () => {
         ).toBeTruthy();
         expect(within(ending as HTMLElement).getByText('Ending')).toBeVisible();
         await fireEvent.click(ending as HTMLElement);
-        expect(within(details()).getByText('Ending Act 3')).toBeTruthy();
+        expect(within(statusCard()).getByText('Ending Act 3')).toBeTruthy();
         await fireEvent.click(
-            within(details()).getByRole('button', {
+            within(statusCard()).getByRole('button', {
                 name: 'Read this ending again',
             })
         );
@@ -640,7 +700,7 @@ describe('StoryMapSheet', () => {
             screen.getByRole('button', { name: 'Locate current position' })
         );
         expect(scrollSpy).toHaveBeenCalled();
-        expect(within(details()).getByText('You are here')).toBeTruthy();
+        expect(within(statusCard()).getByText('You are here')).toBeTruthy();
     });
 
     it('scrolls upward or downward to include the current node and caption', async () => {
@@ -729,6 +789,31 @@ describe('StoryMapSheet', () => {
         opener.remove();
     });
 
+    it('keeps focus inside after reopening with a decision selected', async () => {
+        const props = baseProps();
+        const { rerender } = render(StoryMapSheet, { props });
+        await fireEvent.click(
+            within(surface()).getByRole('button', {
+                name: 'Decision · 3 options',
+            })
+        );
+        expect(
+            within(statusCard()).getByRole('button', {
+                name: 'Jump to this decision',
+            })
+        ).toBeVisible();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Close story map' })
+        );
+        expect(props.onClose).toHaveBeenCalledOnce();
+        await rerender({ ...props, open: false });
+        await rerender({ ...props, open: true });
+        expect(within(statusCard()).getByText('You are here')).toBeVisible();
+        expect(
+            screen.getByRole('dialog').contains(document.activeElement)
+        ).toBe(true);
+    });
+
     it('scrolls instantly when reduced motion is preferred', async () => {
         const scrollSpy = vi
             .spyOn(Element.prototype, 'scrollTo')
@@ -805,8 +890,8 @@ describe('StoryMapSheet', () => {
         expect(
             screen.getByRole('button', { name: '展開 第 1–2 章' })
         ).toBeTruthy();
-        expect(within(details()).getByLabelText('3 章')).toBeTruthy();
-        expect(within(details()).getByText('第 3 / 5 行')).toBeTruthy();
+        expect(within(statusCard()).getByLabelText('3 章')).toBeTruthy();
+        expect(within(statusCard()).getByText('第 3 / 5 行')).toBeTruthy();
         expect(
             within(surface()).getAllByRole('button', { name: /^尚未閱讀/ })
                 .length

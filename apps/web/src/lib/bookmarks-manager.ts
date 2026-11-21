@@ -117,13 +117,15 @@ export class BookmarksManager {
         const generation = ++this.cloudGeneration;
         try {
             const status = await this.fetchCloudBookmarks(generation);
+            if (generation !== this.cloudGeneration) return;
             if (status === 'unauthorized') {
                 this.authState = 'signed-out';
                 this.cloudError = false;
-            } else if (generation === this.cloudGeneration) {
+            } else {
                 this.cloudLoaded = true;
                 this.cloudError = false;
             }
+            this.renderAll();
         } catch {
             // Keep cloudError true and retain the newly synced bookmark(s).
         }
@@ -178,9 +180,17 @@ export class BookmarksManager {
             sameType.find(
                 node => node.dataset.bookmarkId === target.bookmarkId
             ) ?? sameType[Math.min(target.cardIndex, sameType.length - 1)];
-        card?.querySelector<HTMLElement>(
+        const action = card?.querySelector<HTMLElement>(
             `[data-bookmark-action="${target.action}"]`
-        )?.focus({ preventScroll: true });
+        );
+        if (action) {
+            action.focus({ preventScroll: true });
+        } else {
+            // No card of this type remains (e.g. the last local bookmark was
+            // deleted): land on the region rather than the document body.
+            container.tabIndex = -1;
+            container.focus({ preventScroll: true });
+        }
     }
 
     private renderAll(fallbackFocus: CardFocusTarget | null = null): void {
@@ -536,8 +546,8 @@ export class BookmarksManager {
                     this.cloudBookmarks.unshift(data);
                     this.cloudGeneration++;
                 }
-                await this.refreshCloudAfterError();
                 this.renderAll();
+                void this.refreshCloudAfterError();
             } else {
                 await showAlert(this.t.bookmarks.syncFailed);
             }
@@ -586,10 +596,10 @@ export class BookmarksManager {
         this.localBookmarksList = this.localBookmarksList.filter(b =>
             failedIds.includes(b.id)
         );
-        if (synced > 0) {
-            await this.refreshCloudAfterError();
-        }
         this.renderAll();
+        if (synced > 0) {
+            void this.refreshCloudAfterError();
+        }
 
         if (synced === total) {
             await showAlert(this.t.bookmarks.syncAllSuccess);
@@ -657,6 +667,7 @@ export class BookmarksManager {
                 );
                 this.cloudGeneration++;
                 this.renderAll(focusTarget);
+                void this.refreshCloudAfterError();
             } else {
                 await showAlert(this.t.bookmarks.deleteFailed);
             }

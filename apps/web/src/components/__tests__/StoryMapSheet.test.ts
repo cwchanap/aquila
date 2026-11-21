@@ -314,6 +314,17 @@ describe('StoryMapSheet', () => {
         expect(statusCard()).toHaveAttribute('data-accent', 'explored');
     });
 
+    it('uses the route accent for a non-current scene on the active route', async () => {
+        render(StoryMapSheet, { props: baseProps() });
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Expand Acts 1–2' })
+        );
+        await fireEvent.click(
+            within(surface()).getByRole('button', { name: 'Act 1' })
+        );
+        expect(statusCard()).toHaveAttribute('data-accent', 'route');
+    });
+
     it('unfolds a collapsed run and offers a jump to its start', async () => {
         const onJump = vi.fn();
         render(StoryMapSheet, { props: baseProps({ onJump }) });
@@ -776,6 +787,31 @@ describe('StoryMapSheet', () => {
         unmount();
         expect(document.activeElement).toBe(opener);
         opener.remove();
+    });
+
+    it('keeps focus inside after reopening with a decision selected', async () => {
+        const props = baseProps();
+        const { rerender } = render(StoryMapSheet, { props });
+        await fireEvent.click(
+            within(surface()).getByRole('button', {
+                name: 'Decision · 3 options',
+            })
+        );
+        expect(
+            within(statusCard()).getByRole('button', {
+                name: 'Jump to this decision',
+            })
+        ).toBeVisible();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Close story map' })
+        );
+        expect(props.onClose).toHaveBeenCalledOnce();
+        await rerender({ ...props, open: false });
+        await rerender({ ...props, open: true });
+        expect(within(statusCard()).getByText('You are here')).toBeVisible();
+        expect(
+            screen.getByRole('dialog').contains(document.activeElement)
+        ).toBe(true);
     });
 
     it('scrolls instantly when reduced motion is preferred', async () => {

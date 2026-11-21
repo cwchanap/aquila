@@ -112,6 +112,41 @@ const JUMP_TO_ENDING = 'Read this ending again';
 const DESKTOP_CARD_HEIGHT = 84;
 const MOBILE_CARD_HEIGHT = 92;
 
+async function expectMobileCurrentLayout(card: Locator): Promise<void> {
+    const details = card.locator('h3').locator('..');
+    const act = details.locator('p').nth(0);
+    const line = details.locator('p').nth(1);
+    const stats = card.locator('ul li');
+    await expect(act).toBeVisible();
+    await expect(line).toBeVisible();
+    await expect(stats).toHaveCount(3);
+    const actBox = await act.boundingBox();
+    const lineBox = await line.boundingBox();
+    expect(actBox).not.toBeNull();
+    expect(lineBox).not.toBeNull();
+    if (!actBox || !lineBox)
+        throw new Error('Current position is not measurable');
+    expect(
+        Math.abs(actBox.y + actBox.height / 2 - lineBox.y - lineBox.height / 2)
+    ).toBeLessThanOrEqual(3);
+    let previousRight = -Infinity;
+    for (const stat of await stats.all()) {
+        await expect(stat).toBeVisible();
+        const count = await stat.locator('strong').boundingBox();
+        const label = await stat.locator('span').boundingBox();
+        expect(count).not.toBeNull();
+        expect(label).not.toBeNull();
+        if (!count || !label)
+            throw new Error('Current stats are not measurable');
+        expect(count.y).toBeGreaterThanOrEqual(actBox.y + actBox.height - 1);
+        expect(
+            Math.abs(count.y + count.height / 2 - label.y - label.height / 2)
+        ).toBeLessThanOrEqual(3);
+        expect(count.x).toBeGreaterThan(previousRight);
+        previousRight = label.x + label.width;
+    }
+}
+
 type TrainVariant = (typeof VARIANTS)[number];
 
 function trainVariant(key: string): TrainVariant {
@@ -1288,6 +1323,7 @@ test.describe('Story map', () => {
                 .boundingBox();
             const currentCard = await readCardMetrics(card);
             expectCardFits(currentCard, MOBILE_CARD_HEIGHT);
+            await expectMobileCurrentLayout(card);
             expect(title).not.toBeNull();
             expect(close).not.toBeNull();
             if (title && close) {
@@ -1396,6 +1432,9 @@ test.describe('Story map', () => {
             });
             expect(overflow.overflowX).toMatch(/^(auto|scroll)$/);
             expect(overflow.overflowY).toMatch(/^(auto|scroll)$/);
+            if (testInfo.project.name === 'mobile-safari') {
+                await surface.locator('[data-node-id]').first().focus();
+            }
             await surface.evaluate(element => {
                 element.scrollTo({ left: 0, top: 0 });
             });
@@ -1403,9 +1442,13 @@ test.describe('Story map', () => {
                 left: element.scrollLeft,
                 top: element.scrollTop,
             }));
-            await surface.hover();
-            await page.mouse.wheel(200, 160);
-            // Wheel input is asynchronous: poll for the real browser scroll
+            if (testInfo.project.name === 'mobile-safari') {
+                await page.keyboard.press('ArrowRight');
+            } else {
+                await surface.hover();
+                await page.mouse.wheel(200, 160);
+            }
+            // Browser input is asynchronous: poll for the real browser scroll
             // instead of reading once, and never substitute a programmatic
             // scroll for input that the browser refused.
             await expect
@@ -1421,7 +1464,7 @@ test.describe('Story map', () => {
                     },
                     {
                         message:
-                            'map surface scrolls from wheel input before Locate',
+                            'map surface scrolls from user input before Locate',
                         timeout: 5_000,
                     }
                 )
@@ -1565,6 +1608,7 @@ test.describe('Story map', () => {
                 card.getByText(storyMap.youAreHere, { exact: true })
             ).toBeVisible();
             expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectMobileCurrentLayout(card);
             await expectNoHorizontalOverflow(page);
 
             await activateMapNode(

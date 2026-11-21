@@ -1316,26 +1316,27 @@ test.describe('Story map', () => {
             }));
             await surface.hover();
             await page.mouse.wheel(200, 160);
-            let after = await surface.evaluate(element => ({
-                left: element.scrollLeft,
-                top: element.scrollTop,
-            }));
-            if (after.left === before.left && after.top === before.top) {
-                // Mobile WebKit ignores wheel input in emulation; scrollable
-                // overflow above plus this movement still proves the surface
-                // moves instead of being clipped by overflow: hidden.
-                await surface.evaluate(element => {
-                    element.scrollBy(200, 160);
-                });
-                after = await surface.evaluate(element => ({
-                    left: element.scrollLeft,
-                    top: element.scrollTop,
-                }));
-            }
-            expect(
-                after.left > before.left || after.top > before.top,
-                'map surface scrolls before Locate'
-            ).toBe(true);
+            // Wheel input is asynchronous: poll for the real browser scroll
+            // instead of reading once, and never substitute a programmatic
+            // scroll for input that the browser refused.
+            await expect
+                .poll(
+                    async () => {
+                        const after = await surface.evaluate(element => ({
+                            left: element.scrollLeft,
+                            top: element.scrollTop,
+                        }));
+                        return (
+                            after.left > before.left || after.top > before.top
+                        );
+                    },
+                    {
+                        message:
+                            'map surface scrolls from wheel input before Locate',
+                        timeout: 5_000,
+                    }
+                )
+                .toBe(true);
             await locate.click();
             await expect(
                 card.getByText(CURRENT_CAPTION, { exact: true })

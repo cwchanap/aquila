@@ -96,6 +96,7 @@ These are settled from the story text and hold in every image, acts 1-8:
 - **Branch 1b seating after the station:** the Kobayashi family sits at the far end of the right bench, nearest the end wall, and Nakamura sits alone a few seats nearer the door (b1b_act5_half_empty, b1b_act5_relief).
 - **Moon order:** the large crescent is always left of the small one in the frame, whichever way the camera faces. Prompts say "the large one on the left"; the model swaps them otherwise.
 - **Glasses:** only Saito wears glasses. Edits tend to add them to Nakamura and Yamamoto, so prompts say "no glasses" for both. A close-up crop of the face, edited at 4x and pasted back, removed them where a full-frame edit would not (b1a_act4_lijie_stands, b1a_act4_door_call).
+- **Jishui timetable board:** faded and unreadable in every wide shot. Only the act 4 insert (b1a_act4_timetable) reads, with one painted line to 幽冥之都 and 下一班列車：二十年後 in faded ink beneath, in traditional characters (後, never 后).
 - **Station sign glyphs:** the model garbles 寂海 at small sizes. act3_s3 reads correctly; the signs in act3_s4, act3_door_argument and b1a_act4_door_call were retouched by hand with its glyphs.
 - **Poles:** the image model often moves or drops a single pole. When one is wrong, remove it in an edit and paint the pole back by hand at the seat-front seam (b1a_act4_lingmo_gone and b1b_act5_ito_explain were done this way).
 - **Li Jie's sword (branch 1b):** from b1b_act7_sword on he carries a long straight sword, its blade pitted red-brown with rust and dull, a plain crossguard, the grip wrapped in rotting cloth strips. In act 8 he plants its point on the stones while he listens. The station map is folded in his pocket and never shown again.
@@ -161,14 +162,17 @@ inside the cabin in 迷霧之森: one small square room of thick, smooth, dark w
 | Background | Beat | Framing | Who is in view |
 | --- | --- | --- | --- |
 | b1a_act4_frozen_families | Nobody dares move at the open door | B, medium, seated eye level from near the far end | the Kobayashi family and the Ito couple in front; the rest small and soft toward the open door |
+| b1a_act4_students_fear | The students ask if they will die here | C, medium close, straight across to the right bench | the four students huddled, Takumi, Misaki, Asuka, Kenta left to right |
 | b1a_act4_lingmo_gone | Ling Mo's corner is empty | close detail, three-quarter | his empty far corner seat |
 | b1a_act4_lijie_stands | Li Jie stands up | A, low angle from seat height, open door in the left foreground | Li Jie standing beside Emi, Yamamoto in the aisle, Saito at his pole; the students, Nakamura, Ito couple and Kobayashi family in their seats |
 | b1a_act4_turned_on | Saito and the others turn on him | over Li Jie's shoulder, down the carriage | Li Jie from behind; Saito, Nakamura, Ito couple, students, Kobayashi family |
 | b1a_act4_platform_alone | Li Jie alone on the platform | wide, railway behind the camera | Li Jie |
+| b1a_act4_timetable | 下一班列車：二十年後 | detail insert, straight on to the board beside the doorway | Li Jie's fingertips only |
 | b1a_act4_door_call | Yamamoto calls to him from the door | over the shoulders of the crowd at the open door | Yamamoto, Saito, Nakamura, the students at the door, Emi in her seat; Li Jie outside |
 | b1a_act4_emi_steps_out | Emi steps down | low and close behind Emi in the doorway | Emi stepping out, Saito and Yamamoto reaching after her; Li Jie outside |
 | b1a_act4_platform_pair | Emi on the platform with Li Jie | medium two-shot, side-on | Emi, Li Jie |
 | b1a_act5_emi_resolve | Emi explains why she followed | close-up, slightly high | Emi |
+| b1a_act5_handshake | Names and a handshake | medium close two-shot, slightly low three-quarter, the other side from platform_pair | Li Jie, Emi |
 | b1a_act5_rally | Yamamoto rallies the carriage | C, three-quarter toward the right bench | Yamamoto standing; Saito, the four students, Nakamura |
 | b1a_act5_followers | Yamamoto and the students step out | three-quarter wide, slightly high, from the track edge | Yamamoto and the students stepping out toward Li Jie and Emi |
 | b1a_act5_left_behind | Saito dashes for the door | B, seated eye level beside Nakamura | Saito running for the door; Nakamura and the Ito couple staying |
@@ -177,10 +181,12 @@ inside the cabin in 迷霧之森: one small square room of thick, smooth, dark w
 | b1a_act5_train_gone | The train is gone | wide, from behind the group, facing the sea | the eight, backs to camera, the empty track, the moons over the sea |
 | b1a_act6_blame | The students blame Li Jie | medium-wide, station house behind | the students, Saito, Yamamoto, Li Jie, Emi |
 | b1a_act6_sign | Li Jie reads the sign | close, over his shoulder | Li Jie, the sign |
+| b1a_act6_to_waiting_room | Li Jie, Yamamoto and Emi head for the waiting room | medium-wide from behind them, toward the doorway | Emi, Li Jie, Yamamoto from behind; the students and Saito arguing far left |
 | b1a_act6_waiting_room | The map in the waiting room | medium, three-quarter onto the map wall | Li Jie with his phone torch, Yamamoto, Emi |
+| b1a_act6_map | Li Jie explains the map | detail insert, straight on to the map, torch beam | Li Jie's hand only |
 | b1a_act6_through_window | The argument outside, watched through the window | inside, behind Li Jie and Emi at a front window | Li Jie, Emi; outside Yamamoto and Saito arguing with the four students on the platform |
 
-Shown again with a `reuse` bg block in branch 1a: act3_s4 and act3_door_argument while the act 4 argument picks back up, lijie_stands while he answers them, platform_alone while he looks around, platform_pair from Emi's arrival on the platform (through the in-train reaction to her leaving) into the start of act 5, emi_resolve and train_gone as act 5 ends, train_gone again to open act 6, blame when Li Jie proposes the waiting room, and waiting_room when Yamamoto comes back in.
+Shown again with a `reuse` bg block in branch 1a: act3_s4 while Li Jie makes up his mind at the start of act 4, lijie_stands while he answers them, platform_alone after the door call, platform_pair from Emi's arrival on the platform (through the in-train reaction to her leaving) into the start of act 5, emi_resolve and train_gone as act 5 ends, train_gone again to open act 6, and act 7's b1a_b2a_act7_yamamoto_leaves when Yamamoto comes back in for his bag at the end of act 6. A reuse is only for a moment that is still on screen: the 2026-11-21 review replaced the reuses where the picture showed an earlier moment (students_fear, handshake, to_waiting_room) and added the timetable and map inserts.
 
 ### Shot list, branch 1b
 

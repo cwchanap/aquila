@@ -471,21 +471,29 @@
             {storyTitle}
           </h2>
         </div>
+        <button
+          type="button"
+          class="col-start-2 row-start-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-md hover:bg-white lg:col-start-3"
+          aria-label={sm.close}
+          onclick={onClose}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
         <div
           data-testid="story-map-status-card"
           aria-live="polite"
           data-accent={accentKey(selection)}
-          class={cn('col-span-2 row-start-2 flex h-[92px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-l-[5px] bg-white/80 px-3 text-slate-800 shadow-sm lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:h-[84px] lg:max-w-[min(65vw,850px)]', statusStyles[accentKey(selection)].edge)}
+          class={cn('col-span-2 row-start-2 flex h-[92px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-l-[5px] bg-white/80 px-3 text-slate-800 shadow-sm lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:h-[84px] lg:max-w-[min(65vw,850px)]', selection.kind === 'current' && 'flex-col items-stretch justify-center gap-0 lg:flex-row lg:items-center lg:gap-3', statusStyles[accentKey(selection)].edge)}
         >
           {#if selection.kind === 'current'}
-            <div class="min-w-0">
-              <h3 class="text-xs font-bold uppercase tracking-wide text-blue-700">{sm.youAreHere}</h3>
+            <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 lg:block">
+              <h3 class="col-span-2 text-xs font-bold uppercase tracking-wide text-blue-700">{sm.youAreHere}</h3>
               <p class="truncate text-lg font-bold">{currentActLabel}</p>
               {#if lineCount > 0}<p class="truncate text-xs text-slate-600">{lineProgressText}</p>{/if}
             </div>
-            <ul class="ml-auto flex shrink-0 items-center gap-2 text-center text-slate-600 sm:gap-4">
+            <ul class="flex shrink-0 items-center gap-3 text-slate-600 lg:ml-auto lg:text-center sm:gap-4">
               {#each stats as stat (stat.caption)}
-                <li aria-label={statText(stat.label, stat.count)}>
+                <li class="flex items-center gap-1 lg:block" aria-label={statText(stat.label, stat.count)}>
                   <strong aria-hidden="true" class="block text-base font-bold text-slate-800">{stat.count}</strong>
                   <span aria-hidden="true" class="text-[10px] sm:text-xs">{stat.caption}</span>
                 </li>
@@ -532,14 +540,6 @@
             <p class="text-sm italic text-slate-500">{sm.unreadLabel}</p>
           {/if}
         </div>
-        <button
-          type="button"
-          class="col-start-2 row-start-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-md hover:bg-white lg:col-start-3"
-          aria-label={sm.close}
-          onclick={onClose}
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col p-4 sm:p-6">

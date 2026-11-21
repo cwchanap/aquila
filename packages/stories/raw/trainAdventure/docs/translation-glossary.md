@@ -217,6 +217,10 @@ Used before a character is named. All are registered as aliases in
 | 肥胖中年男 | Heavyset Middle-Aged Man | 太った中年男 | `middle_aged_man` |
 | 年輕女衛兵 | Young Female Guard | 若い女性の衛兵 | `guard` |
 | 服務人員 | Hotel Staff | 係員 | `clerk` |
+| 小男孩 / 小女孩 | Little Boy / Little Girl | 男の子 / 女の子 | `child` |
+| 母親 / 父親 (the unnamed family in the 3b → 4a 終幕) | Mother / Father | 母親 / 父親 | `parent` |
+| 老闆 (a diner in Shanghai) | Owner | 店主 | `inn_keeper` |
+| 語音信箱 | Voicemail | 留守番電話 | `message` |
 
 ## Places and terms
 
@@ -340,6 +344,14 @@ Used before a character is named. All are registered as aliases in
 | 東京 / 大阪 | Tokyo / Osaka | 東京（とうきょう） / 大阪（おおさか） |
 | 京都、金閣寺、清水寺、奈良、富士山 | Kyoto, Kinkaku-ji, Kiyomizu-dera, Nara, Mount Fuji | 京都（きょうと）、金閣寺（きんかくじ）、清水寺（きよみずでら, not しみず）、奈良（なら）、富士山（ふじさん） |
 | 珠海機場 | Zhuhai Airport | 珠海空港（しゅかいくうこう） |
+| 珠海金灣機場 / 香洲區 / 廣東省 / 廣州 | Zhuhai Jinwan Airport / Xiangzhou District / Guangdong / Guangzhou | 珠海金湾空港（しゅかいきんわんくうこう） / 香洲区（こうしゅうく） / 広東省（かんとんしょう） / 広州（こうしゅう） |
+| 虹橋 / 浦東機場 / 黃浦區 / 廣州東站 | Hongqiao / Pudong Airport / Huangpu District / Guangzhou East | 虹橋（こうきょう） / 浦東空港（ぷどんくうこう） / 黄浦区（こうほく） / 広州東駅（こうしゅうひがしえき） |
+| 誠信汽修 / 快客便利店 / 家常小炒 (shop signs) | Chengxin Auto Repair / Kuaike Convenience Store / Home-style Stir-fry | 誠信汽修（せいしんきしゅう） / 快客便利店（かいきゃくべんりてん） / 家常小炒（かじょうしょうちゃお） |
+| 情侶路 / 漁女像 | Lovers' Road / the Fisher Girl statue | ラバーズロード / 漁女（ぎょじょ）の像 |
+| 看守所 / 監獄 | detention center / prison | 留置場（りゅうちじょう） / 刑務所（けいむしょ） |
+| 過失殺人 / 過失致死罪 | involuntary manslaughter | 過失致死（かしつちし）; the mother's own word 殺人 stays 殺人 |
+| 小杰 (*address*: Lin Wanru, Li Mingyuan → Li Jie) | Jie | シャオジエ |
+| 邪劍 / 黑劍 (the black sword in 4b) | the evil sword / the black blade | 邪剣（じゃけん） / 黒い剣（くろいけん） |
 | NA 1847 航班 / 5號登機口 | flight NA 1847 / Gate 5 | NA1847便（便＝びん） / 5番搭乗口（ごばんとうじょうぐち） |
 | 那個安靜的女孩 / 文靜少女（= 清水恵美, named only in act 28） | the quiet girl | 物静かな少女（ものしずかなしょうじょ） |
 | （那個沉穩的）大叔 / 慷慨大叔（= 山本浩二） | the (steady) older man | （落ち着いた）おじさん（おちついたおじさん） |
@@ -449,8 +461,9 @@ Used before a character is named. All are registered as aliases in
   acts 36–48 (the Hawaii ending) and 5b acts 36–37 plus 終幕 (the dark ending).
   Route 2b → 3a is now translated to its end: acts 21–26, then 4a acts 27–28
   plus 終幕, and 4b acts 27–36 plus the epilogue and 終幕 (back on Earth in
-  2040). The branch runs to act 72 in zh; everything else past act 20 still
-  reads zh until it is translated (3b acts 21 onward is the largest part left).
+  2040). Route 2b → 3b now runs acts 21–30 and the 4a 終幕 as well. The branch
+  runs to act 72 in zh; everything else past act 20 still reads zh until it is
+  translated (2b → 3b → 4b from act 31 is the part left on this branch).
 - **Acts 4–6 are voiced**, and for a translated scene the ja reader text *is*
   the spoken text. The 104 voiced lines there (act 4: 51, act 5: 30, act 6: 23)
   keep the wording of `voice-script.ja.json` as the reader text, so the takes
@@ -499,7 +512,9 @@ Used before a character is named. All are registered as aliases in
 ## Route notes: branch_1b → branch_2a (cabin route, ja to the dark ending)
 
 - **Coverage**: acts 9–14 (route 2a), 3a acts 15–16 and 終幕, and the 3b chain
-  below (acts 15–21 and the 6a 終幕). The 3b side route 4b is still zh.
+  below (acts 15–21 and the 6a 終幕). The 3b → 4b side route (altar corridor,
+  then back on Earth) is ja from act 17 to the 5a endings: see its own notes at
+  the end of this file.
 - **Shape**: unlike branch_1b → branch_2c, Li Jie stays with the Kobayashi
   mother and children and walks them north to the cabin; the family *is* named
   here. In act 9 she introduces herself (小林智子, 陽菜, 翔太), so the labels
@@ -521,7 +536,8 @@ Used before a character is named. All are registered as aliases in
 - **Coverage**: route 2b acts 9–17, 3a acts 18–30 (zh has no act 22), and the
   3b 終幕 (the right-hand tunnel and the black-blade death). Route 2a → 3b
   acts 15–16, 4a acts 17–20, 5a act 21 and the 6a 終幕 (the opening replayed).
-  Both routes are now ja to their endings except 2a → 3b → 4b.
+  Both routes are now ja to their endings, and so is 2a → 3b → 4b → 5a (see the
+  notes at the end of this file).
 - **Elves**: the village chiefs and helpers are named in the characters table
   (エリシア, リアナ, セリナ, エーテル, ニサラ, アイラル, オリオン, イラニル).
   They speak ですます, 私, and bare given names. Every elf line in the village
@@ -546,4 +562,53 @@ Used before a character is named. All are registered as aliases in
   reactions such as これは…… / ここは…… / 待ってくれ！ collided too and got a
   small addition (これは、いったい…… and the like); keep that in mind when
   translating more of these routes, and run `voice:check` before the PR.
+- **No line in these acts is voiced.**
+
+## Route notes: branch_1b → branch_2a → branch_3b → branch_4b (back on Earth) → branch_5a, and branch_1a → branch_2b → branch_3b (acts 21–30)
+
+- **Coverage**: 4b acts 17–37 (the altar corridor and sanctuary, the elf
+  village, the door through time, Li Jie waking in Tokyo, the search for his
+  parents, the news about his father, the flight to Zhuhai and the choice in act
+  37), then the 5a 終章 and 終幕 (the peaceful ending). On the other side,
+  1a → 2b → 3b acts 21–30 and the 4a 終幕. Both end on `**―― 完 ――**`.
+- **The ending line** `**【全劇終】**` (5a epilogue) and 4a's `**<完>**` both
+  become `**―― ｜完《かん》 ――**`, the same speakerless bold paragraph as in
+  branch_2c.
+- **Section headings in the 5a acts**: zh has `## 【九年後】` and the like as
+  blocks of their own. The compiler cannot tell them from a paragraph, so zh
+  shows a literal `## ` in the game. ja writes them as `**【九年後】**` (the
+  compiler strips the bold) so no `##` reaches the reader; the block count and
+  position stay the same. Names: 【九年後】 【不慮の事故】 【告別】 【エピローグ】
+  and 【三か月後】 【半年後】 【八か月後】 【一年後】.
+- **People**: Li Jie 俺, 母さん / 父さん; Nakano 俺 and リーさん, and Li Jie calls
+  him 海斗. Lin Wanru speaks softly (〜わ, 〜のよ), says お母さん of herself and
+  シャオジエ to her son, and おばさん to Nakano, who is polite with her
+  (ですます) and with Li Mingyuan (奥さん for her). Li Mingyuan is plain (〜だ).
+  The elder elf of act 23 is labelled 年長のエルフ until she gives her name
+  (zh 老精靈), then アイラル.
+- **Real-world names and signs** are in the places table: Chinese places in
+  on'yomi, shop signs read as Chinese compounds, 情侶路 as ラバーズロード.
+  The dead man 渡辺陸 and his house 渡辺宅 keep the glossary form.
+- **Dates and times**: zh writes them in Arabic digits (2025年9月23日, 7時15分,
+  553元) and ja keeps them. Ruby goes on the unit kanji only (年《ねん》,
+  月《がつ》, 日《にち》), except the days with their own reading, which take one
+  ruby over digits and 日 (20日 はつか, 24日 にじゅうよっか). 分 is ふん or ぷん by
+  the last digit (15分 ふん, 23分 ぷん, 43分 ぷん, 50分 ぷん), 元 げん, 号室, 階,
+  番 and 歳 as usual.
+- **Detention and prison**: 看守所 is 留置場 and 監獄 is 刑務所; the charge is
+  過失致死 in narration and in Li Jie's words, but his mother says 殺人.
+- **Voice collisions**: eleven short Li Jie reactions (これは……, ここは……)
+  equalled recorded takes and got a small addition (これは、いったい…… /
+  これは……！ / ここは、まさか…… and so on). The repeated openings of the 4a
+  終幕 needed none. Run `voice:check` before the PR when adding more of 4b.
+- **Aliases added in `characters.md`**: 母親 / 父親 (`parent`), 男の子 /
+  女の子 (`child`), 店主 (`inn_keeper`), 留守番電話 (`message`) and
+  リー・ミンユエン (`li_mingyuan`).
+- **zh slips kept and reported, not fixed**: 1a → 2b → 3b act 26 has a stray
+  bold mark in `**小林**太太`; 4b act 29 writes "CLINE" for LINE; 4b act 30
+  gives 9/24 as a Monday and 9/22 as a Saturday, and the voicemail time is
+  2025-09-23 midnight; 4b acts
+  31–32 put his parents' home in Shanghai (1410号室) while acts 35–37 and the
+  choice label say his mother lives in Zhuhai; act 32 has him "suddenly stand
+  up" while still sitting at the computer.
 - **No line in these acts is voiced.**

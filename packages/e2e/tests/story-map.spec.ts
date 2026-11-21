@@ -437,6 +437,7 @@ async function expectDecisionChip(
                 getComputedStyle(target: unknown): {
                     backgroundColor: string;
                     borderStyle: string;
+                    borderTopWidth: string;
                 };
             };
             const style = browser.getComputedStyle(element);

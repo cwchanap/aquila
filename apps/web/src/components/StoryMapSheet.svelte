@@ -514,7 +514,7 @@
             <button type="button" class="ml-auto min-h-11 max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-3 text-sm font-semibold leading-tight text-white" onclick={() => onJump(selection.sceneId, 'start')}>{sm.jumpTo.replace('{label}', selection.label)}</button>
           {:else if selection.kind === 'decision'}
             {@const d = selection.decision}
-            <div class="min-w-0 lg:max-w-[220px]">
+            <div class="min-w-0 lg:max-w-[220px] lg:shrink-0">
               <h3 class="truncate text-xs font-bold uppercase tracking-wide text-amber-700">{sm.decisionNode.replace('{decision}', sm.decision).replace('{options}', statText(sm.options, d.options.length))}</h3>
               {#if choices[d.choiceId]?.prompt}<p class="line-clamp-2 text-sm font-semibold leading-snug">{choices[d.choiceId].prompt}</p>{/if}
             </div>

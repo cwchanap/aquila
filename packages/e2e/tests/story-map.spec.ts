@@ -102,6 +102,28 @@ async function readThroughChoice(page: Page): Promise<void> {
 }
 
 test.describe('Story map', () => {
+    test('places the desktop title before the status card and close button', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop header layout');
+        await page.goto(readerUrl('act1', 0));
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const title = await sheet.locator('#story-map-title').boundingBox();
+        const card = await sheet
+            .getByTestId('story-map-status-card')
+            .boundingBox();
+        const close = await sheet
+            .getByRole('button', { name: t.closeStoryMap })
+            .boundingBox();
+        expect(title).not.toBeNull();
+        expect(card).not.toBeNull();
+        expect(close).not.toBeNull();
+        expect(title!.x + title!.width).toBeLessThanOrEqual(card!.x);
+        expect(card!.x + card!.width).toBeLessThanOrEqual(close!.x);
+        expect(title!.y).toBeLessThan(card!.y + card!.height);
+        expect(card!.y).toBeLessThan(close!.y + close!.height);
+    });
+
     for (const mode of ['text', 'visual']) {
         test(`completes an ending, remembers it in the catalogue, and resumes in ${mode} mode`, async ({
             page,

@@ -475,7 +475,7 @@
           data-testid="story-map-status-card"
           aria-live="polite"
           data-accent={accentKey(selection)}
-          class={cn('col-span-2 row-start-2 flex h-[92px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-l-[5px] bg-white/80 px-3 text-slate-800 shadow-sm lg:col-span-1 lg:row-start-1 lg:h-[84px] lg:max-w-[min(65vw,850px)]', statusStyles[accentKey(selection)].edge)}
+          class={cn('col-span-2 row-start-2 flex h-[92px] min-w-0 items-center gap-3 overflow-hidden rounded-2xl border-l-[5px] bg-white/80 px-3 text-slate-800 shadow-sm lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:h-[84px] lg:max-w-[min(65vw,850px)]', statusStyles[accentKey(selection)].edge)}
         >
           {#if selection.kind === 'current'}
             <div class="min-w-0">

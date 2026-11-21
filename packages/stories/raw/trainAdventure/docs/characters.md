@@ -527,7 +527,7 @@
 ## 93. 老闆娘（Inn Keeper）
 
 - **ID**: `inn_keeper`
-- **Aliases**: Innkeeper, 女将, 店主
+- **Aliases**: Innkeeper, 女将, 食堂の店主
 
 ## 94. 小孩（Child）
 

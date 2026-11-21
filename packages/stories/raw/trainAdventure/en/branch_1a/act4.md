@@ -80,7 +80,7 @@
 
 **Narrator**: At the entrance of the waiting room he saw a mottled old timetable. He walked over and studied it. The sea wind had eaten it into a patchwork ruin, its lettering all but blurred away, but he could still just make it out — only a single lonely line, leading to some place marked "the City of the Netherworld."
 
-**Narrator**: And below that, a single line had been written in faded ink — [Next train: in twenty years]
+**Narrator**: Every other departure had been worn away by the sea wind; only one line could still be read — [Next train: 15 September 2045, 23:50]. Twenty years to the minute after he had boarded that last train.
 
 **Li Jie**: (thinking) In twenty years... What does that mean? Are we trapped here?
 

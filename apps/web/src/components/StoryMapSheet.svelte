@@ -518,7 +518,7 @@
               <h3 class="truncate text-xs font-bold uppercase tracking-wide text-amber-700">{sm.decisionNode.replace('{decision}', sm.decision).replace('{options}', statText(sm.options, d.options.length))}</h3>
               {#if choices[d.choiceId]?.prompt}<p class="line-clamp-2 text-sm font-semibold leading-snug">{choices[d.choiceId].prompt}</p>{/if}
             </div>
-            <ul class="hidden min-w-0 gap-1 overflow-hidden lg:grid lg:max-w-[220px] lg:grid-cols-2">
+            <ul class="hidden min-w-0 gap-1 overflow-hidden lg:grid lg:grid-cols-2">
               {#each d.options as option (option.id)}
                 {@const status = option.child.kind === 'unknown' ? 'unread' : option.child.status}
                 {@const label = status === 'route' ? sm.yourRoute : status === 'explored' ? sm.explored : sm.unreadLabel}
@@ -531,7 +531,7 @@
             </ul>
             {#if selection.precedingSceneId}
               {@const preceding = selection.precedingSceneId}
-              <button type="button" class="ml-auto min-h-11 w-[118px] max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-2 text-sm font-semibold leading-tight text-white lg:w-auto lg:px-3" onclick={() => onJump(preceding, 'end')}>{sm.jumpToDecision}</button>
+              <button type="button" class="ml-auto min-h-11 w-[118px] max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-2 text-sm font-semibold leading-tight text-white" onclick={() => onJump(preceding, 'end')}>{sm.jumpToDecision}</button>
             {/if}
           {:else if selection.kind === 'ending'}
             <h3 class="min-w-0 truncate text-base font-bold">{sm.endingLabel.replace('{label}', selection.ending.label)}</h3>

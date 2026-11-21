@@ -355,16 +355,21 @@ async function expectFocusInsideCard(
     const extent = await action.evaluate(element => {
         const style = getComputedStyle(element);
         const box = element.getBoundingClientRect();
-        const grow =
-            (parseFloat(style.outlineOffset) || 0) +
-            (parseFloat(style.outlineWidth) || 0);
+        const outlineWidth = parseFloat(style.outlineWidth) || 0;
+        const grow = (parseFloat(style.outlineOffset) || 0) + outlineWidth;
         return {
+            outlineStyle: style.outlineStyle,
+            outlineWidth,
             left: box.left - grow,
             top: box.top - grow,
             right: box.right + grow,
             bottom: box.bottom + grow,
         };
     });
+    // With no outline the extent collapses to the border box and the checks
+    // below cannot tell a fitting indicator from a missing one.
+    expect(extent.outlineStyle).not.toBe('none');
+    expect(extent.outlineWidth).toBeGreaterThan(0);
     const usable = await card.evaluate(element => {
         const rect = element.getBoundingClientRect();
         return {
@@ -414,8 +419,14 @@ async function expectDecisionChip(
         })
     ).toHaveCount(1);
     // Exactly one descendant carries the status-and-option announcement: the
-    // visible label and dot stay aria-hidden, the sr-only span does not.
-    await expect(chip.locator('span:not([aria-hidden="true"])')).toHaveCount(1);
+    // visible label and dot stay aria-hidden, the sr-only span does not. The
+    // text must land on the non-hidden span itself — getByText also matches
+    // aria-hidden content, so it cannot tell which span announces.
+    const announcement = chip.locator('span:not([aria-hidden="true"])');
+    await expect(announcement).toHaveCount(1);
+    await expect(announcement).toHaveText(
+        `${expected.status} — ${expected.label}`
+    );
     await expect(chip.locator('[aria-hidden="true"]')).toHaveCount(2);
     const dot = await chip
         .locator('span')

@@ -26,6 +26,23 @@ export async function chooseRoute(page: Page, label: string): Promise<void> {
     await selectCrossroadsRoute(await openCrossroads(page), label);
 }
 
+export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
+    const { scrollWidth, innerWidth } = await page.evaluate(() => {
+        const browser = globalThis as unknown as {
+            document: { documentElement: { scrollWidth: number } };
+            innerWidth: number;
+        };
+        return {
+            scrollWidth: browser.document.documentElement.scrollWidth,
+            innerWidth: browser.innerWidth,
+        };
+    });
+    expect(
+        scrollWidth,
+        'page must not overflow horizontally'
+    ).toBeLessThanOrEqual(innerWidth + 1);
+}
+
 export class MainMenuPage {
     constructor(
         private page: Page,
@@ -363,10 +380,11 @@ export class MobileReaderPage {
     async seedVisitedScenes(
         storyId: string,
         sceneIds: string[],
-        currentSceneId?: string
+        currentSceneId?: string,
+        endings: string[] = []
     ) {
         await this.page.addInitScript(
-            ([key, story, ids, current]) => {
+            ([key, story, ids, current, reachedEndings]) => {
                 const raw = localStorage.getItem(key);
                 let map: Record<string, unknown> = {};
                 if (raw) {
@@ -388,7 +406,7 @@ export class MobileReaderPage {
                     dialogueIndex: 0,
                     updatedAt: Date.now(),
                     finished: false,
-                    endings: [],
+                    endings: reachedEndings,
                     visited: ids,
                 };
                 localStorage.setItem(key, JSON.stringify(map));
@@ -398,6 +416,7 @@ export class MobileReaderPage {
                 storyId,
                 sceneIds,
                 currentSceneId,
+                endings,
             ] as const
         );
     }

@@ -4,7 +4,9 @@ import { scene as act3Dialogue } from '../../stories/src/generated/elevatorGame/
 import { scene as endingDialogue } from '../../stories/src/generated/elevatorGame/scenes/en/b1a_act4';
 import { elevatorGameChoiceTextEn } from '../../stories/src/stories/elevatorGame/choices.en';
 import { buildChoiceMap } from '../../stories/src/stories/choice-utils';
+import { VARIANTS } from './support/train-adventure-choices';
 import {
+    expectNoHorizontalOverflow,
     MobileReaderPage,
     openCrossroads,
     selectCrossroadsRoute,
@@ -101,6 +103,264 @@ async function readThroughChoice(page: Page): Promise<void> {
     await expect(page).toHaveURL(sceneUrl(takenOption.nextScene));
 }
 
+const TRAIN_STORY_ID = 'train_adventure';
+const JUMP_TO_ENDING = 'Read this ending again';
+const DESKTOP_CARD_HEIGHT = 84;
+const MOBILE_CARD_HEIGHT = 92;
+
+type TrainVariant = (typeof VARIANTS)[number];
+
+function trainVariant(key: string): TrainVariant {
+    const variant = VARIANTS.find(entry => entry.key === key);
+    if (!variant) {
+        throw new Error(
+            `story-map.spec.ts: missing "${key}" train_adventure fixture`
+        );
+    }
+    return variant;
+}
+
+const TRAIN = {
+    one: trainVariant('one-option'),
+    two: trainVariant('two-option'),
+    three: trainVariant('three-option'),
+    four: trainVariant('four-option'),
+} as const;
+
+/** Seeds a passed choice through the shared progress fixture: the preceding
+ * scene and at least one child must be visited or buildStoryMap hides it. */
+async function seedTrainMap(
+    page: Page,
+    sceneIds: string[],
+    currentSceneId: string,
+    endings: string[] = []
+): Promise<void> {
+    await new MobileReaderPage(page).seedVisitedScenes(
+        TRAIN_STORY_ID,
+        sceneIds,
+        currentSceneId,
+        endings
+    );
+    await page.goto(
+        `/en/reader?story=${TRAIN_STORY_ID}&scene=${currentSceneId}&dialogue=1`,
+        { waitUntil: 'domcontentloaded' }
+    );
+    await expect(page.getByTestId('reader-ready')).toBeVisible({
+        timeout: 15_000,
+    });
+}
+
+interface SurfaceState {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    scrollLeft: number;
+    scrollTop: number;
+    scrollWidth: number;
+    scrollHeight: number;
+    svgWidth: number;
+    svgHeight: number;
+}
+
+async function readSurfaceState(surface: Locator): Promise<SurfaceState> {
+    return surface.evaluate(element => {
+        const rect = element.getBoundingClientRect();
+        const svg = element.querySelector('svg');
+        return {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+            scrollLeft: element.scrollLeft,
+            scrollTop: element.scrollTop,
+            scrollWidth: element.scrollWidth,
+            scrollHeight: element.scrollHeight,
+            svgWidth: Number(svg?.getAttribute('width') ?? 0),
+            svgHeight: Number(svg?.getAttribute('height') ?? 0),
+        };
+    });
+}
+
+/** Waits for the opening auto-scroll to stop before geometry comparisons. */
+async function settleMapSurface(
+    page: Page,
+    surface: Locator
+): Promise<SurfaceState> {
+    let previous = await readSurfaceState(surface);
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+        await page.evaluate(
+            () =>
+                new Promise<void>(resolve => {
+                    const browser = globalThis as unknown as {
+                        requestAnimationFrame(callback: () => void): number;
+                    };
+                    browser.requestAnimationFrame(() =>
+                        browser.requestAnimationFrame(() => resolve())
+                    );
+                })
+        );
+        const next = await readSurfaceState(surface);
+        const stable = (Object.keys(previous) as (keyof SurfaceState)[]).every(
+            key => previous[key] === next[key]
+        );
+        if (stable) return next;
+        previous = next;
+    }
+    throw new Error('story-map.spec.ts: story map surface did not settle');
+}
+
+interface CardMetrics {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    scrollWidth: number;
+    clientWidth: number;
+    scrollHeight: number;
+    clientHeight: number;
+}
+
+async function readCardMetrics(card: Locator): Promise<CardMetrics> {
+    const box = await card.boundingBox();
+    if (!box) {
+        throw new Error('story-map.spec.ts: status card has no bounding box');
+    }
+    const scroll = await card.evaluate(element => ({
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+    }));
+    return { ...box, ...scroll };
+}
+
+function expectCardFits(card: CardMetrics, height: number): void {
+    expect(Math.abs(card.height - height)).toBeLessThanOrEqual(1);
+    // One device pixel of sub-pixel rounding is not silent clipping.
+    expect(card.scrollHeight).toBeLessThanOrEqual(card.clientHeight + 1);
+    expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth + 1);
+}
+
+async function expectActionInsideCard(
+    action: Locator,
+    card: Locator
+): Promise<void> {
+    const actionBox = await action.boundingBox();
+    const cardBox = await card.boundingBox();
+    expect(actionBox, 'card action is measurable').not.toBeNull();
+    expect(cardBox, 'status card is measurable').not.toBeNull();
+    if (!actionBox || !cardBox) return;
+    expect(actionBox.height).toBeGreaterThanOrEqual(44);
+    expect(actionBox.x).toBeGreaterThanOrEqual(cardBox.x - 1);
+    expect(actionBox.y).toBeGreaterThanOrEqual(cardBox.y - 1);
+    expect(actionBox.x + actionBox.width).toBeLessThanOrEqual(
+        cardBox.x + cardBox.width + 1
+    );
+    expect(actionBox.y + actionBox.height).toBeLessThanOrEqual(
+        cardBox.y + cardBox.height + 1
+    );
+}
+
+/** Activates a map node without letting Playwright scroll the surface first,
+ * so the comparison isolates the selection itself. */
+async function activateMapNode(node: Locator): Promise<void> {
+    await node.evaluate(element => {
+        (element as unknown as { click(): void }).click();
+    });
+}
+
+async function expectDesktopHeaderOrder(sheet: Locator): Promise<void> {
+    const title = await sheet.locator('#story-map-title').boundingBox();
+    const card = await sheet.getByTestId('story-map-status-card').boundingBox();
+    const close = await sheet
+        .getByRole('button', { name: t.closeStoryMap })
+        .boundingBox();
+    expect(title).not.toBeNull();
+    expect(card).not.toBeNull();
+    expect(close).not.toBeNull();
+    if (!title || !card || !close) return;
+    expect(title.x + title.width).toBeLessThanOrEqual(card.x);
+    expect(card.x + card.width).toBeLessThanOrEqual(close.x);
+    expect(title.y).toBeLessThan(card.y + card.height);
+    expect(card.y).toBeLessThan(close.y + close.height);
+}
+
+async function expectDecisionChip(
+    chip: Locator,
+    expected: { status: string; label: string; dot: string }
+): Promise<void> {
+    await expect(
+        chip.getByText(`${expected.status} — ${expected.label}`, {
+            exact: true,
+        })
+    ).toHaveCount(1);
+    await expect(chip.locator('[aria-hidden="true"]')).toHaveCount(2);
+    const dot = await chip
+        .locator('span')
+        .first()
+        .evaluate(element => {
+            const browser = globalThis as unknown as {
+                getComputedStyle(target: unknown): {
+                    backgroundColor: string;
+                    borderStyle: string;
+                };
+            };
+            const style = browser.getComputedStyle(element);
+            return {
+                className:
+                    typeof element.className === 'string'
+                        ? element.className
+                        : '',
+                background: style.backgroundColor,
+                borderStyle: style.borderStyle,
+            };
+        });
+    expect(dot.className).toContain(expected.dot);
+    if (expected.dot === 'border-dotted') {
+        expect(dot.borderStyle).toBe('dotted');
+        expect(dot.background).toBe('rgba(0, 0, 0, 0)');
+    } else {
+        expect(dot.background).not.toBe('rgba(0, 0, 0, 0)');
+    }
+}
+
+async function expectCurrentCaptionInsideSurface(
+    surface: Locator,
+    message: string
+): Promise<void> {
+    const caption = surface.getByText(CURRENT_CAPTION, { exact: true });
+    await expect(caption).toBeVisible();
+    await expect
+        .poll(
+            async () => {
+                const usable = await surface.evaluate(element => {
+                    const rect = element.getBoundingClientRect();
+                    return {
+                        left: rect.left + element.clientLeft,
+                        right:
+                            rect.left +
+                            element.clientLeft +
+                            element.clientWidth,
+                        top: rect.top + element.clientTop,
+                        bottom:
+                            rect.top + element.clientTop + element.clientHeight,
+                    };
+                });
+                const box = await caption.boundingBox();
+                if (!box) return false;
+                return (
+                    box.x >= usable.left - 0.5 &&
+                    box.x + box.width <= usable.right + 0.5 &&
+                    box.y >= usable.top - 0.5 &&
+                    box.y + box.height <= usable.bottom + 0.5
+                );
+            },
+            { message }
+        )
+        .toBe(true);
+}
+
 test.describe('Story map', () => {
     test('places the desktop title before the status card and close button', async ({
         page,
@@ -108,20 +368,7 @@ test.describe('Story map', () => {
         test.skip(!isDesktop(testInfo.project.name), 'Desktop header layout');
         await page.goto(readerUrl('act1', 0));
         const sheet = await openStoryMap(page, testInfo.project.name);
-        const title = await sheet.locator('#story-map-title').boundingBox();
-        const card = await sheet
-            .getByTestId('story-map-status-card')
-            .boundingBox();
-        const close = await sheet
-            .getByRole('button', { name: t.closeStoryMap })
-            .boundingBox();
-        expect(title).not.toBeNull();
-        expect(card).not.toBeNull();
-        expect(close).not.toBeNull();
-        expect(title!.x + title!.width).toBeLessThanOrEqual(card!.x);
-        expect(card!.x + card!.width).toBeLessThanOrEqual(close!.x);
-        expect(title!.y).toBeLessThan(card!.y + card!.height);
-        expect(card!.y).toBeLessThan(close!.y + close!.height);
+        await expectDesktopHeaderOrder(sheet);
     });
 
     for (const mode of ['text', 'visual']) {
@@ -504,45 +751,19 @@ test.describe('Story map', () => {
         });
         const sheet = await openStoryMap(page, testInfo.project.name);
         const surface = page.getByTestId('story-map-surface');
-        const caption = surface.getByText(CURRENT_CAPTION, { exact: true });
-        await expect(caption).toBeVisible();
-
-        const captionInView = async () => {
-            const usable = await surface.evaluate(el => {
-                const rect = el.getBoundingClientRect();
-                return {
-                    left: rect.left + el.clientLeft,
-                    right: rect.left + el.clientLeft + el.clientWidth,
-                    top: rect.top + el.clientTop,
-                    bottom: rect.top + el.clientTop + el.clientHeight,
-                };
-            });
-            const captionBox = await caption.boundingBox();
-            if (!captionBox) return false;
-            return (
-                captionBox.x >= usable.left - 0.5 &&
-                captionBox.x + captionBox.width <= usable.right + 0.5 &&
-                captionBox.y >= usable.top - 0.5 &&
-                captionBox.y + captionBox.height <= usable.bottom + 0.5
-            );
-        };
-        await expect
-            .poll(captionInView, {
-                message:
-                    'caption fully inside the surface after opening auto-scroll',
-            })
-            .toBe(true);
+        await expectCurrentCaptionInsideSurface(
+            surface,
+            'caption fully inside the surface after opening auto-scroll'
+        );
 
         await surface.evaluate(el => {
             el.scrollTo({ left: 0 });
         });
         await sheet.getByRole('button', { name: LOCATE_CURRENT }).click();
-        await expect
-            .poll(captionInView, {
-                message:
-                    'caption fully inside the surface after Locate current',
-            })
-            .toBe(true);
+        await expectCurrentCaptionInsideSurface(
+            surface,
+            'caption fully inside the surface after Locate current'
+        );
     });
 
     test('moves focus into the sheet on a phone and restores it to the menu trigger', async ({
@@ -568,5 +789,449 @@ test.describe('Story map', () => {
         await sheet.getByLabel(t.closeStoryMap).click();
         await expect(sheet).not.toBeVisible();
         await expect(page.locator(MENU_TRIGGER)).toBeFocused();
+    });
+
+    test('measures the 95vw sheet and one fixed-height status card at 1440 and 1024', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop geometry');
+        test.setTimeout(60_000);
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const taken = TRAIN.four.choice.options[0];
+        await seedTrainMap(
+            page,
+            [TRAIN.four.sceneId, taken.nextScene],
+            TRAIN.four.sceneId
+        );
+        await page.setViewportSize({ width: 1440, height: 900 });
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const card = sheet.getByTestId('story-map-status-card');
+        const surface = page.getByTestId('story-map-surface');
+
+        const expectSheetGeometry = async (size: {
+            width: number;
+            height: number;
+        }) => {
+            const box = await sheet.boundingBox();
+            expect(box, 'sheet is measurable').not.toBeNull();
+            if (!box) return;
+            expect(Math.abs(box.width - size.width * 0.95)).toBeLessThanOrEqual(
+                2
+            );
+            expect(
+                Math.abs(box.height - size.height * 0.85)
+            ).toBeLessThanOrEqual(2);
+            await expect(
+                sheet.getByTestId('story-map-status-card')
+            ).toHaveCount(1);
+            await expect(
+                sheet.locator('aside, [data-testid="story-map-details"]')
+            ).toHaveCount(0);
+            await expectNoHorizontalOverflow(page);
+            await expectDesktopHeaderOrder(sheet);
+        };
+
+        await expectSheetGeometry({ width: 1440, height: 900 });
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+
+        const decision = surface.getByRole('button', {
+            name: /^Decision · 4 options/,
+        });
+        await expect(decision).toHaveCount(1);
+        await activateMapNode(decision);
+        await expect(
+            card.getByRole('heading', { name: /Decision · 4 options/i })
+        ).toBeVisible();
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+        await expectActionInsideCard(
+            card.getByRole('button', { name: JUMP_TO_DECISION }),
+            card
+        );
+        const wide = await readSurfaceState(surface);
+
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await expectSheetGeometry({ width: 1024, height: 768 });
+        const narrowCard = await readCardMetrics(card);
+        expectCardFits(narrowCard, DESKTOP_CARD_HEIGHT);
+        await expectActionInsideCard(
+            card.getByRole('button', { name: JUMP_TO_DECISION }),
+            card
+        );
+        const narrow = await readSurfaceState(surface);
+        expect(narrow.svgWidth).toBe(wide.svgWidth);
+        expect(narrow.svgHeight).toBe(wide.svgHeight);
+        expect(narrowCard.width).toBeLessThanOrEqual(1024 * 0.65 + 1);
+    });
+
+    test('keeps the map surface fixed across current, decision, unread and completed ending', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop geometry');
+        test.setTimeout(60_000);
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const [first, second] = TRAIN.four.choice.options;
+        await seedTrainMap(
+            page,
+            [TRAIN.four.sceneId, first.nextScene, second.nextScene],
+            first.nextScene,
+            [first.nextScene]
+        );
+        await page.setViewportSize({ width: 1024, height: 768 });
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const card = sheet.getByTestId('story-map-status-card');
+        const surface = page.getByTestId('story-map-surface');
+        await expect(card).toHaveAttribute('aria-live', 'polite');
+        await expect(card).toHaveAttribute('data-accent', 'route');
+        await expect(
+            card.getByText(CURRENT_CAPTION, { exact: true })
+        ).toBeVisible();
+        expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+        const baseline = await settleMapSurface(page, surface);
+
+        const expectSurfaceUnchanged = async () => {
+            expect(await readSurfaceState(surface)).toEqual(baseline);
+            expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+        };
+
+        await activateMapNode(
+            surface.getByRole('button', { name: /^Decision · 4 options/ })
+        );
+        await expect(card).toHaveAttribute('data-accent', 'decision');
+        await expect(card).toContainText(TRAIN.four.choice.prompt);
+        await expect(card.locator('li')).toHaveCount(4);
+        await expectDecisionChip(card.locator('li').nth(0), {
+            status: 'Your route',
+            label: first.label,
+            dot: 'bg-blue-500',
+        });
+        await expectDecisionChip(card.locator('li').nth(1), {
+            status: 'Explored',
+            label: second.label,
+            dot: 'bg-teal-500',
+        });
+        for (const [index, option] of TRAIN.four.choice.options
+            .slice(2)
+            .entries()) {
+            await expectDecisionChip(card.locator('li').nth(index + 2), {
+                status: 'Not read yet',
+                label: option.label,
+                dot: 'border-dotted',
+            });
+        }
+        await expectActionInsideCard(
+            card.getByRole('button', { name: JUMP_TO_DECISION }),
+            card
+        );
+        await expectSurfaceUnchanged();
+
+        await activateMapNode(surface.locator('[data-kind="unknown"]').first());
+        await expect(card).toHaveAttribute('data-accent', 'unread');
+        await expect(card).toHaveText('Not read yet');
+        await expect(
+            card.getByRole('button', { name: /^Jump to/ })
+        ).toHaveCount(0);
+        await expect(card).not.toContainText(TRAIN.four.choice.prompt);
+        await expectSurfaceUnchanged();
+
+        await expect(surface.locator('[data-kind="ending"]')).toHaveCount(1);
+        await activateMapNode(surface.locator('[data-kind="ending"]'));
+        await expect(card).toHaveAttribute('data-accent', 'explored');
+        await expect(
+            card.getByRole('heading', { name: /^Ending / })
+        ).toBeVisible();
+        await expect(
+            card.getByRole('button', { name: JUMP_TO_ENDING })
+        ).toBeVisible();
+        await expectSurfaceUnchanged();
+
+        await sheet.getByRole('button', { name: LOCATE_CURRENT }).click();
+        await expect(
+            card.getByText(CURRENT_CAPTION, { exact: true })
+        ).toBeVisible();
+        await expect(card).toHaveAttribute('data-accent', 'route');
+        await settleMapSurface(page, surface);
+        await expectSurfaceUnchanged();
+    });
+
+    test('shows 2, 3 and 4 option decisions with status-dot chips', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop chips');
+        test.setTimeout(90_000);
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        for (const key of ['two', 'three', 'four'] as const) {
+            const variant = TRAIN[key];
+            const [taken, ...unread] = variant.choice.options;
+            await seedTrainMap(
+                page,
+                [variant.sceneId, taken.nextScene],
+                variant.sceneId
+            );
+            const sheet = await openStoryMap(page, testInfo.project.name);
+            const surface = page.getByTestId('story-map-surface');
+            const card = sheet.getByTestId('story-map-status-card');
+            const count = variant.choice.options.length;
+            const decision = surface.getByRole('button', {
+                name: new RegExp(`^Decision · ${count} option`),
+            });
+            await expect(decision).toHaveCount(1);
+            await activateMapNode(decision);
+            await expect(card.locator('li')).toHaveCount(count);
+            await expectDecisionChip(card.locator('li').nth(0), {
+                status: 'Explored',
+                label: taken.label,
+                dot: 'bg-teal-500',
+            });
+            for (const [index, option] of unread.entries()) {
+                await expectDecisionChip(card.locator('li').nth(index + 1), {
+                    status: 'Not read yet',
+                    label: option.label,
+                    dot: 'border-dotted',
+                });
+            }
+            expectCardFits(await readCardMetrics(card), DESKTOP_CARD_HEIGHT);
+            await page.keyboard.press('Escape');
+            await expect(sheet).not.toBeVisible();
+        }
+    });
+
+    test('keeps a one-option choice a linear map link, not a decision card', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop map shape');
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const variant = TRAIN.one;
+        expect(variant.choice.options).toHaveLength(1);
+        const next = variant.choice.options[0].nextScene;
+        await seedTrainMap(page, [variant.sceneId, next], variant.sceneId);
+        await openStoryMap(page, testInfo.project.name);
+        const surface = page.getByTestId('story-map-surface');
+        await expect(page.getByTestId('story-map-status-card')).toContainText(
+            CURRENT_CAPTION
+        );
+        await expect(
+            surface.getByRole('button', { name: /^Decision · 1 option/ })
+        ).toHaveCount(0);
+        await expect(
+            surface.getByRole('button', { name: /^Decision · 2 options/ })
+        ).toHaveCount(2);
+
+        const positions = await surface.evaluate(
+            (root, [sceneId, childId]) => {
+                const read = (id: string) => {
+                    const element = root.querySelector(
+                        `[data-node-id="${id}"]`
+                    );
+                    if (!element) return null;
+                    const rect = element.getBoundingClientRect();
+                    return { x: rect.x, y: rect.y, width: rect.width };
+                };
+                return { scene: read(sceneId), child: read(childId) };
+            },
+            [variant.sceneId, next] as const
+        );
+        expect(
+            positions.scene,
+            'one-option scene is on the map'
+        ).not.toBeNull();
+        expect(
+            positions.child,
+            'one-option child is on the map'
+        ).not.toBeNull();
+        if (!positions.scene || !positions.child) return;
+        expect(positions.child.y).toBe(positions.scene.y);
+        // sceneWidth 44 + sceneGap 16: the child is the next node on the row.
+        expect(positions.child.x - positions.scene.x).toBe(60);
+    });
+
+    test('jumps to run, scene and completed ending starts', async ({
+        page,
+    }, testInfo) => {
+        test.skip(!isDesktop(testInfo.project.name), 'Desktop jump semantics');
+        test.setTimeout(90_000);
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const two = TRAIN.two;
+        const twoChild = two.choice.options[0].nextScene;
+        await seedTrainMap(page, [two.sceneId, twoChild], two.sceneId);
+        let sheet = await openStoryMap(page, testInfo.project.name);
+        let surface = page.getByTestId('story-map-surface');
+        const card = sheet.getByTestId('story-map-status-card');
+        await surface.getByRole('button', { name: /^Act 4/ }).click();
+        await expect(
+            card.getByRole('heading', { name: 'Act 4', exact: true })
+        ).toBeVisible();
+        await card.getByRole('button', { name: 'Jump to Act 4' }).click();
+        await expect(sheet).not.toBeVisible();
+        await expect(page).toHaveURL(sceneUrl(twoChild));
+        await expect(page).toHaveURL(/[?&]dialogue=1(?:&|$)/);
+        await expect(page.locator(SETTINGS_TRIGGER)).toBeFocused();
+
+        const four = TRAIN.four;
+        const endingScene = four.choice.options[0].nextScene;
+        await seedTrainMap(page, [four.sceneId, endingScene], endingScene, [
+            endingScene,
+        ]);
+        sheet = await openStoryMap(page, testInfo.project.name);
+        surface = page.getByTestId('story-map-surface');
+        await surface
+            .getByRole('button', { name: 'Expand Acts 1–3', exact: true })
+            .click();
+        await expect(
+            surface.getByRole('button', { name: 'Collapse Acts 1–3' })
+        ).toBeVisible();
+        await surface
+            .getByRole('button', { name: 'Collapse Acts 1–3' })
+            .click();
+        const folded = surface.getByRole('button', {
+            name: 'Expand Acts 1–3',
+            exact: true,
+        });
+        await expect(folded).toBeVisible();
+        await expect(folded).toBeFocused();
+        await folded.click();
+        await surface
+            .getByRole('button', { name: 'Act 2', exact: true })
+            .click();
+        await expect(
+            card.getByRole('heading', { name: 'Act 2', exact: true })
+        ).toBeVisible();
+        await card.getByRole('button', { name: 'Jump to Act 2' }).click();
+        await expect(sheet).not.toBeVisible();
+        await expect(page).toHaveURL(sceneUrl('act2'));
+        await expect(page).toHaveURL(/[?&]dialogue=1(?:&|$)/);
+
+        await seedTrainMap(page, [four.sceneId, endingScene], endingScene, [
+            endingScene,
+        ]);
+        sheet = await openStoryMap(page, testInfo.project.name);
+        surface = page.getByTestId('story-map-surface');
+        await expect(surface.locator('[data-kind="ending"]')).toHaveCount(1);
+        await surface.locator('[data-kind="ending"]').click();
+        await expect(
+            card.getByRole('heading', { name: /^Ending / })
+        ).toBeVisible();
+        await card.getByRole('button', { name: JUMP_TO_ENDING }).click();
+        await expect(sheet).not.toBeVisible();
+        await expect(page).toHaveURL(sceneUrl(endingScene));
+        await expect(page).toHaveURL(/[?&]dialogue=1(?:&|$)/);
+    });
+
+    test('closes on Escape with a polite live status card and restores the opener', async ({
+        page,
+    }, testInfo) => {
+        const two = TRAIN.two;
+        const child = two.choice.options[0].nextScene;
+        await seedTrainMap(page, [two.sceneId, child], two.sceneId);
+        const sheet = await openStoryMap(page, testInfo.project.name);
+        const card = sheet.getByTestId('story-map-status-card');
+        await expect(card).toHaveAttribute('aria-live', 'polite');
+        await expect(card).toContainText(CURRENT_CAPTION);
+        await expect(sheet.locator(':focus')).toHaveCount(1);
+        await page.keyboard.press('Escape');
+        await expect(sheet).not.toBeVisible();
+        await expect(
+            page.locator(
+                isDesktop(testInfo.project.name)
+                    ? SETTINGS_TRIGGER
+                    : MENU_TRIGGER
+            )
+        ).toBeFocused();
+    });
+
+    test('keeps the phone sheet full screen with a hidden-chip decision card in both orientations', async ({
+        page,
+    }, testInfo) => {
+        test.skip(isDesktop(testInfo.project.name), 'Phone sizes');
+        test.setTimeout(90_000);
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        const variant = TRAIN.four;
+        const [taken, second] = variant.choice.options;
+        await seedTrainMap(
+            page,
+            [variant.sceneId, taken.nextScene, second.nextScene],
+            variant.sceneId,
+            [taken.nextScene]
+        );
+        for (const size of [
+            { width: 390, height: 844 },
+            { width: 844, height: 390 },
+        ]) {
+            await page.setViewportSize(size);
+            const sheet = await openStoryMap(page, testInfo.project.name);
+            const card = sheet.getByTestId('story-map-status-card');
+            const surface = page.getByTestId('story-map-surface');
+            const box = await sheet.boundingBox();
+            expect(box, 'phone sheet is measurable').not.toBeNull();
+            if (!box) continue;
+            expect(Math.abs(box.x)).toBeLessThanOrEqual(1);
+            expect(Math.abs(box.y)).toBeLessThanOrEqual(1);
+            expect(Math.abs(box.width - size.width)).toBeLessThanOrEqual(2);
+            expect(Math.abs(box.height - size.height)).toBeLessThanOrEqual(2);
+            await expect(
+                sheet.getByTestId('story-map-status-card')
+            ).toHaveCount(1);
+            await expect(
+                sheet.locator('aside, [data-testid="story-map-details"]')
+            ).toHaveCount(0);
+            await expectNoHorizontalOverflow(page);
+
+            const title = await sheet.locator('#story-map-title').boundingBox();
+            const close = await sheet
+                .getByRole('button', { name: t.closeStoryMap })
+                .boundingBox();
+            const currentCard = await readCardMetrics(card);
+            expectCardFits(currentCard, MOBILE_CARD_HEIGHT);
+            expect(title).not.toBeNull();
+            expect(close).not.toBeNull();
+            if (title && close) {
+                expect(currentCard.y).toBeGreaterThanOrEqual(
+                    Math.min(title.y + title.height, close.y + close.height) - 1
+                );
+            }
+
+            await activateMapNode(
+                surface.getByRole('button', { name: /^Decision · 4 options/ })
+            );
+            await expect(
+                card.getByRole('heading', { name: /Decision · 4 options/i })
+            ).toBeVisible();
+            const chips = card.locator('ul');
+            await expect(chips).toHaveCount(1);
+            await expect(chips).toHaveCSS('display', 'none');
+            await expect(
+                card.getByText(taken.label, { exact: true })
+            ).toBeHidden();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectActionInsideCard(
+                card.getByRole('button', { name: JUMP_TO_DECISION }),
+                card
+            );
+
+            await expect(
+                sheet.getByRole('group', { name: 'Story map legend' })
+            ).toBeVisible();
+            const locate = sheet.getByRole('button', {
+                name: LOCATE_CURRENT,
+            });
+            await expect(locate).toBeVisible();
+            expect(
+                await surface.evaluate(
+                    element =>
+                        element.scrollWidth > element.clientWidth ||
+                        element.scrollHeight > element.clientHeight
+                )
+            ).toBe(true);
+            await locate.click();
+            await expect(
+                card.getByText(CURRENT_CAPTION, { exact: true })
+            ).toBeVisible();
+            expectCardFits(await readCardMetrics(card), MOBILE_CARD_HEIGHT);
+            await expectCurrentCaptionInsideSurface(
+                surface,
+                'caption inside the phone surface after Locate current'
+            );
+            await page.keyboard.press('Escape');
+            await expect(sheet).not.toBeVisible();
+        }
     });
 });

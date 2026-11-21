@@ -16,6 +16,7 @@
     type StoryMapLayoutEdge,
     type StoryMapLayoutNode,
     type StoryMapMetrics,
+    type StoryMapOption,
     type StoryMapRun,
   } from '@/lib/story-map';
   import { actLabel, extractActName } from '@/lib/act-navigation';
@@ -180,7 +181,7 @@
 
   const statusStyles = {
     route: { edge: 'border-l-blue-500', chip: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
-    explored: { edge: 'border-l-teal-500', chip: 'bg-teal-100 text-teal-800', dot: 'bg-teal-500' },
+    explored: { edge: 'border-l-teal-500', chip: 'bg-teal-100 text-teal-800', dot: 'border-2 border-teal-500 bg-white' },
     unread: { edge: 'border-l-slate-400', chip: 'bg-slate-100 text-slate-600', dot: 'border-2 border-dotted border-slate-400' },
     decision: { edge: 'border-l-amber-500' },
   };
@@ -190,8 +191,23 @@
     if (value.kind === 'run') return value.run.status;
     if (value.kind === 'scene') return value.status;
     if (value.kind === 'decision') return 'decision';
-    if (value.kind === 'ending') return 'explored';
+    if (value.kind === 'ending') return value.ending.status;
     return 'unread';
+  }
+
+  function optionStatus(option: StoryMapOption): 'route' | 'explored' | 'unread' {
+    return option.child.kind === 'unknown' ? 'unread' : option.child.status;
+  }
+
+  function optionAnnouncement(option: StoryMapOption): string {
+    const status = optionStatus(option);
+    const label =
+      status === 'route'
+        ? sm.yourRoute
+        : status === 'explored'
+          ? sm.explored
+          : sm.unreadLabel;
+    return sm.withBranch.replace('{label}', label).replace('{branch}', option.label);
   }
 
   function sceneLabel(sceneId: string, run: StoryMapRun | undefined): string {
@@ -426,13 +442,17 @@
   }
 
   let wasOpen = false;
-  $effect(() => {
+  // Reset before mount so reopening never briefly mounts a stale selection
+  // whose Jump button focusTrap would grab before a post-mount effect clears it.
+  $effect.pre(() => {
     if (open === wasOpen) return;
     wasOpen = open;
+    selectedId = null;
+    selectedKind = null;
+    expandedRunIds.clear();
+  });
+  $effect(() => {
     if (open) {
-      selectedId = null;
-      selectedKind = null;
-      expandedRunIds.clear();
       void tick().then(() => scrollCurrentIntoView());
     }
   });
@@ -471,14 +491,6 @@
             {storyTitle}
           </h2>
         </div>
-        <button
-          type="button"
-          class="col-start-2 row-start-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-md hover:bg-white lg:col-start-3"
-          aria-label={sm.close}
-          onclick={onClose}
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
         <div
           data-testid="story-map-status-card"
           aria-live="polite"
@@ -514,20 +526,36 @@
             <button type="button" class="ml-auto min-h-11 max-w-[55%] shrink-0 rounded-xl bg-blue-600 px-3 text-sm font-semibold leading-tight text-white" onclick={() => onJump(selection.sceneId, 'start')}>{sm.jumpTo.replace('{label}', selection.label)}</button>
           {:else if selection.kind === 'decision'}
             {@const d = selection.decision}
+            {@const prompt = choices[d.choiceId]?.prompt}
+            {@const visibleOptions = d.options.length > 4 ? d.options.slice(0, 3) : d.options}
+            {@const overflowOptions = d.options.length > 4 ? d.options.slice(3) : []}
             <div class="min-w-0 lg:max-w-[220px] lg:shrink-0">
               <h3 class="truncate text-xs font-bold uppercase tracking-wide text-amber-700">{sm.decisionNode.replace('{decision}', sm.decision).replace('{options}', statText(sm.options, d.options.length))}</h3>
-              {#if choices[d.choiceId]?.prompt}<p class="line-clamp-2 text-sm font-semibold leading-snug">{choices[d.choiceId].prompt}</p>{/if}
+              {#if prompt}<p title={prompt} class="line-clamp-2 text-sm font-semibold leading-snug">{prompt}</p>{/if}
             </div>
-            <ul class="hidden min-w-0 gap-1 overflow-hidden lg:grid lg:grid-cols-2">
-              {#each d.options as option (option.id)}
-                {@const status = option.child.kind === 'unknown' ? 'unread' : option.child.status}
-                {@const label = status === 'route' ? sm.yourRoute : status === 'explored' ? sm.explored : sm.unreadLabel}
+            <ul class="max-lg:sr-only min-w-0 gap-1 overflow-hidden lg:grid lg:grid-cols-2">
+              {#each visibleOptions as option (option.id)}
+                {@const status = optionStatus(option)}
                 <li class={cn('flex min-w-0 items-center gap-1 rounded-full px-2 py-1 text-xs', statusStyles[status].chip)}>
-                  <span class={cn('h-2 w-2 shrink-0 rounded-full', statusStyles[status].dot)} aria-hidden="true"></span>
-                  <span aria-hidden="true" class="truncate">{option.label}</span>
-                  <span class="sr-only">{sm.withBranch.replace('{label}', label).replace('{branch}', option.label)}</span>
+                  <span class={cn('h-2.5 w-2.5 shrink-0 rounded-full', statusStyles[status].dot)} aria-hidden="true"></span>
+                  <span aria-hidden="true" title={option.label} class="truncate">{option.label}</span>
+                  <span class="sr-only">{optionAnnouncement(option)}</span>
                 </li>
               {/each}
+              {#if overflowOptions.length > 0}
+                <li class="flex min-w-0 items-center justify-center rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                  <span
+                    aria-hidden="true"
+                    title={overflowOptions.map(o => o.label).join(', ')}
+                    class="truncate"
+                  >+{overflowOptions.length}</span>
+                  <span class="sr-only">
+                    {#each overflowOptions as option, idx (option.id)}
+                      <span>{optionAnnouncement(option)}</span>{#if idx < overflowOptions.length - 1}, {/if}
+                    {/each}
+                  </span>
+                </li>
+              {/if}
             </ul>
             {#if selection.precedingSceneId}
               {@const preceding = selection.precedingSceneId}
@@ -540,6 +568,14 @@
             <p class="text-sm italic text-slate-500">{sm.unreadLabel}</p>
           {/if}
         </div>
+        <button
+          type="button"
+          class="col-start-2 row-start-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/85 text-slate-600 shadow-md hover:bg-white lg:col-start-3"
+          aria-label={sm.close}
+          onclick={onClose}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
       </div>
 
       <div class="flex min-h-0 flex-1 flex-col p-4 sm:p-6">

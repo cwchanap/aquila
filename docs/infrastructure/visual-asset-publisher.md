@@ -23,6 +23,34 @@ or rollback.
 - Production is encoded exactly once. Preview receives the exact production
   manifest bytes; there is no preview-to-production copy command.
 
+## Publishing from GitHub Actions
+
+The `Visual Release` workflow (`.github/workflows/visual-release.yml`) runs the
+production publish for you, using the same release credentials as `Media Sync`.
+It needs no manual step after a merge.
+
+- **On merge.** Every push to `main` that touches
+  `packages/assets/media/<story>/backgrounds/` or `characters/` publishes and
+  activates that story's release (`publish --confirm-production`), then checks
+  the public CDN serves the exact manifest. `the_seventh_mirror` is skipped: it
+  follows the preview pointers and goes through the release gate. Reference
+  images under `backgrounds/_reference/` do not trigger it.
+- **By hand.** Actions, Visual Release, Run workflow. `publish` releases the art
+  on the branch you pick, which is how to go live before a merge (Vercel
+  previews read the production release). `rollback` with a `release_id` returns
+  to an earlier release. A merge after a manual publish of the same art is a
+  no-op, apart from the encode time.
+- **Rolling back.** Every run's summary shows the release id that was live
+  before it. Run the workflow with `rollback`, the story and that id.
+- **Time.** Every publish re-encodes every image (AVIF dominates, about 20
+  seconds per background on one core), four at a time on a four-core runner:
+  5 to 8 seconds per image, so a full `train_adventure` release (about 180
+  images) takes 15 to 25 minutes. Runs for the same story queue one at a
+  time; different stories run in parallel.
+- **Failure.** A conflict or storage error fails the run and leaves the live
+  release as it was. Immutable objects already written are kept; re-run the
+  workflow.
+
 ## What gets published
 
 There is no per-story release plan. The publisher reads the story's generated

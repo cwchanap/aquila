@@ -1,0 +1,192 @@
+name: Visual Release
+
+# Publishes a story's backgrounds and portraits to the R2 delivery bucket and
+# makes that release live. Generated media is served from the CDN, never from
+# the Vercel bundle, so merging an art PR to main is what puts the new art in
+# the reader. Run it by hand to go live before a merge (Vercel previews read
+# the production release too) or to roll back.
+#
+# The Seventh Mirror is left out: it follows the per-environment preview
+# pointers and goes through the Visual Novel Release Gate instead.
+on:
+  push:
+    branches: ['main']
+    paths:
+      - 'packages/assets/media/*/backgrounds/**'
+      - 'packages/assets/media/*/characters/**'
+      - '!packages/assets/media/*/backgrounds/_reference/**'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: publish releases the art on the selected branch; rollback returns to an earlier release
+        type: choice
+        options: [publish, rollback]
+        default: publish
+      story:
+        description: Story id, e.g. train_adventure
+        type: string
+        required: true
+      release_id:
+        description: Rollback only. Release id to return to (sha256-<64 hex>), shown in an earlier run's summary
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: '1.3.1'
+  TURBO_TELEMETRY_DISABLED: '1'
+  # Public origin of the R2 delivery host, not a secret.
+  ASSET_BASE_URL: https://assets.aquila.cwchanap.dev
+
+jobs:
+  stories:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      stories: ${{ steps.pick.outputs.stories }}
+    steps:
+      - name: Pick the stories to release
+        id: pick
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_STORY: ${{ inputs.story }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "stories=$(jq -cn --arg story "$INPUT_STORY" '[$story]')" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # A push can carry many commits (Rebase and merge), so ask GitHub
+          # for everything the push changed instead of reading the last commit.
+          changed=$(gh api --paginate "repos/$GITHUB_REPOSITORY/compare/$BEFORE_SHA...$HEAD_SHA" \
+            --jq '.files[] | .filename, (.previous_filename // empty)')
+          stories=$(printf '%s\n' "$changed" \
+            | grep -v '/backgrounds/_reference/' \
+            | sed -nE 's#^packages/assets/media/([^/]+)/(backgrounds|characters)/.*#\1#p' \
+            | sort -u \
+            | grep -vx the_seventh_mirror || true)
+          echo "Stories with changed art: ${stories:-none}"
+          echo "stories=$(printf '%s' "$stories" | jq -Rsc 'split("\n") | map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: stories
+    if: needs.stories.outputs.stories != '[]'
+    runs-on: ubuntu-latest
+    # Encoding takes 5 to 8 seconds per image on four cores, so a full
+    # train_adventure release is 15 to 25 minutes.
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        story: ${{ fromJSON(needs.stories.outputs.stories) }}
+    # One run per story at a time. A queued run is only replaced by a newer
+    # run for the same story, and that run publishes all of main's art.
+    concurrency:
+      group: visual-release-${{ matrix.story }}
+      cancel-in-progress: false
+    env:
+      STORY: ${{ matrix.story }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Publish and activate
+        if: inputs.action != 'rollback'
+        shell: bash
+        env:
+          R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
+          R2_RELEASE_SECRET_ACCESS_KEY: ${{ secrets.R2_RELEASE_SECRET_ACCESS_KEY }}
+        run: |
+          mkdir -p .tmp
+          bun packages/infra-cloudflare/src/publisher/cli.ts publish \
+            --story "$STORY" \
+            --environment production \
+            --source-root packages/assets/media \
+            --destination r2 \
+            --confirm-production "$STORY" \
+            --json > .tmp/report.json
+          jq -r .manifestSha256 .tmp/report.json > .tmp/manifest-sha256
+
+      - name: Roll back
+        if: inputs.action == 'rollback'
+        shell: bash
+        env:
+          R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
+          R2_RELEASE_SECRET_ACCESS_KEY: ${{ secrets.R2_RELEASE_SECRET_ACCESS_KEY }}
+          RELEASE_ID: ${{ inputs.release_id }}
+        run: |
+          mkdir -p .tmp
+          if [[ -z "$RELEASE_ID" ]]; then
+            echo 'release_id is required to roll back' >&2
+            exit 1
+          fi
+          bun packages/infra-cloudflare/src/publisher/cli.ts releases \
+            --story "$STORY" \
+            --environment production \
+            --destination r2 \
+            --json > .tmp/releases.json
+          jq -r --arg id "$RELEASE_ID" \
+            '.releases[] | select(.releaseId == $id) | .manifestSha256 // empty' \
+            .tmp/releases.json > .tmp/manifest-sha256
+          if [[ ! -s .tmp/manifest-sha256 ]]; then
+            echo "No stored release $RELEASE_ID for $STORY" >&2
+            exit 1
+          fi
+          bun packages/infra-cloudflare/src/publisher/cli.ts rollback \
+            --story "$STORY" \
+            --environment production \
+            --release "$RELEASE_ID" \
+            --expect-manifest-sha256 "$(cat .tmp/manifest-sha256)" \
+            --confirm-production "$STORY" \
+            --destination r2 \
+            --json > .tmp/report.json
+
+      - name: Verify the CDN serves the live release
+        shell: bash
+        run: |
+          bun packages/infra-cloudflare/src/verify.ts \
+            --story "$STORY" \
+            --environment production \
+            --expect-manifest-sha256 "$(cat .tmp/manifest-sha256)" \
+            --asset-base-url "$ASSET_BASE_URL"
+
+      - name: Summarize the release
+        if: always()
+        shell: bash
+        run: |
+          if [[ ! -f .tmp/report.json ]]; then
+            echo "### $STORY: no report, see the failed step above" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          jq -r '
+            "### \(.storyId): \(.command) \(.status)",
+            "",
+            "| | |",
+            "|---|---|",
+            "| Live release | `\(.releaseId // "none")` |",
+            "| Manifest sha256 | `\(.manifestSha256 // "none")` |",
+            "| Live before | `\(.pointer.beforeReleaseId // "none")` |",
+            "| Objects created / reused | \(.counts.objectsCreated // 0) / \(.counts.objectsReused // 0) |"
+          ' .tmp/report.json >> "$GITHUB_STEP_SUMMARY"
+          before=$(jq -r '.pointer.beforeReleaseId // empty' .tmp/report.json)
+          if [[ -n "$before" && "$before" != "$(jq -r '.releaseId // empty' .tmp/report.json)" ]]; then
+            {
+              echo
+              echo "To undo, run this workflow with action \`rollback\`, story \`$STORY\` and release id \`$before\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

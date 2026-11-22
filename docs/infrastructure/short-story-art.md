@@ -18,9 +18,8 @@ the Vercel bundle (see "Generated Asset Delivery" in `CLAUDE.md`).
 the allowlist of stories that always read the **production** release, including
 on preview deployments. The Seventh Mirror follows the per-environment preview
 pointers instead. A reader's saved Text or Visual Novel preference is
-preserved. Nothing publishes a visual release on merge: publish the story to
-production (below) before its allowlist entry ships, or every visual-mode
-reader hits a missing release. `src/__tests__/production-visual-allowlist.test.ts`
+preserved. Publish the story to production (below) before its allowlist entry ships, or
+every visual-mode reader hits a missing release. `src/__tests__/production-visual-allowlist.test.ts`
 keeps the allowlist in step with the stories that have art in
 `packages/assets/media/`.
 
@@ -31,8 +30,11 @@ in `apps/web/.env` to see everything locally.
 
 ## Publishing
 
-Visual releases go through the publisher (needs `R2_RELEASE_ACCESS_KEY_ID` and
-`R2_RELEASE_SECRET_ACCESS_KEY`):
+Visual releases go through the publisher. The `Visual Release` workflow runs it
+when a PR that changes a story's backgrounds or portraits merges to `main`, so
+merged art goes live by itself (see "Publishing from GitHub Actions" in
+`visual-asset-publisher.md`). To publish from a machine instead, set
+`R2_RELEASE_ACCESS_KEY_ID` and `R2_RELEASE_SECRET_ACCESS_KEY` and run:
 
 ```sh
 bun --filter @aquila/infra-cloudflare assets -- publish \

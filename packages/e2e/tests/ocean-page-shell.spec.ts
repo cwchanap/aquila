@@ -3,6 +3,8 @@ import { getTranslations } from '@aquila/stories/translations';
 
 const t = getTranslations('en');
 
+test.use({ viewport: { width: 1440, height: 900 } });
+
 /**
  * The shared Ocean shell puts small Back and tagline text over the light sky
  * gradient. WCAG AA requires 4.5:1 for this text; the gradient's lightest

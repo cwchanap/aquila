@@ -35,20 +35,20 @@ name: Sato Takumi
 name: Saito Ren
 
 - facade: Wants to pass as an expert on Tokyo nightlife and strikes up a conversation with the students.
-- excuse: Insists the endless tunnel is common knowledge while sweat beads on his forehead.
+- excuse: Insists the unusually long tunnel is common knowledge while sweat beads on his forehead.
 
 ## yamamoto_koji
 
 name: Yamamoto Koji
 
-- commuter: Has ridden the Chuo Line for thirty years and knows this tunnel better than anyone.
-- emergency: Refuses to touch the emergency call button for fear of stopping the train inside the tunnel.
+- commuter: Has ridden the Chuo Line for thirty years and knows this tunnel very well.
+- emergency: Warns against pressing the emergency call button, for fear of stopping the train inside the tunnel.
 
 ## ito_nana
 
 name: Ito Nana
 
-- wife: Clutches her husband and keeps asking whether he really knows this line.
+- wife: Keeps asking her husband whether he really knows this line.
 - hell: Seeing the other world, she asks whether they are dead and this is hell.
 
 ## ito_makoto
@@ -62,13 +62,13 @@ name: Ito Makoto
 
 name: Kobayashi Shota
 
-- dark: Is afraid of the dark and cries that he wants to go home.
+- dark: Is afraid of the dark and says he wants to go home.
 
 ## kobayashi_tomoko
 
 name: Kobayashi Tomoko
 
-- mother: Keeps her young children close and tries to comfort them.
+- mother: Comforts the frightened child.
 - phone: Tries to distract the children with cartoons, but her phone says it cannot load.
 
 ## kobayashi_yudai
@@ -77,15 +77,13 @@ name: Kobayashi Yudai
 
 known-as: Steady Father
 
-- family: The father of the family of four, staying beside his wife and two children.
-
 ## kobayashi_hina
 
 name: Kobayashi Hina
 
 known-as: Sensible Big Sister
 
-- sister: The twelve-year-old big sister, trying hard to look unafraid.
+- sister: The little boy's big sister; her mother says she isn't scared.
 
 ## nakamura_hayato
 
@@ -101,7 +99,7 @@ name: Shimizu Emi
 known-as: Quiet Girl
 
 - sketchbook: Carries a sketchbook and draws quietly on the platform.
-- earphones: Wears retro white-cord earphones, absorbed enough to miss the commotion.
+- earphones: Wears retro wired earphones.
 - drawing: Keeps drawing in the tunnel, filling the page with a strange totem of spirals and sharp angles.
 
 ## ling_mo

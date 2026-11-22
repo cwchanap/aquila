@@ -479,6 +479,35 @@ test.describe('phone character notes', () => {
 test.describe('signed-out progress character notes', () => {
     test.use({ viewport: { width: 1440, height: 900 } });
 
+    test('keeps the standalone layout wide with one character met', async ({
+        page,
+    }) => {
+        await page.addInitScript(key => {
+            localStorage.setItem(
+                key,
+                JSON.stringify({
+                    train_adventure: {
+                        sceneId: 'act1',
+                        dialogueIndex: 4,
+                        updatedAt: Date.now(),
+                        finished: false,
+                        endings: [],
+                        visited: ['act1'],
+                    },
+                })
+            );
+        }, PROGRESS_KEY);
+        await page.goto('/en/notes?story=train_adventure');
+        await expect(page.getByText('Characters met: 1')).toBeVisible({
+            timeout: ASYNC_LOAD_TIMEOUT,
+        });
+        const card = page.locator('.characters');
+        const box = await card.boundingBox();
+        expect(box).not.toBeNull();
+        expect(box!.width).toBeGreaterThanOrEqual(1000);
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('opens Characters from My Progress, returns and continues at the saved line', async ({
         page,
     }) => {
@@ -494,7 +523,10 @@ test.describe('signed-out progress character notes', () => {
                 const sentinel = 'aquila:e2e:character-notes-progress-seeded';
                 if (sessionStorage.getItem(sentinel) === '1') return;
                 sessionStorage.setItem(sentinel, '1');
-                localStorage.setItem(countKey, '1');
+                localStorage.setItem(
+                    countKey,
+                    String(Number(localStorage.getItem(countKey) ?? '0') + 1)
+                );
                 const now = Date.now();
                 localStorage.setItem(
                     key,

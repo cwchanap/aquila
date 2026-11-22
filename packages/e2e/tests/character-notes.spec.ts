@@ -9,6 +9,10 @@ const STORY_ID = 'train_adventure';
 const PROGRESS_KEY = 'aquila:storyProgress:v1';
 const MODE_KEY = 'aquila:reader-mode:v1';
 const SEED_COUNT_KEY = 'aquila:e2e:character-notes-seeds';
+// The dev server compiles story modules lazily; two parallel Playwright
+// workers can stall its responses for >5s, so hydration and async data waits
+// need more than Playwright's 5s default.
+const ASYNC_LOAD_TIMEOUT = 15_000;
 
 const readerUrl = (dialogue: number, scene = 'act1') =>
     `/en/reader?story=${STORY_ID}&scene=${scene}&dialogue=${dialogue}`;
@@ -478,6 +482,9 @@ test.describe('signed-out progress character notes', () => {
     test('opens Characters from My Progress, returns and continues at the saved line', async ({
         page,
     }) => {
+        // This journey performs two full page loads and a Back reload; lazy
+        // dev-server compiles can push it beyond the 30s default.
+        test.setTimeout(60_000);
         await page.addInitScript(
             ([key, countKey]) => {
                 // Seed once per browser session. A separate sentinel survives
@@ -515,7 +522,9 @@ test.describe('signed-out progress character notes', () => {
         );
         await seedInstantTyping(page);
         await page.goto('/en/progress');
-        await expect(page.getByTestId('count-started')).toContainText('2');
+        await expect(page.getByTestId('count-started')).toContainText('2', {
+            timeout: ASYNC_LOAD_TIMEOUT,
+        });
         await expect
             .poll(() =>
                 page.evaluate(key => localStorage.getItem(key), SEED_COUNT_KEY)
@@ -531,7 +540,7 @@ test.describe('signed-out progress character notes', () => {
             page.evaluate(key => localStorage.getItem(key), SEED_COUNT_KEY);
 
         const chip = page.getByRole('link', { name: /Characters\s+8/ });
-        await expect(chip).toBeVisible();
+        await expect(chip).toBeVisible({ timeout: ASYNC_LOAD_TIMEOUT });
         await expect(chip).toHaveAttribute(
             'href',
             '/en/notes?story=train_adventure'
@@ -567,7 +576,9 @@ test.describe('signed-out progress character notes', () => {
 
         await chip.click();
         await expect(page).toHaveURL('/en/notes?story=train_adventure');
-        await expect(page.getByText('Characters met: 8')).toBeVisible();
+        await expect(page.getByText('Characters met: 8')).toBeVisible({
+            timeout: ASYNC_LOAD_TIMEOUT,
+        });
         expect(await savedPosition(page)).toEqual(saved);
         expect(await seedCount()).toBe('1');
         await expect(page.locator('.cast button')).toHaveCount(16);
@@ -602,9 +613,11 @@ test.describe('signed-out progress character notes', () => {
         }
 
         await page.goBack();
-        await expect(page.getByTestId('count-started')).toContainText('2');
+        await expect(page.getByTestId('count-started')).toContainText('2', {
+            timeout: ASYNC_LOAD_TIMEOUT,
+        });
         await expect(row).toHaveAttribute('href', savedHref);
-        await expect(chip).toBeVisible();
+        await expect(chip).toBeVisible({ timeout: ASYNC_LOAD_TIMEOUT });
         expect(await savedPosition(page)).toEqual(saved);
         expect(await seedCount()).toBe('1');
 

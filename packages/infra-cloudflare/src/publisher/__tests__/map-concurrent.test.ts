@@ -50,4 +50,25 @@ describe('mapConcurrent', () => {
         ).rejects.toThrow('boom');
         expect(started.length).toBeLessThan(6);
     });
+
+    it('waits for calls already in flight before it rejects', async () => {
+        let releaseSlow: () => void = () => {};
+        const slowDone = new Promise<void>(resolve => {
+            releaseSlow = resolve;
+        });
+        let settled = false;
+        const run = mapConcurrent([0, 1], 2, async value => {
+            if (value === 0) await slowDone;
+            else throw new Error('boom');
+            return value;
+        }).catch((error: unknown) => {
+            settled = true;
+            return error;
+        });
+        await tick();
+        await tick();
+        expect(settled).toBe(false);
+        releaseSlow();
+        expect(await run).toEqual(new Error('boom'));
+    });
 });

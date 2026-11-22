@@ -47,24 +47,38 @@ jobs:
     outputs:
       stories: ${{ steps.pick.outputs.stories }}
     steps:
+      # A push can carry many commits (Rebase and merge) and many files, so
+      # diff the commit before the push against the pushed one with git. Trees
+      # only, so no image is downloaded, and unlike the compare API there is
+      # no cap on the number of files.
+      - name: Fetch the pushed commits (trees only)
+        if: github.event_name == 'push'
+        uses: actions/checkout@v7
+        with:
+          filter: blob:none
+          sparse-checkout: .github
+          fetch-depth: 1
+
       - name: Pick the stories to release
         id: pick
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           INPUT_STORY: ${{ inputs.story }}
           BEFORE_SHA: ${{ github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ "$INPUT_STORY" == "the_seventh_mirror" ]]; then
+              echo 'The Seventh Mirror goes through the Visual Novel Release Gate, not this workflow' >&2
+              exit 1
+            fi
             echo "stories=$(jq -cn --arg story "$INPUT_STORY" '[$story]')" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # A push can carry many commits (Rebase and merge), so ask GitHub
-          # for everything the push changed instead of reading the last commit.
-          changed=$(gh api --paginate "repos/$GITHUB_REPOSITORY/compare/$BEFORE_SHA...$HEAD_SHA" \
-            --jq '.files[] | .filename, (.previous_filename // empty)')
+          git fetch --no-tags --depth=1 --filter=blob:none origin "$BEFORE_SHA"
+          # --no-renames lists both the old and the new path of a moved file.
+          changed=$(git diff --no-renames --name-only "$BEFORE_SHA" "$HEAD_SHA" -- packages/assets/media)
           stories=$(printf '%s\n' "$changed" \
             | grep -v '/backgrounds/_reference/' \
             | sed -nE 's#^packages/assets/media/([^/]+)/(backgrounds|characters)/.*#\1#p' \
@@ -95,6 +109,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
+          # A merge publishes the tip of main, not the pushed commit: re-running
+          # an old run after a newer release must not bring older art back.
+          # A manual run publishes the branch it was started on.
+          ref: ${{ github.event_name == 'push' && 'refs/heads/main' || github.sha }}
           persist-credentials: false
 
       - name: Setup Bun
@@ -173,11 +191,12 @@ jobs:
             echo "### $STORY: no report, see the failed step above" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          jq -r '
+          jq -r --arg commit "$(git rev-parse --short HEAD)" '
             "### \(.storyId): \(.command) \(.status)",
             "",
             "| | |",
             "|---|---|",
+            "| Built from commit | `\($commit)` |",
             "| Live release | `\(.releaseId // "none")` |",
             "| Manifest sha256 | `\(.manifestSha256 // "none")` |",
             "| Live before | `\(.pointer.beforeReleaseId // "none")` |",

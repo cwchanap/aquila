@@ -41,7 +41,9 @@ It needs no manual step after a merge.
   on the branch you pick, which is how to go live before a merge (Vercel
   previews read the production release). `rollback` with a `release_id` returns
   to an earlier release. A merge after a manual publish of the same art is a
-  no-op, apart from the encode time.
+  no-op, apart from the encode time. The last run for a story wins: a manual
+  publish from a branch stays live until the next run for that story, and
+  re-running an old merge run publishes `main`'s art again.
 - **Rolling back.** Every run's summary shows the release id that was live
   before it. Run the workflow with `rollback`, the story and that id.
 - **Time.** Every publish re-encodes every image (AVIF dominates, about 20
@@ -49,9 +51,11 @@ It needs no manual step after a merge.
   5 to 8 seconds per image, so a full `train_adventure` release (about 180
   images) takes 15 to 25 minutes. Runs for the same story queue one at a
   time; different stories run in parallel.
-- **Failure.** A conflict or storage error fails the run and leaves the live
-  release as it was. Immutable objects already written are kept; re-run the
-  workflow.
+- **Failure.** A conflict fails the run and leaves the live release as it was.
+  A storage error while the pointer is written can have an unknown outcome (the
+  write may have landed), so check which release is live with `releases` before
+  assuming the previous one still is. Immutable objects already written are
+  kept; re-run the workflow.
 
 ## What gets published
 

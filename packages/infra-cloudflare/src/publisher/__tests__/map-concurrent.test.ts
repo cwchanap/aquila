@@ -38,37 +38,39 @@ describe('mapConcurrent', () => {
         expect(result).toEqual([]);
     });
 
-    it('rethrows the first failure and starts no further items', async () => {
-        const started: number[] = [];
+    it('rethrows the first failure', async () => {
         await expect(
-            mapConcurrent([0, 1, 2, 3, 4, 5], 2, async value => {
-                started.push(value);
-                await tick();
+            mapConcurrent([0, 1, 2], 1, async value => {
                 if (value === 1) throw new Error('boom');
                 return value;
             })
         ).rejects.toThrow('boom');
-        expect(started.length).toBeLessThan(6);
     });
 
-    it('waits for calls already in flight before it rejects', async () => {
+    it('lets running calls settle, starts nothing new and keeps the first error', async () => {
+        const started: number[] = [];
         let releaseSlow: () => void = () => {};
         const slowDone = new Promise<void>(resolve => {
             releaseSlow = resolve;
         });
         let settled = false;
-        const run = mapConcurrent([0, 1], 2, async value => {
-            if (value === 0) await slowDone;
-            else throw new Error('boom');
-            return value;
+        const run = mapConcurrent([0, 1, 2, 3], 2, async value => {
+            started.push(value);
+            if (value === 0) {
+                await slowDone;
+                throw new Error('late');
+            }
+            throw new Error('boom');
         }).catch((error: unknown) => {
             settled = true;
             return error;
         });
         await tick();
         await tick();
+        // Item 1 failed while item 0 is still running: still pending.
         expect(settled).toBe(false);
         releaseSlow();
         expect(await run).toEqual(new Error('boom'));
+        expect(started).toEqual([0, 1]);
     });
 });

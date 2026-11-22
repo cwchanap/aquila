@@ -196,14 +196,15 @@ jobs:
             "",
             "| | |",
             "|---|---|",
-            "| Built from commit | `\($commit)` |",
-            "| Live release | `\(.releaseId // "none")` |",
+            (if .command == "publish" then "| Built from commit | `\($commit)` |" else empty end),
+            "| Release in this run | `\(.releaseId // "none")` |",
+            "| Live release | `\(.pointer.afterReleaseId // "unknown")` |",
             "| Manifest sha256 | `\(.manifestSha256 // "none")` |",
             "| Live before | `\(.pointer.beforeReleaseId // "none")` |",
             "| Objects created / reused | \(.counts.objectsCreated // 0) / \(.counts.objectsReused // 0) |"
           ' .tmp/report.json >> "$GITHUB_STEP_SUMMARY"
           before=$(jq -r '.pointer.beforeReleaseId // empty' .tmp/report.json)
-          if [[ -n "$before" && "$before" != "$(jq -r '.releaseId // empty' .tmp/report.json)" ]]; then
+          if [[ -n "$before" && "$(jq -r '.pointer.changed // false' .tmp/report.json)" == "true" ]]; then
             {
               echo
               echo "To undo, run this workflow with action \`rollback\`, story \`$STORY\` and release id \`$before\`."

@@ -1,19 +1,20 @@
 <script lang="ts">
-  /* global HTMLButtonElement */
-  import { tick } from 'svelte';
+  /* global HTMLButtonElement, HTMLDialogElement */
   import type { Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import type { CharacterNotesCharacterView, CharacterNotesView } from '@/lib/character-notes';
+  import { focusTrap } from '@/lib/focus-trap';
 
-  let { model, locale, portraitUrl }: {
+  let { model, locale, portraitUrl, onMobileDetailChange }: {
     model: CharacterNotesView;
     locale: Locale;
     portraitUrl?: (characterId: string) => string | null;
+    onMobileDetailChange?: (open: boolean) => void;
   } = $props();
   let selectedId = $state<string | null>(null);
   let mobileDetail = $state(false);
-  let backButton: HTMLButtonElement | null = null;
   let selectedButton: HTMLButtonElement | null = null;
+  let detailAnnounced = false;
   let t = $derived(getTranslations(locale).notes);
   let characters = $derived([
     ...model.characters.filter(character => character.met),
@@ -46,24 +47,52 @@
     }
   }
 
-  async function select(character: CharacterNotesCharacterView, button: HTMLButtonElement) {
+  function select(character: CharacterNotesCharacterView, button: HTMLButtonElement) {
     selectedId = character.id;
-    mobileDetail = true;
     if (window.matchMedia?.('(max-width: 640px)').matches) {
       selectedButton = button;
-      await tick();
-      backButton?.focus();
+      button.focus();
+      mobileDetail = true;
+      notifyDetail(true);
     }
   }
 
   function back() {
+    if (!mobileDetail) return;
     mobileDetail = false;
-    selectedButton?.focus();
+    notifyDetail(false);
   }
 
-  function captureBack(button: HTMLButtonElement) {
-    backButton = button;
-    return () => { backButton = null; };
+  function notifyDetail(open: boolean) {
+    if (detailAnnounced === open) return;
+    detailAnnounced = open;
+    onMobileDetailChange?.(open);
+  }
+
+  function phoneDialog(dialog: HTMLDialogElement) {
+    const trap = focusTrap(dialog, { enabled: true, restoreFocus: selectedButton });
+    dialog.showModal();
+    dialog.querySelector<HTMLButtonElement>('button')?.focus();
+    const stopSheetKeys = (event: KeyboardEvent) => {
+      if (event.key === 'Tab' || event.key === 'Escape') event.stopPropagation();
+    };
+    const media = window.matchMedia('(max-width: 640px)');
+    const onResize = () => { if (!media.matches) back(); };
+    dialog.addEventListener('keydown', stopSheetKeys);
+    media.addEventListener?.('change', onResize);
+    return () => {
+      media.removeEventListener?.('change', onResize);
+      dialog.removeEventListener('keydown', stopSheetKeys);
+      dialog.close();
+      trap.destroy();
+      notifyDetail(false);
+    };
+  }
+
+  function cancelDetail(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    back();
   }
 </script>
 
@@ -76,6 +105,29 @@
       {initials(character)}
     {/if}
   </span>
+{/snippet}
+
+{#snippet detail()}
+  {#if selected}
+    <div class="portrait">{@render avatar(selected, true)}</div>
+    <div class="details">
+      <h2>{selected.met ? label(selected) : t.unknown}</h2>
+      {#if selected.met}
+        {#if !selected.nameKnown}<p class="unknown-name">{t.nameUnknown}</p>{/if}
+        <h3>{t.facts}</h3>
+        <ul class="facts">
+          {#each selected.facts as fact (fact.id)}
+            <li><p>{fact.text}</p><small>{fact.act}</small></li>
+          {/each}
+          {#each Array(Math.max(0, selected.factCount - selected.facts.length)), i (i)}
+            <li class="locked" aria-label={t.locked}><span></span><span></span></li>
+          {/each}
+        </ul>
+      {/if}
+    </div>
+  {:else}
+    <p class="placeholder">{t.select}</p>
+  {/if}
 {/snippet}
 
 <section class="characters" aria-label={t.title}>
@@ -96,29 +148,13 @@
       {/each}
     </ul>
   </div>
-  <div class={['detail', { 'mobile-open': mobileDetail }]}>
-    <button type="button" class="back" {@attach captureBack} onclick={back}>{t.back}</button>
-    {#if selected}
-      <div class="portrait">{@render avatar(selected, true)}</div>
-      <div class="details">
-        <h2>{selected.met ? label(selected) : t.unknown}</h2>
-        {#if selected.met}
-          {#if !selected.nameKnown}<p class="unknown-name">{t.nameUnknown}</p>{/if}
-          <h3>{t.facts}</h3>
-          <ul class="facts">
-            {#each selected.facts as fact (fact.id)}
-              <li><p>{fact.text}</p><small>{fact.act}</small></li>
-            {/each}
-            {#each Array(Math.max(0, selected.factCount - selected.facts.length)), i (i)}
-              <li class="locked" aria-label={t.locked}><span></span><span></span></li>
-            {/each}
-          </ul>
-        {/if}
-      </div>
-    {:else}
-      <p class="placeholder">{t.select}</p>
-    {/if}
-  </div>
+  <div class="detail desktop-detail">{@render detail()}</div>
+  {#if mobileDetail}
+    <dialog class="detail mobile-dialog" aria-modal="true" aria-label={selected ? label(selected) : t.unknown} oncancel={cancelDetail} {@attach phoneDialog}>
+      <button type="button" class="back" onclick={back}>{t.back}</button>
+      {@render detail()}
+    </dialog>
+  {/if}
 </section>
 
 <style>
@@ -148,7 +184,8 @@
   .locked span { display: block; width: 100%; height: .55rem; margin: .5rem 0; border-radius: 1rem; background: #ffffff20; }
   .locked span + span { width: 60%; }
   .placeholder { margin: auto; color: #cbd5e1; }
-  .back { display: none; }
+  .back { display: block; align-self: flex-start; min-width: 44px; min-height: 44px; padding: .5rem 1rem; border: 0; background: transparent; color: white; cursor: pointer; }
+  .mobile-dialog { position: fixed; inset: 0; display: flex; flex-direction: column; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0; color: white; overflow-y: auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
   @media (max-width: 640px) {
     .characters { display: block; min-height: 0; }
     .cast { border: 0; }
@@ -157,9 +194,7 @@
     .cast button.chosen { background: #ffffff0e; }
     .cast .avatar { width: 100%; height: auto; aspect-ratio: 3 / 4; border-radius: .6rem; }
     .row-text { font-size: .8rem; }
-    .detail { display: none; }
-    .detail.mobile-open { position: fixed; z-index: 80; inset: 0; display: flex; flex-direction: column; overflow-y: auto; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-    .back { display: block; align-self: flex-start; min-width: 44px; min-height: 44px; padding: .5rem 1rem; border: 0; background: transparent; color: white; cursor: pointer; }
+    .desktop-detail { display: none; }
     .portrait { flex: none; min-height: 14rem; }
     .avatar.large { width: 9rem; }
     .details { flex: none; padding: 1.5rem; }

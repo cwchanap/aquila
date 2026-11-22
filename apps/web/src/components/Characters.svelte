@@ -136,7 +136,7 @@
     <ul>
       {#each characters as character (character.id)}
         <li>
-          <button type="button" aria-label={!character.met ? t.unknown : undefined} class={{ chosen: selected?.id === character.id }} onclick={event => select(character, event.currentTarget)}>
+          <button type="button" aria-label={!character.met ? t.unknown : undefined} aria-pressed={selected?.id === character.id} class={{ chosen: selected?.id === character.id }} onclick={event => select(character, event.currentTarget)}>
             {@render avatar(character)}
             <span class="row-text">
               <strong>{character.met ? label(character) : '?'}</strong>

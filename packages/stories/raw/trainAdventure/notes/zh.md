@@ -23,7 +23,7 @@
 ## saito_ren
 
 - facade: 想以東京夜生活的行家自居，主動向大學生搭話。
-- excuse: 隧道停滯時堅稱是常識，額頭卻滲出汗珠。
+- excuse: 隧道行程異常延長時堅稱是常識，額頭卻滲出汗珠。
 
 ## yamamoto_koji
 
@@ -32,7 +32,7 @@
 
 ## ito_nana
 
-- wife: 不安時會抓著丈夫，反覆追問這條路是否熟悉。
+- wife: 不安時反覆追問丈夫這條路是否熟悉。
 - hell: 看到異世界的景象後，問這是不是地獄。
 
 ## ito_makoto
@@ -42,24 +42,22 @@
 
 ## kobayashi_shota
 
-- dark: 怕黑，哭著說想回家。
+- dark: 怕黑，說想回家。
 
 ## kobayashi_tomoko
 
-- mother: 把年幼的兒女護在身邊，努力安撫他們。
+- mother: 安撫害怕的孩子。
 - phone: 想放卡通轉移孩子的注意力，手機卻顯示無法載入。
 
 ## kobayashi_yudai
 
 known-as: 沉穩父親
 
-- family: 一家四口中的父親，守在妻子和兩個孩子身旁。
-
 ## kobayashi_hina
 
 known-as: 懂事姐姐
 
-- sister: 十二歲的姐姐，在恐慌中努力裝作不怕。
+- sister: 小男孩的姐姐；母親說她沒有害怕。
 
 ## nakamura_hayato
 
@@ -71,7 +69,7 @@ known-as: 懂事姐姐
 known-as: 文靜少女
 
 - sketchbook: 隨身帶著素描本，在月台上安靜作畫。
-- earphones: 戴著復古白線耳機，專注得聽不見周圍的騷動。
+- earphones: 戴著一副復古風格的有線耳機。
 - drawing: 在隧道裡仍不停筆，畫著螺旋與尖角構成的奇異圖騰。
 
 ## ling_mo

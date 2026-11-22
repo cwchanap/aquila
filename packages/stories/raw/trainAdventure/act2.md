@@ -126,18 +126,6 @@ ito_makoto.husband
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Close-up from a three-quarter angle across the aisle, on the far end of the RIGHT bench: the mother in a cream cardigan with a low side ponytail holds the crying face of the ten-year-old boy in a navy t-shirt against her chest with one arm, staring pale at the phone in her other hand, whose screen is a blank grey loading screen; the twelve-year-old girl in pigtails presses close against her mother's other side, trying to look brave. The father in a light jacket and polo sits right beside the girl with a hand on her shoulder, looking around uneasily, so the family reads as one group. Further along the bench, out of focus, beyond three or four empty seats: Nakamura (thin balding man in a crumpled navy suit) alone, leaning forward and glaring. Behind them the windows are pitch black mirrors. Shallow depth of field. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
-```unlock
-kobayashi_yudai.met
-```
-
-```unlock
-kobayashi_hina.met
-```
-
-```unlock
-kobayashi_yudai.family
-```
-
 **旁白**：不遠處，一個小男孩的聲音響起，稚嫩而充滿恐懼。
 
 ```unlock
@@ -152,6 +140,10 @@ kobayashi_tomoko.mother
 
 ```unlock
 kobayashi_hina.sister
+```
+
+```unlock
+kobayashi_hina.met
 ```
 
 **溫柔母親**：快了快了，寶寶乖，你看，姐姐都沒怕。別看窗外了，我們看手機裡的卡通好不好？

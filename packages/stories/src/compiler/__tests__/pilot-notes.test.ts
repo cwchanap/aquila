@@ -21,6 +21,7 @@ const STUDENTS = [
     'saito_ren',
 ];
 const SILENT = ['shimizu_emi', 'ling_mo', 'kobayashi_yudai', 'kobayashi_hina'];
+const PILOT_SILENT = ['shimizu_emi', 'ling_mo', 'kobayashi_hina'];
 
 function eventsFor(
     notes: StoryNotes,
@@ -158,7 +159,7 @@ describe('trainAdventure pilot notes (Acts 1-3)', () => {
         }
     });
 
-    it('introduces Emi, Ling Mo, Yudai and Hina before they speak, with localized known-as only', () => {
+    it('introduces Emi, Ling Mo and Hina before they speak, with localized known-as only', () => {
         const expected = [
             [
                 'shimizu_emi',
@@ -177,17 +178,9 @@ describe('trainAdventure pilot notes (Acts 1-3)', () => {
                 '黒衣の謎の男',
             ],
             [
-                'kobayashi_yudai',
-                'act2',
-                39,
-                '沉穩父親',
-                'Steady Father',
-                '落ち着いた父親',
-            ],
-            [
                 'kobayashi_hina',
                 'act2',
-                39,
+                41,
                 '懂事姐姐',
                 'Sensible Big Sister',
                 'しっかり者の姉',
@@ -195,33 +188,61 @@ describe('trainAdventure pilot notes (Acts 1-3)', () => {
         ] as const;
 
         for (const [id, sceneId, entryIndex, zh, en, ja] of expected) {
-            expect(eventsFor(notes, id, 'met')).toContainEqual({
-                sceneId,
-                entryIndex,
-                characterId: id,
-                kind: 'met',
-            });
+            expect(eventsFor(notes, id, 'met')).toEqual([
+                {
+                    sceneId,
+                    entryIndex,
+                    characterId: id,
+                    kind: 'met',
+                },
+            ]);
             expect(notes.characters.find(c => c.id === id)?.knownAs).toEqual({
                 zh,
                 en,
                 ja,
             });
         }
+
+        const yudai = notes.characters.find(c => c.id === 'kobayashi_yudai')!;
+        expect(yudai.knownAs).toEqual({
+            zh: '沉穩父親',
+            en: 'Steady Father',
+            ja: '落ち着いた父親',
+        });
+        expect(yudai.facts).toEqual([]);
+        expect(eventsFor(notes, 'kobayashi_yudai', 'met')).toEqual([
+            {
+                sceneId: 'b1b_act7',
+                entryIndex: 7,
+                characterId: 'kobayashi_yudai',
+                kind: 'met',
+            },
+        ]);
+        expect(eventsFor(notes, 'kobayashi_yudai', 'fact')).toEqual([]);
     });
 
-    it('does not reveal the silent four or the students before Act 3 ends', () => {
-        for (const id of [...SILENT, ...STUDENTS]) {
+    it('does not reveal the students before Act 3 ends and keeps Yudai fully locked', () => {
+        for (const id of STUDENTS) {
             const pilotEvents = notes.events.filter(
                 e => e.characterId === id && inPilot(e)
             );
             expect(pilotEvents.length).toBeGreaterThan(0);
             expect(pilotEvents.filter(e => e.kind === 'name')).toEqual([]);
-            if (SILENT.includes(id)) {
-                expect(pilotEvents.filter(e => e.kind === 'speech')).toEqual(
-                    []
-                );
-            }
         }
+
+        for (const id of PILOT_SILENT) {
+            const pilotEvents = notes.events.filter(
+                e => e.characterId === id && inPilot(e)
+            );
+            expect(pilotEvents.length).toBeGreaterThan(0);
+            expect(pilotEvents.filter(e => e.kind === 'name')).toEqual([]);
+            expect(pilotEvents.filter(e => e.kind === 'speech')).toEqual([]);
+        }
+
+        const yudaiPilot = notes.events.filter(
+            e => e.characterId === 'kobayashi_yudai' && inPilot(e)
+        );
+        expect(yudaiPilot).toEqual([]);
 
         for (const id of SILENT) {
             const character = notes.characters.find(c => c.id === id)!;
@@ -336,5 +357,127 @@ describe('trainAdventure pilot notes (Acts 1-3)', () => {
                 );
             }
         }
+    });
+
+    it('pins corrected facts and encounters to reader-visible source lines', () => {
+        const entriesByScene = new Map(
+            story.scenes.map(scene => [scene.id, scene.entries])
+        );
+
+        const factBoundaries = [
+            ['li_jie', 'age', 'act1', 5, '二十八歲'],
+            ['saito_ren', 'facade', 'act1', 20, '東京夜生活'],
+            ['shimizu_emi', 'earphones', 'act1', 37, '耳機'],
+            ['shimizu_emi', 'sketchbook', 'act1', 38, '素描本'],
+            ['ling_mo', 'watcher', 'act1', 43, '觀察什麼'],
+            ['saito_ren', 'excuse', 'act2', 31, '汗珠'],
+            ['yamamoto_koji', 'commuter', 'act2', 33, '三十年'],
+            ['ito_nana', 'wife', 'act2', 36, '這條路你很熟嗎'],
+            ['kobayashi_shota', 'dark', 'act2', 40, '我怕黑'],
+            ['kobayashi_tomoko', 'mother', 'act2', 41, '寶寶乖'],
+            ['kobayashi_hina', 'sister', 'act2', 41, '姐姐都沒怕'],
+            ['yamamoto_koji', 'emergency', 'act2', 47, '列車還在平穩運行'],
+            ['shimizu_emi', 'drawing', 'act2', 52, '圖騰'],
+        ] as const;
+
+        for (const [
+            id,
+            factId,
+            sceneId,
+            entryIndex,
+            support,
+        ] of factBoundaries) {
+            const facts = eventsFor(notes, id, 'fact').filter(
+                event => event.factId === factId
+            );
+            expect(facts).toHaveLength(1);
+            expect(facts[0]).toMatchObject({ sceneId, entryIndex });
+
+            const entries = entriesByScene.get(sceneId)!;
+            expect(entries[entryIndex]?.dialogue).toContain(support);
+            expect(entries[entryIndex - 1]?.dialogue).not.toContain(support);
+        }
+
+        const metBoundaries = [
+            ['kobayashi_hina', 'act2', 41, '姐姐都沒怕'],
+            ['kobayashi_yudai', 'b1b_act7', 7, '孩子害怕'],
+        ] as const;
+
+        for (const [id, sceneId, entryIndex, support] of metBoundaries) {
+            const met = eventsFor(notes, id, 'met');
+            expect(met).toEqual([
+                { sceneId, entryIndex, characterId: id, kind: 'met' },
+            ]);
+
+            const entries = entriesByScene.get(sceneId)!;
+            expect(entries[entryIndex]?.dialogue).toContain(support);
+            expect(entries[entryIndex - 1]?.dialogue).not.toContain(support);
+        }
+    });
+
+    it('keeps corrected note text inside reader-visible evidence in every locale', () => {
+        const text = (
+            id: string,
+            factId: string,
+            locale: 'zh' | 'en' | 'ja'
+        ): string => {
+            const character = notes.characters.find(c => c.id === id)!;
+            const fact = character.facts.find(f => f.id === factId)!;
+            return fact.text[locale];
+        };
+
+        expect(text('shimizu_emi', 'earphones', 'zh')).toBe(
+            '戴著一副復古風格的有線耳機。'
+        );
+        expect(text('shimizu_emi', 'earphones', 'en')).toBe(
+            'Wears retro wired earphones.'
+        );
+        expect(text('shimizu_emi', 'earphones', 'ja')).toBe(
+            'レトロな有線イヤホンをつけている。'
+        );
+
+        expect(text('kobayashi_hina', 'sister', 'zh')).not.toContain('十二');
+        expect(text('kobayashi_hina', 'sister', 'en')).not.toContain('twelve');
+        expect(text('kobayashi_hina', 'sister', 'ja')).not.toContain('十二');
+        expect(text('kobayashi_hina', 'sister', 'zh')).toContain('姐姐');
+        expect(text('kobayashi_hina', 'sister', 'en')).toContain('sister');
+        expect(text('kobayashi_hina', 'sister', 'ja')).toContain('姉');
+
+        expect(text('kobayashi_shota', 'dark', 'zh')).not.toContain('哭');
+        expect(text('kobayashi_shota', 'dark', 'en')).not.toMatch(/cr(y|ies)/i);
+        expect(text('kobayashi_shota', 'dark', 'ja')).not.toContain('泣');
+
+        expect(text('ito_nana', 'wife', 'zh')).not.toContain('抓');
+        expect(text('ito_nana', 'wife', 'en')).not.toMatch(/clutch/i);
+        expect(text('ito_nana', 'wife', 'ja')).not.toContain('袖');
+
+        expect(text('kobayashi_tomoko', 'mother', 'zh')).not.toContain(
+            '護在身邊'
+        );
+        expect(text('kobayashi_tomoko', 'mother', 'en')).not.toContain('close');
+        expect(text('kobayashi_tomoko', 'mother', 'ja')).not.toContain(
+            'そばに寄せ'
+        );
+
+        expect(text('yamamoto_koji', 'commuter', 'en')).not.toContain(
+            'better than anyone'
+        );
+        expect(text('yamamoto_koji', 'commuter', 'ja')).not.toContain(
+            '誰よりも'
+        );
+        expect(text('yamamoto_koji', 'emergency', 'en')).toContain(
+            'Warns against pressing'
+        );
+        expect(text('yamamoto_koji', 'emergency', 'en')).not.toContain(
+            'Refuses to touch'
+        );
+
+        expect(text('saito_ren', 'excuse', 'zh')).toContain('異常延長');
+        expect(text('saito_ren', 'excuse', 'zh')).not.toContain('隧道停滯');
+        expect(text('saito_ren', 'excuse', 'en')).toContain('unusually long');
+        expect(text('saito_ren', 'excuse', 'ja')).toContain('異常に長引く');
+
+        const yudai = notes.characters.find(c => c.id === 'kobayashi_yudai')!;
+        expect(yudai.facts).toEqual([]);
     });
 });

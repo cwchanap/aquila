@@ -22,6 +22,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **煩躁丈夫**：(轉向另一邊)還有你!管好你的小孩!哭哭哭,哭得人心煩!
 
+```unlock
+kobayashi_yudai.met
+```
+
 **沉穩父親**：(將家人護在身後,憤怒地回擊)你吼什麼!孩子害怕哭一下怎麼了?你有時間在這裡亂罵人,不如想想怎麼離開這裡!
 
 **旁白**：車廂內的爭執愈演愈烈。恐懼和絕望讓這些人互相傷害,試圖找一個發洩的出口。

@@ -58,7 +58,7 @@ export function buildMirrorScenes(
         const sourcePath = `${locale}/${scene.sourcePath}`;
         const fullPath = join(rawDir, sourcePath);
         const md = readFileSync(fullPath, 'utf8');
-        if (/^```/m.test(md)) {
+        if (/^[ \t]*```/m.test(md)) {
             throw new Error(
                 `[story-compiler] ${sourcePath}: translations must not contain fenced bg/sfx/bgm blocks or unlock markers (they are taken from the zh source)`
             );
@@ -69,6 +69,11 @@ export function buildMirrorScenes(
             sourcePath,
             defaultSpeaker
         );
+        if (parsed.entries.some(e => e.unlocks !== undefined)) {
+            throw new Error(
+                `[story-compiler] ${sourcePath}: translations must not contain unlock markers (they are taken from the zh source)`
+            );
+        }
         if (parsed.entries.some(e => e.expressionKey !== undefined)) {
             throw new Error(
                 `[story-compiler] ${sourcePath}: translations must not contain [expression] tags (they are taken from the zh source)`

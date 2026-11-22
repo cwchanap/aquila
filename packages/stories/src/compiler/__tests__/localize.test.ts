@@ -233,6 +233,17 @@ describe('en mirror tree', () => {
             /fenced bg\/sfx\/bgm blocks or unlock markers/
         );
 
+        const indentedUnlock = makeFixture({
+            'en/act1.md': enAct1.replace(
+                '**Narrator**: It',
+                '  ```unlock\n  lin_yu.met\n  ```\n\n**Narrator**: It'
+            ),
+            'en/act2.md': enAct2,
+        });
+        expect(() => compile(indentedUnlock)).toThrow(
+            /fenced bg\/sfx\/bgm blocks or unlock markers/
+        );
+
         const withTag = makeFixture({
             'en/act1.md': enAct1.replace('**Lin Yu**:', '**Lin Yu** [sad]:'),
             'en/act2.md': enAct2,

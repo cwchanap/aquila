@@ -8,7 +8,8 @@
     CloudOff,
     MonitorSmartphone,
   } from 'lucide-svelte';
-  import type { Locale } from '@aquila/stories';
+  import type { Locale, StoryNotesPayload } from '@aquila/stories';
+  import { hasStoryNotes, loadStoryNotes } from '@aquila/stories/async';
   import { getTranslations } from '@aquila/stories/translations';
   import { STORY_CATALOG } from '@aquila/stories/catalog';
   import type { AuthState } from '@/lib/auth-utils';
@@ -22,6 +23,7 @@
     storyIconFor,
   } from '@/lib/story-presentation';
   import { buildCards, fill } from '@/lib/story-select';
+  import { selectCharacterNotes } from '@/lib/character-notes';
   import {
     lastReadLabel,
     startedStoryCards,
@@ -52,6 +54,20 @@
   let summary = $derived(summarizeProgress(cards));
   let rows = $derived(startedStoryCards(cards));
   let notStarted = $derived(summary.total - summary.started);
+  let notesPayloads = $state<Record<string, StoryNotesPayload | null>>({});
+  $effect(() => {
+    if (!mounted) return;
+    for (const card of rows) {
+      const id = card.entry.id;
+      if (!hasStoryNotes(id) || id in notesPayloads) continue;
+      notesPayloads[id] = null;
+      void loadStoryNotes(id).then(payload => {
+        notesPayloads[id] = payload;
+      }).catch(() => {
+        // The link remains usable if its optional count cannot load.
+      });
+    }
+  });
   let readyForEmpty = $derived(
     mounted && (view.authState === 'signed-out' || view.syncState !== 'idle')
   );
@@ -206,6 +222,17 @@
               </span>
               <span id="progress-{card.entry.id}-action" class="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold sm:px-4 sm:py-2 {card.action === 'continue' ? 'bg-white text-blue-900' : 'bg-white/15 text-white'}">{card.actionLabel}</span>
             </a>
+            {#if hasStoryNotes(card.entry.id)}
+              <a
+                href={`/${locale}/notes?story=${encodeURIComponent(card.entry.id)}`}
+                class="mt-2 inline-flex min-h-11 items-center rounded-full border border-white/25 bg-white/10 px-4 text-sm font-semibold text-white hover:bg-white/20"
+              >
+                {translations.notes.title}
+                {#if notesPayloads[card.entry.id]}
+                  <span class="ml-2">{selectCharacterNotes({ ...notesPayloads[card.entry.id]!, progress: card.progress, locale, t: translations }).metCount}</span>
+                {/if}
+              </a>
+            {/if}
           </li>
         {/each}
       </ul>

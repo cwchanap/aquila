@@ -455,6 +455,34 @@ if (eagerViolation) {
     );
 }
 
+for (const component of ['NotesPage.svelte', 'MyProgress.svelte']) {
+    const matches = Object.entries(manifest).filter(([key, entry]) =>
+        entryContains(key, entry, `components/${component}`)
+    );
+    if (matches.length !== 1) {
+        throw new Error(
+            `Expected one client entry for ${component}, found ${matches.length}.`
+        );
+    }
+    const violation = findStaticViolation(
+        manifest,
+        metadata,
+        matches[0][0],
+        value =>
+            isEagerStoryModule(value) ||
+            (value.includes('/src/generated/') &&
+                (value.includes('/scenes/') ||
+                    value.endsWith('/notes.ts') ||
+                    value.endsWith('/flow.ts'))) ||
+            stories.some(story => value.includes(story.source))
+    );
+    if (violation) {
+        throw new Error(
+            `${component} statically reaches story dialogue.\nOffending module or entry: ${violation.offendingValue}\n${formatImportChain(manifest, violation.chain)}`
+        );
+    }
+}
+
 const storyEntries = findStoryEntries(manifest);
 for (const [story, storyKey] of storyEntries) {
     const staticPath = findStaticPath(manifest, readerEntry, storyKey);

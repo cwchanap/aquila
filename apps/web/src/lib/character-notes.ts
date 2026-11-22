@@ -1,6 +1,6 @@
 import type {
     Locale,
-    StoryFlowConfig,
+    FlowConfig,
     StoryNoteCharacter,
     StoryNoteEvent,
     StoryNotes,
@@ -10,7 +10,7 @@ import type { StoryProgress } from './story-progress-store';
 import { actLabel, extractActName } from './act-navigation';
 import { flowDepths, passedSceneIds, visibleSceneIds } from './story-map';
 
-type Flow = Pick<StoryFlowConfig, 'start' | 'nodes'>;
+type Flow = Pick<FlowConfig, 'start' | 'nodes'>;
 
 /** The reader's currently displayed position, which can lead the saved one. */
 export interface CharacterNotesLivePosition {

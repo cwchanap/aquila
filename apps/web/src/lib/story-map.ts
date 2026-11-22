@@ -2,7 +2,7 @@ import type {
     ChoiceMap,
     ChoiceNodeDefinition,
     FlowNodeDefinition,
-    StoryFlowConfig,
+    FlowConfig,
     Translations,
 } from '@aquila/stories';
 import type { StoryProgress } from './story-progress-store';
@@ -14,7 +14,7 @@ import {
 } from './act-navigation';
 import { logger } from './logger';
 
-type Flow = Pick<StoryFlowConfig, 'start' | 'nodes'>;
+type Flow = Pick<FlowConfig, 'start' | 'nodes'>;
 
 export type StoryMapStatus = 'route' | 'explored' | 'unread';
 
@@ -137,7 +137,7 @@ interface FlowIndex {
 // spoiler/route results when a merge is ever added.
 const mergeWarnedFlows = new WeakSet<object>();
 
-function indexFlow(flow: Pick<StoryFlowConfig, 'start' | 'nodes'>): FlowIndex {
+function indexFlow(flow: Pick<FlowConfig, 'start' | 'nodes'>): FlowIndex {
     const byId = new Map<string, FlowNodeDefinition>();
     const parent = new Map<string, string>();
     for (const node of flow.nodes) {
@@ -218,7 +218,7 @@ function collectVisible(
     return visible;
 }
 
-export function hasRealDecision(flow: Pick<StoryFlowConfig, 'nodes'>): boolean {
+export function hasRealDecision(flow: Pick<FlowConfig, 'nodes'>): boolean {
     return flow.nodes.some(
         node =>
             node.kind === 'choice' && Object.keys(node.nextByOption).length >= 2
@@ -235,7 +235,7 @@ function addStrictAncestors(
 }
 
 export function visibleSceneIds(
-    flow: Pick<StoryFlowConfig, 'start' | 'nodes'>,
+    flow: Pick<FlowConfig, 'start' | 'nodes'>,
     progress: Pick<StoryProgress, 'visited'> | null | undefined,
     currentSceneId: string | null | undefined
 ): ReadonlySet<string> {
@@ -248,7 +248,7 @@ export function visibleSceneIds(
  * ancestors pass; recorded endings (and their strict ancestors) pass in full.
  */
 export function passedSceneIds(
-    flow: Pick<StoryFlowConfig, 'start' | 'nodes'>,
+    flow: Pick<FlowConfig, 'start' | 'nodes'>,
     progress: Pick<StoryProgress, 'visited' | 'endings'> | null | undefined,
     currentSceneId: string | null | undefined
 ): ReadonlySet<string> {
@@ -265,7 +265,7 @@ export function passedSceneIds(
 
 /** Breadth-first node depth from `flow.start`, for deterministic tie-breaks. */
 export function flowDepths(
-    flow: Pick<StoryFlowConfig, 'start' | 'nodes'>
+    flow: Pick<FlowConfig, 'start' | 'nodes'>
 ): ReadonlyMap<string, number> {
     return indexFlow(flow).depth;
 }

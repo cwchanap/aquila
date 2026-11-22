@@ -1,14 +1,16 @@
 <script lang="ts">
   import { onDestroy, onMount, tick, untrack } from 'svelte';
-  import type { DialogueEntry } from '@aquila/stories';
+  import type { DialogueEntry, StoryNotesPayload } from '@aquila/stories';
   import type { AudioAssetType } from '@aquila/stories/runtime-assets';
   import type { Locale } from '@aquila/stories';
   import { getTranslations, localeLangTag } from '@aquila/stories/translations';
   import { getCatalogEntry } from '@aquila/stories/catalog';
   import {
     hasStoryText,
+    hasStoryNotes,
     isRegisteredStoryId,
     loadStoryContent,
+    loadStoryNotes,
     resolveStoryTextLocale,
     supportsVisualMode,
     type AsyncStoryLoaderResult,
@@ -19,6 +21,7 @@
   import { actLabel, extractActName } from '@/lib/act-navigation';
   import { buildHistoryLines, updateReaderHistory, type ReaderHistory } from '@/lib/reader-history';
   import { focusTrap } from '@/lib/focus-trap';
+  import { selectCharacterNotes } from '@/lib/character-notes';
   import {
     readReaderMode,
     writeReaderMode,
@@ -84,8 +87,9 @@
   import ReaderSettingsMenu from '@/components/ReaderSettingsMenu.svelte';
   import StoryMapSheet from '@/components/StoryMapSheet.svelte';
   import VisualNovelReader from '@/components/VisualNovelReader.svelte';
+  import Characters from '@/components/Characters.svelte';
   import Button from '@/components/ui/Button.svelte';
-  import { X } from 'lucide-svelte';
+  import { X, Users } from 'lucide-svelte';
   import { isEndingPosition } from '@/lib/reader-interaction';
 
   function defaultOnNext(): void {
@@ -715,6 +719,26 @@
   let settingsOpen = $state(false);
   let leafOverlayOpen = $state(false);
   let storyMapOpen = $state(false);
+  let notesOpen = $state(false);
+  let notesStoryId = $state<string | null>(null);
+  let mobileDetailOpen = $state(false);
+  let notesProgress = $state<StoryProgress | null>(null);
+  let notesPayload = $state.raw<{ storyId: string; data: StoryNotesPayload } | null>(null);
+  let notesFailed = $state(false);
+  let notesAvailable = $derived(hasStoryNotes(storyId) && hasActivePayload && activeFlow !== null);
+  let notesModel = $derived(
+    notesPayload?.storyId === storyId
+      ? selectCharacterNotes({
+          ...notesPayload.data, progress: notesProgress,
+          live: { sceneId: currentSceneId, dialogueIndex }, locale, t,
+        })
+      : null
+  );
+  let notesPortraitUrl = $derived.by(() => {
+    const runtime = readerMode === 'visual' && visualRuntimeStoryId === storyId ? visualRuntime : null;
+    void visualIdentity;
+    return runtime ? (characterId: string) => runtime.resolvePortraitUrl(characterId) : undefined;
+  });
   let storyMapProgress = $state<StoryProgress | null>(null);
   let endingTitleElement = $state<HTMLElement | null>(null);
   let endingOpen = $derived(readerState.endingOpen && !isBlocking);
@@ -741,6 +765,7 @@
     isBlocking ||
       settingsOpen ||
       storyMapOpen ||
+      notesOpen ||
       endingOpen ||
       crossroadsOpen
   );
@@ -764,15 +789,15 @@
   );
   let overlayFocusTarget = $derived.by((): HTMLElement | null => {
     if (
-      !(storyMapOpen || endingOpen || crossroadsOpen) ||
+      !(storyMapOpen || notesOpen || endingOpen || crossroadsOpen) ||
       typeof document === 'undefined'
     ) {
       return null;
     }
     const id =
-      readerMode === 'text' && isMobile
+      readerMode === 'text' && isMobile && !isBlocking
         ? 'mobile-reader-menu-trigger'
-        : 'reader-settings-trigger';
+        : notesOpen ? 'reader-notes-trigger' : 'reader-settings-trigger';
     return document.getElementById(id);
   });
 
@@ -925,10 +950,37 @@
   });
 
   function openStoryMap(): void {
-    if (!storyMapAvailable || storyMapOpen || isBlocking) return;
+    if (!storyMapAvailable || leafDisabled) return;
     storyMapProgress = getCurrentStoryProgressSnapshot();
     storyMapOpen = true;
   }
+
+  function openNotes(): void {
+    if (!notesAvailable || leafDisabled || leafOverlayOpen) return;
+    notesProgress = getCurrentStoryProgressSnapshot();
+    notesFailed = false;
+    notesStoryId = storyId;
+    notesOpen = true;
+    const id = storyId;
+    if (notesPayload?.storyId !== id) {
+      void loadStoryNotes(id).then(data => {
+        if (!destroyed && storyId === id) notesPayload = { storyId: id, data };
+      }).catch(() => {
+        if (!destroyed && storyId === id) notesFailed = true;
+      });
+    }
+  }
+
+  function handleNotesEscape(event: KeyboardEvent): void {
+    if (!notesOpen || mobileDetailOpen || event.key !== 'Escape' || event.defaultPrevented) return;
+    event.preventDefault();
+    event.stopPropagation();
+    notesOpen = false;
+  }
+
+  $effect.pre(() => {
+    if (notesOpen && (!notesAvailable || isBlocking || notesStoryId !== storyId)) notesOpen = false;
+  });
 
   function closeEnding(): void {
     readerState.endingOpen = false;
@@ -1082,7 +1134,7 @@
   });
 </script>
 
-<svelte:window onkeydown={handleBgmActivationKey} />
+<svelte:window onkeydown={handleBgmActivationKey} onkeydowncapture={handleNotesEscape} />
 
 {#snippet loadSurface()}
   {#if loadStatus === 'error'}
@@ -1119,6 +1171,17 @@
 {/snippet}
 
 {#if settingsAvailable}
+  {#if notesAvailable}
+    <button
+      id="reader-notes-trigger"
+      type="button"
+      class="fixed right-[4.25rem] top-3 z-[90] flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm hover:bg-white disabled:pointer-events-none disabled:opacity-50"
+      aria-label={t.notes.title}
+      title={t.notes.title}
+      disabled={leafDisabled || leafOverlayOpen}
+      onclick={openNotes}
+    ><Users size={20} aria-hidden="true" /></button>
+  {/if}
   <ReaderSettingsMenu
     bind:open={settingsOpen}
     {locale}
@@ -1143,7 +1206,7 @@
     {showBookmarkButton}
     {backUrl}
     bookmarkDisabled={isBlocking}
-    triggerUnavailable={endingOpen || storyMapOpen || crossroadsOpen || (leafOverlayOpen && !isBlocking)}
+    triggerUnavailable={endingOpen || storyMapOpen || notesOpen || crossroadsOpen || (leafOverlayOpen && !isBlocking)}
     {storyMapAvailable}
     storyMapDisabled={isBlocking}
     onOpenStoryMap={openStoryMap}
@@ -1246,6 +1309,8 @@
           visibleSceneIds={storyMapVisibleIds}
           {storyMapAvailable}
           onOpenStoryMap={openStoryMap}
+          {notesAvailable}
+          onOpenNotes={openNotes}
         />
       {:else}
         <NovelReader
@@ -1283,6 +1348,42 @@
 {:else}
   <div class="flex min-h-screen items-center justify-center bg-slate-950 p-6">
     {@render loadSurface()}
+  </div>
+{/if}
+
+{#if notesOpen}
+  <button
+    type="button"
+    data-testid="notes-scrim"
+    class="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-[2px]"
+    aria-hidden="true"
+    tabindex="-1"
+    onclick={() => notesOpen = false}
+  ></button>
+  <div class="pointer-events-none fixed inset-0 z-[96] flex items-center justify-center">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reader-notes-title"
+      use:focusTrap={{ enabled: true, restoreFocus: overlayFocusTarget }}
+      class="pointer-events-auto flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-sky-200 to-blue-400 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] lg:h-[85vh] lg:w-[95vw] lg:rounded-3xl lg:shadow-2xl"
+    >
+      <div class="flex shrink-0 items-center justify-between gap-4">
+        <h2 id="reader-notes-title" class="text-xl font-bold text-slate-800">{t.notes.title}</h2>
+        <button type="button" class="flex h-11 w-11 items-center justify-center rounded-full bg-white/85 text-slate-700" aria-label={t.notes.close} onclick={() => notesOpen = false}>
+          <X size={20} aria-hidden="true" />
+        </button>
+      </div>
+      <div class="min-h-0 flex-1 overflow-auto">
+        {#if notesModel}
+          <Characters model={notesModel} {locale} portraitUrl={notesPortraitUrl} onMobileDetailChange={(open) => mobileDetailOpen = open} />
+        {:else if notesFailed}
+          <p role="alert">{t.notes.error}</p>
+        {:else}
+          <p role="status">{t.notes.loading}</p>
+        {/if}
+      </div>
+    </div>
   </div>
 {/if}
 

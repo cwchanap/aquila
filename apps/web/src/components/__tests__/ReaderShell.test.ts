@@ -10,7 +10,7 @@ import {
 import { tick } from 'svelte';
 import '@testing-library/jest-dom';
 import type { DialogueEntry, StoryFlowConfig } from '@aquila/stories';
-import { StoryLoadError } from '@aquila/stories/async';
+import { StoryLoadError, loadStoryNotes } from '@aquila/stories/async';
 import {
     AssetResolverError,
     type AssetResolver,
@@ -36,6 +36,20 @@ import { READER_TYPING_SPEED_KEY } from '@/lib/reader-typing-speed';
 const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
     mockSupportsVisualMode: vi.fn(() => true),
     mockGetTranslations: vi.fn((locale: string) => ({
+        notes: {
+            title: 'Characters',
+            loading: 'Loading characters…',
+            error: 'Character notes could not be loaded.',
+            unknown: 'Unknown character',
+            nameUnknown: 'Name ???',
+            facts: 'Notes',
+            met: 'Characters met',
+            back: 'Back',
+            close: 'Close',
+            select: 'Select a character',
+            locked: 'Locked note',
+            tagline: 'People met',
+        },
         reader: {
             unknown: 'Unknown',
             continue: 'Continue',
@@ -359,7 +373,12 @@ function createRuntimeHarness(
         controller.dispose();
     });
     return {
-        runtime: { controller, softRevalidate, dispose },
+        runtime: {
+            controller,
+            softRevalidate,
+            dispose,
+            resolvePortraitUrl: () => null,
+        },
         softRevalidate,
         dispose,
         subscribe,
@@ -556,6 +575,223 @@ describe('ReaderShell', () => {
     afterEach(() => {
         vi.clearAllMocks();
         vi.unstubAllEnvs();
+    });
+
+    it('opens notes without remounting the reader and restores focus on Escape', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'train_adventure';
+        const snapshot = vi.fn(() => null);
+        const createVisualRuntime = vi.fn(() => null);
+        render(ReaderShell, {
+            props: {
+                getCurrentStoryProgressSnapshot: snapshot,
+                createVisualRuntime,
+            },
+        });
+        const reader = screen.getByTestId('reader-ready');
+        const trigger = document.getElementById(
+            'reader-notes-trigger'
+        ) as HTMLButtonElement;
+        expect(trigger).toBeInTheDocument();
+        snapshot.mockClear();
+        await fireEvent.click(trigger);
+        expect(snapshot).toHaveBeenCalledTimes(1);
+        expect(
+            screen.getByRole('dialog', { name: 'Characters' })
+        ).toBeInTheDocument();
+        expect(
+            within(
+                screen.getByRole('dialog', { name: 'Characters' })
+            ).getByRole('button', { name: 'Close' })
+        ).toBeInTheDocument();
+        expect(reader).toHaveAttribute('inert');
+        await fireEvent.keyDown(window, { key: 'Escape' });
+        await tick();
+        expect(
+            screen.queryByRole('dialog', { name: 'Characters' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByTestId('reader-ready')).toBe(reader);
+        expect(trigger).toHaveFocus();
+        expect(createVisualRuntime).not.toHaveBeenCalled();
+    });
+
+    it('uses the mobile chrome and lets the native detail consume the first Escape', async () => {
+        stubMatchMedia(true);
+        readerState.storyId = 'train_adventure';
+        await loadStoryNotes('train_adventure');
+        Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+            configurable: true,
+            value() {
+                this.setAttribute('open', '');
+            },
+        });
+        Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+            configurable: true,
+            value() {
+                this.removeAttribute('open');
+            },
+        });
+        const view = render(ReaderShell);
+        try {
+            expect(document.getElementById('reader-notes-trigger')).toBeNull();
+            await fireEvent.click(
+                document.getElementById('mobile-reader-menu-trigger')!
+            );
+            await fireEvent.click(
+                screen.getByRole('button', { name: 'Characters' })
+            );
+            await tick();
+            await Promise.resolve();
+            await tick();
+            const outer = screen.getByRole('dialog', { name: 'Characters' });
+            const cast = within(outer).getByRole('region', {
+                name: 'Characters',
+            });
+            await fireEvent.click(within(cast).getAllByRole('button')[0]);
+            const inner = screen
+                .getAllByRole('dialog')
+                .find(dialog => dialog !== outer)!;
+            const escape = new KeyboardEvent('keydown', {
+                key: 'Escape',
+                bubbles: true,
+                cancelable: true,
+            });
+            expect(inner.dispatchEvent(escape)).toBe(true);
+            expect(escape.defaultPrevented).toBe(false);
+            expect(outer).toBeInTheDocument();
+            await fireEvent(inner, new Event('cancel', { cancelable: true }));
+            expect(inner).not.toBeInTheDocument();
+            await fireEvent.keyDown(window, { key: 'Escape' });
+            await tick();
+            expect(outer).not.toBeInTheDocument();
+            expect(
+                document.getElementById('mobile-reader-menu-trigger')
+            ).toHaveFocus();
+        } finally {
+            view.unmount();
+            delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>)
+                .showModal;
+            delete (HTMLDialogElement.prototype as Partial<HTMLDialogElement>)
+                .close;
+        }
+    });
+
+    it('keeps visual and audio runtimes alive while notes opens and closes', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.storyId = 'train_adventure';
+        const visual = createRuntimeHarness();
+        const audio = createAudioRuntimeHarness();
+        const bgm = createBgmHarness();
+        const sfx = createSfxHarness();
+        const voice = {
+            load: vi.fn(async () => true),
+            play: vi.fn(),
+            resume: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        };
+        const onIndexChange = vi.fn();
+        render(ReaderShell, {
+            props: {
+                createVisualRuntime: () => visual.runtime,
+                createAudioRuntime: () => audio.runtime,
+                createBgmPlayer: () => bgm.player,
+                createSfxPlayer: () => sfx.player,
+                createVoicePlayer: () => voice,
+                onIndexChange,
+            },
+        });
+        await tick();
+        await Promise.resolve();
+        const reader = screen.getByTestId('reader-ready');
+        vi.clearAllMocks();
+        await fireEvent.click(document.getElementById('reader-notes-trigger')!);
+        await fireEvent.keyDown(window, { key: 'Enter' });
+        await fireEvent.keyDown(window, { key: 'Escape' });
+        await tick();
+        expect(screen.getByTestId('reader-ready')).toBe(reader);
+        expect(onIndexChange).not.toHaveBeenCalled();
+        expect(visual.dispose).not.toHaveBeenCalled();
+        expect(audio.dispose).not.toHaveBeenCalled();
+        expect(bgm.player.stop).not.toHaveBeenCalled();
+        expect(bgm.player.dispose).not.toHaveBeenCalled();
+        expect(voice.stop).not.toHaveBeenCalled();
+        expect(voice.dispose).not.toHaveBeenCalled();
+        expect(sfx.player.stop).not.toHaveBeenCalled();
+    });
+
+    it('upgrades safe met portraits when the visual release becomes available', async () => {
+        stubMatchMedia(false);
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        readerState.storyId = 'train_adventure';
+        readerState.dialogue = Array.from({ length: 12 }, () => ({
+            dialogue: 'Line',
+        }));
+        readerState.dialogueIndex = 8;
+        await loadStoryNotes('train_adventure');
+        const visual = createRuntimeHarness();
+        let portrait: string | null = null;
+        visual.runtime.resolvePortraitUrl = () => portrait;
+        render(ReaderShell, {
+            props: {
+                createVisualRuntime: () => visual.runtime,
+                createAudioRuntime: () => null,
+            },
+        });
+        await tick();
+        await fireEvent.click(document.getElementById('reader-notes-trigger')!);
+        await tick();
+        await Promise.resolve();
+        await tick();
+        const sheet = screen.getByRole('dialog', { name: 'Characters' });
+        expect(
+            within(sheet).getByText('Loudmouth Student')
+        ).toBeInTheDocument();
+        expect(sheet.querySelector('img')).toBeNull();
+        portrait = 'https://assets.example/vn/objects/opaque.webp';
+        (
+            visual.runtime.controller as unknown as {
+                publish: (snapshot: object) => void;
+            }
+        ).publish({
+            releaseIdentity: {
+                assetEnvironment: 'production',
+                previewId: null,
+                releaseId: 'release',
+                manifestSha256: 'hash',
+            },
+        });
+        await tick();
+        expect(sheet.querySelector('img')).toHaveAttribute('src', portrait);
+    });
+
+    it('refreshes the snapshot on each open and respects the live line boundary', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'train_adventure';
+        readerState.dialogue = Array.from({ length: 12 }, () => ({
+            dialogue: 'Line',
+        }));
+        readerState.dialogueIndex = 4;
+        await loadStoryNotes('train_adventure');
+        const snapshot = vi.fn(() => null);
+        render(ReaderShell, {
+            props: { getCurrentStoryProgressSnapshot: snapshot },
+        });
+        await tick();
+        snapshot.mockClear();
+        const trigger = document.getElementById('reader-notes-trigger')!;
+        await fireEvent.click(trigger);
+        await tick();
+        await Promise.resolve();
+        await tick();
+        expect(screen.queryByText('Twenty-eight.')).toBeNull();
+        await fireEvent.keyDown(window, { key: 'Escape' });
+        readerState.dialogueIndex = 5;
+        await tick();
+        await fireEvent.click(trigger);
+        expect(screen.getByText('Twenty-eight.')).toBeInTheDocument();
+        expect(snapshot).toHaveBeenCalledTimes(2);
     });
 
     it('defaults to instant for reduced motion and persists explicit speed over that default', async () => {

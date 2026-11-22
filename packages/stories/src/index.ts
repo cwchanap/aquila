@@ -7,6 +7,15 @@ export type {
     RubySpan,
 } from './types';
 export type {
+    StoryNotes,
+    StoryNotesPayload,
+    StoryNoteCharacter,
+    StoryNoteEvent,
+    StoryNoteEventKind,
+    StoryNoteFact,
+    StoryNoteText,
+} from './notes-types';
+export type {
     FlowConfig,
     FlowNodeDefinition,
     FlowNodeId,

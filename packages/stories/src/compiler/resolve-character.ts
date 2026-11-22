@@ -1,7 +1,7 @@
 import type { ParsedCharacterDirectory } from './parse-characters';
 import type { ResolvedCharacter } from './config';
 
-const DEFAULT_SUFFIX_RE =
+export const DEFAULT_SUFFIX_RE =
     /(（內心）|\(內心\)|（内心）|的聲音|的喊聲|的低語|之聲|[?？！!。]+)$/g;
 
 export interface ResolveConfig {
@@ -10,7 +10,12 @@ export interface ResolveConfig {
     suffixRegex?: RegExp;
 }
 
-function stripSuffix(label: string, regex: RegExp): string {
+/** Exported so notes label/name derivation strips the same suffixes as
+ *  character resolution instead of growing a second suffix list. */
+export function stripSuffix(
+    label: string,
+    regex: RegExp = DEFAULT_SUFFIX_RE
+): string {
     let prev: string;
     let cur = label.trim();
     do {

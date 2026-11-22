@@ -22,3 +22,5 @@ export type {
     StoryPayload,
     StoryPayloadImporter,
 } from './loader';
+export { hasStoryNotes, loadStoryNotes } from './registry';
+export type { StoryNotesImporter, StoryNotesLoader } from './notes-loader';

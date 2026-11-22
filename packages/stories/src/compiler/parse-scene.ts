@@ -1,4 +1,4 @@
-import type { DialogueEntryIR } from './ir';
+import type { DialogueEntryIR, NoteUnlockTargetIR } from './ir';
 import type { ResolvedCharacter } from './config';
 
 const HEADER_RE = /^\*\*(.+?)\*\*(?:\s*\[([^\]]+)\])?[：:]\s*([\s\S]*)$/;
@@ -8,6 +8,24 @@ const BG_REUSE_RE = /^reuse[ \t]+(\S+)$/;
 // Lowercase words joined by `_` (they become part of a TS enum member), and
 // never `s<N>`, which is what unnamed blocks are numbered.
 const BG_NAME_RE = /^[a-z0-9]+(?:_[a-z0-9]+)*$/;
+// ```unlock\n<character_id>.<met|name|fact_id>\n```
+const UNLOCK_BLOCK_RE = /^```unlock[ \t]*\n([\s\S]*?)\n```$/;
+const UNLOCK_TARGET_RE = /^([A-Za-z0-9_]+)\.([a-z0-9_]+)$/;
+
+function parseUnlockBody(body: string, sourcePath: string): NoteUnlockTargetIR {
+    const trimmed = body.trim();
+    const match = UNLOCK_TARGET_RE.exec(trimmed);
+    if (!match) {
+        throw new Error(
+            `[story-compiler] ${sourcePath}: malformed unlock target "${trimmed}"; write <character_id>.<met|name|fact_id> inside the block`
+        );
+    }
+    const characterId = match[1];
+    const target = match[2];
+    if (target === 'met') return { characterId, kind: 'met' };
+    if (target === 'name') return { characterId, kind: 'name' };
+    return { characterId, kind: 'fact', factId: target };
+}
 
 type PendingBackground = { prompt: string; name?: string } | { reuse: string };
 
@@ -52,6 +70,14 @@ function applyBackground(
     entry.backgroundPrompt = bg.prompt;
     if (bg.name !== undefined) entry.backgroundName = bg.name;
 }
+
+function applyUnlocks(
+    entry: DialogueEntryIR,
+    unlocks: NoteUnlockTargetIR[] | undefined
+): void {
+    if (unlocks === undefined || unlocks.length === 0) return;
+    entry.unlocks = unlocks;
+}
 const SFX_BLOCK_RE =
     /^```sfx[ \t]*\n[ \t]*([a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\n```$/;
 const BGM_BLOCK_RE =
@@ -79,6 +105,7 @@ export function parseScene(
     let pendingBg: PendingBackground | undefined;
     let pendingSfx: string | undefined;
     let pendingBgm: string | null | undefined;
+    let pendingUnlocks: NoteUnlockTargetIR[] | undefined;
 
     for (const block of blocks) {
         if (block.startsWith('# ')) {
@@ -137,6 +164,17 @@ export function parseScene(
                 `[story-compiler] ${sourcePath}: invalid bgm block; expected one lowercase hyphenated cue key or stop`
             );
         }
+        const unlockMatch = UNLOCK_BLOCK_RE.exec(block);
+        if (unlockMatch) {
+            const target = parseUnlockBody(unlockMatch[1], sourcePath);
+            (pendingUnlocks ??= []).push(target);
+            continue;
+        }
+        if (block.startsWith('```unlock')) {
+            throw new Error(
+                `[story-compiler] ${sourcePath}: malformed unlock block; write one <character_id>.<met|name|fact_id> target on its own line inside the block`
+            );
+        }
         const oneLine = block.replace(/\n+/g, ' ').trim();
         const m = HEADER_RE.exec(oneLine);
         if (!m) {
@@ -153,10 +191,12 @@ export function parseScene(
                     ...(pendingBgm !== undefined ? { bgm: pendingBgm } : {}),
                 };
                 applyBackground(narration, pendingBg);
+                applyUnlocks(narration, pendingUnlocks);
                 entries.push(narration);
                 pendingBg = undefined;
                 pendingSfx = undefined;
                 pendingBgm = undefined;
+                pendingUnlocks = undefined;
                 continue;
             }
             throw new Error(
@@ -178,7 +218,9 @@ export function parseScene(
             dialogue,
         };
         applyBackground(entry, pendingBg);
+        applyUnlocks(entry, pendingUnlocks);
         pendingBg = undefined;
+        pendingUnlocks = undefined;
         if (pendingSfx !== undefined) {
             entry.sfx = pendingSfx;
             pendingSfx = undefined;
@@ -206,6 +248,16 @@ export function parseScene(
     if (pendingBg !== undefined) {
         throw new Error(
             `[story-compiler] ${sourcePath}: unconsumed bg block at end of scene`
+        );
+    }
+    if (pendingUnlocks !== undefined) {
+        const target = pendingUnlocks[0];
+        const label =
+            target.kind === 'fact'
+                ? `${target.characterId}.${target.factId}`
+                : `${target.characterId}.${target.kind}`;
+        throw new Error(
+            `[story-compiler] ${sourcePath}: unconsumed unlock "${label}" at end of scene`
         );
     }
 

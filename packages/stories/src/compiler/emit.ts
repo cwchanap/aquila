@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DialogueEntryIR, StoryIR } from './ir';
 import { MIRROR_LOCALES, type MirrorLocale } from './localize';
+import type { StoryNoteText } from '../notes-types';
 import { parseRuby } from '../ruby';
 import {
     RESERVED_OBJECT_PROPERTY_NAMES,
@@ -237,6 +238,63 @@ function cap(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function noteText(text: StoryNoteText): string {
+    return `{ zh: ${q(text.zh)}, en: ${q(text.en)}, ja: ${q(text.ja)} }`;
+}
+
+function emitNotes(story: StoryIR): string {
+    const notes = story.notes ?? {
+        storyId: story.storyId,
+        characters: [],
+        events: [],
+    };
+    const characters = notes.characters
+        .map(c => {
+            const facts = c.facts
+                .map(
+                    f =>
+                        `                { id: ${q(f.id)}, text: ${noteText(f.text)} },`
+                )
+                .join('\n');
+            return [
+                '        {',
+                `            id: ${q(c.id)},`,
+                `            hidden: ${c.hidden},`,
+                `            name: ${noteText(c.name)},`,
+                ...(c.knownAs !== undefined
+                    ? [`            knownAs: ${noteText(c.knownAs)},`]
+                    : []),
+                `            facts: [${facts ? `\n${facts}\n            ` : ''}],`,
+                '        },',
+            ].join('\n');
+        })
+        .join('\n');
+    const events = notes.events
+        .map(e => {
+            const parts = [
+                `sceneId: ${q(e.sceneId)}`,
+                `entryIndex: ${e.entryIndex}`,
+                `characterId: ${q(e.characterId)}`,
+                `kind: ${q(e.kind)}`,
+                ...(e.labels !== undefined
+                    ? [`labels: ${noteText(e.labels)}`]
+                    : []),
+                ...(e.factId !== undefined ? [`factId: ${q(e.factId)}`] : []),
+            ];
+            return `        { ${parts.join(', ')} },`;
+        })
+        .join('\n');
+    return (
+        HEADER +
+        `import type { StoryNotes } from '../../notes-types';\n\n` +
+        `export const ${story.name}Notes: StoryNotes = {\n` +
+        `    storyId: ${q(notes.storyId)},\n` +
+        `    characters: [${characters ? `\n${characters}\n    ` : ''}],\n` +
+        `    events: [${events ? `\n${events}\n    ` : ''}],\n` +
+        `};\n`
+    );
+}
+
 function portraitEnumKey(portraitKey: string): string {
     const slashIdx = portraitKey.indexOf('/');
     const charIdValue = portraitKey.slice(0, slashIdx);
@@ -392,6 +450,7 @@ export function emitStory(
         writeFileSync(join(outDir, 'stats.ts'), emitStats(story));
     }
     writeFileSync(join(outDir, 'flow.ts'), emitFlow(story));
+    writeFileSync(join(outDir, 'notes.ts'), emitNotes(story));
     writeFileSync(join(outDir, 'choices.todo.zh.ts'), emitChoiceTodo(story));
     if (story.assetManifest) {
         writeFileSync(

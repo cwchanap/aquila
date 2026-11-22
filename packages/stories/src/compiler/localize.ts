@@ -60,7 +60,7 @@ export function buildMirrorScenes(
         const md = readFileSync(fullPath, 'utf8');
         if (/^```/m.test(md)) {
             throw new Error(
-                `[story-compiler] ${sourcePath}: translations must not contain fenced bg/sfx/bgm blocks (they are taken from the zh source)`
+                `[story-compiler] ${sourcePath}: translations must not contain fenced bg/sfx/bgm blocks or unlock markers (they are taken from the zh source)`
             );
         }
         const parsed = parseScene(

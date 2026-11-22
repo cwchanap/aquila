@@ -579,6 +579,56 @@ describe('compileStory notes', () => {
             );
         });
 
+        it('rejects an unlock fence folded into dialogue instead of publishing the marker', () => {
+            const rawDir = makeFixture({
+                notesZh: ['## li_jie', '', '- age: 十七歲'].join('\n'),
+                act1: [
+                    '**李杰**：前一句',
+                    '```unlock',
+                    'li_jie.age',
+                    '```',
+                ].join('\n'),
+            });
+
+            expect(() => compile(rawDir, { writeOutputs: false })).toThrow(
+                /act1\.md: malformed unlock block; expected .*blank-line-separated/
+            );
+        });
+
+        it('rejects an unlock fence folded into a title', () => {
+            const rawDir = makeFixture({
+                notesZh: ['## li_jie', '', '- age: 十七歲'].join('\n'),
+                act1: [
+                    '# 第一幕',
+                    '```unlock',
+                    'li_jie.age',
+                    '```',
+                    '',
+                    '**李杰**：我是李杰。',
+                ].join('\n'),
+            });
+
+            expect(() => compile(rawDir, { writeOutputs: false })).toThrow(
+                /act1\.md: malformed unlock block; expected .*blank-line-separated/
+            );
+        });
+
+        it('rejects an unrecognized adjacent target before it can bypass target validation', () => {
+            const rawDir = makeFixture({
+                notesZh: ['## li_jie'].join('\n'),
+                act1: [
+                    '**李杰**：前一句',
+                    '```unlock',
+                    'nobody.met',
+                    '```',
+                ].join('\n'),
+            });
+
+            expect(() => compile(rawDir, { writeOutputs: false })).toThrow(
+                /act1\.md: malformed unlock block; expected .*blank-line-separated/
+            );
+        });
+
         it('rejects unlock fences when the story has no notes source', () => {
             const rawDir = makeFixture({
                 act1: [

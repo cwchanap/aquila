@@ -646,6 +646,68 @@ describe('parseScene unlock fences', () => {
         ).toThrow(/malformed unlock/);
     });
 
+    it('rejects an unlock fence sharing a paragraph with preceding dialogue', () => {
+        const md = ['**李杰**：前一句', '```unlock', 'li_jie.name', '```'].join(
+            '\n'
+        );
+
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+            /act1\.md: malformed unlock block; expected .*blank-line-separated/
+        );
+    });
+
+    it('rejects an unlock fence sharing a paragraph with a title', () => {
+        const md = [
+            '# 第一幕',
+            '```unlock',
+            'li_jie.name',
+            '```',
+            '',
+            '**旁白**：a',
+        ].join('\n');
+
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+            /act1\.md: malformed unlock block; expected .*blank-line-separated/
+        );
+    });
+
+    it('rejects adjacent unlock fences regardless of position or target validity', () => {
+        for (const target of ['li_jie.name', 'nobody.met', 'li_jie.age']) {
+            for (const md of [
+                // Immediately after a dialogue paragraph.
+                ['**李杰**：前一句', '```unlock', target, '```'].join('\n'),
+                // Immediately after a title.
+                ['# 第一幕', '```unlock', target, '```'].join('\n'),
+                // Immediately before the entry it would otherwise unlock.
+                ['```unlock', target, '```', '**李杰**：後一句'].join('\n'),
+                // Indented inside a dialogue paragraph.
+                ['**李杰**：前一句', '  ```unlock', target, '```'].join('\n'),
+            ]) {
+                expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+                    /act1\.md: malformed unlock block; expected .*blank-line-separated/
+                );
+            }
+        }
+    });
+
+    it('accepts a blank-line-separated fence after a title', () => {
+        const md = [
+            '# 第一幕',
+            '',
+            '```unlock',
+            'li_jie.name',
+            '```',
+            '',
+            '**李杰**：a',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+
+        expect(result.title).toBe('第一幕');
+        expect(result.entries[0].unlocks).toEqual([
+            { characterId: 'li_jie', kind: 'name' },
+        ]);
+    });
+
     it('rejects a dangling unlock block at end of scene', () => {
         const md = ['**旁白**：a', '', '```unlock', 'li_jie.age', '```'].join(
             '\n'

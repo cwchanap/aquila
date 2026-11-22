@@ -1,4 +1,4 @@
-# Art bible, Shinjuku platform, train carriage, Jishui station, 幽冥之都, 迷霧之森, the cabin in the fog, the second fork and the left-hand trail (acts 1-14)
+# Art bible, Shinjuku platform, train carriage, Jishui station, 幽冥之都, 迷霧之森, the cabin in the fog, the second fork and the left-hand trail (acts 1-14), and branch 1b's forest footpath, the cabin and 亡者峽谷 (acts 9-11)
 
 The train carries exactly 16 passengers, the cast on the character sheet. No extras anywhere inside the train. A scene shows only the people its beat needs; nobody has to appear in every background. Ling Mo is gone from act 4 on in both branches; who else stays aboard depends on the branch (see Acts 4-6 below).
 
@@ -84,6 +84,7 @@ After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui 
 - **Branch 1a/2a, acts 7-8:** Li Jie stays to search the waiting room and Emi stays with him. Yamamoto, his messenger bag on his shoulder, leaves for the forest at the start of act 7 (b1a_b2a_act7_yamamoto_leaves) and is not seen again in these acts. From then on only Li Jie and Emi are in the picture: in the waiting room, on the platform's right-hand end where the dirt path starts, and in 迷霧之森 up to the four-way fork.
 - **Branch 1a/2a/3a, acts 9-11:** only Li Jie and Emi. They take the main path from the fork, find the cabin at the side of the path, sleep there, and walk on in the morning until Li Jie steps on the broken glasses (Saito's, act 12).
 - **Branch 1a/2a/3a acts 12-14:** only Li Jie and Emi. They search around Saito's glasses, find a scrape with a little blood on a trunk, and from then on each carries one of the two kitchen knives Emi took from the cabin. At a second fork (act 12) Emi's hunch picks the left-hand trail (act 13). They walk it for hours, rest once under a dry tree, then talk their way along it (act 14) until the fog thins into a silver-blue glow and they step out of it on act 14's last line. The village that glow belongs to is act 15's reveal and is never drawn in acts 12-14.
+- **Branch 1b/2a, acts 9-11:** Li Jie, Tomoko, Hina and Shota walk the footpath north from 幽冥之都 (act 9), reach the cabin and sleep the children there (act 10); Li Jie then goes on alone to 亡者峽谷 (acts 10-11). Only Li Jie is on screen in act 11, with two dead men: Ito Makoto on the platform and Yudai on the rails. Nobody else from the train is drawn: the timid man and Ito Nana are only talked about, the train is never seen.
 - **Branch 1b, act 8:** the train leaves with Yudai, the Ito couple and Nakamura aboard; it is shown only from inside (b1b_act8_train_leaving) and as two red tail lights going away down the track (b1b_act8_mother_fallen), never as a train body. Tomoko, Hina, Shota and Li Jie stay on the platform.
 
 ### Continuity details
@@ -114,6 +115,10 @@ These are settled from the story text and hold in every image, acts 1-8:
 - **Hands and torch (acts 12-14):** Li Jie holds the phone, torch on, in one hand and the knife in the other; before he takes the knife (realisation) the broken glasses are in the hand that is not holding the phone. The prompts ask for phone left, knife right, but the renderer does not hold to it: the act 11 shots and about two thirds of acts 12-14 (knives, emi_left, fork2, real_smile, music, tired_talk, light_ahead, stunned) show the phone in his right hand and the knife in his left, while decision, ramen and blank show the reverse (self review, 2026-11-21). Do not re-roll a shot just for this, and do not mirror one, which also swaps who stands on which side. For act 15 onward keep the act 11 look (phone in his right hand, knife in his left) where the prompt can say it plainly. The torch stays on all through acts 12-14, also while they sit: it lies glowing on the leaves beside him in act 13 rest. In close shots it hangs low and lights the ground.
 - **The blood on the trunk (act 12):** a long pale scrape about a metre up, bark split open beside it, ending in one small half-dried dark red smear. Nothing graphic: no spatter, no wound, no body.
 - **Silver-blue light (act 14 into act 15):** from b1a_b2a_b3a_act14_light_ahead the palette moves from violet-black and grey-white to a pale silver-blue glow (act 15 calls it a light between moonlight and firefly light). The mist is a thin haze and the trunks stand farther off. Nothing inside the glow is drawn: no village, valley, buildings or elves until act 15.
+- **Tomoko's injury (branch 1b, acts 8-10):** unchanged through the walk and the night in the cabin (act 9 says the knee is still bleeding).
+- **Li Jie in branch 1b, acts 9-11:** dark suit jacket, loosened navy tie, white shirt, black backpack, and the rusted sword in his hand the whole time (set down only while he crouches at the hearth, spreads the map or kneels over the dead). No phone and no torch: the text says there is no phone and only the moons light the way (his tie may fly loose when he runs). He is not smiling except for the half-smile at "我叫李杰" on the path.
+- **The dead (branch 1b/2a, act 11):** non-graphic, always. Ito Makoto lies on the 亡者峽谷 platform (face down at first, then on his back, face pale, eyes half open, a flat dark stain on the concrete; his head wound is under him and is never drawn). Yudai lies on his back on the ballast between the rails in his light grey zip-up jacket, eyes closed, a thin dried trace of blood at the mouth, and one clean narrow slit over the heart in the jacket with a dark stain around it (b1b_b2a_act11_wound shows only the jacket and Li Jie's hand). No open flesh, no gore, no brain matter, no spatter.
+- **The map in branch 1b, act 9:** the yellowed parchment from the stationmaster's office (b1b_act7_map), spread on the stones, shown only as faint ink lines, tiny trees and a compass mark with no readable text.
 - **Tomoko's injury (branch 1b, act 8):** she falls on the platform as the doors close: her long skirt is torn at one knee, the knee scraped and bleeding with a line of blood down her shin, and there is dust and blood on her cardigan, in every act 8 shot.
 
 ### Jishui station (branch 1a)
@@ -178,6 +183,44 @@ the 迷霧之森 (Misty Forest) inland from Jishui station, on the left-hand tra
 - **The dry tree** (act 13 rest): one enormous gnarled ancient tree beside the trail, its bark pale and dry and the leaf litter under it dry, in contrast to the damp black trees around it (act 13: 一棵相對乾燥的樹), with a wide hollow between two huge roots. The three rest shots show the same tree.
 - **The end of the trail** (act 14, from light_ahead): the sentence above loses "thick fog" and gains a pale haze, then the silver-blue glow (see Continuity details).
 - **References:** no new empty reference. `_reference/mist_forest_crossroads.png` fixes the clearing and the fog for the fork, and `_reference/mist_forest_path.png` fixes the trees and the ground for every other shot, with the trail narrower and rougher than the reference path.
+
+### The footpath north of 幽冥之都 (branch 1b/2a, acts 9-10)
+
+The path from the crossroads outside the station (the map, act 9) to 亡者峽谷. It is nothing like 迷霧之森: the text calls it unusually even (異常平整), firm earth and gravel with squared stones along the edges, kept up for a long time, and the forest around it dark, ancient and tall, with moonlight falling through the leaves in patches (act 9). No mist and no fog. It takes them one to two hours to the cabin and about three hours alone from the cabin to the canyon (act 10). Every footpath prompt starts with this sentence:
+
+the forest footpath north of the station of 幽冥之都, leading toward 亡者峽谷: a surprisingly well-kept path of firm packed earth and fine gravel about two people wide, edged on both sides by neat rows of small squared stones, running through a dark ancient forest of tall straight-trunked trees whose branches meet overhead in a dense canopy that hides the sky and the two moons; only thin threads and scattered patches of cold violet moonlight slip through gaps in the leaves, dappling the gravel with light and long soft shadows; no mist and no fog, ferns and moss at the feet of the trunks; no lamps, no buildings, no signposts, no fences.
+
+- **The cabin and the path:** the cabin stands in a clearing a little way off the path (act 9: 小徑的前方,樹林中的空地上). Shots on the path never show it except `cabin_found`.
+- **Moons:** hidden by the canopy; only the trailhead shot (path_found) and the cabin clearing show a patch of open sky with the two crescents.
+- **Reference:** none made. `b1b_b2a_act9_deep_forest` (the first footpath shot rendered, the four tiny and from behind) is the reference for the others.
+
+### 林中木屋, the cabin in the forest (branch 1b/2a, acts 9-10)
+
+Not the 霧中小屋 of branch 1a: that one is a single-storey cabin in thick fog; this one stands in a clearing under the moons, two storeys high with a porch (act 9: 雙層的木屋, a small porch with a few wooden steps, a pointed roof, a straight chimney). It is well kept and nobody is there, but the hearth is still warm (act 10). Every outside prompt starts with this sentence:
+
+a two-storey timber cabin standing alone in a small clearing of short grass in the forest north of 幽冥之都: walls of dark, well-kept planks with no rot and no moss, a steep pointed roof of dark wooden shingles with a straight stone chimney rising from the ridge, a small covered porch across the front with three wooden steps up to a plain plank front door, two intact glass windows on the ground floor, one either side of the door, and two small ones upstairs, all dark, no light inside and no smoke; the dense forest stands behind it like a black wall; above the clearing a patch of open black sky shows two thin violet crescent moons in the black sky, the large one on the left and the small one on the right, their discs dark; cold violet moonlight on the roof and the grass; no fence, no sign, no lamp, no other buildings.
+
+Inside is one ground-floor room (act 10: a sturdy table with four chairs, a kitchen counter with clay bowls and plates, a stone fireplace with firewood stacked beside it, a single bed with a clean blanket, a closed door that looks like a toilet). The upper floor and any staircase are never mentioned and never drawn. Every inside prompt starts with this sentence, which fixes the layout seen from the front door:
+
+inside the cabin in the forest north of 幽冥之都, the ground-floor room: one room of smooth, dark, well-kept wooden planks, spotlessly clean and dry, no dust and no cobwebs, a low ceiling with dark beams, a plank floor; no lamp is lit and there is no electric light: the only light is cold violet moonlight falling through the front door and the glass windows in long pale shafts across the floor. Seen from the front door: in the middle a sturdy rectangular wooden table with exactly four wooden chairs neatly pushed in around it; along the left wall a plank kitchen counter with a wooden cupboard under it and a few clay bowls and plates on top, and in the far-left corner a small stone fireplace holding grey ashes and a few half-burnt pieces of charcoal, with firewood stacked neatly beside it; along the right wall a single wooden bed made up with a clean blanket and a pillow, and in the far-right corner a closed plank door; a small glass window in the far wall; no staircase in view, no decorations, no text.
+
+- **Light:** none is lit, indoors or out; only the violet moonlight through the door and windows. Prompts never add lamps.
+- **The bed:** a single wooden bed; Hina and Shota both lie on it.
+- **Reference:** none made. `b1b_b2a_act9_cabin_found` (the exterior, the four tiny) and `b1b_b2a_act10_inside` (the empty-ish room, Li Jie small) are the references.
+
+### 亡者峽谷 and the railway to it (branch 1b/2a, acts 10-11)
+
+Barer than 幽冥之都: no building at all, a concrete platform, one lone sign, and the edge is the canyon (act 11). The platform "extends over the canyon like a bridge" (act 10), and the rails run along a roadbed with a drop on both sides (act 11: 軌道兩側是深不見底的峽谷,只有窄窄的路基可以行走). Every platform prompt starts with this sentence:
+
+the station of 亡者峽谷: a bare grey concrete platform, a long plain slab with no roof, no building, no waiting hall, no ticket booth, no bench and no lamp, a single step above one railway track (two rails on dark ballast) that runs beside it; the whole station sits on a narrow spit of rock that juts out over the middle of an enormous canyon, so the platform's outer edge and, beyond the track, the embankment's outer side both drop sheer into bottomless blackness; the far side of the canyon is a faint dark cliff wall in the distance; where the spit meets the forest at its near end the trees thin out and stop; one lone signboard of black wood on two thick posts stands in the middle of the platform near its edge; two thin violet crescent moons in the black sky, the large one on the left and the small one on the right, their discs dark; cold violet moonlight turning the concrete purple-black; a cold wind rises from the depths.
+
+- **The sign:** a black-wood board like the one at 幽冥之都; its text (上一站「幽冥之都」, 下一站「終焉祭壇」) is carved but never legible in the picture; the narration gives the words.
+- **The platform is empty** in the first shot of act 11 (it is the last shot of act 10): the body in the middle is only noticed at act 11 line 11.
+- **The railway** between the two stations is drawn only as a narrow embankment with a canyon on both sides. Every rails prompt starts with this sentence:
+
+the railway between 亡者峽谷 and 幽冥之都: a single track of two rails on dark gravel ballast laid along the top of a narrow stone embankment barely wider than the track, with a bottomless canyon dropping sheer into blackness on both sides, no fence, no lamps, no buildings; the far canyon walls only faint dark shapes; two thin violet crescent moons in the black sky, the large one on the left and the small one on the right, their discs dark; cold violet moonlight on the rails and the ballast.
+
+- **Reference:** none made. `b1b_b2a_act10_canyon_station` is the reference for every platform shot, and a rails shot passes the previous approved rails image.
 
 ### Shot list, branch 1a
 
@@ -338,6 +381,45 @@ Line numbers count every `**X**：` line in the act from 1.
 | b1a_b2a_b3a_act14_stunned (L47) | They step out of the last mist and freeze | extreme wide, low, from behind | both tiny against a blaze of silver-blue light |
 
 Shown again with a `reuse` bg block: act 11's frame_held for the first three lines of act 12 (he is still examining the glasses), act 12's decision for the first three lines of act 13 (the text repeats the same beat), act 12's fork2 when he says "好。我們走左邊。" and they thank each other, and act 13's rest after he pats her shoulder while they talk about gifts and her mother's daifuku (L36-L41).
+
+### Shot list, branch 1b/2a, acts 9-11
+
+Line numbers count every `**X**：` line in the act from 1. Four moments reuse an existing image.
+
+| Background | Beat | Framing | Who is in view |
+| --- | --- | --- | --- |
+| reuse b1b_act8_family_ready (act 9 L1) | "我跟你們一起走" | (the existing shot) | Li Jie, Tomoko, Hina, Shota |
+| b1b_b2a_act9_map_on_ground (L6) | He spreads the map on the stones | medium, low, three-quarter | Li Jie crouching, the three leaning in |
+| b1b_b2a_act9_path_found (L13) | The even path at the forest edge | medium-wide, side-on, eye level | Li Jie at the trailhead, the three waiting behind |
+| b1b_b2a_act9_walk_north (L18) | They walk the path, Shota asks about his father | medium-wide, low, from ahead | all four walking toward the camera |
+| b1b_b2a_act9_names (L26) | Names exchanged, "李杰哥哥" | medium, side-on, eye level | Li Jie turned back in profile, the three in a row |
+| b1b_b2a_act9_chat_walk (L34) | Work, Saitama, "一個人來這裡打拼" | medium, side-on tracking, long lens | Li Jie and Tomoko walking, the children behind, soft |
+| b1b_b2a_act9_deep_forest (L45) | The forest thickens, hours pass | wide, low, from far behind | the four tiny, from behind |
+| b1b_b2a_act9_tired (L50) | "我走不動了" | medium, low, three-quarter | Tomoko crouched to Shota, Hina holding his hand, Li Jie soft in front |
+| b1b_b2a_act9_cabin_found (L59) | The cabin in the clearing | wide, eye level, from behind the group | the four small at the edge of the trees |
+| b1b_b2a_act9_porch (L73) | He climbs the porch and pushes the door | medium, low, three-quarter from the steps | Li Jie on the porch, the three small below |
+| reuse b1b_b2a_act9_porch (act 10 L1) | The door opens, "你們在外面等著" | (the existing shot) | |
+| b1b_b2a_act10_inside (L7) | The dark room | wide, eye level, from the door | Li Jie small in the middle |
+| b1b_b2a_act10_hearth (L11) | The hearth is still warm | medium close, low, three-quarter | Li Jie crouching at the fireplace |
+| b1b_b2a_act10_family_in (L16) | "沒人。可以進來了" | medium-wide, from the table toward the door | Li Jie at the door, Tomoko, Hina, Shota coming in |
+| b1b_b2a_act10_bed (L21) | The children fall asleep in their shoes | medium close, high, at the bed | Hina and Shota asleep, Tomoko tucking the blanket |
+| b1b_b2a_act10_argument (L25) | "我必須繼續趕路" / "我去" | over-the-shoulder medium | Tomoko sharp at the bed's foot, Li Jie soft in front, the children soft behind |
+| b1b_b2a_act10_tomoko_gives (L35) | She looks back at the sleeping children and gives in | close-up, slightly low | Tomoko, Li Jie's shoulder soft at the edge |
+| b1b_b2a_act10_supplies (L42) | He takes bread, biscuits, nuts, a water skin | medium, three-quarter from behind | Li Jie at the counter |
+| b1b_b2a_act10_bow (L47) | "拜託你把他帶回來" | medium, eye level, on the porch | Li Jie half turned, Tomoko bowing in the doorway, the children tiny behind |
+| b1b_b2a_act10_alone_path (L52) | Alone on the path, then running | medium-long, low, from ahead | Li Jie jogging toward the camera |
+| b1b_b2a_act10_canyon_station (L62) | The station over the canyon, "這⋯⋯怎麼可能⋯⋯" | wide, low, from the platform's near end | Li Jie small from behind; the platform empty |
+| reuse b1b_b2a_act10_canyon_station (act 11 L1) | "什麼都沒有⋯⋯" | (the existing shot) | |
+| b1b_b2a_act11_sign (L6) | 上一站幽冥之都, 下一站終焉祭壇 | low, close, over his shoulder | Li Jie from behind under the sign |
+| b1b_b2a_act11_body_found (L11) | A figure face down in the middle of the platform | wide, low, along the platform | Li Jie running in, the body at the centre |
+| b1b_b2a_act11_face (L16) | He turns the body over: the irritable husband, dead | medium close, from beside and above | Li Jie kneeling, Ito Makoto, no wound shown |
+| b1b_b2a_act11_platform_edge (L25) | Where is Mr. Kobayashi? The halving, the rails | wide, low, from behind | Li Jie at the edge, the body tiny behind him |
+| reuse b1b_b2a_act11_face (L34) | The sacrifice theory, "人在絕境中⋯⋯" | (the existing shot) | |
+| b1b_b2a_act11_rails_back (L41) | He hurries back along the rails | wide, high, from behind and above | Li Jie small on the narrow roadbed |
+| b1b_b2a_act11_yudai_found (L46) | Yudai on the track | medium, low, from beside the rails | Li Jie kneeling over Yudai |
+| b1b_b2a_act11_wound (L54) | A clean sword wound over the heart | close-up detail, high, over his shoulder | the jacket slit, Li Jie's trembling hand |
+| b1b_b2a_act11_third_party (L60) | "有第三方⋯⋯", the rusty sword | medium, low, three-quarter | Li Jie with the sword, Yudai a soft shape at the bottom |
+| b1b_b2a_act11_alarm (L68) | "他們有危險!" and the run back | close-up, slightly low | Li Jie whirling round, shouting |
 
 ## Portraits
 

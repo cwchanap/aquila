@@ -905,6 +905,8 @@ describe('MobileNovelReader', () => {
             expect(screen.getByText('Characters')).toBeInTheDocument();
             expect(onOpenNotes).not.toHaveBeenCalled();
             await fireEvent.pointerUp(notes);
+            await fireEvent.click(notes);
+            expect(onOpenNotes).not.toHaveBeenCalled();
             expect(screen.queryByText('Characters')).not.toBeInTheDocument();
         });
 

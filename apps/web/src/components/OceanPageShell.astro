@@ -14,9 +14,10 @@ interface Props {
   tagline: string;
   user: User | null;
   authFailed: boolean;
+  backHref?: string;
 }
 
-const { locale, title, heading, tagline, user, authFailed } = Astro.props;
+const { locale, title, heading, tagline, user, authFailed, backHref } = Astro.props;
 const t = (key: string) => translate(locale, key);
 ---
 
@@ -26,7 +27,7 @@ const t = (key: string) => translate(locale, key);
 
     <!-- Back button — refined glass pill -->
     <a
-      href={`/${locale}/`}
+      href={backHref ?? `/${locale}/`}
       aria-label={t("common.backLabel")}
       class="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-white/40 text-slate-800 hover:text-slate-950 transition-all duration-300 motion-safe:hover:scale-105 text-sm font-light tracking-wide"
     >

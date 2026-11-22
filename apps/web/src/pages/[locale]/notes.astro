@@ -21,6 +21,7 @@ const user = sessionResult.status === 'ok' ? sessionResult.user : null;
   tagline={t.tagline}
   user={user}
   authFailed={sessionResult.status === 'error'}
+  backHref={`/${locale}/progress`}
 >
   <div class="w-full max-w-6xl">
     <NotesPage

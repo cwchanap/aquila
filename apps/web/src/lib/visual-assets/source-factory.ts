@@ -17,6 +17,7 @@ import { WebAssetResolver } from './web-asset-resolver';
 
 export type VisualReaderRuntime = {
     controller: VisualStateController;
+    resolvePortraitUrl: (characterId: string) => string | null;
     softRevalidate: () => Promise<void>;
     dispose: () => Promise<void>;
 };
@@ -103,6 +104,13 @@ export function createVisualRuntime(
     cache.setBeforeRevoke(objectUrl => controller.detachObjectUrl(objectUrl));
     return {
         controller,
+        resolvePortraitUrl: characterId => {
+            const result = resolver?.resolve({
+                type: 'portrait',
+                key: `${characterId}/base`,
+            });
+            return result?.status === 'resolved' ? result.webpUrl.href : null;
+        },
         softRevalidate: () => controller.softRevalidate(),
         dispose: async () => {
             controller.dispose();

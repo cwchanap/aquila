@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import '@testing-library/jest-dom';
 import type { Locale } from '@aquila/stories';
 import { STORY_CATALOG } from '@aquila/stories/catalog';
@@ -8,6 +9,13 @@ import type { AuthState } from '../../lib/auth-utils';
 import { authClient } from '../../lib/auth-client';
 import MyProgress from '../MyProgress.svelte';
 import { storyProgressKey } from '../../lib/story-progress-store';
+import { loadStoryNotes } from '@aquila/stories/async';
+
+vi.mock('@aquila/stories/async', async importOriginal => {
+    const original =
+        await importOriginal<typeof import('@aquila/stories/async')>();
+    return { ...original, loadStoryNotes: vi.fn(original.loadStoryNotes) };
+});
 
 const NOW = new Date('2024-01-01T00:00:00.000Z').getTime();
 const HOUR = 60 * 60 * 1000;
@@ -93,6 +101,18 @@ const LOCAL_PROGRESS = {
 };
 
 describe('MyProgress', () => {
+    it('offers a separate Characters link only for started supported stories', () => {
+        saveProgress(LOCAL_PROGRESS);
+        renderProgress();
+        const row = rowLink('train_adventure');
+        const chip = screen.getByRole('link', { name: /characters/i });
+        expect(chip).toHaveAttribute('href', '/en/notes?story=train_adventure');
+        expect(row.contains(chip)).toBe(false);
+        expect(chip.closest('li')).toBe(row.closest('li'));
+        expect(
+            rowLink('the_seventh_mirror').closest('li')?.querySelectorAll('a')
+        ).toHaveLength(1);
+    });
     beforeEach(() => {
         localStorage.clear();
         vi.mocked(authClient.getSession).mockReset();
@@ -103,8 +123,64 @@ describe('MyProgress', () => {
     });
 
     afterEach(() => {
+        vi.mocked(loadStoryNotes).mockReset();
+        vi.mocked(loadStoryNotes).mockImplementation(async id => {
+            const { loadStoryNotes: actual } = await vi.importActual<
+                typeof import('@aquila/stories/async')
+            >('@aquila/stories/async');
+            return actual(id);
+        });
         vi.unstubAllGlobals();
         localStorage.clear();
+    });
+
+    it('keeps a working count-free chip while notes load and if they fail', async () => {
+        saveProgress(LOCAL_PROGRESS);
+        let reject!: (error: Error) => void;
+        vi.mocked(loadStoryNotes).mockImplementation(
+            () =>
+                new Promise((_, fail) => {
+                    reject = fail;
+                })
+        );
+        renderProgress();
+        const chip = screen.getByRole('link', { name: 'Characters' });
+        expect(chip).toHaveAttribute('href', '/en/notes?story=train_adventure');
+        expect(loadStoryNotes).toHaveBeenCalledTimes(1);
+        expect(loadStoryNotes).toHaveBeenCalledWith('train_adventure');
+        reject(new Error('offline'));
+        await Promise.resolve();
+        await tick();
+        expect(screen.getByRole('link', { name: 'Characters' })).toBe(chip);
+        expect(rowLink('train_adventure')).toHaveAttribute(
+            'href',
+            expect.stringContaining('/reader?')
+        );
+    });
+
+    it('recounts from the current owner progress after a cached-page restore', async () => {
+        await loadStoryNotes('train_adventure');
+        const entry = {
+            ...LOCAL_PROGRESS.train_adventure,
+            sceneId: 'act1',
+            dialogueIndex: 8,
+        };
+        saveProgress({ train_adventure: entry });
+        renderProgress();
+        await vi.advanceTimersByTimeAsync(0);
+        await tick();
+        expect(
+            screen.getByRole('link', { name: 'Characters 2' })
+        ).toBeInTheDocument();
+        saveProgress({ train_adventure: { ...entry, dialogueIndex: 4 } });
+        window.dispatchEvent(
+            new PageTransitionEvent('pageshow', { persisted: true })
+        );
+        await vi.advanceTimersByTimeAsync(0);
+        await tick();
+        expect(
+            screen.getByRole('link', { name: 'Characters 1' })
+        ).toBeInTheDocument();
     });
 
     it('shows local progress, counts and recent-first rows when signed out', () => {

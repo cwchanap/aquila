@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createVisualRuntime, getAssetResolverSource } from '../source-factory';
 import type { VisualSnapshot } from '../types';
 import type { VisualControllerInput } from '../visual-state-controller';
+import { WebAssetResolver } from '../web-asset-resolver';
 
 const linearFlow = {
     start: 'scene',
@@ -118,6 +119,35 @@ describe('getAssetResolverSource', () => {
 });
 
 describe('createVisualRuntime', () => {
+    it('resolves notes portraits from the active resolver even when stage portraits are suppressed', async () => {
+        const resolve = vi
+            .spyOn(WebAssetResolver.prototype, 'resolve')
+            .mockReturnValue({
+                status: 'resolved',
+                webpUrl: new URL(
+                    'https://assets.example/vn/objects/opaque.webp'
+                ),
+            } as never);
+        const runtime = createVisualRuntime(
+            'train_adventure',
+            'https://aquila.example',
+            () => null,
+            {
+                baseUrl: 'https://assets.example/',
+                environment: 'production',
+            }
+        )!;
+        expect(runtime.resolvePortraitUrl('student')).toBe(
+            'https://assets.example/vn/objects/opaque.webp'
+        );
+        expect(resolve).toHaveBeenCalledWith({
+            type: 'portrait',
+            key: 'student/base',
+        });
+        resolve.mockReturnValue({ status: 'unavailable' } as never);
+        expect(runtime.resolvePortraitUrl('student')).toBeNull();
+        await runtime.dispose();
+    });
     it('creates a disposable visual runtime for source-less stories', async () => {
         const getSceneDialogue = () => null;
 

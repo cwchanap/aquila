@@ -34,6 +34,7 @@
     Film,
     Cog,
     Map as MapIcon,
+    Users,
   } from 'lucide-svelte';
   import { longpress } from '@/lib/longpress';
 
@@ -74,6 +75,8 @@
     visibleSceneIds,
     storyMapAvailable = false,
     onOpenStoryMap = () => {},
+    notesAvailable = false,
+    onOpenNotes = () => {},
     historyLines,
   }: {
     flow: StoryFlowConfig;
@@ -112,6 +115,8 @@
     visibleSceneIds?: ReadonlySet<string>;
     storyMapAvailable?: boolean;
     onOpenStoryMap?: () => void;
+    notesAvailable?: boolean;
+    onOpenNotes?: () => void;
     historyLines?: HistoryLine[];
   } = $props();
 
@@ -330,6 +335,12 @@
     onOpenStoryMap();
   }
 
+  async function openNotes(): Promise<void> {
+    chromeVisible = false;
+    await tick();
+    onOpenNotes();
+  }
+
   function goBack(): void {
     if (interactionDisabled) return;
     // Overlays own their own taps; never step the scene from under them.
@@ -423,7 +434,7 @@
       class="absolute inset-x-0 top-0 z-[25] max-h-[calc(100dvh-2rem)] overflow-y-auto bg-white/80 shadow backdrop-blur-md"
       style="padding-top: calc(0.5rem + env(safe-area-inset-top));"
     >
-      <div class="flex items-center gap-1 px-2 py-2 pl-16">
+      <div class="flex flex-wrap items-center gap-1 px-2 py-2 pl-16 [&>a]:shrink-0 [&>button]:shrink-0">
         <a
           href={backUrl}
           class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
@@ -463,6 +474,20 @@
             }}
           >
             <MapIcon size={20} aria-hidden="true" />
+          </button>
+        {/if}
+        {#if notesAvailable}
+          <button
+            type="button"
+            class="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-white/60"
+            aria-label={t.notes.title}
+            onclick={() => void openNotes()}
+            use:longpress={{
+              onLongPress: (node) => showTooltip(node, t.notes.title),
+              onRelease: hideTooltip,
+            }}
+          >
+            <Users size={20} aria-hidden="true" />
           </button>
         {/if}
         <button

@@ -8,6 +8,7 @@ import {
     buildStoryMap,
     hasRealDecision,
     layoutStoryMap,
+    passedSceneIds,
     visibleSceneIds,
     type StoryMapDecision,
     type StoryMapMetrics,
@@ -272,6 +273,74 @@ describe('visibleSceneIds', () => {
         const set = visibleSceneIds(forkFlow, progress(['zz_act9']), 'act1');
         expect(set.has('act1')).toBe(true);
         expect(set.has('zz_act9')).toBe(false);
+    });
+});
+
+describe('passedSceneIds', () => {
+    it('passes no scene on a fresh start and only strict ancestors of the current scene', () => {
+        expect(passedSceneIds(forkFlow, progress([]), 'act1')).toEqual(
+            new Set()
+        );
+        expect(passedSceneIds(forkFlow, progress([]), 'b1a_act4')).toEqual(
+            new Set(['act1', 'act2', 'b1a_act3'])
+        );
+    });
+
+    it('does not pass a visited but unfinished non-active scene', () => {
+        const set = passedSceneIds(
+            forkFlow,
+            progress(['act1', 'act2', 'b1a_act3']),
+            'act1'
+        );
+        expect(set).toEqual(new Set(['act1', 'act2']));
+        expect(set.has('b1a_act3')).toBe(false);
+    });
+
+    it('passes a recorded ending and its ancestors without a visited ledger', () => {
+        expect(
+            passedSceneIds(forkFlow, progress([], ['b1b_act3']), 'act1')
+        ).toEqual(new Set(['act1', 'act2', 'b1b_act3']));
+    });
+
+    it('unions merged visited devices without passing unfinished leaves', () => {
+        const set = passedSceneIds(
+            forkFlow,
+            progress(['b1a_act3', 'b1b_act3']),
+            'act1'
+        );
+        expect(set).toEqual(new Set(['act1', 'act2']));
+        expect(set.has('b1a_act3')).toBe(false);
+        expect(set.has('b1b_act3')).toBe(false);
+    });
+
+    it('passes a completed route after replaying its entry scene', () => {
+        const visited = [
+            'act1',
+            'act2',
+            'b1a_act3',
+            'b1a_act4',
+            'b1a_b2a_act5',
+            'b1a_b2a_actFinal',
+        ];
+        const set = passedSceneIds(
+            forkFlow,
+            progress(visited, ['b1a_b2a_actFinal']),
+            'act1'
+        );
+        expect(set).toEqual(new Set(visited));
+    });
+
+    it('ignores unknown, unreachable and absent positions', () => {
+        expect(passedSceneIds(forkFlow, progress(['zz_act9']), 'act1')).toEqual(
+            new Set()
+        );
+        expect(passedSceneIds(forkFlow, null, undefined)).toEqual(new Set());
+        expect(passedSceneIds(forkFlow, null, 'not_a_scene')).toEqual(
+            new Set()
+        );
+        expect(
+            passedSceneIds(forkFlow, { visited: undefined, endings: [] }, null)
+        ).toEqual(new Set());
     });
 });
 

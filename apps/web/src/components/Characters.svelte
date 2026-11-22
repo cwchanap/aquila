@@ -165,11 +165,12 @@
   .cast-heading h2, .details h2 { font: 600 1.45rem Georgia, serif; }
   .cast-heading span, small { color: #e2e8f0; font-size: .75rem; }
   .cast ul, .facts { list-style: none; margin: 0; padding: 0; }
-  .cast ul { max-height: 35rem; overflow-y: auto; padding: 0 .6rem .6rem; }
+  .cast ul { max-height: 35rem; overflow-y: auto; padding: 0 .6rem .6rem; scrollbar-width: thin; scrollbar-color: #ffffff80 transparent; }
   .cast button { display: flex; align-items: center; gap: .75rem; text-align: left; width: 100%; min-height: 60px; padding: .5rem; border: 0; border-radius: .8rem; background: transparent; color: inherit; cursor: pointer; }
   .cast button:hover, .cast button.chosen { background: #ffffff18; box-shadow: inset 0 0 0 1px #ffffff90; }
   button:focus-visible { outline: 2px solid #a5f3fc; outline-offset: 2px; }
-  .row-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+  .row-text { display: flex; flex: 1; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+  .row-text strong { font: 700 .94rem Georgia, serif; }
   .avatar { display: flex; flex: none; align-items: center; justify-content: center; width: 2.8rem; height: 2.8rem; overflow: hidden; border-radius: 50%; background: #61728b; color: white; font-weight: 600; }
   .avatar img { width: 100%; height: 100%; object-fit: cover; }
   .detail { display: flex; min-width: 0; }
@@ -181,6 +182,7 @@
   .unknown-name { width: fit-content; margin-top: .5rem; padding: .15rem .5rem; border: 1px solid #fcd34d80; border-radius: 999px; background: #fcd34d20; color: #e2e8f0; font-size: .8rem; }
   .details h3 { margin: 2rem 0 1rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .1em; }
   .facts li { display: flex; align-items: flex-start; gap: .75rem; padding: .75rem; margin-bottom: .5rem; border: 1px solid #ffffff24; border-radius: .75rem; background: #ffffff14; }
+  .facts li:not(.locked)::before { content: ''; flex: 0 0 .375rem; width: .375rem; height: .375rem; margin-top: .5rem; border-radius: 50%; background: #67e8f9; }
   .facts p { flex: 1; min-width: 0; line-height: 1.45; }
   .facts small { flex: none; padding: .1rem .45rem; border: 1px solid #ffffff40; border-radius: 999px; }
   .facts li.locked { background: #0f172a40; border-style: dashed; }
@@ -190,7 +192,12 @@
   .back { display: block; align-self: flex-start; min-width: 44px; min-height: 44px; padding: .5rem 1rem; border: 0; background: transparent; color: white; cursor: pointer; }
   .mobile-dialog { position: fixed; inset: 0; display: flex; flex-direction: column; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0; color: white; background: #19243a; overflow-y: auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
   @media (min-width: 641px) {
-    .cast .avatar img { object-position: center 12%; }
+    .row-text { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: .5rem; }
+    .row-text strong { grid-column: 1 / -1; }
+    .row-text .unknown-name { margin-top: 0; padding: 0 .4rem; font-size: .7rem; }
+    .row-text small:last-child { grid-column: 2; justify-self: end; white-space: nowrap; }
+    .cast .avatar { border: 2px solid #ffffff90; }
+    .cast .avatar img { object-position: center 12%; transform: scale(1.65); transform-origin: center 12%; }
   }
   @media (max-width: 640px) {
     .characters { display: block; min-height: 0; }
@@ -198,9 +205,10 @@
     .cast-heading h2, .cast-heading span { color: #1e293b; }
     .cast ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; max-height: none; padding: .75rem; }
     .cast button { flex-direction: column; justify-content: flex-start; align-items: stretch; height: 100%; min-height: 9rem; padding: .5rem; background: rgba(2, 6, 23, .65); text-align: left; }
-    .cast button.chosen { background: rgba(2, 6, 23, .65); }
+    .cast button:hover, .cast button.chosen { background: rgba(2, 6, 23, .65); }
     .cast .avatar { width: 100%; height: auto; aspect-ratio: 3 / 4; border-radius: .6rem; }
     .row-text { font-size: .8rem; }
+    .row-text strong { font-size: .8rem; }
     .desktop-detail { display: none; }
     .portrait { flex: none; width: 112px; height: 149px; margin: .5rem 1.5rem 0; }
     .avatar.large { width: 9rem; }

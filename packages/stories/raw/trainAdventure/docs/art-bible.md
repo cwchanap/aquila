@@ -416,7 +416,7 @@ Line numbers count every `**X**：` line in the act from 1. Four moments reuse a
 | b1b_b2a_act11_platform_edge (L25) | Where is Mr. Kobayashi? The halving, the rails | wide, low, from behind | Li Jie at the edge, the body tiny behind him |
 | reuse b1b_b2a_act11_face (L34) | The sacrifice theory, "人在絕境中⋯⋯" | (the existing shot) | |
 | b1b_b2a_act11_rails_back (L41) | He hurries back along the rails | wide, high, from behind and above | Li Jie small on the narrow roadbed |
-| b1b_b2a_act11_yudai_found (L46) | Yudai on the track | medium, low, from beside the rails | Li Jie kneeling over Yudai |
+| b1b_b2a_act11_yudai_found (L48) | He kneels and turns Yudai over (the figure first seen at L45-47 stays on the rails_back shot) | medium, low, from beside the rails | Li Jie kneeling over Yudai |
 | b1b_b2a_act11_wound (L54) | A clean sword wound over the heart | close-up detail, high, over his shoulder | the jacket slit, Li Jie's trembling hand |
 | b1b_b2a_act11_third_party (L60) | "有第三方⋯⋯", the rusty sword | medium, low, three-quarter | Li Jie with the sword, Yudai a soft shape at the bottom |
 | b1b_b2a_act11_alarm (L68) | "他們有危險!" and the run back | close-up, slightly low | Li Jie whirling round, shouting |

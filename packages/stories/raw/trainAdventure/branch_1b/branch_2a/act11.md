@@ -118,13 +118,13 @@ the railway between 亡者峽谷 and 幽冥之都: a single track of two rails o
 
 **旁白**：將近一個小時後,前方的鐵軌上,他看到了一個倒下的身影。
 
-```bg yudai_found
-the railway between 亡者峽谷 and 幽冥之都: a single track of two rails on dark gravel ballast laid along the top of a narrow stone embankment barely wider than the track, with a bottomless canyon dropping sheer into blackness on both sides, no fence, no lamps, no buildings; the far canyon walls only faint dark shapes; two thin violet crescent moons in the black sky, the large one on the left and the small one on the right, their discs dark; cold violet moonlight on the rails and the ballast. Camera: medium, low, from beside the track. Yudai (the father, 35, short neat black hair, light grey zip-up jacket over a polo shirt, dark trousers) lies on his back across the ballast between the rails, eyes closed, face pale as paper, a thin dried trace of blood at the corner of his mouth; Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) kneels on one knee over him, having turned him over, one hand on his shoulder, his face stricken, eyes wide; the sword (a long straight sword, its blade pitted with red-brown rust and dull along the edge, a plain iron crossguard, the grip wrapped in old rotting cloth strips) lies on the ballast beside him. Nothing graphic. Only these two people in view. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
-```
-
 **李杰**：(心中一緊)那是⋯⋯
 
 **旁白**：他連忙跑上前去。那人穿著熟悉的衣服,是小林先生。
+
+```bg yudai_found
+the railway between 亡者峽谷 and 幽冥之都: a single track of two rails on dark gravel ballast laid along the top of a narrow stone embankment barely wider than the track, with a bottomless canyon dropping sheer into blackness on both sides, no fence, no lamps, no buildings; the far canyon walls only faint dark shapes; two thin violet crescent moons in the black sky, the large one on the left and the small one on the right, their discs dark; cold violet moonlight on the rails and the ballast. Camera: medium, low, from beside the track. Yudai (the father, 35, short neat black hair, light grey zip-up jacket over a polo shirt, dark trousers) lies on his back across the ballast between the rails, eyes closed, face pale as paper, a thin dried trace of blood at the corner of his mouth; Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack on one shoulder) kneels on one knee over him, having turned him over, one hand on his shoulder, his face stricken, eyes wide; the sword (a long straight sword, its blade pitted with red-brown rust and dull along the edge, a plain iron crossguard, the grip wrapped in old rotting cloth strips) lies on the ballast beside him. Nothing graphic. Only these two people in view. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
+```
 
 **李杰**：(跪下,翻過身體)小林先生!
 

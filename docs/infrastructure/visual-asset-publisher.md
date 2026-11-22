@@ -32,9 +32,11 @@ It needs no manual step after a merge.
 - **On merge.** Every push to `main` that touches
   `packages/assets/media/<story>/backgrounds/` or `characters/` publishes and
   activates that story's release (`publish --confirm-production`), then checks
-  the public CDN serves the exact manifest. `the_seventh_mirror` is skipped: it
-  follows the preview pointers and goes through the release gate. Reference
-  images under `backgrounds/_reference/` do not trigger it.
+  the public CDN serves the exact manifest. It always builds from the tip of
+  `main`, so re-running an old run cannot bring older art back.
+  `the_seventh_mirror` is skipped and refused for manual runs: it follows the
+  preview pointers and goes through the release gate. Reference images under
+  `backgrounds/_reference/` do not trigger it.
 - **By hand.** Actions, Visual Release, Run workflow. `publish` releases the art
   on the branch you pick, which is how to go live before a merge (Vercel
   previews read the production release). `rollback` with a `release_id` returns

@@ -1,3 +1,4 @@
+import { availableParallelism } from 'node:os';
 import {
     RUNTIME_ASSET_CACHE_POLICY,
     getCurrentPointerPath,
@@ -17,6 +18,7 @@ import {
     inspectImmutableCandidate,
     type PlannedImmutableCandidate,
 } from './immutable-candidate';
+import { mapConcurrent } from './map-concurrent';
 import { deriveReleasePlan, loadReleasePlan } from './release-plan';
 import {
     normalizeReportDiagnostics,
@@ -39,6 +41,10 @@ const IMMUTABLE_CACHE_CONTROL =
 const POINTER_CACHE_CONTROL =
     RUNTIME_ASSET_CACHE_POLICY.currentPointer.responseCacheControl;
 const textDecoder = new TextDecoder('utf-8', { fatal: true });
+// AVIF encoding takes about 20 seconds per background on one core and each
+// encode is single-threaded, so encode as many assets at once as there are
+// cores. Capped so a big machine does not hold dozens of encoders in memory.
+const ENCODE_CONCURRENCY = Math.max(1, Math.min(availableParallelism(), 8));
 
 export interface BuildPublicationPlanOptions {
     readonly repositoryRoot: string;
@@ -281,7 +287,6 @@ export async function buildPublicationPlan(
     const planByIdentity = new Map(
         included.map(entry => [qualifyAssetIdentity(entry.identity), entry])
     );
-    const encodedAssets: EncodedAsset[] = [];
     const sourceWarnings = [];
     // A derived plan silently drops art that is not in the source root, so
     // say how much was dropped: publishing from the wrong root must be visible.
@@ -296,13 +301,20 @@ export async function buildPublicationPlan(
             });
         }
     }
-    for (const [index, source] of resolved.sources.entries()) {
+    for (const source of resolved.sources) {
         sourceWarnings.push(...evaluateSourceDiagnostics(source));
-        const identity = qualifyAssetIdentity(source.identity);
-        const authoring = catalogByIdentity.get(identity);
-        const planned = planByIdentity.get(identity);
-        encodedAssets.push(
-            await encodeAsset({
+    }
+    let encodedCount = 0;
+    // Results keep the source order, so the manifest and release id do not
+    // depend on which encode finishes first.
+    const encodedAssets: EncodedAsset[] = await mapConcurrent(
+        resolved.sources,
+        ENCODE_CONCURRENCY,
+        async source => {
+            const identity = qualifyAssetIdentity(source.identity);
+            const authoring = catalogByIdentity.get(identity);
+            const planned = planByIdentity.get(identity);
+            const encoded = await encodeAsset({
                 identity: source.identity,
                 sourcePath: source.sourcePath,
                 bytes: source.bytes,
@@ -312,15 +324,17 @@ export async function buildPublicationPlan(
                 ...(planned?.section === undefined
                     ? {}
                     : { planSection: planned.section }),
-            })
-        );
-        progress(options.progress, {
-            stage: 'encode',
-            completed: index + 1,
-            total: resolved.sources.length,
-            message: `encoded ${identity}`,
-        });
-    }
+            });
+            encodedCount += 1;
+            progress(options.progress, {
+                stage: 'encode',
+                completed: encodedCount,
+                total: resolved.sources.length,
+                message: `encoded ${identity}`,
+            });
+            return encoded;
+        }
+    );
 
     const preparedRelease = buildPreparedRelease({
         storyId: options.storyId,

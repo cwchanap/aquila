@@ -485,7 +485,7 @@ describe('selectCharacterNotes', () => {
         const view = select(
             story,
             progress({
-                sceneId: 'act2',
+                sceneId: 'b1_act3',
                 dialogueIndex: 0,
                 endings: ['b1_actFinal'],
             })
@@ -537,8 +537,8 @@ describe('selectCharacterNotes', () => {
         const story = notes(
             [student],
             [
-                speech('student', 'b1_act3', 0, ['甲', 'B1 label', '甲']),
                 speech('student', 'b2_act3', 0, ['乙', 'B2 label', '乙']),
+                speech('student', 'b1_act3', 0, ['甲', 'B1 label', '甲']),
             ]
         );
 

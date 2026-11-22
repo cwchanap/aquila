@@ -7,9 +7,9 @@ test.use({ viewport: { width: 1440, height: 900 } });
 
 /**
  * The shared Ocean shell puts small Back and tagline text over the light sky
- * gradient. WCAG AA requires 4.5:1 for this text; the gradient's lightest
- * stop is the worst case. The translucent Back pill is composited over that
- * stop before the text contrast is calculated.
+ * gradient. This samples the first (top-sky) stop against the WCAG AA 4.5:1
+ * threshold; it does not measure contrast at each text position. The
+ * translucent Back pill is composited over that stop.
  */
 const routes = [
     '/en/notes?story=train_adventure',
@@ -112,13 +112,13 @@ for (const route of routes) {
             };
 
             const gradient = getComputedStyle(background).backgroundImage;
-            const lightestStop = gradient.match(
+            const firstStop = gradient.match(
                 /(?:oklch|oklab|rgba?|hsla?)\([^)]*\)|#[0-9a-f]{3,8}/i
             )?.[0];
-            if (!lightestStop) {
+            if (!firstStop) {
                 throw new Error(`Cannot read gradient stop from ${gradient}`);
             }
-            const sky = toRgba(lightestStop);
+            const sky = toRgba(firstStop);
             const opaqueSky = composite(sky, sky);
             const pill = composite(
                 toRgba(getComputedStyle(back).backgroundColor),

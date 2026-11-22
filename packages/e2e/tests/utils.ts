@@ -1,6 +1,61 @@
 import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
+export type Rgba = [number, number, number, number];
+
+export function composite(foreground: Rgba, background: Rgba): Rgba {
+    const alpha =
+        foreground[3] / 255 + (background[3] / 255) * (1 - foreground[3] / 255);
+    if (alpha === 0) return [0, 0, 0, 0];
+    const channel = (index: number) =>
+        Math.round(
+            (foreground[index] * (foreground[3] / 255) +
+                background[index] *
+                    (background[3] / 255) *
+                    (1 - foreground[3] / 255)) /
+                alpha
+        );
+    return [channel(0), channel(1), channel(2), Math.round(alpha * 255)];
+}
+
+export function contrastRatio(first: Rgba, second: Rgba): number {
+    const luminance = (color: Rgba) => {
+        const linear = (value: number) => {
+            const normalized = value / 255;
+            return normalized <= 0.04045
+                ? normalized / 12.92
+                : ((normalized + 0.055) / 1.055) ** 2.4;
+        };
+        return (
+            0.2126 * linear(color[0]) +
+            0.7152 * linear(color[1]) +
+            0.0722 * linear(color[2])
+        );
+    };
+    const [lighter, darker] = [luminance(first), luminance(second)].sort(
+        (a, b) => b - a
+    );
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
+/** Read a CSS color in the browser, including modern oklch/oklab syntax. */
+export async function readCssColor(page: Page, color: string): Promise<Rgba> {
+    return page.evaluate(css => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (!context) throw new Error('Canvas 2D unavailable');
+        context.fillStyle = css;
+        context.fillRect(0, 0, 1, 1);
+        return [...context.getImageData(0, 0, 1, 1).data] as [
+            number,
+            number,
+            number,
+            number,
+        ];
+    }, color);
+}
+
 export const uniqueEmail = (prefix: string) =>
     `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}@example.com`;
 

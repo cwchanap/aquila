@@ -158,47 +158,51 @@
 </section>
 
 <style>
-  .characters { display: grid; grid-template-columns: minmax(230px, 32%) minmax(0, 1fr); min-height: 32rem; color: #f8fafc; overflow: hidden; border: 1px solid #ffffff30; border-radius: 1.25rem; background: #111c32e8; }
-  .cast { min-width: 0; border-right: 1px solid #ffffff20; }
+  .characters { display: grid; grid-template-columns: minmax(230px, 27%) minmax(0, 1fr); gap: 1.5rem; min-height: 32rem; color: #f8fafc; }
+  .cast, .desktop-detail { min-width: 0; overflow: hidden; border: 1px solid #ffffff24; border-radius: 1.25rem; background: rgba(2, 6, 23, .65); }
   .cast-heading { padding: 1.25rem; }
   h2, h3, p { margin: 0; }
   .cast-heading h2, .details h2 { font: 600 1.45rem Georgia, serif; }
-  .cast-heading span, small { color: #cbd5e1; font-size: .75rem; }
+  .cast-heading span, small { color: #e2e8f0; font-size: .75rem; }
   .cast ul, .facts { list-style: none; margin: 0; padding: 0; }
   .cast ul { max-height: 35rem; overflow-y: auto; padding: 0 .6rem .6rem; }
   .cast button { display: flex; align-items: center; gap: .75rem; text-align: left; width: 100%; min-height: 60px; padding: .5rem; border: 0; border-radius: .8rem; background: transparent; color: inherit; cursor: pointer; }
-  .cast button:hover, .cast button.chosen { background: #ffffff18; }
+  .cast button:hover, .cast button.chosen { background: #ffffff18; box-shadow: inset 0 0 0 1px #ffffff90; }
   button:focus-visible { outline: 2px solid #a5f3fc; outline-offset: 2px; }
   .row-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
   .avatar { display: flex; flex: none; align-items: center; justify-content: center; width: 2.8rem; height: 2.8rem; overflow: hidden; border-radius: 50%; background: #61728b; color: white; font-weight: 600; }
   .avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .detail { display: flex; min-width: 0; background: #19243a; }
-  .portrait { display: flex; flex: 0 0 40%; align-items: center; justify-content: center; background: linear-gradient(160deg, #526784, #27354e); min-width: 0; }
+  .detail { display: flex; min-width: 0; }
+  .portrait { display: flex; flex: 0 0 38%; align-items: center; justify-content: center; background: linear-gradient(160deg, #526784, #27354e); min-width: 0; margin: 1.25rem 0 1.25rem 1.25rem; border-radius: 1rem; overflow: hidden; }
   .avatar.large { width: min(75%, 12rem); height: auto; aspect-ratio: 1; font-size: 3rem; background: #ffffff25; }
   .portrait .avatar.large:has(img) { width: 100%; height: 100%; aspect-ratio: auto; align-self: stretch; border-radius: 0; }
   .details { flex: 1; min-width: 0; padding: 1.75rem; overflow-wrap: anywhere; }
-  .unknown-name { margin-top: .5rem; color: #b4c3d6; font-size: .8rem; }
+  .details h2 { font-size: 2rem; }
+  .unknown-name { width: fit-content; margin-top: .5rem; padding: .15rem .5rem; border: 1px solid #fcd34d80; border-radius: 999px; background: #fcd34d20; color: #e2e8f0; font-size: .8rem; }
   .details h3 { margin: 2rem 0 1rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .1em; }
-  .facts li { padding: 0 0 1rem; margin-bottom: 1rem; border-bottom: 1px solid #ffffff18; }
-  .facts p { line-height: 1.55; }
+  .facts li { display: flex; align-items: flex-start; gap: .75rem; padding: .75rem; margin-bottom: .5rem; border: 1px solid #ffffff24; border-radius: .75rem; background: #ffffff14; }
+  .facts p { flex: 1; min-width: 0; line-height: 1.45; }
+  .facts small { flex: none; padding: .1rem .45rem; border: 1px solid #ffffff40; border-radius: 999px; }
+  .facts li.locked { background: #0f172a40; border-style: dashed; }
   .locked span { display: block; width: 100%; height: .55rem; margin: .5rem 0; border-radius: 1rem; background: #ffffff20; }
   .locked span + span { width: 60%; }
   .placeholder { margin: auto; color: #cbd5e1; }
   .back { display: block; align-self: flex-start; min-width: 44px; min-height: 44px; padding: .5rem 1rem; border: 0; background: transparent; color: white; cursor: pointer; }
-  .mobile-dialog { position: fixed; inset: 0; display: flex; flex-direction: column; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0; color: white; overflow-y: auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  .mobile-dialog { position: fixed; inset: 0; display: flex; flex-direction: column; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0; color: white; background: #19243a; overflow-y: auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
   @media (min-width: 641px) {
     .cast .avatar img { object-position: center 12%; }
   }
   @media (max-width: 640px) {
     .characters { display: block; min-height: 0; }
-    .cast { border: 0; }
+    .cast { border: 0; background: transparent; }
+    .cast-heading h2, .cast-heading span { color: #1e293b; }
     .cast ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; max-height: none; padding: .75rem; }
-    .cast button { flex-direction: column; justify-content: flex-start; align-items: stretch; height: 100%; min-height: 9rem; padding: .5rem; background: #ffffff1a; text-align: left; }
-    .cast button.chosen { background: #ffffff0e; }
+    .cast button { flex-direction: column; justify-content: flex-start; align-items: stretch; height: 100%; min-height: 9rem; padding: .5rem; background: rgba(2, 6, 23, .65); text-align: left; }
+    .cast button.chosen { background: rgba(2, 6, 23, .65); }
     .cast .avatar { width: 100%; height: auto; aspect-ratio: 3 / 4; border-radius: .6rem; }
     .row-text { font-size: .8rem; }
     .desktop-detail { display: none; }
-    .portrait { flex: none; min-height: 14rem; }
+    .portrait { flex: none; width: 112px; height: 149px; margin: .5rem 1.5rem 0; }
     .avatar.large { width: 9rem; }
     .details { flex: none; padding: 1.5rem; }
   }

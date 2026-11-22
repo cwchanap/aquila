@@ -1,6 +1,11 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { getTranslations } from '@aquila/stories/translations';
-import { expectNoHorizontalOverflow } from './utils';
+import {
+    composite,
+    contrastRatio,
+    expectNoHorizontalOverflow,
+    readCssColor,
+} from './utils';
 
 const t = getTranslations('en');
 const notesT = t.notes;
@@ -13,6 +18,123 @@ const SEED_COUNT_KEY = 'aquila:e2e:character-notes-seeds';
 // workers can stall its responses for >5s, so hydration and async data waits
 // need more than Playwright's 5s default.
 const ASYNC_LOAD_TIMEOUT = 15_000;
+
+async function expectReadableOnSky(page: Page, text: Locator) {
+    const styles = await text.evaluate(element => {
+        const backgrounds: string[] = [];
+        let node: Element | null = element;
+        while (node) {
+            backgrounds.push(getComputedStyle(node).backgroundColor);
+            if (node.classList.contains('characters')) break;
+            node = node.parentElement;
+        }
+        return { color: getComputedStyle(element).color, backgrounds };
+    });
+    const sheet = page.locator('[aria-labelledby="reader-notes-title"]');
+    const host = (await sheet.count())
+        ? sheet
+        : page.locator('.bg-linear-to-b');
+    const gradient = await host.evaluate(
+        element => getComputedStyle(element).backgroundImage
+    );
+    const firstStop = gradient.match(
+        /(?:oklch|oklab|rgba?|hsla?)\([^)]*\)|#[0-9a-f]{3,8}/i
+    )?.[0];
+    if (!firstStop)
+        throw new Error(`Cannot read gradient stop from ${gradient}`);
+    let background = await readCssColor(page, firstStop);
+    for (const color of styles.backgrounds.reverse()) {
+        background = composite(await readCssColor(page, color), background);
+    }
+    const foreground = composite(
+        await readCssColor(page, styles.color),
+        background
+    );
+    expect(
+        contrastRatio(foreground, background),
+        `Contrast for ${await text.textContent()}`
+    ).toBeGreaterThanOrEqual(4.5);
+}
+
+async function seedEightMet(page: Page) {
+    await page.addInitScript(key => {
+        localStorage.setItem(
+            key,
+            JSON.stringify({
+                train_adventure: {
+                    sceneId: 'act2',
+                    dialogueIndex: 5,
+                    updatedAt: Date.now(),
+                    finished: false,
+                    endings: [],
+                    visited: ['act1', 'act2'],
+                },
+            })
+        );
+    }, PROGRESS_KEY);
+}
+
+test('desktop character text remains readable on the lightest sky', async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await seedEightMet(page);
+    await page.goto('/en/notes?story=train_adventure');
+    await expect(page.getByText('Characters met: 8')).toBeVisible({
+        timeout: ASYNC_LOAD_TIMEOUT,
+    });
+    await expectReadableOnSky(page, page.locator('.cast-heading span'));
+    await expectReadableOnSky(
+        page,
+        page.locator('.desktop-detail .facts small').first()
+    );
+});
+
+for (const locale of ['en', 'ja']) {
+    test(`phone character text fits and remains readable (${locale})`, async ({
+        page,
+    }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await seedEightMet(page);
+        await page.goto(`/${locale}/notes?story=train_adventure`);
+        await expect(page.locator('.cast button')).toHaveCount(16, {
+            timeout: ASYNC_LOAD_TIMEOUT,
+        });
+        if (locale === 'en')
+            await expect(
+                page.getByRole('button', { name: /Mysterious Man in Black/ })
+            ).toBeVisible();
+        await expectReadableOnSky(page, page.locator('.cast-heading h2'));
+        await expectReadableOnSky(page, page.locator('.cast-heading span'));
+        const card = page.locator('.cast button').first();
+        await expectReadableOnSky(page, card.locator('small').first());
+        await expectReadableOnSky(
+            page,
+            page.locator('.cast button .unknown-name').first()
+        );
+        for (const button of await page.locator('.cast button').all()) {
+            const fits = await button.evaluate(
+                element => element.scrollWidth <= element.clientWidth + 1
+            );
+            expect(
+                fits,
+                `Card text clipped: ${await button.textContent()}`
+            ).toBe(true);
+        }
+        await card.click();
+        for (const fact of await page
+            .locator('.mobile-dialog .facts li')
+            .all()) {
+            const fits = await fact.evaluate(
+                element => element.scrollWidth <= element.clientWidth + 1
+            );
+            expect(fits, `Fact text clipped: ${await fact.textContent()}`).toBe(
+                true
+            );
+        }
+        await expectNoHorizontalOverflow(page);
+    });
+}
 
 const readerUrl = (dialogue: number, scene = 'act1') =>
     `/en/reader?story=${STORY_ID}&scene=${scene}&dialogue=${dialogue}`;
@@ -201,6 +323,11 @@ test.describe('desktop character notes', () => {
         ).toContainText('1 Notes');
         await expect(sheet.getByText('Twenty-eight.')).toBeVisible();
         await expect(sheet.getByText('Act 1')).toBeVisible();
+        await expectReadableOnSky(page, sheet.locator('.cast-heading span'));
+        await expectReadableOnSky(
+            page,
+            sheet.locator('.desktop-detail .facts small').first()
+        );
         await expect(
             sheet.getByRole('listitem', { name: notesT.locked })
         ).toHaveCount(1);
@@ -226,6 +353,10 @@ test.describe('desktop character notes', () => {
         const sheet = await openDesktopNotes(page);
 
         await expect(sheet.getByText('Characters met: 1')).toBeVisible();
+        await expectReadableOnSky(
+            page,
+            sheet.locator('.cast button small').first()
+        );
         // Portraits are optional: a validated release may show Li Jie's base
         // portrait, but a portrait must never carry a name in its alt text,
         // and unavailable portraits fall back to initials.
@@ -321,6 +452,10 @@ test.describe('phone character notes', () => {
         await expect(close).toBeFocused();
         await expect(menuTrigger).toHaveText('☰');
         await expect(sheet.getByText('Characters met: 1')).toBeVisible();
+        await expectReadableOnSky(
+            page,
+            sheet.locator('.cast button small').first()
+        );
         await expect(close).toBeFocused();
         await expectNoHorizontalOverflow(page);
         // A tap on the sheet surface must not reach the background reader.

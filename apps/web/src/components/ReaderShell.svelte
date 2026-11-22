@@ -971,6 +971,18 @@
     }
   }
 
+  function keepNotesFocus(node: HTMLElement) {
+    // Touching non-focusable sheet content can leave focus on the document body.
+    const focusIfLost = () => {
+      if (notesOpen && node.isConnected && document.activeElement === document.body) {
+        node.querySelector('button')?.focus();
+      }
+    };
+    void tick().then(focusIfLost);
+    node.addEventListener('click', focusIfLost);
+    return () => node.removeEventListener('click', focusIfLost);
+  }
+
   function handleNotesEscape(event: KeyboardEvent): void {
     if (!notesOpen || mobileDetailOpen || event.key !== 'Escape' || event.defaultPrevented) return;
     event.preventDefault();
@@ -1175,7 +1187,8 @@
     <button
       id="reader-notes-trigger"
       type="button"
-      class="fixed right-[4.25rem] top-3 z-[90] flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm hover:bg-white disabled:pointer-events-none disabled:opacity-50"
+      class="fixed z-[90] flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-slate-700 shadow backdrop-blur-sm hover:bg-white disabled:pointer-events-none disabled:opacity-50"
+      style="top: calc(0.75rem + env(safe-area-inset-top)); right: calc(4.25rem + env(safe-area-inset-right));"
       aria-label={t.notes.title}
       title={t.notes.title}
       disabled={leafDisabled || leafOverlayOpen}
@@ -1366,6 +1379,7 @@
       aria-modal="true"
       aria-labelledby="reader-notes-title"
       use:focusTrap={{ enabled: true, restoreFocus: overlayFocusTarget }}
+      {@attach keepNotesFocus}
       class="pointer-events-auto flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-sky-200 to-blue-400 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] lg:h-[85vh] lg:w-[95vw] lg:rounded-3xl lg:shadow-2xl"
     >
       <div class="flex shrink-0 items-center justify-between gap-4">

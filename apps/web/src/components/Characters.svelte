@@ -186,11 +186,14 @@
   .placeholder { margin: auto; color: #cbd5e1; }
   .back { display: block; align-self: flex-start; min-width: 44px; min-height: 44px; padding: .5rem 1rem; border: 0; background: transparent; color: white; cursor: pointer; }
   .mobile-dialog { position: fixed; inset: 0; display: flex; flex-direction: column; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0; color: white; overflow-y: auto; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  @media (min-width: 641px) {
+    .cast .avatar img { object-position: center 12%; }
+  }
   @media (max-width: 640px) {
     .characters { display: block; min-height: 0; }
     .cast { border: 0; }
     .cast ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; max-height: none; padding: .75rem; }
-    .cast button { flex-direction: column; justify-content: flex-start; align-items: stretch; min-height: 9rem; padding: .5rem; background: #ffffff1a; text-align: left; }
+    .cast button { flex-direction: column; justify-content: flex-start; align-items: stretch; height: 100%; min-height: 9rem; padding: .5rem; background: #ffffff1a; text-align: left; }
     .cast button.chosen { background: #ffffff0e; }
     .cast .avatar { width: 100%; height: auto; aspect-ratio: 3 / 4; border-radius: .6rem; }
     .row-text { font-size: .8rem; }

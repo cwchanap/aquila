@@ -253,6 +253,33 @@ test.describe('phone character notes', () => {
         deviceScaleFactor: 3,
     });
 
+    test('recovers focus if it is lost during sheet activation', async ({
+        page,
+    }) => {
+        await seedInstantTyping(page);
+        await page.goto(readerUrl(5));
+        await expect(page.locator('.mobile-reader')).toBeVisible({
+            timeout: 15_000,
+        });
+        await page.locator('#mobile-reader-menu-trigger').tap();
+        await page.evaluate(closeLabel => {
+            const loseFocusOnce = (event: FocusEvent) => {
+                const target = event.target as HTMLElement;
+                if (target.getAttribute('aria-label') !== closeLabel) return;
+                document.removeEventListener('focusin', loseFocusOnce);
+                target.blur();
+            };
+            document.addEventListener('focusin', loseFocusOnce);
+        }, notesT.close);
+        await page
+            .getByRole('button', { name: notesT.title, exact: true })
+            .tap();
+        const sheet = page.getByRole('dialog', { name: notesT.title });
+        await expect(
+            sheet.getByRole('button', { name: notesT.close })
+        ).toBeFocused();
+    });
+
     test('opens from the auto-hiding text toolbar and handles the nested native detail', async ({
         page,
     }) => {
@@ -286,8 +313,11 @@ test.describe('phone character notes', () => {
 
         const sheet = page.getByRole('dialog', { name: notesT.title });
         await expect(sheet).toBeVisible();
+        const close = sheet.getByRole('button', { name: notesT.close });
+        await expect(close).toBeFocused();
         await expect(menuTrigger).toHaveText('☰');
         await expect(sheet.getByText('Characters met: 1')).toBeVisible();
+        await expect(close).toBeFocused();
         await expectNoHorizontalOverflow(page);
         // A tap on the sheet surface must not reach the background reader.
         await sheet.getByRole('heading', { name: notesT.title }).first().tap();
@@ -301,17 +331,27 @@ test.describe('phone character notes', () => {
                         .length
             );
         expect(columns).toBe(3);
+        const firstRowHeights = await sheet
+            .locator('.cast li')
+            .evaluateAll(items =>
+                items.slice(0, 3).map(item => ({
+                    row: item.getBoundingClientRect().height,
+                    card: item.querySelector('button')!.getBoundingClientRect()
+                        .height,
+                }))
+            );
+        expect(firstRowHeights).toHaveLength(3);
+        for (const { row, card } of firstRowHeights) {
+            expect(card).toBeCloseTo(row, 1);
+        }
+        await expect(close).toBeFocused();
 
-        const close = sheet.getByRole('button', { name: notesT.close });
         const closeBox = await close.boundingBox();
         expect(closeBox!.width).toBeGreaterThanOrEqual(44);
         expect(closeBox!.height).toBeGreaterThanOrEqual(44);
 
         // Focus wraps within the outer sheet: Shift+Tab from the first
         // control leaves the sheet's own content, and Tab returns to Close.
-        // Touch taps do not focus the tapped button in Chromium, so focus the
-        // first control explicitly before checking the trap.
-        await close.focus();
         await page.keyboard.press('Shift+Tab');
         expect(
             await sheet.evaluate(element =>
@@ -335,6 +375,7 @@ test.describe('phone character notes', () => {
         const detail = page.getByRole('dialog', { name: 'Li Jie' });
         await expect(detail).toBeVisible();
         const back = detail.getByRole('button', { name: notesT.back });
+        await expect(back).toBeFocused();
         const backBox = await back.boundingBox();
         expect(backBox!.width).toBeGreaterThanOrEqual(44);
         expect(backBox!.height).toBeGreaterThanOrEqual(44);
@@ -366,6 +407,7 @@ test.describe('phone character notes', () => {
             .getByRole('button', { name: notesT.title, exact: true })
             .tap();
         await expect(sheet).toBeVisible();
+        await expect(close).toBeFocused();
         await sheet.getByRole('button', { name: /Li Jie/ }).tap();
         await expect(detail).toBeVisible();
         await detail.getByRole('button', { name: notesT.back }).tap();
@@ -377,6 +419,7 @@ test.describe('phone character notes', () => {
 
         await close.tap();
         await expect(sheet).toHaveCount(0);
+        await expect(menuTrigger).toBeFocused();
         expect(await readerPosition(page)).toEqual(position);
         expect(await currentLine(page)).toBe(line);
     });

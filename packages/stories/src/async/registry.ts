@@ -1,4 +1,9 @@
 import type { RegisteredStoryId } from '../story-metadata';
+import { isRegisteredStoryId } from '../story-metadata';
+import {
+    createStoryNotesLoader,
+    type StoryNotesImporter,
+} from './notes-loader';
 import { createStoryContentLoader, type StoryPayloadImporter } from './loader';
 
 export const storyImporters = {
@@ -64,3 +69,28 @@ const storyContentLoader = createStoryContentLoader(storyImporters);
 
 export const loadStoryContent = storyContentLoader.load;
 export const resetStoryContentCacheForTests = storyContentLoader.reset;
+
+// Notes live in their own generated module and are imported directly, never
+// through ../stories/<story> (which statically pulls every dialogue locale).
+const storyNotesImporters: Partial<
+    Record<RegisteredStoryId, StoryNotesImporter>
+> = {
+    train_adventure: async () => {
+        const [notes, flow] = await Promise.all([
+            import('../generated/trainAdventure/notes'),
+            import('../generated/trainAdventure/flow'),
+        ]);
+        return {
+            notes: notes.trainAdventureNotes,
+            flow: flow.trainAdventureFlow,
+        };
+    },
+};
+
+const storyNotesLoader = createStoryNotesLoader(storyNotesImporters);
+
+export const hasStoryNotes = (storyId: string): boolean =>
+    isRegisteredStoryId(storyId) && storyNotesImporters[storyId] !== undefined;
+
+export const loadStoryNotes = storyNotesLoader.load;
+export const resetStoryNotesCacheForTests = storyNotesLoader.reset;

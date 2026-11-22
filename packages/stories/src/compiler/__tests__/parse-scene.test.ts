@@ -521,3 +521,137 @@ stop
         );
     });
 });
+
+describe('parseScene unlock fences', () => {
+    it('attaches one pending unlock target to the next entry without adding an entry', () => {
+        const md = [
+            '**旁白**：a',
+            '',
+            '```unlock',
+            'li_jie.age',
+            '```',
+            '',
+            '**李杰**：b',
+            '',
+            '**李杰**：c',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+
+        expect(result.entries).toEqual([
+            { characterId: 'narrator', displayName: '旁白', dialogue: 'a' },
+            {
+                characterId: 'li_jie',
+                displayName: '李杰',
+                dialogue: 'b',
+                unlocks: [
+                    { characterId: 'li_jie', kind: 'fact', factId: 'age' },
+                ],
+            },
+            { characterId: 'li_jie', displayName: '李杰', dialogue: 'c' },
+        ]);
+        expect(result.entries.map(e => e.dialogue)).toEqual(['a', 'b', 'c']);
+        expect(
+            JSON.stringify(result.entries.map(e => e.dialogue))
+        ).not.toContain('unlock');
+    });
+
+    it('accepts met and name targets plus several pending blocks before one entry', () => {
+        const md = [
+            '```unlock',
+            'emi.met',
+            '```',
+            '',
+            '```unlock',
+            'emi.name',
+            '```',
+            '',
+            '```unlock',
+            'emi.age',
+            '```',
+            '',
+            '**旁白**：a',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+
+        expect(result.entries).toHaveLength(1);
+        expect(result.entries[0].unlocks).toEqual([
+            { characterId: 'emi', kind: 'met' },
+            { characterId: 'emi', kind: 'name' },
+            { characterId: 'emi', kind: 'fact', factId: 'age' },
+        ]);
+    });
+
+    it('keeps pending unlocks across titles and horizontal rules', () => {
+        const md = [
+            '```unlock',
+            'emi.met',
+            '```',
+            '',
+            '# 第一幕',
+            '',
+            '---',
+            '',
+            '**旁白**：a',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md');
+
+        expect(result.title).toBe('第一幕');
+        expect(result.entries[0].unlocks).toEqual([
+            { characterId: 'emi', kind: 'met' },
+        ]);
+    });
+
+    it('attaches pending unlocks to narration entries', () => {
+        const narrator = { id: 'narrator', displayName: '旁白' };
+        const md = [
+            '```unlock',
+            'emi.met',
+            '```',
+            '',
+            'plain narration',
+            '',
+            '**李杰**：b',
+        ].join('\n');
+        const result = parseScene(md, resolve, 'act1.md', narrator);
+
+        expect(result.entries[0]).toMatchObject({
+            characterId: 'narrator',
+            dialogue: 'plain narration',
+            unlocks: [{ characterId: 'emi', kind: 'met' }],
+        });
+    });
+
+    it('rejects malformed, empty and multi-target unlock blocks', () => {
+        const scene = (body: string) =>
+            ['```unlock', body, '```', '', '**旁白**：a'].join('\n');
+
+        expect(() => parseScene(scene('li_jie'), resolve, 'act1.md')).toThrow(
+            /malformed unlock target/
+        );
+        expect(() =>
+            parseScene(scene('li_jie.age extra'), resolve, 'act1.md')
+        ).toThrow(/malformed unlock target/);
+        expect(() => parseScene(scene(''), resolve, 'act1.md')).toThrow(
+            /malformed unlock/
+        );
+        expect(() =>
+            parseScene(scene('li_jie.age\nemi.met'), resolve, 'act1.md')
+        ).toThrow(/malformed unlock/);
+        expect(() =>
+            parseScene(
+                ['```unlock li_jie.age', '```', '', '**旁白**：a'].join('\n'),
+                resolve,
+                'act1.md'
+            )
+        ).toThrow(/malformed unlock/);
+    });
+
+    it('rejects a dangling unlock block at end of scene', () => {
+        const md = ['**旁白**：a', '', '```unlock', 'li_jie.age', '```'].join(
+            '\n'
+        );
+        expect(() => parseScene(md, resolve, 'act1.md')).toThrow(
+            /unconsumed unlock "li_jie\.age" at end of scene/
+        );
+    });
+});

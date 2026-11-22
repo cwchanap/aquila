@@ -20,6 +20,7 @@ import type { SceneAssets } from './resolve-assets';
 import { loadAudioPlan } from '../audio-plan-loader';
 import { collectAudioUsage, validateAudioUsage } from './audio-usage';
 import { buildMirrorScenes, MIRROR_LOCALES } from './localize';
+import { compileStoryNotes } from './build-notes';
 import { computeStoryStats } from './stats';
 
 export interface CompileOptions {
@@ -121,6 +122,15 @@ export function compileStory(opts: CompileOptions): StoryIR {
         );
         if (mirror) (story.mirrors ??= {})[locale] = mirror;
     }
+
+    story.notes = compileStoryNotes({
+        rawDir: opts.rawDir,
+        storyId: opts.config.storyId,
+        scenes,
+        mirrors: story.mirrors,
+        charDir,
+        suffixRegex: opts.config.suffixRegex,
+    });
 
     const audioPlan = loadAudioPlan(opts.rawDir);
     const audioUsage = collectAudioUsage(story);

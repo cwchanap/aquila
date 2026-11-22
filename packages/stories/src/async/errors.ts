@@ -1,5 +1,6 @@
 export type StoryLoadErrorCode =
     | 'unknown-story'
+    | 'unsupported-story'
     | 'unsupported-locale'
     | 'load-failed';
 

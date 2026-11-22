@@ -222,6 +222,17 @@ describe('en mirror tree', () => {
         });
         expect(() => compile(withBg)).toThrow(/fenced bg\/sfx\/bgm blocks/);
 
+        const withUnlock = makeFixture({
+            'en/act1.md': enAct1.replace(
+                '**Narrator**: It',
+                '```unlock\nlin_yu.met\n```\n\n**Narrator**: It'
+            ),
+            'en/act2.md': enAct2,
+        });
+        expect(() => compile(withUnlock)).toThrow(
+            /fenced bg\/sfx\/bgm blocks or unlock markers/
+        );
+
         const withTag = makeFixture({
             'en/act1.md': enAct1.replace('**Lin Yu**:', '**Lin Yu** [sad]:'),
             'en/act2.md': enAct2,

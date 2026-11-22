@@ -74,7 +74,7 @@ async function seedEightMet(page: Page) {
     }, PROGRESS_KEY);
 }
 
-test('desktop character text remains readable on the lightest sky', async ({
+test('desktop cast rail fits met characters and remains readable', async ({
     page,
 }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -83,7 +83,24 @@ test('desktop character text remains readable on the lightest sky', async ({
     await expect(page.getByText('Characters met: 8')).toBeVisible({
         timeout: ASYNC_LOAD_TIMEOUT,
     });
+    const cast = page.locator('.cast ul');
+    const eighth = cast.locator('button').nth(7);
+    const fits = await eighth.evaluate(element => {
+        const list = element.closest('ul')!;
+        return (
+            element.getBoundingClientRect().bottom <=
+            list.getBoundingClientRect().top + list.clientHeight + 1
+        );
+    });
+    expect(
+        fits,
+        'the eight met characters fit without scrolling the cast rail'
+    ).toBe(true);
     await expectReadableOnSky(page, page.locator('.cast-heading span'));
+    await expectReadableOnSky(
+        page,
+        page.locator('.cast .unknown-name').first()
+    );
     await expectReadableOnSky(
         page,
         page.locator('.desktop-detail .facts small').first()
@@ -112,6 +129,9 @@ for (const locale of ['en', 'ja']) {
             page,
             page.locator('.cast button .unknown-name').first()
         );
+        const hoveredCard = page.locator('.cast button').nth(1);
+        await hoveredCard.hover();
+        await expectReadableOnSky(page, hoveredCard.locator('.unknown-name'));
         for (const button of await page.locator('.cast button').all()) {
             const fits = await button.evaluate(
                 element => element.scrollWidth <= element.clientWidth + 1

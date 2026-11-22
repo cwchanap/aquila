@@ -82,6 +82,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **膽小眼鏡男**：另外，深夜線路經常會有維護工程，為了避開施工區域而繞道，導致行駛時間延長個二十分鐘，這在鐵路運營中是非常常見的。你們不用大驚小怪。
 
+```unlock
+saito_ren.excuse
+```
+
 **旁白**：他的語氣雖然自信，但額頭上已經滲出了細密的汗珠。幾個大學生面面相覷，表情依然充滿疑惑，顯然並沒有被他的說法說服。
 
 ```bg yamamoto
@@ -89,6 +93,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 ```
 
 **旁白**：這時，一個低沉而沉穩的聲音響起，打破了膽小眼鏡男試圖營造的「專業氛圍」。
+
+```unlock
+yamamoto_koji.commuter
+```
 
 **慷慨大叔**：小兄弟，話不是這麼說。我坐這條中央線三十年了，從我年輕的時候就開始坐。這條隧道我閉著眼都能數出來需要多久——五分鐘，最多六分鐘。
 
@@ -100,7 +108,15 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera angle C, matching the reference image: standing in the aisle facing the LEFT bench straight on, the bench running across the frame with the windows above it. Framed on the far part of the bench: from left to right Ito Makoto (husband, white shirt with rolled sleeves, navy tie) and Ito Nana (wife, grey cardigan) side by side, the wife anxiously clutching her husband's sleeve, the husband snapping at her irritably; empty seats on both sides of them; at the right end of the bench, in the corner, Ling Mo (black hooded sweatshirt, hood pulled low over his face) sits alone and perfectly still. Behind them the windows are pitch black mirrors. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```unlock
+ito_nana.wife
+```
+
 **焦慮妻子**：老公⋯⋯我有點不安⋯⋯你不是說這條路你很熟嗎？這、這是怎麼回事？我們會不會出事了？
+
+```unlock
+ito_makoto.husband
+```
 
 **煩躁丈夫**：我怎麼會知道！我又不是司機！妳問我有什麼用！煩死了，一直問一直問！
 
@@ -110,13 +126,41 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Close-up from a three-quarter angle across the aisle, on the far end of the RIGHT bench: the mother in a cream cardigan with a low side ponytail holds the crying face of the ten-year-old boy in a navy t-shirt against her chest with one arm, staring pale at the phone in her other hand, whose screen is a blank grey loading screen; the twelve-year-old girl in pigtails presses close against her mother's other side, trying to look brave. The father in a light jacket and polo sits right beside the girl with a hand on her shoulder, looking around uneasily, so the family reads as one group. Further along the bench, out of focus, beyond three or four empty seats: Nakamura (thin balding man in a crumpled navy suit) alone, leaning forward and glaring. Behind them the windows are pitch black mirrors. Shallow depth of field. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```unlock
+kobayashi_yudai.met
+```
+
+```unlock
+kobayashi_hina.met
+```
+
+```unlock
+kobayashi_yudai.family
+```
+
 **旁白**：不遠處，一個小男孩的聲音響起，稚嫩而充滿恐懼。
 
+```unlock
+kobayashi_shota.dark
+```
+
 **天真弟弟**：媽媽⋯⋯我怕黑⋯⋯外面都是黑的⋯⋯我們什麼時候才能出去？我想回家⋯⋯
+
+```unlock
+kobayashi_tomoko.mother
+```
+
+```unlock
+kobayashi_hina.sister
+```
 
 **溫柔母親**：快了快了，寶寶乖，你看，姐姐都沒怕。別看窗外了，我們看手機裡的卡通好不好？
 
 **旁白**：她拿出手機，但螢幕上顯示著「無法載入」。
+
+```unlock
+kobayashi_tomoko.phone
+```
 
 **溫柔母親**：啊⋯⋯手機也⋯⋯
 
@@ -128,7 +172,15 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera: a low-angle medium-wide shot from seat height on the LEFT bench, looking across the aisle at the RIGHT wall where a sliding door with yellow edging stands closed; beside the door, a small grey emergency intercom panel with a round red call button, no readable text. Inside the tunnel: every window is pure black and works as a mirror; no city, no buildings, no lights outside. Nakamura (thin balding man in his 50s with wispy thin hair, crumpled navy suit, loosened navy striped tie) is on his feet a step from the door, pointing at the red button with one outstretched arm while he shouts back over his shoulder, his face twisted with panic; he does not touch the button. Yamamoto (late-40s man, short grey-streaked hair, grey suit, white shirt, navy striped tie) is half-risen from his seat on the near side of the aisle, one hand raised palm out toward Nakamura, telling him to calm down; the two men do not touch. Further along the right bench, beyond several empty seats, small and out of focus: the Kobayashi family side by side (the father in a light jacket and polo, the twelve-year-old girl in pigtails, the mother in a cream cardigan holding her ten-year-old son's face against her chest). Only the people named here are in view, with empty seats between groups and no other passengers; the window glass shows no reflections of people and no glare. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```unlock
+nakamura_hayato.panic
+```
+
 **自私中年男**：喂！肯定出事了！是不是該去按那個緊急通話鈕啊！不然我們就在這裡困到天亮嗎？萬一出事怎麼辦！
+
+```unlock
+yamamoto_koji.emergency
+```
 
 **慷慨大叔**：你冷靜點！現在列車還在平穩運行，沒有異常震動，說明軌道和系統都正常。亂按緊急鈕萬一導致緊急停車，卡在隧道中間那才叫危險！到時候連逃生通道都找不到！
 
@@ -143,6 +195,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **旁白**：一片混亂中，李杰的目光下意識地再次轉向那個安靜的女孩。她像是身處另一個次元。周圍的騷動絲毫沒有影響到她。
 
 **旁白**：她沒有看手機，也沒有望向窗外，更沒有表現出任何恐慌或不安。她只是安靜地坐在那裡，專注於腿上的素描本，手中的鉛筆在紙上流暢地移動。
+
+```unlock
+shimizu_emi.drawing
+```
 
 **旁白**：李杰瞇起眼睛，試圖看清她在畫什麼。那不是人物，也不是風景，而是一個由複雜螺旋、尖銳稜角、以及扭曲線條構成的奇異圖騰。
 

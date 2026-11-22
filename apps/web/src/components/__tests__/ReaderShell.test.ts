@@ -168,10 +168,14 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
     getTranslations: mockGetTranslations,
 }));
 
-vi.mock('@aquila/stories/async', async importOriginal => ({
-    ...(await importOriginal<typeof import('@aquila/stories/async')>()),
-    supportsVisualMode: mockSupportsVisualMode,
-}));
+vi.mock('@aquila/stories/async', async importOriginal => {
+    const mod = await importOriginal<typeof import('@aquila/stories/async')>();
+    return {
+        ...mod,
+        supportsVisualMode: mockSupportsVisualMode,
+        loadStoryNotes: vi.fn(mod.loadStoryNotes),
+    };
+});
 
 import ReaderShell from '../ReaderShell.svelte';
 import { readerState } from '@/lib/reader-state.svelte';
@@ -613,6 +617,47 @@ describe('ReaderShell', () => {
         expect(screen.getByTestId('reader-ready')).toBe(reader);
         expect(trigger).toHaveFocus();
         expect(createVisualRuntime).not.toHaveBeenCalled();
+    });
+
+    it('shows the notes error state when the notes load fails', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'train_adventure';
+        vi.mocked(loadStoryNotes).mockRejectedValueOnce(
+            new StoryLoadError('load-failed', 'boom')
+        );
+        render(ReaderShell);
+        await fireEvent.click(document.getElementById('reader-notes-trigger')!);
+        expect(
+            await screen.findByText('Character notes could not be loaded.')
+        ).toBeInTheDocument();
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+
+    it('closes the notes sheet when the scrim is clicked', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'train_adventure';
+        render(ReaderShell);
+        await fireEvent.click(document.getElementById('reader-notes-trigger')!);
+        expect(
+            screen.getByRole('dialog', { name: 'Characters' })
+        ).toBeInTheDocument();
+        await fireEvent.click(screen.getByTestId('notes-scrim'));
+        expect(
+            screen.queryByRole('dialog', { name: 'Characters' })
+        ).not.toBeInTheDocument();
+    });
+
+    it('moves focus back into the notes sheet when a click leaves it on the body', async () => {
+        stubMatchMedia(false);
+        readerState.storyId = 'train_adventure';
+        render(ReaderShell);
+        await fireEvent.click(document.getElementById('reader-notes-trigger')!);
+        await tick();
+        const sheet = screen.getByRole('dialog', { name: 'Characters' });
+        (document.activeElement as HTMLElement | null)?.blur?.();
+        expect(document.activeElement).toBe(document.body);
+        await fireEvent.click(sheet);
+        expect(document.activeElement).toBe(sheet.querySelector('button'));
     });
 
     it('uses the mobile chrome and lets the native detail consume the first Escape', async () => {

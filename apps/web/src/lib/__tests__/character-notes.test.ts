@@ -611,6 +611,43 @@ describe('selectCharacterNotes', () => {
         expect(later.metCount).toBe(2);
     });
 
+    it('falls back to the next labeled speech when the earliest reached one has no label', () => {
+        const unlabeled: StoryNoteEvent = {
+            sceneId: 'act1',
+            entryIndex: 0,
+            characterId: 'student',
+            kind: 'speech',
+        };
+        const story = notes(
+            [student],
+            [
+                unlabeled,
+                speech('student', 'act1', 4, ['甲', 'Named later', '甲']),
+            ]
+        );
+
+        const view = select(story, progress({ dialogueIndex: 4 }));
+        expect(character(view, 'student')).toMatchObject({
+            met: true,
+            nameKnown: false,
+            label: 'Named later',
+        });
+
+        const metFirst = notes(
+            [student],
+            [
+                met('student', 'act1', 0),
+                speech('student', 'act1', 4, ['甲', 'Named later', '甲']),
+            ]
+        );
+        expect(
+            character(
+                select(metFirst, progress({ dialogueIndex: 4 })),
+                'student'
+            ).label
+        ).toBe('Named later');
+    });
+
     it('locks every character when no position or ending is known', () => {
         const story = notes(
             [liJie, emi],

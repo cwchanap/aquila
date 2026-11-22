@@ -175,6 +175,20 @@ describe('Characters', () => {
         expect(screen.getAllByText('Name ???')).toHaveLength(2);
     });
 
+    it('falls back to initials when the portrait URL cannot be decoded', () => {
+        const { container } = render(Characters, {
+            props: {
+                model,
+                locale: 'en',
+                portraitUrl: () => '/portraits/%',
+            },
+        });
+        expect(container.querySelector('img')).toBeNull();
+        expect(container.querySelector('.avatar')?.textContent?.trim()).toBe(
+            'QG'
+        );
+    });
+
     it('moves focus into phone detail and returns it to the selected card', async () => {
         vi.stubGlobal('matchMedia', () => ({ matches: true }));
         render(Characters, { props: { model, locale: 'en' } });

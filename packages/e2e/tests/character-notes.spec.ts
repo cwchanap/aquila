@@ -8,6 +8,7 @@ const notesT = t.notes;
 const STORY_ID = 'train_adventure';
 const PROGRESS_KEY = 'aquila:storyProgress:v1';
 const MODE_KEY = 'aquila:reader-mode:v1';
+const SEED_COUNT_KEY = 'aquila:e2e:character-notes-seeds';
 
 const readerUrl = (dialogue: number, scene = 'act1') =>
     `/en/reader?story=${STORY_ID}&scene=${scene}&dialogue=${dialogue}`;
@@ -32,6 +33,13 @@ const currentLine = async (page: Page) => {
     const passage = page.locator('.passage-visible').first();
     await expect(passage).toBeVisible();
     return (await passage.innerText()).trim();
+};
+
+/** Persisted position only; URLs change with navigation by design. */
+const savedPosition = async (page: Page) => {
+    const { sceneId, dialogueIndex, visited, endings, finished } =
+        await readerPosition(page);
+    return { sceneId, dialogueIndex, visited, endings, finished };
 };
 
 async function seedInstantTyping(page: Page): Promise<void> {
@@ -264,7 +272,7 @@ test.describe('phone character notes', () => {
         await expect(page.locator('#reader-notes-trigger')).toHaveCount(0);
         const menuTrigger = page.locator('#mobile-reader-menu-trigger');
         await expect(menuTrigger).toBeVisible();
-        await menuTrigger.click();
+        await menuTrigger.tap();
 
         const toolbarNotes = page.getByRole('button', {
             name: notesT.title,
@@ -274,7 +282,7 @@ test.describe('phone character notes', () => {
         const toolbarBox = await toolbarNotes.boundingBox();
         expect(toolbarBox!.width).toBe(44);
         expect(toolbarBox!.height).toBe(44);
-        await toolbarNotes.click();
+        await toolbarNotes.tap();
 
         const sheet = page.getByRole('dialog', { name: notesT.title });
         await expect(sheet).toBeVisible();
@@ -282,10 +290,7 @@ test.describe('phone character notes', () => {
         await expect(sheet.getByText('Characters met: 1')).toBeVisible();
         await expectNoHorizontalOverflow(page);
         // A tap on the sheet surface must not reach the background reader.
-        await sheet
-            .getByRole('heading', { name: notesT.title })
-            .first()
-            .click();
+        await sheet.getByRole('heading', { name: notesT.title }).first().tap();
         expect(await currentLine(page)).toBe(line);
 
         const columns = await page
@@ -302,14 +307,41 @@ test.describe('phone character notes', () => {
         expect(closeBox!.width).toBeGreaterThanOrEqual(44);
         expect(closeBox!.height).toBeGreaterThanOrEqual(44);
 
+        // Focus wraps within the outer sheet: Shift+Tab from the first
+        // control leaves the sheet's own content, and Tab returns to Close.
+        // Touch taps do not focus the tapped button in Chromium, so focus the
+        // first control explicitly before checking the trap.
+        await close.focus();
+        await page.keyboard.press('Shift+Tab');
+        expect(
+            await sheet.evaluate(element =>
+                element.contains(document.activeElement)
+            )
+        ).toBe(true);
+        expect(
+            await page.evaluate(() =>
+                document.activeElement?.getAttribute('aria-label')
+            )
+        ).not.toBe(notesT.close);
+        await page.keyboard.press('Tab');
+        await expect(close).toBeFocused();
+
+        // The phone text leaf has its own window Enter/Space handler. It must
+        // be inert while Notes is open, just like the desktop leaves.
+        await expectKeyboardCannotAdvance(page, sheet, line, position);
+
         // Tap a met card: a native modal detail opens over the sheet.
-        await sheet.getByRole('button', { name: /Li Jie/ }).click();
+        await sheet.getByRole('button', { name: /Li Jie/ }).tap();
         const detail = page.getByRole('dialog', { name: 'Li Jie' });
         await expect(detail).toBeVisible();
         const back = detail.getByRole('button', { name: notesT.back });
         const backBox = await back.boundingBox();
         expect(backBox!.width).toBeGreaterThanOrEqual(44);
         expect(backBox!.height).toBeGreaterThanOrEqual(44);
+        await page.keyboard.press('Tab');
+        await expect(back).toBeFocused();
+        await page.keyboard.press('Shift+Tab');
+        await expect(back).toBeFocused();
 
         // First Escape is the native dialog's cancel: it closes the detail
         // only, returning focus to the selected card.
@@ -329,21 +361,21 @@ test.describe('phone character notes', () => {
         expect(await currentLine(page)).toBe(line);
 
         // Back inside the native detail also returns to the sheet.
-        await menuTrigger.click();
+        await menuTrigger.tap();
         await page
             .getByRole('button', { name: notesT.title, exact: true })
-            .click();
+            .tap();
         await expect(sheet).toBeVisible();
-        await sheet.getByRole('button', { name: /Li Jie/ }).click();
+        await sheet.getByRole('button', { name: /Li Jie/ }).tap();
         await expect(detail).toBeVisible();
-        await detail.getByRole('button', { name: notesT.back }).click();
+        await detail.getByRole('button', { name: notesT.back }).tap();
         await expect(detail).toHaveCount(0);
         await expect(sheet).toBeVisible();
         await expect(
             sheet.getByRole('button', { name: /Li Jie/ })
         ).toBeFocused();
 
-        await close.click();
+        await close.tap();
         await expect(sheet).toHaveCount(0);
         expect(await readerPosition(page)).toEqual(position);
         expect(await currentLine(page)).toBe(line);
@@ -368,7 +400,7 @@ test.describe('phone character notes', () => {
         await expect(page.locator('#mobile-reader-menu-trigger')).toHaveCount(
             0
         );
-        await notesTrigger.click();
+        await notesTrigger.tap();
 
         const sheet = page.getByRole('dialog', { name: notesT.title });
         await expect(sheet).toBeVisible();
@@ -403,39 +435,57 @@ test.describe('signed-out progress character notes', () => {
     test('opens Characters from My Progress, returns and continues at the saved line', async ({
         page,
     }) => {
-        await page.addInitScript(key => {
-            const now = Date.now();
-            localStorage.setItem(
-                key,
-                JSON.stringify({
-                    train_adventure: {
-                        sceneId: 'act2',
-                        dialogueIndex: 5,
-                        updatedAt: now - 3_600_000,
-                        finished: false,
-                        endings: [],
-                        visited: ['act1', 'act2'],
-                    },
-                    the_seventh_mirror: {
-                        sceneId: 'ch2_act1',
-                        dialogueIndex: 9,
-                        updatedAt: now - 7_200_000,
-                        finished: false,
-                        endings: [],
-                        visited: ['ch1_act1', 'ch2_act1'],
-                    },
-                })
-            );
-        }, PROGRESS_KEY);
+        await page.addInitScript(
+            ([key, countKey]) => {
+                // Seed once per browser session. A separate sentinel survives
+                // the progress key being deleted by the app, so a later
+                // document cannot silently restore the fixture before the
+                // assertions read the app's own saved state.
+                const sentinel = 'aquila:e2e:character-notes-progress-seeded';
+                if (sessionStorage.getItem(sentinel) === '1') return;
+                sessionStorage.setItem(sentinel, '1');
+                localStorage.setItem(countKey, '1');
+                const now = Date.now();
+                localStorage.setItem(
+                    key,
+                    JSON.stringify({
+                        train_adventure: {
+                            sceneId: 'act2',
+                            dialogueIndex: 5,
+                            updatedAt: now - 3_600_000,
+                            finished: false,
+                            endings: [],
+                            visited: ['act1', 'act2'],
+                        },
+                        the_seventh_mirror: {
+                            sceneId: 'ch2_act1',
+                            dialogueIndex: 9,
+                            updatedAt: now - 7_200_000,
+                            finished: false,
+                            endings: [],
+                            visited: ['ch1_act1', 'ch2_act1'],
+                        },
+                    })
+                );
+            },
+            [PROGRESS_KEY, SEED_COUNT_KEY] as const
+        );
         await seedInstantTyping(page);
         await page.goto('/en/progress');
         await expect(page.getByTestId('count-started')).toContainText('2');
+        await expect
+            .poll(() =>
+                page.evaluate(key => localStorage.getItem(key), SEED_COUNT_KEY)
+            )
+            .toBe('1');
 
         const row = page.locator('a[data-story-id="train_adventure"]');
         const savedHref =
             '/en/reader?story=train_adventure&scene=act2&dialogue=6';
         await expect(row).toHaveAttribute('href', savedHref);
-        const position = await readerPosition(page);
+        const saved = await savedPosition(page);
+        const seedCount = () =>
+            page.evaluate(key => localStorage.getItem(key), SEED_COUNT_KEY);
 
         const chip = page.getByRole('link', { name: /Characters\s+8/ });
         await expect(chip).toBeVisible();
@@ -475,6 +525,8 @@ test.describe('signed-out progress character notes', () => {
         await chip.click();
         await expect(page).toHaveURL('/en/notes?story=train_adventure');
         await expect(page.getByText('Characters met: 8')).toBeVisible();
+        expect(await savedPosition(page)).toEqual(saved);
+        expect(await seedCount()).toBe('1');
         await expect(page.locator('.cast button')).toHaveCount(16);
         await expect(
             page.locator('.cast button[aria-label="Unknown character"]')
@@ -510,7 +562,8 @@ test.describe('signed-out progress character notes', () => {
         await expect(page.getByTestId('count-started')).toContainText('2');
         await expect(row).toHaveAttribute('href', savedHref);
         await expect(chip).toBeVisible();
-        expect(await readerPosition(page)).toEqual(position);
+        expect(await savedPosition(page)).toEqual(saved);
+        expect(await seedCount()).toBe('1');
 
         await row.click();
         await expect(page).toHaveURL(
@@ -522,12 +575,7 @@ test.describe('signed-out progress character notes', () => {
         await expect(
             page.getByText('Page 6 of 69', { exact: true })
         ).toBeVisible();
-        expect(await readerPosition(page)).toMatchObject({
-            sceneId: position.sceneId,
-            dialogueIndex: position.dialogueIndex,
-            visited: position.visited,
-            endings: position.endings,
-            finished: position.finished,
-        });
+        expect(await savedPosition(page)).toEqual(saved);
+        expect(await seedCount()).toBe('1');
     });
 });

@@ -382,7 +382,7 @@ Used before a character is named. All are registered as aliases in
 | 山本大叔 (narration and *address*, branch_1a) | Uncle Yamamoto | 山本さん（やまもとさん） |
 | 艾拉如先生 (*address*: Li Jie → Ailaru) / 艾拉如長老 | Mr. Ailaru / Elder Ailaru | アイラルさん / アイラル長老（ちょうろう） |
 | 艾爾文 (an elf swordsman killed in branch_1a 4b act 27) | Elwin | エルウィン |
-| 星塵迴響 (the hit film Emi and Li Jie talk about, branch_4a act 14) | *Stardust Echoes* | 『星屑の残響（ほしくずのざんきょう）』 |
+| 星塵迴響 (the hit film Emi and Li Jie talk about, branch_1a 2a → 3a act 14) | *Stardust Echoes* | 『星屑の残響（ほしくずのざんきょう）』 |
 | 永夜之地 | the Land of Eternal Night | 永夜の地（えいやのち） |
 | 空心磚 (the hollow brick in the guard room, branch_3b acts 11, 19) | the hollow brick | 空洞のレンガ（くうどうのレンガ） |
 | 主幹道 (the wide main path in the forest, branch_2b) | the main road | 主要な道（しゅようなみち）, not 主幹道 (reads as untranslated Chinese) and not 本道; the narrow side path is 小径 / 小道 / 支道 |
@@ -453,12 +453,12 @@ Used before a character is named. All are registered as aliases in
 - **The final line** `**—— 全劇終 ——**` is a speakerless paragraph:
   `**— The End —**` / `**―― 完 ――**` — bold, no colon, no speaker.
 
-## Route notes: branch_1a (ja up to act 20 on every route; the cabin route 2a-3a-4a runs on to the endings)
+## Route notes: branch_1a (ja up to act 20 on every route; the cabin route 2a-3a runs on to the endings)
 
 - **Coverage**: ja exists for the shared acts 4–6, route 2a (acts 7–8, then
-  3a acts 9–12, then 4a acts 13–20) and route 2b (act 7, then 3a acts 8–20 and
-  3b acts 8–20). The cabin route (2a, 3a, 4a) goes on: 4a acts 21–35, then 5a
-  acts 36–48 (the Hawaii ending) and 5b acts 36–37 plus 終幕 (the dark ending).
+  3a acts 9–20) and route 2b (act 7, then 3a acts 8–20 and
+  3b acts 8–20). The cabin route (2a, 3a) goes on: 3a acts 21–35, then 4a
+  acts 36–48 (the Hawaii ending) and 4b acts 36–37 plus 終幕 (the dark ending).
   Route 2b → 3a is now translated to its end: acts 21–26, then 4a acts 27–28
   plus 終幕, and 4b acts 27–36 plus the epilogue and 終幕 (back on Earth in
   2040). Route 2b → 3b now runs acts 21–30 and the 4a 終幕 as well. The branch
@@ -494,7 +494,7 @@ Used before a character is named. All are registered as aliases in
   罪人 / おまえ, and speaks in the same plain archaic register as the Sacred
   Tree in the other routes. The gray void it speaks from is 灰色の空間.
 - **Real-world names stay as zh has them**: 中森明菜, ZARD, 夏目漱石, 川端康成,
-  太宰治 and 『人間失格』 (4a act 14).
+  太宰治 and 『人間失格』 (2a → 3a act 14).
 - **Acts 21–36 on route 2b → 3a (4a / 4b)**: the elves' descriptive labels are
   in the table above (Elwin is the swordsman Kelan mourns in 4b act 27).
   Chiefs and villagers: 村の長 / エルフの長 read おさ, 年長のエルフ reads

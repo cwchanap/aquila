@@ -22,17 +22,11 @@ export const trainAdventureChoiceTextJa: ChoiceText = {
             b3a: '｜本道《ほんどう》をそのまま｜進《すす》む',
         },
     },
-    choice_b1a_b2a_b3a_act12: {
-        prompt: 'また｜分《わ》かれ｜道《みち》だ。どちらへ｜行《い》く？',
-        labels: {
-            b4a: '｜恵美《えみ》を｜信《しん》じて｜左《ひだり》へ',
-        },
-    },
-    choice_b1a_b2a_b3a_b4a_act35: {
+    choice_b1a_b2a_b3a_act35: {
         prompt: '｜恵美《えみ》に｜手《て》を｜貸《か》し、｜斎藤《さいとう》を｜欺《あざむ》くか？',
         labels: {
-            b5a: '｜恵美《えみ》に｜手《て》を｜貸《か》す',
-            b5b: '｜恵美《えみ》の｜頼《たの》みを｜断《ことわ》る',
+            b4a: '｜恵美《えみ》に｜手《て》を｜貸《か》す',
+            b4b: '｜恵美《えみ》の｜頼《たの》みを｜断《ことわ》る',
         },
     },
     choice_b1a_b2b_act7: {

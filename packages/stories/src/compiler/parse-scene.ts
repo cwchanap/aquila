@@ -108,6 +108,15 @@ export function parseScene(
     let pendingUnlocks: NoteUnlockTargetIR[] | undefined;
 
     for (const block of blocks) {
+        // A fence sharing a paragraph with dialogue or a heading would otherwise
+        // be folded into that text, or swallowed whole by the title branch.
+        // Detect and reject before either path can hide the marker.
+        const containsUnlockFence = /^\s*```unlock/m.test(block);
+        if (containsUnlockFence && !UNLOCK_BLOCK_RE.test(block)) {
+            throw new Error(
+                `[story-compiler] ${sourcePath}: malformed unlock block; expected one <character_id>.<met|name|fact_id> target on its own line inside a blank-line-separated \`\`\`unlock block:\n${block}`
+            );
+        }
         if (block.startsWith('# ')) {
             title = block.slice(2).trim();
             continue;
@@ -169,11 +178,6 @@ export function parseScene(
             const target = parseUnlockBody(unlockMatch[1], sourcePath);
             (pendingUnlocks ??= []).push(target);
             continue;
-        }
-        if (block.startsWith('```unlock')) {
-            throw new Error(
-                `[story-compiler] ${sourcePath}: malformed unlock block; write one <character_id>.<met|name|fact_id> target on its own line inside the block`
-            );
         }
         const oneLine = block.replace(/\n+/g, ' ').trim();
         const m = HEADER_RE.exec(oneLine);

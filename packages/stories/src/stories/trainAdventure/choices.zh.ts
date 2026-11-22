@@ -22,17 +22,11 @@ export const trainAdventureChoiceText: ChoiceText = {
             b3a: '沿著主路繼續前進',
         },
     },
-    choice_b1a_b2a_b3a_act12: {
-        prompt: '又是岔路口，要往哪走？',
-        labels: {
-            b4a: '相信恵美，走左邊',
-        },
-    },
-    choice_b1a_b2a_b3a_b4a_act35: {
+    choice_b1a_b2a_b3a_act35: {
         prompt: '要幫恵美欺騙斎藤嗎？',
         labels: {
-            b5a: '答應幫助恵美',
-            b5b: '拒絕恵美的請求',
+            b4a: '答應幫助恵美',
+            b4b: '拒絕恵美的請求',
         },
     },
     choice_b1a_b2b_act7: {

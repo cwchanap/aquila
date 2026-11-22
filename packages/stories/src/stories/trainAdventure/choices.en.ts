@@ -22,17 +22,11 @@ export const trainAdventureChoiceTextEn: ChoiceText = {
             b3a: 'Keep to the main path',
         },
     },
-    choice_b1a_b2a_b3a_act12: {
-        prompt: 'Another fork. Which way do you go?',
-        labels: {
-            b4a: 'Trust Emi and go left',
-        },
-    },
-    choice_b1a_b2a_b3a_b4a_act35: {
+    choice_b1a_b2a_b3a_act35: {
         prompt: 'Will you help Emi deceive Saito?',
         labels: {
-            b5a: 'Agree to help Emi',
-            b5b: "Refuse Emi's request",
+            b4a: 'Agree to help Emi',
+            b4b: "Refuse Emi's request",
         },
     },
     choice_b1a_b2b_act7: {

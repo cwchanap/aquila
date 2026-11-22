@@ -76,7 +76,7 @@ interface LocalBookmark {
 - Act list derived from flow config at runtime:
   - Regex: `/(?:^|_)(act\d+|actFinal|actEpilogue)/` extracts act name from scene IDs
   - Sorted: Act 1, Act 2, ... Act N, Final, Epilogue
-  - Works for both Train Adventure (`act1`, `b1a_act4`, `b1a_b2a_b3a_b4a_act13`) and Don't Save Me (`ch1_act1`)
+  - Works for both Train Adventure (`act1`, `b1a_act4`, `b1a_b2a_b3a_act13`) and Don't Save Me (`ch1_act1`)
 - Each act navigates to the first scene ID matching that act
 - Current act highlighted based on reader position
 - Close on click-outside, ESC, or act selection

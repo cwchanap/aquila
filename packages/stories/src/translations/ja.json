@@ -1,4 +1,19 @@
 {
+  "notes": {
+    "title": "登場人物",
+    "tagline": "旅の途中で出会った人たち",
+    "chooseStory": "人物ノートのある物語を選んでください。",
+    "browseStories": "物語を探す",
+    "loading": "登場人物を読み込み中…",
+    "error": "人物ノートを読み込めませんでした。",
+    "unknown": "不明な人物",
+    "nameUnknown": "名前 ???",
+    "facts": "ノート",
+    "met": "出会った人物",
+    "back": "戻る",
+    "select": "人物を選択",
+    "locked": "未解放のノート"
+  },
   "profile": {
     "title": "ユーザー情報",
     "manageAccount": "アカウントを管理",

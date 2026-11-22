@@ -1,0 +1,32 @@
+---
+import OceanPageShell from '../../components/OceanPageShell.astro';
+import NotesPage from '../../components/NotesPage.svelte';
+import type { Locale } from '@aquila/stories';
+import { isLocale, getTranslations } from '@aquila/stories/translations';
+import { authStateFromSession, getSessionUser, SESSION_LOOKUP_TIMEOUT_MS } from '../../lib/auth-utils.js';
+
+interface Props { locale?: string }
+const rawLocale = Astro.props.locale || Astro.params.locale || 'en';
+const locale: Locale = isLocale(rawLocale) ? rawLocale : 'en';
+const t = getTranslations(locale).notes;
+const storyId = Astro.url.searchParams.get('story') ?? '';
+const sessionResult = await getSessionUser(Astro.request, { timeoutMs: SESSION_LOOKUP_TIMEOUT_MS });
+const user = sessionResult.status === 'ok' ? sessionResult.user : null;
+---
+
+<OceanPageShell
+  locale={locale}
+  title={t.title}
+  heading={t.title}
+  tagline={t.tagline}
+  user={user}
+  authFailed={sessionResult.status === 'error'}
+>
+  <NotesPage
+    client:load
+    {locale}
+    {storyId}
+    authState={authStateFromSession(sessionResult)}
+    userId={user?.id ?? null}
+  />
+</OceanPageShell>

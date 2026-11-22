@@ -1,4 +1,19 @@
 {
+  "notes": {
+    "title": "Characters",
+    "tagline": "The people you've met along the way",
+    "chooseStory": "Choose a story with character notes to get started.",
+    "browseStories": "Browse stories",
+    "loading": "Loading characters…",
+    "error": "Character notes could not be loaded.",
+    "unknown": "Unknown character",
+    "nameUnknown": "Name ???",
+    "facts": "Notes",
+    "met": "Characters met",
+    "back": "Back",
+    "select": "Select a character",
+    "locked": "Locked note"
+  },
   "profile": {
     "title": "User Profile",
     "manageAccount": "Manage Your Account",

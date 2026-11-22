@@ -1,4 +1,19 @@
 {
+  "notes": {
+    "title": "角色",
+    "tagline": "旅途中遇見的人們",
+    "chooseStory": "請選擇有角色筆記的故事。",
+    "browseStories": "瀏覽故事",
+    "loading": "正在載入角色…",
+    "error": "無法載入角色筆記。",
+    "unknown": "未知角色",
+    "nameUnknown": "名字 ???",
+    "facts": "筆記",
+    "met": "已遇見的角色",
+    "back": "返回",
+    "select": "選擇角色",
+    "locked": "尚未解鎖的筆記"
+  },
   "profile": {
     "title": "使用者資料",
     "manageAccount": "管理您的帳戶",

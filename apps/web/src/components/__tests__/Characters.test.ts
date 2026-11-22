@@ -107,6 +107,44 @@ describe('Characters', () => {
         );
     });
 
+    it('exposes the selected button as selection changes without revealing names', async () => {
+        const { notes, flow } = await loadStoryNotes('train_adventure');
+        const model = selectCharacterNotes({
+            notes,
+            flow,
+            progress: {
+                sceneId: 'act1',
+                dialogueIndex: 8,
+                visited: ['act1'],
+                endings: [],
+            },
+            locale: 'en',
+            t: getTranslations('en'),
+        });
+        const { container } = render(Characters, {
+            props: { model, locale: 'en' },
+        });
+        const first = screen.getByRole('button', { name: /Li Jie/i });
+        const second = screen.getByRole('button', {
+            name: /Loudmouth Student/i,
+        });
+        const unknown = screen.getAllByRole('button', {
+            name: 'Unknown character',
+        })[0];
+        expect(first).toHaveAttribute('aria-pressed', 'true');
+        expect(second).toHaveAttribute('aria-pressed', 'false');
+        expect(unknown).toHaveAttribute('aria-pressed', 'false');
+        await fireEvent.click(second);
+        expect(first).toHaveAttribute('aria-pressed', 'false');
+        expect(second).toHaveAttribute('aria-pressed', 'true');
+        await fireEvent.click(unknown);
+        expect(second).toHaveAttribute('aria-pressed', 'false');
+        expect(unknown).toHaveAttribute('aria-pressed', 'true');
+        expect(container.innerHTML).not.toMatch(
+            /Tanaka Kenta|Shimizu Emi|sketchbook/i
+        );
+    });
+
     it('shows a portrait for a met unnamed person when the URL is opaque', () => {
         const model = {
             metCount: 1,

@@ -127,6 +127,8 @@ interface FlowIndex {
     byId: Map<string, FlowNodeDefinition>;
     parent: Map<string, string>;
     reachable: Set<string>;
+    /** Node-edge breadth-first depth from `flow.start`. */
+    depth: Map<string, number>;
 }
 
 // Merged flows (two different parents pointing at one node) are unsupported:
@@ -164,20 +166,27 @@ function indexFlow(flow: Pick<StoryFlowConfig, 'start' | 'nodes'>): FlowIndex {
         );
     }
     const reachable = new Set<string>();
-    const stack: string[] = [flow.start];
-    while (stack.length > 0) {
-        const id = stack.pop()!;
-        if (reachable.has(id)) continue;
+    const depth = new Map<string, number>();
+    const queue: string[] = [flow.start];
+    depth.set(flow.start, 0);
+    for (let i = 0; i < queue.length; i++) {
+        const id = queue[i];
         const node = byId.get(id);
         if (!node) continue;
         reachable.add(id);
-        if (node.kind === 'scene') {
-            if (node.next) stack.push(node.next);
-        } else {
-            stack.push(...Object.values(node.nextByOption));
+        const nextIds =
+            node.kind === 'scene'
+                ? node.next
+                    ? [node.next]
+                    : []
+                : Object.values(node.nextByOption);
+        for (const next of nextIds) {
+            if (depth.has(next)) continue;
+            depth.set(next, depth.get(id)! + 1);
+            queue.push(next);
         }
     }
-    return { byId, parent, reachable };
+    return { byId, parent, reachable, depth };
 }
 
 function addAncestorChain(
@@ -216,12 +225,49 @@ export function hasRealDecision(flow: Pick<StoryFlowConfig, 'nodes'>): boolean {
     );
 }
 
+function addStrictAncestors(
+    id: string,
+    index: FlowIndex,
+    into: Set<string>
+): void {
+    const parent = index.parent.get(id);
+    if (parent) addAncestorChain(parent, index, into);
+}
+
 export function visibleSceneIds(
     flow: Pick<StoryFlowConfig, 'start' | 'nodes'>,
     progress: Pick<StoryProgress, 'visited'> | null | undefined,
     currentSceneId: string | null | undefined
 ): ReadonlySet<string> {
     return collectVisible(indexFlow(flow), progress?.visited, currentSceneId);
+}
+
+/**
+ * Scenes the reader has provably finished, sharing the story-map ancestor walk.
+ * A visited scene means it was entered, not finished, so only its strict
+ * ancestors pass; recorded endings (and their strict ancestors) pass in full.
+ */
+export function passedSceneIds(
+    flow: Pick<StoryFlowConfig, 'start' | 'nodes'>,
+    progress: Pick<StoryProgress, 'visited' | 'endings'> | null | undefined,
+    currentSceneId: string | null | undefined
+): ReadonlySet<string> {
+    const index = indexFlow(flow);
+    const passed = new Set<string>();
+    const reached = new Set(progress?.visited ?? []);
+    if (currentSceneId) reached.add(currentSceneId);
+    for (const id of reached) addStrictAncestors(id, index, passed);
+    for (const ending of progress?.endings ?? []) {
+        addAncestorChain(ending, index, passed);
+    }
+    return passed;
+}
+
+/** Breadth-first node depth from `flow.start`, for deterministic tie-breaks. */
+export function flowDepths(
+    flow: Pick<StoryFlowConfig, 'start' | 'nodes'>
+): ReadonlyMap<string, number> {
+    return indexFlow(flow).depth;
 }
 
 export function buildStoryMap({

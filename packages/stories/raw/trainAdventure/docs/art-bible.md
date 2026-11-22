@@ -83,7 +83,7 @@ After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui 
 - **Branch 1b, act 7:** Li Jie alone on the 幽冥之都 platform and in the station building. Still aboard, with the door open, the Ito couple, Nakamura and the Kobayashi family, fighting (b1b_act7_carriage_fight). Hina and Shota run out to him at the end of the act.
 - **Branch 1a/2a, acts 7-8:** Li Jie stays to search the waiting room and Emi stays with him. Yamamoto, his messenger bag on his shoulder, leaves for the forest at the start of act 7 (b1a_b2a_act7_yamamoto_leaves) and is not seen again in these acts. From then on only Li Jie and Emi are in the picture: in the waiting room, on the platform's right-hand end where the dirt path starts, and in 迷霧之森 up to the four-way fork.
 - **Branch 1a/2a/3a, acts 9-11:** only Li Jie and Emi. They take the main path from the fork, find the cabin at the side of the path, sleep there, and walk on in the morning until Li Jie steps on the broken glasses (Saito's, act 12).
-- **Branch 1a/2a/3a act 12, branch 4a acts 13-14:** only Li Jie and Emi. They search around Saito's glasses, find a scrape with a little blood on a trunk, and from then on each carries one of the two kitchen knives Emi took from the cabin. At a second fork (act 12) Emi's hunch picks the left-hand trail (act 13). They walk it for hours, rest once under a dry tree, then talk their way along it (act 14) until the fog thins into a silver-blue glow and they step out of it on act 14's last line. The village that glow belongs to is act 15's reveal and is never drawn in acts 12-14.
+- **Branch 1a/2a/3a acts 12-14:** only Li Jie and Emi. They search around Saito's glasses, find a scrape with a little blood on a trunk, and from then on each carries one of the two kitchen knives Emi took from the cabin. At a second fork (act 12) Emi's hunch picks the left-hand trail (act 13). They walk it for hours, rest once under a dry tree, then talk their way along it (act 14) until the fog thins into a silver-blue glow and they step out of it on act 14's last line. The village that glow belongs to is act 15's reveal and is never drawn in acts 12-14.
 - **Branch 1b, act 8:** the train leaves with Yudai, the Ito couple and Nakamura aboard; it is shown only from inside (b1b_act8_train_leaving) and as two red tail lights going away down the track (b1b_act8_mother_fallen), never as a train body. Tomoko, Hina, Shota and Li Jie stay on the platform.
 
 ### Continuity details
@@ -113,7 +113,7 @@ These are settled from the story text and hold in every image, acts 1-8:
 - **Kitchen knives (branch 1a/2a/3a, from b1a_b2a_b3a_act12_knives on):** two ordinary home kitchen knives, polished steel blade and plain wooden handle, nothing ornate. Emi takes them from her bag in act 12 and hands one to Li Jie handle first. After that each carries one low at the side with the blade pointing down, never raised and never pointed at anyone. They are out of frame in the shots where the two sit under the dry tree (act 13 rest, emi_tears, promise), because the text never says what they do with them.
 - **Hands and torch (acts 12-14):** Li Jie holds the phone, torch on, in one hand and the knife in the other; before he takes the knife (realisation) the broken glasses are in the hand that is not holding the phone. The prompts ask for phone left, knife right, but the renderer does not hold to it: the act 11 shots and about two thirds of acts 12-14 (knives, emi_left, fork2, real_smile, music, tired_talk, light_ahead, stunned) show the phone in his right hand and the knife in his left, while decision, ramen and blank show the reverse (self review, 2026-11-21). Do not re-roll a shot just for this, and do not mirror one, which also swaps who stands on which side. For act 15 onward keep the act 11 look (phone in his right hand, knife in his left) where the prompt can say it plainly. The torch stays on all through acts 12-14, also while they sit: it lies glowing on the leaves beside him in act 13 rest. In close shots it hangs low and lights the ground.
 - **The blood on the trunk (act 12):** a long pale scrape about a metre up, bark split open beside it, ending in one small half-dried dark red smear. Nothing graphic: no spatter, no wound, no body.
-- **Silver-blue light (act 14 into act 15):** from b1a_b2a_b3a_b4a_act14_light_ahead the palette moves from violet-black and grey-white to a pale silver-blue glow (act 15 calls it a light between moonlight and firefly light). The mist is a thin haze and the trunks stand farther off. Nothing inside the glow is drawn: no village, valley, buildings or elves until act 15.
+- **Silver-blue light (act 14 into act 15):** from b1a_b2a_b3a_act14_light_ahead the palette moves from violet-black and grey-white to a pale silver-blue glow (act 15 calls it a light between moonlight and firefly light). The mist is a thin haze and the trunks stand farther off. Nothing inside the glow is drawn: no village, valley, buildings or elves until act 15.
 - **Tomoko's injury (branch 1b, act 8):** she falls on the platform as the doors close: her long skirt is torn at one knee, the knee scraped and bleeding with a line of blood down her shin, and there is dust and blood on her cardigan, in every act 8 shot.
 
 ### Jishui station (branch 1a)
@@ -163,7 +163,7 @@ inside the cabin in 迷霧之森: one small square room of thick, smooth, dark w
 - **Lamps:** turned low from emi_sleeps through the night (act 10); bright again for breakfast in act 11.
 - **The washroom** is shown only once, as a close-up of Li Jie's face under the water (act10_shower).
 
-### The second fork and the left-hand trail (branch 1a/2a/3a act 12, 4a acts 13-14)
+### The second fork and the left-hand trail (branch 1a/2a/3a acts 12-14)
 
 The glasses lie on the main path, and past them the forest is the 迷霧之森 above: the same twisted trees, the same thick fog with no day or night, the torch on. In act 12 the trees stand a little taller and closer. Every forest prompt in acts 12-14 uses the 迷霧之森 sentence, except the fork and the trail below, which replace it.
 
@@ -307,7 +307,7 @@ Shown again with a `reuse` bg block: crossroads for the last lines of act 8, whi
 
 Shown again with a `reuse` bg block: b1a_b2a_act8_crossroads for the first four lines of act 9, act10_emi_sleeps when Li Jie comes out of the washroom, and act11_breakfast while they finish eating in silence.
 
-### Shot list, branch 1a/2a/3a act 12 and 4a acts 13-14
+### Shot list, branch 1a/2a/3a acts 12-14
 
 Line numbers count every `**X**：` line in the act from 1.
 
@@ -321,21 +321,21 @@ Line numbers count every `**X**：` line in the act from 1.
 | b1a_b2a_b3a_act12_fork2 (L22) | The second fork, three ways | wide, high three-quarter from behind | Li Jie and Emi small, from behind |
 | b1a_b2a_b3a_act12_emi_left (L27) | Emi tugs his sleeve: "我們走左邊" | medium two-shot, side-on | Li Jie puzzled, Emi's fingers on his cuff |
 | b1a_b2a_b3a_act12_decision (L33) | He weighs the three ways | tight close-up, slightly low | Li Jie, jaw tight, the knife at the frame edge |
-| b1a_b2a_b3a_b4a_act13_left_trail (L6) | The left trail, calling into the fog | wide, from behind and the side, slightly low | Li Jie shouting with the torch raised, Emi calling |
-| b1a_b2a_b3a_b4a_act13_turn_back (L10) | "我們可能走錯了" / "不會的" | over-the-shoulder medium close-up | Emi calm and steady, Li Jie's shoulder soft in front |
-| b1a_b2a_b3a_b4a_act13_flat_reply (L18) | Silence, then her flat "希望他們都沒事吧" | medium, side-on, moving alongside | Li Jie worried, Emi blank and distant |
-| b1a_b2a_b3a_b4a_act13_rest (L24) | The rest under the dry tree | medium-wide, slightly low, from the front | Li Jie and Emi seated against the trunk, the food and the flask |
-| b1a_b2a_b3a_b4a_act13_emi_tears (L32) | Her parents in Osaka, her eyes redden | close-up at seated eye level | Emi; Li Jie's shoulder soft at the edge |
-| b1a_b2a_b3a_b4a_act13_promise (L42) | "我答應妳" | medium two-shot, low and side-on | Li Jie serious, Emi with wet eyes |
-| b1a_b2a_b3a_b4a_act14_far_look (L1) | "等他的傷好了以後", the boyfriend | medium close-up, side-on, slightly low | Emi gazing into the fog, Li Jie soft in the foreground |
-| b1a_b2a_b3a_b4a_act14_music (L8) | What music she likes | medium, low, long lens from behind | both walking away, heads turned toward each other |
-| b1a_b2a_b3a_b4a_act14_real_smile (L12) | Her first real smile | close two-shot, from the front | Li Jie delighted, Emi smiling shyly |
-| b1a_b2a_b3a_b4a_act14_books (L15) | Books, hobbies, long walk | wide, long lens from far ahead, low | both small, walking toward the camera |
-| b1a_b2a_b3a_b4a_act14_tired_talk (L23) | His work, "會累的話...就休息一下吧" | over-the-shoulder medium close-up | Li Jie weary in focus, Emi's hair and shoulder soft |
-| b1a_b2a_b3a_b4a_act14_blank (L29) | She has never heard of the film | close-up, slightly high, three-quarter front | Emi bewildered, Li Jie soft behind, a veil of mist between them |
-| b1a_b2a_b3a_b4a_act14_ramen (L33) | Ramen, the old izakaya | medium, slightly high, three-quarter from the front | Emi eager, Li Jie laughing |
-| b1a_b2a_b3a_b4a_act14_light_ahead (L43) | The fog thins, light and the sound of water | wide, from behind at eye level | Li Jie stopped with an arm out, Emi lifting her face to the glow |
-| b1a_b2a_b3a_b4a_act14_stunned (L47) | They step out of the last mist and freeze | extreme wide, low, from behind | both tiny against a blaze of silver-blue light |
+| b1a_b2a_b3a_act13_left_trail (L6) | The left trail, calling into the fog | wide, from behind and the side, slightly low | Li Jie shouting with the torch raised, Emi calling |
+| b1a_b2a_b3a_act13_turn_back (L10) | "我們可能走錯了" / "不會的" | over-the-shoulder medium close-up | Emi calm and steady, Li Jie's shoulder soft in front |
+| b1a_b2a_b3a_act13_flat_reply (L18) | Silence, then her flat "希望他們都沒事吧" | medium, side-on, moving alongside | Li Jie worried, Emi blank and distant |
+| b1a_b2a_b3a_act13_rest (L24) | The rest under the dry tree | medium-wide, slightly low, from the front | Li Jie and Emi seated against the trunk, the food and the flask |
+| b1a_b2a_b3a_act13_emi_tears (L32) | Her parents in Osaka, her eyes redden | close-up at seated eye level | Emi; Li Jie's shoulder soft at the edge |
+| b1a_b2a_b3a_act13_promise (L42) | "我答應妳" | medium two-shot, low and side-on | Li Jie serious, Emi with wet eyes |
+| b1a_b2a_b3a_act14_far_look (L1) | "等他的傷好了以後", the boyfriend | medium close-up, side-on, slightly low | Emi gazing into the fog, Li Jie soft in the foreground |
+| b1a_b2a_b3a_act14_music (L8) | What music she likes | medium, low, long lens from behind | both walking away, heads turned toward each other |
+| b1a_b2a_b3a_act14_real_smile (L12) | Her first real smile | close two-shot, from the front | Li Jie delighted, Emi smiling shyly |
+| b1a_b2a_b3a_act14_books (L15) | Books, hobbies, long walk | wide, long lens from far ahead, low | both small, walking toward the camera |
+| b1a_b2a_b3a_act14_tired_talk (L23) | His work, "會累的話...就休息一下吧" | over-the-shoulder medium close-up | Li Jie weary in focus, Emi's hair and shoulder soft |
+| b1a_b2a_b3a_act14_blank (L29) | She has never heard of the film | close-up, slightly high, three-quarter front | Emi bewildered, Li Jie soft behind, a veil of mist between them |
+| b1a_b2a_b3a_act14_ramen (L33) | Ramen, the old izakaya | medium, slightly high, three-quarter from the front | Emi eager, Li Jie laughing |
+| b1a_b2a_b3a_act14_light_ahead (L43) | The fog thins, light and the sound of water | wide, from behind at eye level | Li Jie stopped with an arm out, Emi lifting her face to the glow |
+| b1a_b2a_b3a_act14_stunned (L47) | They step out of the last mist and freeze | extreme wide, low, from behind | both tiny against a blaze of silver-blue light |
 
 Shown again with a `reuse` bg block: act 11's frame_held for the first three lines of act 12 (he is still examining the glasses), act 12's decision for the first three lines of act 13 (the text repeats the same beat), act 12's fork2 when he says "好。我們走左邊。" and they thank each other, and act 13's rest after he pats her shoulder while they talk about gifts and her mother's daifuku (L36-L41).
 

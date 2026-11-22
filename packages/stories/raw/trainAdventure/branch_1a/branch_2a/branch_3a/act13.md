@@ -99,7 +99,7 @@ the 迷霧之森 (Misty Forest) inland from Jishui station, on the left-hand tra
 **李杰**：(伸手輕輕拍了拍她的肩膀) 別這麼想。我們一定能回去的。等回去了,妳就回大阪看妳爸媽。好好陪他們幾天,什麼都不要想。
 
 ```bg
-reuse branch_1a/branch_2a/branch_3a/branch_4a/b1a_b2a_b3a_b4a_act13_rest
+reuse branch_1a/branch_2a/branch_3a/b1a_b2a_b3a_act13_rest
 ```
 
 **清水恵美**：(點點頭,擦了擦眼角) 嗯...李杰先生也要回上海看爸爸媽媽喔...而且...而且要帶禮物!我聽說上海的父母都很喜歡日本的點心...

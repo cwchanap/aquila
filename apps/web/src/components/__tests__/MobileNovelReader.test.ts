@@ -70,6 +70,7 @@ const { mockGetTranslations } = vi.hoisted(() => ({
             revealText: 'Reveal text',
             storyMap: { open: 'Open story map' },
         },
+        notes: { title: 'Characters' },
         characterNames: { narrator: 'Narrator' },
         common: {
             backToHome: '← Back to Home',
@@ -891,6 +892,20 @@ describe('MobileNovelReader', () => {
             expect(
                 screen.queryByText('Open story map')
             ).not.toBeInTheDocument();
+        });
+
+        it('shows the notes tooltip on long-press without opening notes', async () => {
+            const onOpenNotes = vi.fn();
+            renderReader({ notesAvailable: true, onOpenNotes });
+            await vi.runAllTimersAsync();
+            await fireEvent.click(screen.getByLabelText('Open menu'));
+            const notes = screen.getByLabelText('Characters');
+            await fireEvent.pointerDown(notes);
+            await vi.advanceTimersByTimeAsync(450);
+            expect(screen.getByText('Characters')).toBeInTheDocument();
+            expect(onOpenNotes).not.toHaveBeenCalled();
+            await fireEvent.pointerUp(notes);
+            expect(screen.queryByText('Characters')).not.toBeInTheDocument();
         });
 
         it('anchors the tooltip next to the pressed control, not at a fixed screen position', async () => {

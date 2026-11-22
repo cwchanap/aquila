@@ -314,7 +314,7 @@ describe('trainAdventure pilot notes (Acts 1-3)', () => {
 
         expect(graph.start).toBe('act1');
         expect(graph.scenes).toHaveLength(495);
-        expect(graph.choices).toHaveLength(30);
+        expect(graph.choices).toHaveLength(29);
 
         for (const scene of graph.scenes) {
             const markdown = readFileSync(

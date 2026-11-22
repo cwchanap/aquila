@@ -14,7 +14,15 @@ the same late-night Shinjuku Chuo Line platform as the reference image: steel ca
 
 **李杰**：(內心)又是一個喧鬧的夜晚⋯⋯派對的酒精和笑語彷彿還在耳邊迴盪。但一轉身，就只剩下自己和這片冰冷的月台。
 
+```unlock
+li_jie.age
+```
+
 **李杰**：(內心)二十八歲，不高不低，不成功也不失敗。就像這末班車一樣——永遠卡在終點之前，不知道是該慶幸還是該嘆息。
+
+```unlock
+li_jie.habit
+```
 
 **旁白**：他輕輕嘆了口氣，呼出的白霧在空氣中浮現又消散。李杰有個習慣，喜歡觀察陌生人。從他們的表情、姿態、衣著的皺褶中，猜測他們的故事。
 
@@ -24,17 +32,37 @@ the same late-night Shinjuku Chuo Line platform as the reference image: steel ca
 
 **旁白**：視線掃過月台，首先映入眼簾的是一群朝氣蓬勃的大學生。他們是這片灰色空間裡最鮮豔的色彩——笑聲肆無忌憚，動作誇張。
 
+```unlock
+tanaka_kenta.talk
+```
+
 **健談男大生**：不是啊你們聽我說！剛剛那家店真的超誇張的！什麼精釀啤酒專賣店，結果端上來的味道根本就像洗碗水！我跟你們說，我喝了一口差點吐出來！
 
 **健談男大生**：老闆還一臉得意地問我們「如何？很有深度吧？」深度個屁啊！
 
+```unlock
+suzuki_asuka.strong_zero
+```
+
 **活潑女大生**：對對對！我也覺得超難喝！而且你們有看到老闆那個表情嗎？「這款啤酒可是用比利時進口的啤酒花釀造的」——結果一杯要八百円！我們在全家買的強零都比那個有感覺啊！
+
+```unlock
+takahashi_misaki.details
+```
 
 **多話女大生**：對啊對啊！而且啊，你們有注意到嗎？那家店的椅子超不舒服的，坐起來腰超酸！還有啊，廁所也超小間的，我進去的時候差點轉不過身！
 
 **多話女大生**：然後店員的態度也很怪，一直用那種很高傲的眼神看我們，好像我們不懂欣賞一樣⋯⋯
 
+```unlock
+tanaka_kenta.izakaya
+```
+
 **健談男大生**：對吧對吧！我就說那種店根本就是騙錢的！什麼「精釀文化」「品味生活」，說穿了就是賣貴而已！下次絕對不去了！我寧願去我們學校附近那家居酒屋，至少份量實在！
+
+```unlock
+sato_takumi.calm
+```
 
 **沉穩男大生**：其實⋯⋯也不能這麼說吧。精釀啤酒確實有它的市場，只是那家店可能不太適合我們。下次去我推薦的那家試試看？我之前帶學妹去過，氣氛不錯，價格也合理。
 
@@ -49,6 +77,10 @@ the same late-night Shinjuku Chuo Line platform as the reference image: steel ca
 ```
 
 **旁白**：就在這時，一個戴著無框眼鏡、穿著精心搭配休閒西裝的年輕男子悄悄靠近了他們。他刻意咳了兩聲，清了清喉嚨，用一種自以為成熟穩重的語氣插話。
+
+```unlock
+saito_ren.facade
+```
 
 **膽小眼鏡男**：各位⋯⋯不好意思打擾一下。聽你們的對話，就知道你們還很年輕啊。真正的好店，可不是隨便在Instagram或Google上就能找到的。
 
@@ -96,9 +128,21 @@ the same late-night Shinjuku Chuo Line platform as the reference image: steel ca
 
 **李杰**：(內心)嗯？那個女孩⋯⋯
 
+```unlock
+shimizu_emi.met
+```
+
 **旁白**：在喧鬧人群的另一端，月台長椅的最角落，坐著一個安靜得幾乎要融入夜色的女孩。她穿著一件淺米色的棉質連衣裙，裙擺輕輕搭在膝蓋上，露出纖細的小腿和一雙乾淨的白色帆布鞋。
 
+```unlock
+shimizu_emi.earphones
+```
+
 **旁白**：她戴著一副復古風格的有線耳機，白色的耳機線垂在胸前，隨著她的呼吸微微晃動。她的長髮柔順地披在肩上，在月台的燈光下泛著淺淺的栗色光澤。
+
+```unlock
+shimizu_emi.sketchbook
+```
 
 **旁白**：她的腿上放著一本有些舊的素描本，正用一支細細的鉛筆，專注地在紙上描繪著什麼。她的側臉小巧精緻，睫毛在眼瞼上投下淺淺的陰影，嘴唇微微抿著，眉頭有時會輕輕蹙起。
 
@@ -110,9 +154,17 @@ the same late-night Shinjuku Chuo Line platform as the reference image: steel ca
 the same late-night Shinjuku Chuo Line platform as the reference image: steel canopy roof with lattice girders and rows of white fluorescent tubes, square brushed-steel pillars, glossy light-grey tiled floor, yellow tactile strip along the platform edge, tracks running into a black tunnel mouth at the far end, a black departure board with glowing amber bars and no readable characters, silver metal benches against a low back wall with a steel railing, the Tokyo night city with lit office towers beyond; no advertisements. Camera: a long-lens medium shot from across the platform at a slightly low angle. At the left and right edges of the foreground, out-of-focus late-night commuters walk past as dark motion-blurred shapes with no visible faces. In the middle of the frame stands a square brushed-steel pillar, and in the deep shadow on its far side Ling Mo (a man in a black hooded sweatshirt with the hood pulled very low, black trousers, black shoes) leans back against the pillar, perfectly still like a statue, both hands in the pocket of the sweatshirt; his face is hidden in the shadow of the hood apart from the line of his jaw. The fluorescent light falls on the platform all around him, but he stays in the shadow; nobody looks at him. Only Ling Mo is in focus. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```unlock
+ling_mo.met
+```
+
 **旁白**：李杰的視線短暫地在她身上停留了幾秒，隨後不著痕跡地移開，假裝只是隨意掃視月台。他的目光落在不遠處的一根立柱上——柱子的陰影裡，站著一個全身黑衣的男人。
 
 **旁白**：他穿著一件黑色連帽衛衣，帽簷壓得極低，遮住了大半張臉。雙手插在口袋裡，身體靠著柱子，一動也不動，像一座沒有生命的雕像。周圍的人來來往往，沒有人注意到他的存在。
+
+```unlock
+ling_mo.watcher
+```
 
 **李杰**：(內心)那個人⋯⋯總覺得有點違和感。為什麼要把自己裹得那麼嚴實？而且那個姿勢⋯⋯不像是在等車，更像是在⋯⋯觀察什麼。算了，大概是我想多了。這座城市裡，什麼樣的人都有。
 

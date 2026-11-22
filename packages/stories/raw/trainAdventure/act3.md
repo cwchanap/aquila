@@ -34,6 +34,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **膽小眼鏡男**：一⋯⋯一定是某種宣傳活動⋯⋯對，是利用大氣反射原理製造的海市蜃樓⋯⋯全息投影⋯⋯
 
+```unlock
+ito_makoto.hologram
+```
+
 **煩躁丈夫**：你還在胡說八道什麼！你家投影能連空氣的味道都改變嗎！快報警啊！誰的手機有訊號？！
 
 **旁白**：他瘋狂地拿出手機，拼命刷新著螢幕。但螢幕上依然顯示著「沒有服務」。周圍的乘客也紛紛拿出手機，絕望地發現同樣的結果。
@@ -43,6 +47,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **天真弟弟**：媽媽！我害怕！我要回家！我要回家！
 
 **溫柔母親**：寶寶乖⋯⋯不怕不怕⋯⋯我們會回家的⋯⋯
+
+```unlock
+ito_nana.hell
+```
 
 **焦慮妻子**：我們是不是死了？這是地獄嗎？
 
@@ -101,6 +109,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **慷慨大叔**：我們⋯⋯下去看看嗎？也許車站裡有人⋯⋯
 
 **煩躁丈夫**：你瘋了嗎？外面是什麼鬼地方！誰知道會遇到什麼！
+
+```unlock
+nakamura_hayato.stay
+```
 
 **自私中年男**：對！待在車上比較安全！萬一車門關上，列車開走了怎麼辦！
 

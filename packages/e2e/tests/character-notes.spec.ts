@@ -430,9 +430,9 @@ test.describe('phone character notes', () => {
             .getByRole('button', { name: notesT.title, exact: true })
             .tap();
         const sheet = page.getByRole('dialog', { name: notesT.title });
-        await expect(
-            sheet.getByRole('button', { name: notesT.close })
-        ).toBeFocused();
+        // Focus lost during activation is recovered onto the sheet itself,
+        // not its first control.
+        await expect(sheet).toBeFocused();
     });
 
     test('opens from the auto-hiding text toolbar and handles the nested native detail', async ({
@@ -503,14 +503,16 @@ test.describe('phone character notes', () => {
         for (const { row, card } of firstRowHeights) {
             expect(card).toBeCloseTo(row, 1);
         }
-        await expect(close).toBeFocused();
+        // The tap on the sheet surface stranded focus on the body; recovery
+        // lands on the sheet itself rather than Close.
+        await expect(sheet).toBeFocused();
 
         const closeBox = await close.boundingBox();
         expect(closeBox!.width).toBeGreaterThanOrEqual(44);
         expect(closeBox!.height).toBeGreaterThanOrEqual(44);
 
-        // Focus wraps within the outer sheet: Shift+Tab from the first
-        // control leaves the sheet's own content, and Tab returns to Close.
+        // Focus wraps within the outer sheet: Shift+Tab from the sheet
+        // container lands on the last control, and Tab returns to Close.
         await page.keyboard.press('Shift+Tab');
         expect(
             await sheet.evaluate(element =>

@@ -109,6 +109,9 @@ export function compileStoryNotes(
     const enById = new Map((en?.characters ?? []).map(s => [s.id, s]));
     const jaById = new Map((ja?.characters ?? []).map(s => [s.id, s]));
 
+    const suffixRegex = opts.suffixRegex ?? DEFAULT_SUFFIX_RE;
+    const strip = (label: string) =>
+        stripSuffix(label, suffixRegex) || label.trim();
     const characters: StoryNoteCharacter[] = [];
     const nameLabelsById = new Map<string, Set<string>>();
     const zhById = new Map(zh.characters.map(s => [s.id, s]));
@@ -120,14 +123,14 @@ export function compileStoryNotes(
                 `[story-compiler] notes/zh.md:${section.line}: unknown character "${section.id}"; add it to docs/characters.md or remove the section`
             );
         }
-        const revealNames = new Set<string>([info.name]);
+        const revealNames = new Set<string>([strip(info.name)]);
         for (const alias of section.nameAliases ?? []) {
             if (opts.charDir.getIdByName(alias) !== section.id) {
                 throw new Error(
                     `[story-compiler] notes/zh.md:${section.nameAliasesLine}: name-alias "${alias}" does not resolve to character "${section.id}" in docs/characters.md`
                 );
             }
-            revealNames.add(alias);
+            revealNames.add(strip(alias));
         }
         nameLabelsById.set(section.id, revealNames);
         const enSection = enById.get(section.id);
@@ -195,9 +198,6 @@ export function compileStoryNotes(
     }
 
     const noteById = new Map(characters.map(c => [c.id, c]));
-    const suffixRegex = opts.suffixRegex ?? DEFAULT_SUFFIX_RE;
-    const strip = (label: string) =>
-        stripSuffix(label, suffixRegex) || label.trim();
     const events: StoryNoteEvent[] = [];
     const seenSpeech = new Set<string>();
     const seenName = new Set<string>();

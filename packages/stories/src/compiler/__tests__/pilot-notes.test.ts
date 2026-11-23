@@ -480,4 +480,29 @@ describe('trainAdventure pilot notes (Acts 1-3)', () => {
         const yudai = notes.characters.find(c => c.id === 'kobayashi_yudai')!;
         expect(yudai.facts).toEqual([]);
     });
+
+    it('unlocks character names when spoken by their given-name labels', () => {
+        const misakiNames = eventsFor(notes, 'takahashi_misaki', 'name').filter(
+            e => e.sceneId === 'b1b_b2a_b3b_b4a_b5b_b6a_b7a_b8a_b9a_act52'
+        );
+        expect(misakiNames).toHaveLength(1);
+
+        for (const [id, sceneId] of [
+            ['tanaka_kenta', 'b1b_b2a_b3b_b4a_b5a_b6b_b7a_act60'],
+            ['suzuki_asuka', 'b1b_b2a_b3b_b4a_b5a_b6b_b7a_act60'],
+            ['sato_takumi', 'b1b_b2a_b3b_b4a_b5a_b6b_b7a_act60'],
+            ['kobayashi_yudai', 'b1b_b2a_b3b_b4a_b5a_b6b_b7a_act62'],
+            ['kobayashi_tomoko', 'b1b_b2a_b3b_b4a_b5a_b6b_b7a_act62'],
+            ['shimizu_emi', 'b1b_b2a_b3b_b4a_b5a_b6b_b7a_act62'],
+        ] as const) {
+            const firstInScene = eventsFor(notes, id, 'name').find(
+                e => e.sceneId === sceneId
+            );
+            expect(firstInScene).toBeDefined();
+            const entries = story.scenes.find(s => s.id === sceneId)!.entries;
+            expect(entries[firstInScene!.entryIndex].displayName).toMatch(
+                /的聲音$/
+            );
+        }
+    });
 });

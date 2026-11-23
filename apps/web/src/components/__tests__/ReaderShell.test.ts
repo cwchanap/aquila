@@ -42,8 +42,9 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             error: 'Character notes could not be loaded.',
             unknown: 'Unknown character',
             nameUnknown: 'Name ???',
+            unmetLabel: '?',
             facts: 'Notes',
-            met: 'Characters met',
+            met: 'Characters met: {count}',
             back: 'Back',
             close: 'Close',
             select: 'Select a character',
@@ -647,17 +648,21 @@ describe('ReaderShell', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('moves focus back into the notes sheet when a click leaves it on the body', async () => {
+    it('moves focus to the notes dialog container instead of Close when a click leaves focus on the body', async () => {
         stubMatchMedia(false);
         readerState.storyId = 'train_adventure';
         render(ReaderShell);
         await fireEvent.click(document.getElementById('reader-notes-trigger')!);
         await tick();
         const sheet = screen.getByRole('dialog', { name: 'Characters' });
+        expect(sheet).toHaveAttribute('tabindex', '-1');
         (document.activeElement as HTMLElement | null)?.blur?.();
         expect(document.activeElement).toBe(document.body);
         await fireEvent.click(sheet);
-        expect(document.activeElement).toBe(sheet.querySelector('button'));
+        expect(document.activeElement).toBe(sheet);
+        await fireEvent.keyDown(sheet, { key: 'Enter' });
+        await fireEvent.keyDown(sheet, { key: ' ' });
+        expect(screen.getByRole('dialog', { name: 'Characters' })).toBe(sheet);
     });
 
     it('uses the mobile chrome and lets the native detail consume the first Escape', async () => {

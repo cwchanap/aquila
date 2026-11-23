@@ -425,6 +425,24 @@ describe('selectCharacterNotes', () => {
         expect(character(live, 'ling_mo').met).toBe(true);
     });
 
+    it('falls back both scene and line to saved progress when live has no sceneId', () => {
+        const story = notes(
+            [liJie],
+            [
+                speech('li_jie', 'act1', 0, ['李杰', 'Li Jie', '李傑']),
+                fact('li_jie', 'act1', 5, 'age'),
+            ]
+        );
+
+        const view = select(
+            story,
+            progress({ sceneId: 'act1', dialogueIndex: 1 }),
+            'en',
+            { sceneId: '', dialogueIndex: 99 }
+        );
+        expect(character(view, 'li_jie').facts).toEqual([]);
+    });
+
     it('meets a character through a reached fact or name marker', () => {
         const factOnly = notes([emi], [fact('emi', 'act1', 0, 'hair')]);
         expect(character(select(factOnly, progress()), 'emi')).toMatchObject({

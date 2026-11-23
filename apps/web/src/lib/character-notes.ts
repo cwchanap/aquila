@@ -72,15 +72,16 @@ export function selectCharacterNotes({
     locale: Locale;
     t: Translations;
 }): CharacterNotesView {
-    const activeSceneId = live?.sceneId ?? progress?.sceneId ?? null;
-    const activeIndex = live?.dialogueIndex ?? progress?.dialogueIndex ?? 0;
+    const active = live?.sceneId ? live : progress;
+    const activeSceneId = active?.sceneId ?? null;
+    const activeIndex = active?.dialogueIndex ?? 0;
     const displayedIndex = Number.isFinite(activeIndex)
         ? Math.max(0, Math.trunc(activeIndex))
         : 0;
 
     const reachedScenes = new Set(progress?.visited ?? []);
     if (progress?.sceneId) reachedScenes.add(progress.sceneId);
-    if (live?.sceneId) reachedScenes.add(live.sceneId);
+    if (active?.sceneId) reachedScenes.add(active.sceneId);
 
     const passed = passedSceneIds(
         flow,
@@ -95,6 +96,9 @@ export function selectCharacterNotes({
         : new Set<string>();
     const depths = flowDepths(flow);
 
+    // Visited only records entered scenes (no per-scene line watermark), so a
+    // scene left halfway through is intentionally locked after jumping away
+    // unless it was passed via a child scene or recorded ending.
     const isReached = (event: StoryNoteEvent): boolean =>
         passed.has(event.sceneId) ||
         (event.sceneId === activeSceneId &&

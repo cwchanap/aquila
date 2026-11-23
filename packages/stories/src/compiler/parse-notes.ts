@@ -18,6 +18,8 @@ export interface ParsedNoteCharacter {
     knownAsLine?: number;
     name?: string;
     nameLine?: number;
+    nameAliases?: string[];
+    nameAliasesLine?: number;
     facts: ParsedNoteFact[];
 }
 
@@ -35,6 +37,7 @@ const FACT_LINE_RE = /^-\s+([a-z0-9_]+)\s*:\s*(.+)$/;
 const HIDDEN_RE = /^hidden\s*:\s*(.*)$/;
 const KNOWN_AS_RE = /^known-as\s*:\s*(.+)$/;
 const NAME_RE = /^name\s*:\s*(.+)$/;
+const NAME_ALIASES_RE = /^name-aliases\s*:\s*(.*)$/;
 
 function fail(sourcePath: string, line: number, message: string): never {
     throw new Error(`[story-compiler] ${sourcePath}:${line}: ${message}`);
@@ -140,6 +143,35 @@ export function parseNotesMarkdown(
             metadata.add('name');
             current.name = name[1].trim();
             current.nameLine = lineNo;
+            continue;
+        }
+
+        const nameAliases = NAME_ALIASES_RE.exec(line);
+        if (nameAliases) {
+            if (locale !== 'zh') {
+                fail(
+                    sourcePath,
+                    lineNo,
+                    'only zh notes can set "name-aliases"; move structure to notes/zh.md'
+                );
+            }
+            if (metadata.has('name-aliases')) {
+                fail(sourcePath, lineNo, 'duplicate name-aliases field');
+            }
+            const aliases = nameAliases[1]
+                .split(',')
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+            if (aliases.length === 0) {
+                fail(
+                    sourcePath,
+                    lineNo,
+                    'name-aliases must list at least one comma-separated alias'
+                );
+            }
+            metadata.add('name-aliases');
+            current.nameAliases = aliases;
+            current.nameAliasesLine = lineNo;
             continue;
         }
 

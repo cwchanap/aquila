@@ -231,7 +231,7 @@ describe('compileStory notes', () => {
         expect(eventsFor(notes, 'emi')).toEqual([]);
     });
 
-    it('emits a name event only for a canonical zh speaker header, once per scene', () => {
+    it('emits a name event for a canonical or name-aliased zh speaker header, once per scene', () => {
         const rawDir = makeFixture({
             notesZh: ['## li_jie', '', '## emi'].join('\n'),
         });
@@ -247,6 +247,34 @@ describe('compileStory notes', () => {
         ]);
         expect(eventsFor(notes, 'emi', 'name')).toEqual([]);
         expect(eventsFor(notes, 'emi', 'speech')).toHaveLength(1);
+
+        const aliasedDir = makeFixture({
+            act1: [
+                '# 第一幕',
+                '',
+                '**短髮少女**：她說話了。',
+                '',
+                '**李杰**：我是李杰。',
+            ].join('\n'),
+            notesZh: [
+                '## li_jie',
+                '',
+                '## emi',
+                '',
+                'name-aliases: 短髮少女',
+            ].join('\n'),
+        });
+        const aliasedNotes = notesOf(
+            compile(aliasedDir, { writeOutputs: false })
+        );
+        expect(eventsFor(aliasedNotes, 'emi', 'name')).toEqual([
+            {
+                sceneId: 'act1',
+                entryIndex: 0,
+                characterId: 'emi',
+                kind: 'name',
+            },
+        ]);
     });
 
     it('emits explicit met, name and fact markers with met-only known-as labels', () => {
@@ -399,8 +427,8 @@ describe('compileStory notes', () => {
         expect(eventsFor(notes, 'emi', 'speech')).toHaveLength(1);
     });
 
-    it('skips a narrator notes section', () => {
-        const rawDir = makeFixture({
+    it('rejects a narrator notes section', () => {
+        const zhNarrator = makeFixture({
             notesZh: [
                 '## narrator',
                 '',
@@ -418,12 +446,28 @@ describe('compileStory notes', () => {
                 '**李杰**：我是李杰。',
             ].join('\n'),
         });
-        const notes = notesOf(compile(rawDir, { writeOutputs: false }));
+        expect(() => compile(zhNarrator, { writeOutputs: false })).toThrow(
+            /notes\/zh\.md:1: "narrator" cannot have a notes section/
+        );
 
-        expect(notes.characters.map(c => c.id)).toEqual(['li_jie']);
+        const enNarrator = makeFixture({
+            notesZh: ['## li_jie'].join('\n'),
+            notesEn: ['## narrator'].join('\n'),
+        });
+        expect(() => compile(enNarrator, { writeOutputs: false })).toThrow(
+            /notes\/en\.md:1: "narrator" cannot have a notes section/
+        );
     });
 
     describe('validation', () => {
+        it('rejects a name-alias that does not resolve to the character', () => {
+            const rawDir = makeFixture({
+                notesZh: ['## li_jie', '', 'name-aliases: 短髮少女'].join('\n'),
+            });
+            expect(() => compile(rawDir, { writeOutputs: false })).toThrow(
+                /name-alias "短髮少女" does not resolve to character "li_jie"/
+            );
+        });
         it('rejects a character that can never be met on any route', () => {
             const rawDir = makeFixture({
                 notesZh: [

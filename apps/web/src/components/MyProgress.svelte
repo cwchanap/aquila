@@ -54,19 +54,40 @@
   let summary = $derived(summarizeProgress(cards));
   let rows = $derived(startedStoryCards(cards));
   let notStarted = $derived(summary.total - summary.started);
-  let notesPayloads = $state<Record<string, StoryNotesPayload | null>>({});
+  let notesPayloads = $state.raw<Record<string, StoryNotesPayload>>({});
+  const loadingNotes: Record<string, true> = {};
+  let destroyed = false;
   $effect(() => {
     if (!mounted) return;
     for (const card of rows) {
       const id = card.entry.id;
-      if (!hasStoryNotes(id) || id in notesPayloads) continue;
-      notesPayloads[id] = null;
+      if (!hasStoryNotes(id) || id in notesPayloads || Object.hasOwn(loadingNotes, id)) continue;
+      loadingNotes[id] = true;
       void loadStoryNotes(id).then(payload => {
-        notesPayloads[id] = payload;
+        delete loadingNotes[id];
+        if (!destroyed) {
+          notesPayloads = { ...notesPayloads, [id]: payload };
+        }
       }).catch(() => {
+        delete loadingNotes[id];
         // The link remains usable if its optional count cannot load.
       });
     }
+  });
+  let metCounts = $derived.by(() => {
+    const counts: Record<string, number> = {};
+    for (const card of rows) {
+      const payload = notesPayloads[card.entry.id];
+      if (payload) {
+        counts[card.entry.id] = selectCharacterNotes({
+          ...payload,
+          progress: card.progress,
+          locale,
+          t: translations,
+        }).metCount;
+      }
+    }
+    return counts;
   });
   let readyForEmpty = $derived(
     mounted && (view.authState === 'signed-out' || view.syncState !== 'idle')
@@ -79,7 +100,11 @@
 
   onMount(() => {
     mounted = true;
-    return view.mount();
+    const unmountView = view.mount();
+    return () => {
+      destroyed = true;
+      unmountView();
+    };
   });
 </script>
 
@@ -228,8 +253,8 @@
                 class="mt-2 inline-flex min-h-11 items-center rounded-full border border-white/25 bg-white/10 px-4 text-sm font-semibold text-white hover:bg-white/20"
               >
                 {translations.notes.title}
-                {#if notesPayloads[card.entry.id]}
-                  <span class="ml-2">{selectCharacterNotes({ ...notesPayloads[card.entry.id]!, progress: card.progress, locale, t: translations }).metCount}</span>
+                {#if card.entry.id in metCounts}
+                  <span class="ml-2">{metCounts[card.entry.id]}</span>
                 {/if}
               </a>
             {/if}

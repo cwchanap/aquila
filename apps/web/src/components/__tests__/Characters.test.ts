@@ -175,6 +175,32 @@ describe('Characters', () => {
         expect(screen.getAllByText('Name ???')).toHaveLength(2);
     });
 
+    it('uses localized met-count punctuation and unmet markers in zh and ja', () => {
+        const unmetModel = {
+            metCount: 0,
+            characters: [
+                {
+                    id: 'person',
+                    hidden: false,
+                    met: false,
+                    nameKnown: false,
+                    label: null,
+                    facts: [],
+                    factCount: 1,
+                },
+            ],
+        };
+
+        render(Characters, { props: { model: unmetModel, locale: 'zh' } });
+        expect(screen.getByText('已遇見的角色：0')).toBeInTheDocument();
+        expect(screen.getAllByText('？').length).toBeGreaterThanOrEqual(2);
+        cleanup();
+
+        render(Characters, { props: { model: unmetModel, locale: 'ja' } });
+        expect(screen.getByText('出会った人物：0')).toBeInTheDocument();
+        expect(screen.getAllByText('？').length).toBeGreaterThanOrEqual(2);
+    });
+
     it('falls back to initials when the portrait URL cannot be decoded', () => {
         const { container } = render(Characters, {
             props: {

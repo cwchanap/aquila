@@ -5,18 +5,26 @@
 
 ## tanaka_kenta
 
+name-aliases: 健太
+
 - talk: 說個不停，是四名大學生中最先開口的人。
 - izakaya: 嫌棄精釀啤酒店的價錢和味道，寧願去大學附近的居酒屋。
 
 ## suzuki_asuka
 
+name-aliases: 明日香
+
 - strong_zero: 覺得全家便利店的強零比精釀啤酒更有感覺。
 
 ## takahashi_misaki
 
+name-aliases: 美咲
+
 - details: 說話時總會連珠炮般補上各種細節。
 
 ## sato_takumi
+
+name-aliases: 拓海
 
 - calm: 四人中最冷靜，說話最有分寸。
 
@@ -46,12 +54,16 @@
 
 ## kobayashi_tomoko
 
+name-aliases: 智子
+
 - mother: 安撫害怕的孩子。
 - phone: 想放卡通轉移孩子的注意力，手機卻顯示無法載入。
 
 ## kobayashi_yudai
 
 known-as: 沉穩父親
+
+name-aliases: 雄大
 
 ## kobayashi_hina
 
@@ -67,6 +79,8 @@ known-as: 懂事姐姐
 ## shimizu_emi
 
 known-as: 文靜少女
+
+name-aliases: 恵美
 
 - sketchbook: 隨身帶著素描本，在月台上安靜作畫。
 - earphones: 戴著一副復古風格的有線耳機。

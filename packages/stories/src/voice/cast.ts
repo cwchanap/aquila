@@ -28,13 +28,19 @@ export const VoiceCastSchema = z
         roles: z.record(z.string(), VoiceRoleSchema),
         /** Audio tags for single lines that replace the role's own, e.g. a
          *  shout: sceneId -> reader dialogue number (1-based, as in
-         *  `&dialogue=N`) -> tags. */
+         *  `&dialogue=N`) -> the line's zh text and the tags. The zh text pins
+         *  the number to its line, like the voice script does. */
         lineDirections: z
             .record(
                 z.string(),
                 z.record(
                     z.string().regex(/^[1-9]\d*$/),
-                    z.string().trim().min(1)
+                    z
+                        .object({
+                            zh: z.string().min(1),
+                            direction: z.string().trim().min(1),
+                        })
+                        .strict()
                 )
             )
             .optional(),
@@ -144,6 +150,15 @@ export function planVoiceScene(
 ): VoiceScenePlan {
     const uncast = new Set<string>();
     const directions = (sceneId && cast.lineDirections?.[sceneId]) || {};
+    // The zh text pins each number to its line: a line inserted or removed
+    // above it moves the number onto another line, which must fail loudly.
+    for (const [line, { zh }] of Object.entries(directions)) {
+        if (source[Number(line) - 1]?.dialogue !== zh) {
+            throw new Error(
+                `voice-cast.json: lineDirections ${sceneId} line ${line} no longer matches its zh text`
+            );
+        }
+    }
     const slots = source.map((entry, index) => {
         const characterId = entry.characterId;
         if (!characterId) return null;
@@ -156,7 +171,7 @@ export function planVoiceScene(
             entry,
             spoken[index],
             role,
-            directions[index + 1]
+            directions[index + 1]?.direction
         );
         if (text === null) return null;
         return {
@@ -166,8 +181,8 @@ export function planVoiceScene(
             text,
         };
     });
-    // A direction on a line that is not voiced is a stale position (a line was
-    // added or removed), so fail loudly instead of tagging the wrong line.
+    // A pinned line that nothing voices (uncast speaker, silent text) cannot
+    // take a direction either.
     for (const line of Object.keys(directions)) {
         if (!slots[Number(line) - 1]) {
             throw new Error(

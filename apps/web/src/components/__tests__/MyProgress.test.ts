@@ -158,6 +158,40 @@ describe('MyProgress', () => {
         );
     });
 
+    it('retries loading notes after an initial failure when progress updates', async () => {
+        const { loadStoryNotes: actualLoad } = await vi.importActual<
+            typeof import('@aquila/stories/async')
+        >('@aquila/stories/async');
+        const entry = {
+            ...LOCAL_PROGRESS.train_adventure,
+            sceneId: 'act1',
+            dialogueIndex: 8,
+        };
+        saveProgress({ train_adventure: entry });
+        vi.mocked(loadStoryNotes)
+            .mockRejectedValueOnce(new Error('offline'))
+            .mockImplementationOnce(actualLoad);
+
+        renderProgress();
+        await vi.advanceTimersByTimeAsync(0);
+        await tick();
+        expect(
+            screen.getByRole('link', { name: 'Characters' })
+        ).toBeInTheDocument();
+        expect(loadStoryNotes).toHaveBeenCalledTimes(1);
+
+        saveProgress({ train_adventure: { ...entry, dialogueIndex: 4 } });
+        window.dispatchEvent(
+            new PageTransitionEvent('pageshow', { persisted: true })
+        );
+        await vi.advanceTimersByTimeAsync(0);
+        await tick();
+        expect(
+            await screen.findByRole('link', { name: 'Characters 1' })
+        ).toBeInTheDocument();
+        expect(loadStoryNotes).toHaveBeenCalledTimes(2);
+    });
+
     it('recounts from the current owner progress after a cached-page restore', async () => {
         await loadStoryNotes('train_adventure');
         const entry = {
@@ -170,7 +204,7 @@ describe('MyProgress', () => {
         await vi.advanceTimersByTimeAsync(0);
         await tick();
         expect(
-            screen.getByRole('link', { name: 'Characters 2' })
+            await screen.findByRole('link', { name: 'Characters 2' })
         ).toBeInTheDocument();
         saveProgress({ train_adventure: { ...entry, dialogueIndex: 4 } });
         window.dispatchEvent(

@@ -93,21 +93,43 @@ export function compileStoryNotes(
         return undefined;
     }
 
-    const sections = (parsed: ParsedNotes | undefined) =>
-        (parsed?.characters ?? []).filter(s => s.id !== NARRATOR_ID);
-    const enById = new Map(sections(en).map(s => [s.id, s]));
-    const jaById = new Map(sections(ja).map(s => [s.id, s]));
+    for (const [locale, parsed] of [
+        ['zh', zh],
+        ['en', en],
+        ['ja', ja],
+    ] as const) {
+        const narrator = parsed?.getById(NARRATOR_ID);
+        if (narrator) {
+            throw new Error(
+                `[story-compiler] notes/${locale}.md:${narrator.line}: "${NARRATOR_ID}" cannot have a notes section`
+            );
+        }
+    }
+
+    const enById = new Map((en?.characters ?? []).map(s => [s.id, s]));
+    const jaById = new Map((ja?.characters ?? []).map(s => [s.id, s]));
 
     const characters: StoryNoteCharacter[] = [];
-    const zhById = new Map(sections(zh).map(s => [s.id, s]));
+    const nameLabelsById = new Map<string, Set<string>>();
+    const zhById = new Map(zh.characters.map(s => [s.id, s]));
 
-    for (const section of sections(zh)) {
+    for (const section of zh.characters) {
         const info = opts.charDir.getById(section.id);
         if (!info) {
             throw new Error(
                 `[story-compiler] notes/zh.md:${section.line}: unknown character "${section.id}"; add it to docs/characters.md or remove the section`
             );
         }
+        const revealNames = new Set<string>([info.name]);
+        for (const alias of section.nameAliases ?? []) {
+            if (opts.charDir.getIdByName(alias) !== section.id) {
+                throw new Error(
+                    `[story-compiler] notes/zh.md:${section.nameAliasesLine}: name-alias "${alias}" does not resolve to character "${section.id}" in docs/characters.md`
+                );
+            }
+            revealNames.add(alias);
+        }
+        nameLabelsById.set(section.id, revealNames);
         const enSection = enById.get(section.id);
         const jaSection = jaById.get(section.id);
 
@@ -155,7 +177,7 @@ export function compileStoryNotes(
         ['en', en],
         ['ja', ja],
     ] as const) {
-        for (const section of sections(parsed)) {
+        for (const section of parsed?.characters ?? []) {
             const zhSection = zhById.get(section.id);
             if (!zhSection) {
                 throw new Error(
@@ -217,7 +239,9 @@ export function compileStoryNotes(
                 }
                 if (
                     !seenName.has(sceneKey) &&
-                    strip(entry.displayName) === noteCharacter.name.zh
+                    nameLabelsById
+                        .get(entry.characterId)
+                        ?.has(strip(entry.displayName))
                 ) {
                     seenName.add(sceneKey);
                     events.push({

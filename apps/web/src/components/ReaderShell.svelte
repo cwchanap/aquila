@@ -972,10 +972,11 @@
   }
 
   function keepNotesFocus(node: HTMLElement) {
-    // Touching non-focusable sheet content can leave focus on the document body.
+    // Touching non-focusable sheet content—or clicking a button in browsers
+    // that do not focus buttons on click—can leave focus on the document body.
     const focusIfLost = () => {
       if (notesOpen && node.isConnected && document.activeElement === document.body) {
-        node.querySelector('button')?.focus();
+        node.focus();
       }
     };
     void tick().then(focusIfLost);
@@ -1378,9 +1379,10 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="reader-notes-title"
+      tabindex="-1"
       use:focusTrap={{ enabled: true, restoreFocus: overlayFocusTarget }}
       {@attach keepNotesFocus}
-      class="pointer-events-auto flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-sky-200 to-blue-400 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] lg:h-[85vh] lg:w-[95vw] lg:rounded-3xl lg:shadow-2xl"
+      class="pointer-events-auto flex h-full w-full flex-col overflow-hidden bg-gradient-to-b from-sky-200 to-blue-400 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] focus:outline-none lg:h-[85vh] lg:w-[95vw] lg:rounded-3xl lg:shadow-2xl"
     >
       <div class="flex shrink-0 items-center justify-between gap-4">
         <h2 id="reader-notes-title" class="text-xl font-bold text-slate-800">{t.notes.title}</h2>

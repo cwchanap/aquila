@@ -69,11 +69,6 @@ export function buildMirrorScenes(
             sourcePath,
             defaultSpeaker
         );
-        if (parsed.entries.some(e => e.unlocks !== undefined)) {
-            throw new Error(
-                `[story-compiler] ${sourcePath}: translations must not contain unlock markers (they are taken from the zh source)`
-            );
-        }
         if (parsed.entries.some(e => e.expressionKey !== undefined)) {
             throw new Error(
                 `[story-compiler] ${sourcePath}: translations must not contain [expression] tags (they are taken from the zh source)`

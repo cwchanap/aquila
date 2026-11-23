@@ -161,5 +161,42 @@ describe('parseNotesMarkdown', () => {
                 'en'
             )
         ).toThrow(/only zh notes can set "hidden"/);
+        expect(() =>
+            parseNotesMarkdown(
+                ['## li_jie', '', 'name-aliases: 杰'].join('\n'),
+                'notes/en.md',
+                'en'
+            )
+        ).toThrow(/only zh notes can set "name-aliases"/);
+    });
+
+    it('parses and validates name-aliases in zh notes', () => {
+        const parsed = parseNotesMarkdown(
+            ['## tanaka_kenta', '', 'name-aliases: 健太, 田中'].join('\n'),
+            'notes/zh.md',
+            'zh'
+        );
+        expect(parsed.characters[0].nameAliases).toEqual(['健太', '田中']);
+
+        expect(() =>
+            parseNotesMarkdown(
+                ['## tanaka_kenta', '', 'name-aliases:  , '].join('\n'),
+                'notes/zh.md',
+                'zh'
+            )
+        ).toThrow(/at least one comma-separated alias/);
+
+        expect(() =>
+            parseNotesMarkdown(
+                [
+                    '## tanaka_kenta',
+                    '',
+                    'name-aliases: 健太',
+                    'name-aliases: 田中',
+                ].join('\n'),
+                'notes/zh.md',
+                'zh'
+            )
+        ).toThrow(/duplicate name-aliases/);
     });
 });

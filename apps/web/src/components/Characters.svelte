@@ -4,6 +4,7 @@
   import { getTranslations } from '@aquila/stories/translations';
   import type { CharacterNotesCharacterView, CharacterNotesView } from '@/lib/character-notes';
   import { focusTrap } from '@/lib/focus-trap';
+  import { fill } from '@/lib/story-select';
 
   let { model, locale, portraitUrl, onMobileDetailChange }: {
     model: CharacterNotesView;
@@ -30,8 +31,8 @@
   }
 
   function initials(character: CharacterNotesCharacterView): string {
-    if (!character.met || !character.label) return '?';
-    return character.label.trim().split(/\s+/u).slice(0, 2).map(word => Array.from(word)[0] ?? '').join('').toUpperCase() || '?';
+    if (!character.met || !character.label) return t.unmetLabel;
+    return character.label.trim().split(/\s+/u).slice(0, 2).map(word => Array.from(word)[0] ?? '').join('').toUpperCase() || t.unmetLabel;
   }
 
   function portrait(character: CharacterNotesCharacterView): string | null {
@@ -132,14 +133,14 @@
 
 <section class="characters" aria-label={t.title}>
   <div class="cast">
-    <div class="cast-heading"><h2>{t.title}</h2><span>{t.met}: {model.metCount}</span></div>
+    <div class="cast-heading"><h2>{t.title}</h2><span>{fill(t.met, { count: model.metCount })}</span></div>
     <ul>
       {#each characters as character (character.id)}
         <li>
           <button type="button" aria-label={!character.met ? t.unknown : undefined} aria-pressed={selected?.id === character.id} class={{ chosen: selected?.id === character.id }} onclick={event => select(character, event.currentTarget)}>
             {@render avatar(character)}
             <span class="row-text">
-              <strong>{character.met ? label(character) : '?'}</strong>
+              <strong>{character.met ? label(character) : t.unmetLabel}</strong>
               {#if character.met && !character.nameKnown}<small class="unknown-name">{t.nameUnknown}</small>{/if}
               {#if character.met}<small>{character.facts.length} {t.facts}</small>{/if}
             </span>

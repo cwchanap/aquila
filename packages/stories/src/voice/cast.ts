@@ -26,6 +26,18 @@ export const VoiceCastSchema = z
         language: z.string().min(2),
         /** Keyed by compiled characterId; uncast characters stay silent. */
         roles: z.record(z.string(), VoiceRoleSchema),
+        /** Audio tags for single lines that replace the role's own, e.g. a
+         *  shout: sceneId -> reader dialogue number (1-based, as in
+         *  `&dialogue=N`) -> tags. */
+        lineDirections: z
+            .record(
+                z.string(),
+                z.record(
+                    z.string().regex(/^[1-9]\d*$/),
+                    z.string().trim().min(1)
+                )
+            )
+            .optional(),
     })
     .strict();
 export type VoiceCast = z.infer<typeof VoiceCastSchema>;
@@ -91,20 +103,22 @@ const INNER_MARKER = /^\s*[（(][^（）()]*[內内]心[^（）()]*[）)]/;
 const STAGE_DIRECTIONS = /^\s*(?:[（(][^（）()]*[）)]\s*)+/;
 const SPEAKABLE = /[\p{L}\p{N}]/u;
 
-/** The prompt sent to the TTS model for one line, or null if nothing to say. */
+/** The prompt sent to the TTS model for one line, or null if nothing to say.
+ *  `lineDirection` replaces the role's own tags for this line. */
 export function spokenText(
     source: Pick<DialogueEntry, 'dialogue' | 'character'>,
     spoken: string,
-    role: VoiceRole
+    role: VoiceRole,
+    lineDirection?: string
 ): string | null {
     const inner =
         INNER_SPEAKER.test(source.character ?? '') ||
         INNER_MARKER.test(source.dialogue);
     const text = spoken.replace(STAGE_DIRECTIONS, '').replace(/⋯/g, '…').trim();
     if (!SPEAKABLE.test(text)) return null;
-    const direction = inner
-        ? (role.innerDirection ?? role.direction)
-        : role.direction;
+    const direction =
+        lineDirection ??
+        (inner ? (role.innerDirection ?? role.direction) : role.direction);
     return direction ? `${direction} ${text}` : text;
 }
 
@@ -125,9 +139,11 @@ export type VoiceScenePlan = {
 export function planVoiceScene(
     source: readonly DialogueEntry[],
     spoken: readonly string[],
-    cast: VoiceCast
+    cast: VoiceCast,
+    sceneId?: string
 ): VoiceScenePlan {
     const uncast = new Set<string>();
+    const directions = (sceneId && cast.lineDirections?.[sceneId]) || {};
     const slots = source.map((entry, index) => {
         const characterId = entry.characterId;
         if (!characterId) return null;
@@ -136,7 +152,12 @@ export function planVoiceScene(
             uncast.add(characterId);
             return null;
         }
-        const text = spokenText(entry, spoken[index], role);
+        const text = spokenText(
+            entry,
+            spoken[index],
+            role,
+            directions[index + 1]
+        );
         if (text === null) return null;
         return {
             lineId: voiceLineId(role.voiceId, text),
@@ -145,5 +166,14 @@ export function planVoiceScene(
             text,
         };
     });
+    // A direction on a line that is not voiced is a stale position (a line was
+    // added or removed), so fail loudly instead of tagging the wrong line.
+    for (const line of Object.keys(directions)) {
+        if (!slots[Number(line) - 1]) {
+            throw new Error(
+                `voice-cast.json: lineDirections ${sceneId} line ${line} is not a voiced line`
+            );
+        }
+    }
     return { slots, uncast: [...uncast].sort() };
 }

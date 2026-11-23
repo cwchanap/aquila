@@ -49,7 +49,7 @@ question: 為甚麼這段隧道沒有盡頭？
 - A mystery has a question, zero or more clues, and **optional** answer. No invented answers just to demonstrate a solved state. A hidden mystery contributes to count but exposes no name, icon, text, act, aria-label or tooltip before its first open marker.
 - Extend **only zh dialogue source** `unlock` fences with the disjoint namespace below. A marker attaches to the next dialogue entry exactly as it does for characters. Existing `li_jie.age` / `li_jie.met` syntax is unaffected.
 
-```md
+~~~~md
 ```unlock
 mystery.long_tunnel.open
 ```
@@ -61,7 +61,7 @@ mystery.long_tunnel.clue.elapsed_time
 ```unlock
 mystery.long_tunnel.answer
 ```
-```
+~~~~
 
 The last example is allowed **only** when an answer exists in the authored section; it is not required for the pilot's unresolved mysteries.
 

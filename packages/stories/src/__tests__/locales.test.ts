@@ -203,40 +203,49 @@ describe('async story loader text locale', () => {
 describe('Japanese furigana', () => {
     const japanese = REGISTERED_STORY_IDS.filter(id => hasStoryText(id, 'ja'));
 
-    it.each(japanese)('%s has valid readings over its kanji', storyId => {
-        const { dialogue, choices } = getStoryContent(storyId, 'ja');
-        const lines = Object.values(dialogue).flat();
-        const texts: { text: string; ruby?: RubySpan[] }[] = [
-            ...lines.map(e => ({ text: e.dialogue, ruby: e.ruby })),
-            ...Object.values(choices).flatMap(c => [
-                { text: c.prompt, ruby: c.promptRuby },
-                ...c.options.map(o => ({ text: o.label, ruby: o.labelRuby })),
-            ]),
-        ];
-        // Only Japanese lines count: scenes a partial mirror tree has not
-        // translated yet read the zh text, which has no readings.
-        const japaneseLines = lines.filter(e =>
-            /[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(e.dialogue)
-        );
-        expect(japaneseLines.length).toBeGreaterThan(0);
-        expect(
-            japaneseLines.filter(e => e.ruby?.length).length
-        ).toBeGreaterThan(japaneseLines.length / 2);
-        for (const { text, ruby = [] } of texts) {
-            let cursor = 0;
-            for (const span of ruby) {
-                expect(span.start).toBeGreaterThanOrEqual(cursor);
-                expect(span.end).toBeGreaterThan(span.start);
-                expect(span.end).toBeLessThanOrEqual(text.length);
-                expect(text.slice(span.start, span.end)).toMatch(
-                    /[\p{Script=Han}々]/u
-                );
-                expect(span.reading).toMatch(/^[ぁ-ゖー]+$/);
-                cursor = span.end;
+    // train_adventure alone asserts ~700k expectations over 117k ruby spans;
+    // the 5s default is too tight on slower machines.
+    it.each(japanese)(
+        '%s has valid readings over its kanji',
+        storyId => {
+            const { dialogue, choices } = getStoryContent(storyId, 'ja');
+            const lines = Object.values(dialogue).flat();
+            const texts: { text: string; ruby?: RubySpan[] }[] = [
+                ...lines.map(e => ({ text: e.dialogue, ruby: e.ruby })),
+                ...Object.values(choices).flatMap(c => [
+                    { text: c.prompt, ruby: c.promptRuby },
+                    ...c.options.map(o => ({
+                        text: o.label,
+                        ruby: o.labelRuby,
+                    })),
+                ]),
+            ];
+            // Only Japanese lines count: scenes a partial mirror tree has not
+            // translated yet read the zh text, which has no readings.
+            const japaneseLines = lines.filter(e =>
+                /[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(e.dialogue)
+            );
+            expect(japaneseLines.length).toBeGreaterThan(0);
+            expect(
+                japaneseLines.filter(e => e.ruby?.length).length
+            ).toBeGreaterThan(japaneseLines.length / 2);
+            for (const { text, ruby = [] } of texts) {
+                let cursor = 0;
+                for (const span of ruby) {
+                    expect(span.start).toBeGreaterThanOrEqual(cursor);
+                    expect(span.end).toBeGreaterThan(span.start);
+                    expect(span.end).toBeLessThanOrEqual(text.length);
+                    expect(text.slice(span.start, span.end)).toMatch(
+                        /[\p{Script=Han}々]/u
+                    );
+                    expect(span.reading).toMatch(/^[ぁ-ゖー]+$/);
+                    cursor = span.end;
+                }
+                expect(text).not.toMatch(/｜[^｜《》]+《[^｜《》]+》/);
             }
-            expect(text).not.toMatch(/｜[^｜《》]+《[^｜《》]+》/);
-        }
-    });
+        },
+        30_000
+    );
 
     it('is only on Japanese text', () => {
         for (const storyId of REGISTERED_STORY_IDS) {

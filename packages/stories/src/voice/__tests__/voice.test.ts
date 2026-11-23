@@ -189,6 +189,7 @@ describe('planVoiceScene', () => {
             { characterId: 'narrator', dialogue: '(小聲)嗯。' },
         ];
         const spoken = ['ナレーション。', '誰かいますか？', 'うん。'];
+        const shout = { zh: '(大喊)有人嗎？', direction: '[shouting]' };
         const withDirections = (lineDirections: object) =>
             parseVoiceCast({
                 ...cast({ narrator: { ...role, direction: '[calm]' } }),
@@ -196,7 +197,7 @@ describe('planVoiceScene', () => {
             });
 
         it('replaces the role tags on the numbered line of that scene only', () => {
-            const cast = withDirections({ act8: { '2': '[shouting]' } });
+            const cast = withDirections({ act8: { '2': shout } });
             const texts = (sceneId?: string) =>
                 planVoiceScene(source, spoken, cast, sceneId).slots.map(
                     slot => slot?.text
@@ -217,25 +218,51 @@ describe('planVoiceScene', () => {
             ).toBe(voiceLineId('v1', '[shouting] 誰かいますか？'));
         });
 
-        it('fails on a direction for a line that is not voiced', () => {
-            const plan = (line: string) =>
+        it('fails when a line inserted above moves the number onto another voiced line', () => {
+            const cast = withDirections({ act8: { '2': shout } });
+            const inserted = [
+                source[0],
+                { characterId: 'narrator', dialogue: '(新)插入的一行。' },
+                source[1],
+                source[2],
+            ];
+            // Both old positions still hold voiced lines, so only the zh pin
+            // can tell that the shout would land on the inserted line.
+            expect(() =>
                 planVoiceScene(
-                    source,
-                    ['ナレーション。', '', 'うん。'],
-                    withDirections({ act8: { [line]: '[shouting]' } }),
+                    inserted,
+                    ['ナレーション。', '挿入。', '誰かいますか？', 'うん。'],
+                    cast,
                     'act8'
-                );
-            expect(() => plan('2')).toThrow('act8 line 2 is not a voiced line');
-            expect(() => plan('4')).toThrow('act8 line 4 is not a voiced line');
-            expect(() => plan('3')).not.toThrow();
+                )
+            ).toThrow('act8 line 2 no longer matches its zh text');
         });
 
-        it('wants 1-based line numbers', () => {
+        it('fails on a line that is gone or has nothing to say', () => {
+            const plan = (lines: typeof source, line: string, zh: string) =>
+                planVoiceScene(
+                    lines,
+                    ['ナレーション。', '誰かいますか？', '……'],
+                    withDirections({ act8: { [line]: { ...shout, zh } } }),
+                    'act8'
+                );
+            expect(() => plan(source, '4', '(小聲)嗯。')).toThrow(
+                'act8 line 4 no longer matches its zh text'
+            );
+            // The line is there and pinned, but its spoken text is silent.
+            expect(() => plan(source, '3', '(小聲)嗯。')).toThrow(
+                'act8 line 3 is not a voiced line'
+            );
+        });
+
+        it('wants 1-based line numbers and a zh pin with every direction', () => {
+            expect(() => withDirections({ act8: { '0': shout } })).toThrow();
+            expect(() => withDirections({ act8: { two: shout } })).toThrow();
             expect(() =>
-                withDirections({ act8: { '0': '[shouting]' } })
+                withDirections({ act8: { '2': '[shouting]' } })
             ).toThrow();
             expect(() =>
-                withDirections({ act8: { two: '[shouting]' } })
+                withDirections({ act8: { '2': { direction: '[shouting]' } } })
             ).toThrow();
         });
     });
@@ -545,29 +572,39 @@ describe('runVoiceCli', () => {
         );
     });
 
-    it('rejects line directions for a scene the story does not have', async () => {
+    it('rejects line directions for a scene with no spoken text', async () => {
         const rawRoot = tempDir();
-        rawStory(rawRoot, 'elevator', 'elevator_game');
-        writeFileSync(
-            join(rawRoot, 'elevator', 'docs', 'voice-cast.json'),
-            JSON.stringify({
-                ...cast(),
-                lineDirections: { nope: { '1': '[shouting]' } },
-            })
-        );
-        await expect(
-            runVoiceCli(
+        const run = (scene: string) => {
+            rawStory(rawRoot, 'train', 'train_adventure');
+            writeFileSync(
+                join(rawRoot, 'train', 'docs', 'voice-cast.json'),
+                JSON.stringify({
+                    ...cast(),
+                    lineDirections: {
+                        [scene]: { '1': { zh: 'x', direction: '[shouting]' } },
+                    },
+                })
+            );
+            return runVoiceCli(
                 [
                     'generate',
                     '--story',
-                    'elevator',
+                    'train',
                     '--scene',
-                    'act1',
+                    'b1a_b2a_act8',
                     '--dry-run',
                 ],
                 { rawRoot, log: () => {} }
-            )
-        ).rejects.toThrow('lineDirections names nope');
+            );
+        };
+        // No such scene at all, and a real scene the ja tree has not
+        // translated (no voice script either): neither can take a direction.
+        await expect(run('nope')).rejects.toThrow(
+            'lineDirections names nope, which has no ja text'
+        );
+        await expect(run('b1a_b2b_b3b_b4b_b5a_b6d_act72')).rejects.toThrow(
+            'lineDirections names b1a_b2b_b3b_b4b_b5a_b6d_act72, which has no ja text'
+        );
     });
 
     it('reminds you to register a story the reader does not voice yet', async () => {

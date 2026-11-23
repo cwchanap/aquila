@@ -203,13 +203,6 @@ async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
     const storyId = config.default.storyId;
     const dialogue = getStoryContent(storyId, 'zh').dialogue;
     const spoken: Record<string, string[]> = {};
-    for (const scene of Object.keys(cast.lineDirections ?? {})) {
-        if (!dialogue[scene]) {
-            throw new Error(
-                `${castPath}: lineDirections names ${scene}, which ${storyId} does not have`
-            );
-        }
-    }
 
     if (hasStoryText(storyId, cast.language)) {
         // A partial mirror tree reads the zh file for scenes it has not
@@ -232,7 +225,19 @@ async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
         'docs',
         `voice-script.${cast.language}.json`
     );
-    if (!existsSync(scriptPath)) return { storyId, cast, dialogue, spoken };
+    // A direction can only tag a line that is spoken, so its scene needs
+    // spoken text (reader text or voice script), not just zh dialogue.
+    const finish = (): VoiceStory => {
+        for (const scene of Object.keys(cast.lineDirections ?? {})) {
+            if (!spoken[scene]) {
+                throw new Error(
+                    `${castPath}: lineDirections names ${scene}, which has no ${cast.language} text in ${storyId}`
+                );
+            }
+        }
+        return { storyId, cast, dialogue, spoken };
+    };
+    if (!existsSync(scriptPath)) return finish();
     const script = VoiceScriptSchema.parse(
         JSON.parse(readFileSync(scriptPath, 'utf8'))
     );
@@ -252,7 +257,7 @@ async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
         }
         spoken[scene] = lines.map(line => line[cast.language] ?? '');
     }
-    return { storyId, cast, dialogue, spoken };
+    return finish();
 }
 
 function planScenes(

@@ -89,8 +89,14 @@
   },
   "lineDirections": {
     "b1a_b2a_act8": {
-      "10": "[shouting]",
-      "11": "[shouting] [trembling voice]"
+      "10": {
+        "zh": "(朝著前方的濃霧大喊)大叔！你們在哪裡？",
+        "direction": "[shouting]"
+      },
+      "11": {
+        "zh": "(也鼓起勇氣，用顫抖的聲音喊道)有人在嗎——？",
+        "direction": "[shouting] [trembling voice]"
+      }
     }
   }
 }

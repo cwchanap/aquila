@@ -514,16 +514,7 @@ test.describe('phone character notes', () => {
         // Focus wraps within the outer sheet: Shift+Tab from the sheet
         // container lands on the last control, and Tab returns to Close.
         await page.keyboard.press('Shift+Tab');
-        expect(
-            await sheet.evaluate(element =>
-                element.contains(document.activeElement)
-            )
-        ).toBe(true);
-        expect(
-            await page.evaluate(() =>
-                document.activeElement?.getAttribute('aria-label')
-            )
-        ).not.toBe(notesT.close);
+        await expect(sheet.locator('.cast button').last()).toBeFocused();
         await page.keyboard.press('Tab');
         await expect(close).toBeFocused();
 

@@ -75,6 +75,7 @@ interface FixtureOptions {
     notesEn?: string;
     enAct1?: string;
     branches?: { a: string; b: string };
+    charactersMd?: string;
 }
 
 const tempDirs: string[] = [];
@@ -83,7 +84,10 @@ function makeFixture(opts: FixtureOptions = {}): string {
     const rawDir = mkdtempSync(join(tmpdir(), 'notes-'));
     tempDirs.push(rawDir);
     mkdirSync(join(rawDir, 'docs'), { recursive: true });
-    writeFileSync(join(rawDir, 'docs', 'characters.md'), charactersMd);
+    writeFileSync(
+        join(rawDir, 'docs', 'characters.md'),
+        opts.charactersMd ?? charactersMd
+    );
     writeFileSync(
         join(rawDir, 'docs', 'audio-plan.json'),
         JSON.stringify({ schemaVersion: 1, assets: [] })
@@ -268,6 +272,34 @@ describe('compileStory notes', () => {
             compile(aliasedDir, { writeOutputs: false })
         );
         expect(eventsFor(aliasedNotes, 'emi', 'name')).toEqual([
+            {
+                sceneId: 'act1',
+                entryIndex: 0,
+                characterId: 'emi',
+                kind: 'name',
+            },
+        ]);
+    });
+
+    it('emits a name event for a name-alias registered with a suffix', () => {
+        const rawDir = makeFixture({
+            charactersMd: [
+                '## 1. 旁白（Narrator）',
+                '',
+                '- **ID**: `narrator`',
+                '',
+                '## 2. 文靜少女（Quiet Girl）',
+                '',
+                '- **ID**: `emi`',
+                '',
+                '- **Aliases**: 短髮少女的聲音',
+            ].join('\n'),
+            act1: ['# 第一幕', '', '**短髮少女的聲音**：她說話了。'].join('\n'),
+            notesZh: ['## emi', '', 'name-aliases: 短髮少女的聲音'].join('\n'),
+        });
+        const notes = notesOf(compile(rawDir, { writeOutputs: false }));
+
+        expect(eventsFor(notes, 'emi', 'name')).toEqual([
             {
                 sceneId: 'act1',
                 entryIndex: 0,

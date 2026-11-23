@@ -122,6 +122,29 @@ describe('spokenText', () => {
         ).toBe('[softly] かぶ。');
     });
 
+    it('lets a line direction replace the role tags, inner monologue included', () => {
+        const shy = { ...role, direction: '[shy]', innerDirection: '[softly]' };
+        expect(
+            spokenText(
+                { dialogue: '(大喊)有人嗎——？' },
+                '（叫ぶ）誰か、いませんか――？',
+                shy,
+                '[shouting] [trembling voice]'
+            )
+        ).toBe('[shouting] [trembling voice] 誰か、いませんか――？');
+        expect(
+            spokenText(
+                { dialogue: '（內心）好。' },
+                '（心の声）はい。',
+                shy,
+                '[shouting]'
+            )
+        ).toBe('[shouting] はい。');
+        expect(spokenText({ dialogue: '好。' }, 'はい。', shy)).toBe(
+            '[shy] はい。'
+        );
+    });
+
     it('normalizes ellipses and skips lines with nothing to say', () => {
         expect(spokenText({ dialogue: '' }, 'だめ⋯⋯', role)).toBe('だめ……');
         expect(spokenText({ dialogue: '' }, '⋯⋯', role)).toBeNull();
@@ -157,6 +180,64 @@ describe('planVoiceScene', () => {
 
     it('rejects a cast file with unknown fields', () => {
         expect(() => parseVoiceCast({ ...cast(), extra: 1 })).toThrow();
+    });
+
+    describe('line directions', () => {
+        const source = [
+            { characterId: 'narrator', dialogue: '旁白。' },
+            { characterId: 'narrator', dialogue: '(大喊)有人嗎？' },
+            { characterId: 'narrator', dialogue: '(小聲)嗯。' },
+        ];
+        const spoken = ['ナレーション。', '誰かいますか？', 'うん。'];
+        const withDirections = (lineDirections: object) =>
+            parseVoiceCast({
+                ...cast({ narrator: { ...role, direction: '[calm]' } }),
+                lineDirections,
+            });
+
+        it('replaces the role tags on the numbered line of that scene only', () => {
+            const cast = withDirections({ act8: { '2': '[shouting]' } });
+            const texts = (sceneId?: string) =>
+                planVoiceScene(source, spoken, cast, sceneId).slots.map(
+                    slot => slot?.text
+                );
+            expect(texts('act8')).toEqual([
+                '[calm] ナレーション。',
+                '[shouting] 誰かいますか？',
+                '[calm] うん。',
+            ]);
+            expect(texts('act9')).toEqual([
+                '[calm] ナレーション。',
+                '[calm] 誰かいますか？',
+                '[calm] うん。',
+            ]);
+            // A new tag is a new take: the line id follows the prompt.
+            expect(
+                planVoiceScene(source, spoken, cast, 'act8').slots[1]?.lineId
+            ).toBe(voiceLineId('v1', '[shouting] 誰かいますか？'));
+        });
+
+        it('fails on a direction for a line that is not voiced', () => {
+            const plan = (line: string) =>
+                planVoiceScene(
+                    source,
+                    ['ナレーション。', '', 'うん。'],
+                    withDirections({ act8: { [line]: '[shouting]' } }),
+                    'act8'
+                );
+            expect(() => plan('2')).toThrow('act8 line 2 is not a voiced line');
+            expect(() => plan('4')).toThrow('act8 line 4 is not a voiced line');
+            expect(() => plan('3')).not.toThrow();
+        });
+
+        it('wants 1-based line numbers', () => {
+            expect(() =>
+                withDirections({ act8: { '0': '[shouting]' } })
+            ).toThrow();
+            expect(() =>
+                withDirections({ act8: { two: '[shouting]' } })
+            ).toThrow();
+        });
     });
 });
 
@@ -462,6 +543,31 @@ describe('runVoiceCli', () => {
         expect(lines.at(-1)).toMatch(
             /0 written, 0 already voiced, 0 orphaned; uncast: /
         );
+    });
+
+    it('rejects line directions for a scene the story does not have', async () => {
+        const rawRoot = tempDir();
+        rawStory(rawRoot, 'elevator', 'elevator_game');
+        writeFileSync(
+            join(rawRoot, 'elevator', 'docs', 'voice-cast.json'),
+            JSON.stringify({
+                ...cast(),
+                lineDirections: { nope: { '1': '[shouting]' } },
+            })
+        );
+        await expect(
+            runVoiceCli(
+                [
+                    'generate',
+                    '--story',
+                    'elevator',
+                    '--scene',
+                    'act1',
+                    '--dry-run',
+                ],
+                { rawRoot, log: () => {} }
+            )
+        ).rejects.toThrow('lineDirections names nope');
     });
 
     it('reminds you to register a story the reader does not voice yet', async () => {

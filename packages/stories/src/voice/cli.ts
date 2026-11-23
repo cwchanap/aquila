@@ -203,6 +203,13 @@ async function loadVoiceStory(rawDir: string): Promise<VoiceStory> {
     const storyId = config.default.storyId;
     const dialogue = getStoryContent(storyId, 'zh').dialogue;
     const spoken: Record<string, string[]> = {};
+    for (const scene of Object.keys(cast.lineDirections ?? {})) {
+        if (!dialogue[scene]) {
+            throw new Error(
+                `${castPath}: lineDirections names ${scene}, which ${storyId} does not have`
+            );
+        }
+    }
 
     if (hasStoryText(storyId, cast.language)) {
         // A partial mirror tree reads the zh file for scenes it has not
@@ -258,7 +265,8 @@ function planScenes(
         const plan = planVoiceScene(
             story.dialogue[scene],
             story.spoken[scene],
-            story.cast
+            story.cast,
+            scene
         );
         slots[scene] = plan.slots;
         plan.uncast.forEach(id => uncast.add(id));

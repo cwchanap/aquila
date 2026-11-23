@@ -52,6 +52,7 @@ Casting rules:
 - One voice per character for the whole story. Recasting gives every one of that character's lines a new id, so they all need new takes.
 - Narration stays silent: don't cast a `narrator` role. Voice is for characters and inner monologue only (Hapadona's call, 2026-10-28).
 - `direction` is an audio tag put before every line, e.g. `[whispers]`. `innerDirection` is the tag for `（內心）` inner monologue, e.g. `[softly]`. Tags describe *how a line is spoken*, never stage actions. Keep them to one or two plain words.
+- `lineDirections` (optional, top level of `voice-cast.json`) swaps the tags on single lines, e.g. a shout from a shy or quiet character: `{ "<sceneId>": { "<n>": "[shouting]" } }`, where `n` is the reader's 1-based dialogue number (`&dialogue=n`). It replaces the role's `direction` or `innerDirection` for that line and must point at a voiced line, so a line added above it fails `generate` and `voice:check` instead of tagging the wrong line. The new prompt is a new line id: generate the take, then `--prune` the old one. Leveling still brings a shout to -20 LUFS, so it differs from speech in pitch and timbre, not in volume.
 - Role ids come from `compiler.config.ts` `rolePatterns`. `voice` catches every `…聲音` speaker. If a chapter has a different "voice" speaker that needs its own sound, add a dedicated role pattern first and recompile.
 - Leave `message` (texts on phone screens, notes) uncast unless the scene really reads them aloud.
 

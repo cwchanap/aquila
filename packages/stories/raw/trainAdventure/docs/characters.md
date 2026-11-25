@@ -66,7 +66,7 @@
 
 ### Portrait Prompts
 
-- **base**: anime visual-novel portrait, late-40s Japanese man, short dark hair with grey at the temples, sturdy dependable build, warm gentle patient eyes, small laugh lines, rumpled grey suit jacket with loosened tie, calm reassuring expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
+- **base**: anime visual-novel portrait, late-40s Japanese man, short dark hair with grey at the temples, sturdy dependable build, warm gentle patient eyes, small laugh lines, olive-khaki cotton chore jacket with chest pockets worn open over a cream henley shirt with the top button open, no tie, no blazer, no glasses, calm reassuring expression, soft cool late-night subway-platform light, muted palette, upper-body shot, clean background
 
 ## 9. 伊藤奈々（Ito Nana）
 

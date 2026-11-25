@@ -92,6 +92,7 @@ After the act 3 choice the story splits: in branch 1a Li Jie gets off at Jishui 
 These are settled from the story text and hold in every image, acts 1-8:
 
 - **Emi's shoes:** plain white canvas sneakers (act 1 describes 白色帆布鞋). Her portrait stops at the waist, so name them in any prompt that shows her feet.
+- **Yamamoto's outfit:** casual, not a suit (changed from a grey suit and navy striped tie on 2026-11-25): an olive-khaki cotton chore jacket with chest pockets, worn open, over a cream henley shirt with the top button open; dark chinos and plain dark shoes (no tie, no blazer, no glasses). The jacket is an outer layer on purpose: he takes it off in later acts. It must match the portrait; shots drawn before the change still show the grey suit until they are redone.
 - **Yamamoto's bag:** a dark messenger bag on his shoulder. He grabs it when he rallies the carriage in act 5 and carries it on the platform; in act 6 he leaves it in the waiting room and picks it up again before he follows the students.
 - **Lanterns:** unlit in act 3 (the text has no light outside the train) and glowing faintly from b1a_act4_lijie_stands on, when the text has them lighting the platform. The act 3 images reused at the start of act 4 still show them unlit, before Li Jie looks out.
 - **Expressions:** the portraits smile, so any prompt that passes Li Jie's or Emi's portrait states the wanted expression and says "not smiling" unless the beat is a happy one.

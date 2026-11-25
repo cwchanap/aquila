@@ -34,7 +34,7 @@ One row per cast member, head to toe. The portraits stop at the chest or waist, 
 | --- | --- | --- | --- |
 | Li Jie | Dark suit jacket, white shirt open at the collar, loosened navy tie, short black hair | Dark trousers, black dress shoes | Black backpack |
 | Emi | Light beige cotton dress, long chestnut hair | Dress hem at mid-calf with the calves bare, plain white canvas sneakers | Cream canvas shoulder bag (from branch 1a act 9; the earphones and sketchbook are train-only) |
-| Asuka | High brown ponytail, denim jacket over a white top | Wide light-blue jeans, white sneakers | None |
+| Asuka | High brown ponytail, denim jacket over a white top | Tight slim-fit light-blue jeans (skinny cut, snug from hip to ankle, not wide or loose), white sneakers | None |
 | Misaki | Dark plum chin-length bob, lavender cardigan over a cream blouse | Long lilac floral skirt, white sneakers | Cream shoulder bag |
 | Kenta | Messy light-brown hair, black-and-grey colour-block track jacket over a white graphic tee | Black cargo pants, white chunky sneakers | None |
 | Takumi | Short black hair, black knit sweater | Black trousers, plain black sneakers | None |
@@ -49,7 +49,7 @@ One row per cast member, head to toe. The portraits stop at the chest or waist, 
 | Kobayashi Hina | Blue sleeveless dress with a light cardigan, two low pigtails | Dress hem at mid-calf, white sneakers with white socks | None |
 | Kobayashi Shota | Navy t-shirt, mop of black hair | Dark shorts, dark sneakers | None |
 
-Choices made when this table was written, because the text and the art disagreed or were silent: Asuka in jeans (the portrait and every acts 1-6 shot have them; the one line of prose that describes her, branch 1b/2a act 13, says short skirt and jacket and needs a one-sentence edit to match); Emi's hem at mid-calf (act 1 only says the hem rests on her knees with the calves bare, seated); Nana's skirt, Tomoko's and Nana's shoes, Kenta's, Takumi's and Saito's shoes, and Shota's shoes are new, picked to match what the images show and to keep Nana and Tomoko apart.
+Choices made when this table was written, because the text and the art disagreed or were silent: Asuka in jeans (the portrait and every acts 1-6 shot have them; the one line of prose that describes her, branch 1b/2a act 13, says short skirt and jacket and needs a one-sentence edit to match). Hapadona then chose a tight, slim fit for them on 2026-11-24; the acts 1-6 shots and some prompts still say or show wide jeans until they are redrawn, so use the sheet and this row, not those. Also: Emi's hem at mid-calf (act 1 only says the hem rests on her knees with the calves bare, seated); Nana's skirt, Tomoko's and Nana's shoes, Kenta's, Takumi's and Saito's shoes, and Shota's shoes are new, picked to match what the images show and to keep Nana and Tomoko apart.
 
 ## Camera angles and framing
 

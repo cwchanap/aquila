@@ -468,7 +468,7 @@ Line numbers count every `**X**：` line in the act from 1. Only Li Jie is in vi
 | b1b_b2a_act13_unease (L27) | The blurred figure, the man in black | wide, low, from behind | Li Jie small, staring into the black forest |
 | b1b_b2a_act13_following (L34) | He follows the prints for half an hour | wide, high, from behind and above | Li Jie small between huge trunks |
 | b1b_b2a_act13_chaotic (L37) | The prints turn chaotic and end | medium close, high | Li Jie crouched at the churned earth |
-| b1b_b2a_act13_asuka (L46) | He kneels beside the figure, it is not Tomoko | medium close, high, over his shoulder | Li Jie frozen, Asuka dead, non-graphic |
+| b1b_b2a_act13_asuka (L47) | He kneels beside the figure and freezes, it is not Tomoko | medium close, high, over his shoulder | Li Jie frozen, Asuka dead, non-graphic |
 | b1b_b2a_act13_breath (L57) | He checks her breath: none | close-up detail, low | Asuka's face, Li Jie's two fingers |
 | b1b_b2a_act13_stand_look (L64) | "小林女士呢?" He stands, nobody else | wide, low, from behind | Li Jie small in the glade, the body soft at his feet |
 | reuse b1b_b2a_act13_asuka (act 14 L1) | He kneels by the body, questions | (the existing shot) | |

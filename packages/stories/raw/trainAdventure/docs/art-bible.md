@@ -33,7 +33,7 @@ One row per cast member, head to toe. The portraits stop at the chest or waist, 
 | Character | Top and hair | Bottoms and shoes | Carried |
 | --- | --- | --- | --- |
 | Li Jie | Dark suit jacket, white shirt open at the collar, loosened navy tie, short black hair | Dark trousers, black dress shoes | Black backpack |
-| Emi | Light beige cotton dress, long chestnut hair | Dress hem at mid-calf with the calves bare, plain white canvas sneakers | Cream canvas shoulder bag (carried since the train, see the Emi bag note under Continuity details; the earphones and sketchbook are her look on the Shinjuku platform and the train, and are off from branch 1a act 4 on) |
+| Emi | Light beige cotton dress, long chestnut hair | Dress hem at mid-calf with the calves bare, plain white canvas sneakers | Cream canvas shoulder bag (carried since the train, see the Emi bag note under Continuity details; the earphones and sketchbook are her look on the Shinjuku platform and the train, and mostly off once she is on the Jishui platform; the exact shots are in the Emi earphone and sketchbook notes under Continuity details) |
 | Asuka | High brown ponytail, denim jacket over a white top | Tight slim-fit light-blue jeans (skinny cut, snug from hip to ankle, not wide or loose), white sneakers | None |
 | Misaki | Dark plum chin-length bob, lavender cardigan over a cream blouse | Long lilac floral skirt, white sneakers | Cream shoulder bag |
 | Kenta | Messy light-brown hair, black-and-grey colour-block track jacket over a white graphic tee | Black cargo pants, white chunky sneakers | None |

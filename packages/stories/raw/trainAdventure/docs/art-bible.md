@@ -26,6 +26,31 @@ It is a near-empty last train, so the passengers sit group by group with empty s
 
 The "end seat" is the first seat of the nearest section, against the partition beside the door at the door end, so Emi and Saito sit directly across the aisle from each other. Anyone shown standing stands near their own seat, unless the beat needs them elsewhere (Yamamoto at the window in act3_s3 and by the door in act3_s4). Emi and Li Jie sit side by side but are strangers in acts 1-3: he only glances at her, never leans in, and she never looks back at him.
 
+## Outfits
+
+One row per cast member, head to toe. The portraits stop at the chest or waist, so the bottoms and shoes below were never drawn anywhere before; they are what the approved backgrounds already show, written down once. Any prompt that can show a character's legs or feet should name the bottoms and shoes from this table, and the full-body sheets under `backgrounds/_reference/` (`outfits_*.png`) show them. Scene states (Tomoko's torn skirt and scraped knee in branch 1b, Emi's robe in act 10) sit on top of these and are not part of the reference.
+
+| Character | Top and hair | Bottoms and shoes | Carried |
+| --- | --- | --- | --- |
+| Li Jie | Dark suit jacket, white shirt open at the collar, loosened navy tie, short black hair | Dark trousers, black dress shoes | Black backpack |
+| Emi | Light beige cotton dress, long chestnut hair | Dress hem at mid-calf with the calves bare, plain white canvas sneakers | Cream canvas shoulder bag (from branch 1a act 9; the earphones and sketchbook are train-only) |
+| Asuka | High brown ponytail, denim jacket over a white top | Wide light-blue jeans, white sneakers | None |
+| Misaki | Dark plum chin-length bob, lavender cardigan over a cream blouse | Long lilac floral skirt, white sneakers | Cream shoulder bag |
+| Kenta | Messy light-brown hair, black-and-grey colour-block track jacket over a white graphic tee | Black cargo pants, white chunky sneakers | None |
+| Takumi | Short black hair, black knit sweater | Black trousers, plain black sneakers | None |
+| Saito | Thin silver-frame glasses, navy blazer over a plain white tee | Dark trousers, dark leather shoes | None |
+| Yamamoto | Olive-khaki cotton chore jacket worn open over a cream henley, grey-streaked hair, no glasses, no tie | Dark chinos, plain dark shoes | Dark messenger bag |
+| Ling Mo | Black hooded sweatshirt, hood low over the face | Black trousers, black shoes | None |
+| Nakamura | Crumpled navy suit a size too big, crooked loosened tie, receding thin hair, no glasses; looks about 45 | Suit trousers, dark leather shoes | None |
+| Ito Makoto | White shirt with the sleeves rolled up, loosened navy striped tie, grey at the temples | Dark trousers with a belt, black leather shoes | None |
+| Ito Nana | Grey cardigan over a light blouse, shoulder-length dark hair | Long dark navy skirt, dark flat shoes | None |
+| Kobayashi Tomoko | Cream cable-knit cardigan over a lavender top, long dark hair tied low over one shoulder | Long mauve skirt, brown flat shoes | None |
+| Kobayashi Yudai | Light grey zip-up jacket with a collar (not a hoodie) over a polo, short neat black hair | Dark trousers, black shoes | None |
+| Kobayashi Hina | Blue sleeveless dress with a light cardigan, two low pigtails | Dress hem at mid-calf, white sneakers with white socks | None |
+| Kobayashi Shota | Navy t-shirt, mop of black hair | Dark shorts, dark sneakers | None |
+
+Choices made when this table was written, because the text and the art disagreed or were silent: Asuka in jeans (the portrait and every acts 1-6 shot have them; the one line of prose that describes her, branch 1b/2a act 13, says short skirt and jacket and needs a one-sentence edit to match); Emi's hem at mid-calf (act 1 only says the hem rests on her knees with the calves bare, seated); Nana's skirt, Tomoko's and Nana's shoes, Kenta's, Takumi's and Saito's shoes, and Shota's shoes are new, picked to match what the images show and to keep Nana and Tomoko apart.
+
 ## Camera angles and framing
 
 Vary both the camera position and the distance from scene to scene; never run the same framing twice in a row. The empty reference images under `packages/assets/media/train_adventure/backgrounds/_reference/` fix the platform and carriage design: pass the closest one first, then the portraits of the people in the shot (the four students as one sheet, left to right Kenta, Asuka, Misaki, Takumi, so a crowded shot stays within about five images).

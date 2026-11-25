@@ -39,7 +39,7 @@ One row per cast member, head to toe. The portraits stop at the chest or waist, 
 | Kenta | Messy light-brown hair, black-and-grey colour-block track jacket over a white graphic tee | Black cargo pants, white chunky sneakers | None |
 | Takumi | Short black hair, black knit sweater | Black trousers, plain black sneakers | None |
 | Saito | Thin silver-frame glasses, navy blazer over a plain white tee | Dark trousers, dark leather shoes | None |
-| Yamamoto | Olive-khaki cotton chore jacket worn open over a cream henley, grey-streaked hair, no glasses, no tie | Dark chinos, plain dark shoes | Dark messenger bag |
+| Yamamoto | Olive-khaki cotton chore jacket worn open over a cream henley, grey-streaked hair, no glasses, no tie | Dark brown chinos, plain dark brown lace-up shoes | Dark messenger bag |
 | Ling Mo | Black hooded sweatshirt, hood low over the face | Black trousers, black shoes | None |
 | Nakamura | Crumpled navy suit a size too big, crooked loosened tie, receding thin hair, no glasses; looks about 45 | Suit trousers, dark leather shoes | None |
 | Ito Makoto | White shirt with the sleeves rolled up, loosened navy striped tie, grey at the temples | Dark trousers with a belt, black leather shoes | None |
@@ -49,7 +49,7 @@ One row per cast member, head to toe. The portraits stop at the chest or waist, 
 | Kobayashi Hina | Blue sleeveless dress with a light cardigan, two low pigtails | Dress hem at mid-calf, white sneakers with white socks | None |
 | Kobayashi Shota | Navy t-shirt, mop of black hair | Dark shorts, dark sneakers | None |
 
-Choices made when this table was written, because the text and the art disagreed or were silent: Asuka in jeans (the portrait and every acts 1-6 shot have them; the one line of prose that describes her, branch 1b/2a act 13, says short skirt and jacket and needs a one-sentence edit to match). Hapadona then chose a tight, slim fit for them on 2026-11-24; the acts 1-6 shots and some prompts still say or show wide jeans until they are redrawn, so use the sheet and this row, not those. Also: Emi's hem at mid-calf (act 1 only says the hem rests on her knees with the calves bare, seated); Nana's skirt, Tomoko's and Nana's shoes, Kenta's, Takumi's and Saito's shoes, and Shota's shoes are new, picked to match what the images show and to keep Nana and Tomoko apart.
+Choices made when this table was written, because the text and the art disagreed or were silent: Asuka in jeans (the portrait and every acts 1-6 shot have them; the one line of prose that describes her, branch 1b/2a act 13, says short skirt and jacket and needs a one-sentence edit to match). Hapadona then chose a tight, slim fit for them on 2026-11-24; the acts 1-6 shots and some prompts still say or show wide jeans until they are redrawn, so use the sheet and this row, not those. Also: Yamamoto's jacket and henley follow his casual-outfit portrait (changed from the grey suit on 2026-11-25; the shots drawn before it still show the suit until they are redone), and his chinos and shoes are dark brown, as drawn on `outfits_loners.png`; Emi's hem at mid-calf (act 1 only says the hem rests on her knees with the calves bare, seated); Nana's skirt, Tomoko's and Nana's shoes, Kenta's, Takumi's and Saito's shoes, and Shota's shoes are new, picked to match what the images show and to keep Nana and Tomoko apart.
 
 ## Camera angles and framing
 

@@ -39,7 +39,7 @@ One row per cast member, head to toe. The portraits stop at the chest or waist, 
 | Kenta | Messy light-brown hair, black-and-grey colour-block track jacket over a white graphic tee | Black cargo pants, white chunky sneakers | None |
 | Takumi | Short black hair, black knit sweater | Black trousers, plain black sneakers | None |
 | Saito | Thin silver-frame glasses, navy blazer over a plain white tee | Dark trousers, dark leather shoes | None |
-| Yamamoto | Olive-khaki cotton chore jacket worn open over a cream henley, grey-streaked hair, no glasses, no tie | Dark brown chinos, plain dark brown lace-up shoes | Dark messenger bag |
+| Yamamoto | Olive-khaki cotton chore jacket worn open over a cream henley, grey-streaked hair, no glasses, no tie | Dark brown chinos, dark brown leather lace-up shoes | Dark charcoal-black messenger bag (the sheet draws it brown; keep it charcoal-black, as the shots do) |
 | Ling Mo | Black hooded sweatshirt, hood low over the face | Black trousers, black shoes | None |
 | Nakamura | Crumpled navy suit a size too big, crooked loosened tie, receding thin hair, no glasses; looks about 45 | Suit trousers, dark leather shoes | None |
 | Ito Makoto | White shirt with the sleeves rolled up, loosened navy striped tie, grey at the temples | Dark trousers with a belt, black leather shoes | None |

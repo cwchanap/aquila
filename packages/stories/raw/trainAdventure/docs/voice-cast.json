@@ -97,6 +97,122 @@
         "zh": "(也鼓起勇氣，用顫抖的聲音喊道)有人在嗎——？",
         "direction": "[shouting] [trembling voice]"
       }
+    },
+    "b1b_b2a_b3a_act15": {
+      "12": {
+        "zh": "(喘著氣)先補充一些補給...",
+        "direction": "[breathless]"
+      },
+      "16": {
+        "zh": "(愣住)這是...",
+        "direction": "[gasps] [surprised]"
+      },
+      "22": {
+        "zh": "(低聲)該死...我太大意了。",
+        "direction": "[low voice] [frustrated]"
+      },
+      "31": {
+        "zh": "(低聲,震驚)有東西...從後門闖進來了。",
+        "direction": "[low voice] [shocked]"
+      },
+      "38": {
+        "zh": "(內心,自責)衣櫃...我之前兩次進出,竟然都完全忽略了它。",
+        "direction": "[softly] [regretful]"
+      }
+    },
+    "b1b_b2a_b3a_act16": {
+      "3": {
+        "zh": "(深呼吸,閉上眼睛)冷靜...必須冷靜...",
+        "direction": "[exhales] [trembling voice]"
+      },
+      "6": {
+        "zh": "(低聲)對不起...我來晚了。",
+        "direction": "[sad] [trembling voice]"
+      },
+      "10": {
+        "zh": "(皺眉)沒有刺傷...沒有割傷...",
+        "direction": "[shaken] [low voice]"
+      },
+      "13": {
+        "zh": "(低聲)窒息...被掐死的。",
+        "direction": "[horrified] [low voice]"
+      },
+      "15": {
+        "zh": "(內心)要在短時間內掐死一個成年女性...需要壓倒性的力量。而且必須動作迅速,不給對方任何逃脫或呼救的機會。",
+        "direction": "[softly] [tense]"
+      },
+      "17": {
+        "zh": "(內心)那個眼鏡男...他看起來很瘦弱,而且膽小。應該沒有這種力量。",
+        "direction": "[softly] [tense]"
+      },
+      "19": {
+        "zh": "(內心)那兩個男大學生...其中一個看起來比較瘦弱,不像是能輕易制伏成年女性的體格。",
+        "direction": "[softly] [tense]"
+      },
+      "21": {
+        "zh": "(內心)但那個沉穩的大叔...他體格健壯,而且看起來很有力量。還有那個看起來像運動社團的男大學生,他也有足夠的體力。",
+        "direction": "[softly] [tense]"
+      },
+      "23": {
+        "zh": "(內心)但這些都只是猜測。更重要的是...還有那些我們完全不了解的「第三方」。殺死小林先生的那個用劍的人,很可能就在附近。",
+        "direction": "[softly] [tense]"
+      },
+      "25": {
+        "zh": "(站起身,深吸一口氣)至少...讓她安息吧。",
+        "direction": "[sad] [softly]"
+      },
+      "31": {
+        "zh": "(低聲)你的孩子們...我一定會找到他們。我向你保證。",
+        "direction": "[low voice] [determined]"
+      },
+      "36": {
+        "zh": "(喘息)必須...休息一下...",
+        "direction": "[breathless] [tired]"
+      },
+      "39": {
+        "zh": "(皺眉)那是什麼?",
+        "direction": "[cautiously]"
+      }
+    },
+    "b1b_b2a_b3a_actFinal": {
+      "14": {
+        "zh": "(皺眉,內心)精靈?契約?這是什麼...某個瘋子的妄想日記嗎?",
+        "direction": "[softly] [disbelieving]"
+      },
+      "16": {
+        "zh": "(內心)還是說...這是一場精心設計的真人實境遊戲?某種變態的劇本殺?",
+        "direction": "[softly] [disbelieving]"
+      },
+      "22": {
+        "zh": "(瞳孔收縮)這是...",
+        "direction": "[gasps] [surprised]"
+      },
+      "25": {
+        "zh": "(顫抖著,低聲)我的名字...為什麼我排在第一個?",
+        "direction": "[trembling voice] [low voice]"
+      },
+      "27": {
+        "zh": "(內心,震驚)寫下這個計畫的人...從一開始就知道我們會登上那輛列車?",
+        "direction": "[softly] [shocked]"
+      },
+      "32": {
+        "zh": "(驚恐,內心)我的名字...被劃掉了?這是說...我也會死?",
+        "direction": "[softly] [terrified] [trembling voice]"
+      },
+      "42": {
+        "zh": "(喘息)這到底...",
+        "direction": "[breathless]"
+      },
+      "57": {
+        "zh": "(眼睛睜大,無法出聲)",
+        "direction": "[gasps]",
+        "text": "かはっ……"
+      },
+      "62": {
+        "zh": "(想要說話,但只能發出微弱的氣音)",
+        "direction": "[raspy] [weakly]",
+        "text": "……あ……っ"
+      }
     }
   }
 }

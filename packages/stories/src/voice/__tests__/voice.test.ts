@@ -255,6 +255,38 @@ describe('planVoiceScene', () => {
             );
         });
 
+        it('speaks a line that is only a stage direction when the direction gives its text', () => {
+            const silentSource = [
+                ...source,
+                { characterId: 'narrator', dialogue: '(睜大眼睛,無法出聲)' },
+            ];
+            const silentSpoken = [...spoken, '（目を見開くが、声が出ない）'];
+            const gasp = {
+                zh: '(睜大眼睛,無法出聲)',
+                direction: '[gasps]',
+                text: 'かはっ……',
+            };
+            const plan = (lineDirections: object) =>
+                planVoiceScene(
+                    silentSource,
+                    silentSpoken,
+                    withDirections(lineDirections),
+                    'act8'
+                );
+            expect(plan({}).slots[3]).toBeNull();
+            expect(plan({ act8: { '4': gasp } }).slots[3]).toMatchObject({
+                text: '[gasps] かはっ……',
+                lineId: voiceLineId('v1', '[gasps] かはっ……'),
+            });
+            // The text is still pinned to its line, and cannot be blank.
+            expect(() =>
+                plan({ act8: { '3': { ...gasp, zh: '(睜大眼睛,無法出聲)' } } })
+            ).toThrow('act8 line 3 no longer matches its zh text');
+            expect(() =>
+                withDirections({ act8: { '4': { ...gasp, text: ' ' } } })
+            ).toThrow();
+        });
+
         it('wants 1-based line numbers and a zh pin with every direction', () => {
             expect(() => withDirections({ act8: { '0': shout } })).toThrow();
             expect(() => withDirections({ act8: { two: shout } })).toThrow();

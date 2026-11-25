@@ -29,7 +29,9 @@ export const VoiceCastSchema = z
         /** Audio tags for single lines that replace the role's own, e.g. a
          *  shout: sceneId -> reader dialogue number (1-based, as in
          *  `&dialogue=N`) -> the line's zh text and the tags. The zh text pins
-         *  the number to its line, like the voice script does. */
+         *  the number to its line, like the voice script does. `text` is the
+         *  spoken text for that line in place of the reader text, so a line
+         *  that only has a stage direction can still gasp or cry out. */
         lineDirections: z
             .record(
                 z.string(),
@@ -39,6 +41,7 @@ export const VoiceCastSchema = z
                         .object({
                             zh: z.string().min(1),
                             direction: z.string().trim().min(1),
+                            text: z.string().trim().min(1).optional(),
                         })
                         .strict()
                 )
@@ -167,11 +170,12 @@ export function planVoiceScene(
             uncast.add(characterId);
             return null;
         }
+        const pinned = directions[index + 1];
         const text = spokenText(
             entry,
-            spoken[index],
+            pinned?.text ?? spoken[index],
             role,
-            directions[index + 1]?.direction
+            pinned?.direction
         );
         if (text === null) return null;
         return {

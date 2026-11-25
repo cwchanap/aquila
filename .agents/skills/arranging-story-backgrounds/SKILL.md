@@ -74,7 +74,7 @@ Same skeleton every time, in this order: the set sentence from the art bible, th
 
 ### 6. Generate
 
-Generate with Codex (`codex exec` and its built-in image tool) on the machine that has it, never with Python or PIL placeholders; the `generating-images-with-cli` skill covers the mechanics where it is installed. For backgrounds:
+Generate with Codex (`codex exec` and its built-in image tool) on the machine that has it, never with Python or PIL placeholders; the `generating-images-with-cli` skill covers the mechanics where it is installed. Codex is good enough for backgrounds, portraits and full-body images: don't switch to the OpenAI Images API (paid) unless Hapadona asks for it. For backgrounds:
 
 - **References**: attach the empty set reference **first** (where a location has none, the approved shot the art bible names instead), then one image for each person named in that shot: their portrait, or their full-body image instead whenever the shot can show legs or feet (it has the same face and upper body, so never send both). Tell the model the set reference fixes the set's **design only**, that the camera angle and distance must follow the prompt, not the reference, and that the people images fix faces and outfits only: the expression, pose and what each person holds or carries come from the prompt. Without the camera line a "close-up" comes back as another wide shot.
 - **Prepare references**: flatten transparent portraits onto a neutral grey, resize portraits to about 384x576 and set references to about 836x470. Full-body images are already opaque; shrink them the same way, but keep both views readable. Smaller references keep runs fast and stable.

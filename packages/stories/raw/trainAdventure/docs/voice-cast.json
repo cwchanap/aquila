@@ -105,73 +105,86 @@
       },
       "16": {
         "zh": "(愣住)這是...",
-        "direction": "[gasps] [surprised]"
+        "direction": "[sharp gasp] [alarmed]"
       },
       "22": {
         "zh": "(低聲)該死...我太大意了。",
-        "direction": "[low voice] [frustrated]"
+        "direction": "[angry] [frustrated]"
       },
       "31": {
         "zh": "(低聲,震驚)有東西...從後門闖進來了。",
-        "direction": "[low voice] [shocked]"
+        "direction": "[shocked] [alarmed]"
       },
       "38": {
         "zh": "(內心,自責)衣櫃...我之前兩次進出,竟然都完全忽略了它。",
-        "direction": "[softly] [regretful]"
+        "direction": "[regretful] [shaken]"
+      },
+      "48": {
+        "zh": "(屏住呼吸)",
+        "direction": "[sharp gasp] [horrified]",
+        "text": "ひっ……！"
       }
     },
     "b1b_b2a_b3a_act16": {
       "3": {
         "zh": "(深呼吸,閉上眼睛)冷靜...必須冷靜...",
-        "direction": "[exhales] [trembling voice]"
+        "direction": "[shaky breath] [trembling voice]"
       },
       "6": {
         "zh": "(低聲)對不起...我來晚了。",
-        "direction": "[sad] [trembling voice]"
+        "direction": "[voice breaking] [anguished]"
       },
       "10": {
         "zh": "(皺眉)沒有刺傷...沒有割傷...",
-        "direction": "[shaken] [low voice]"
+        "direction": "[stunned] [trembling voice]"
       },
       "13": {
         "zh": "(低聲)窒息...被掐死的。",
-        "direction": "[horrified] [low voice]"
+        "direction": "[horrified] [shaking]"
       },
       "15": {
         "zh": "(內心)要在短時間內掐死一個成年女性...需要壓倒性的力量。而且必須動作迅速,不給對方任何逃脫或呼救的機會。",
-        "direction": "[softly] [tense]"
+        "direction": "[tense] [shaken]"
       },
       "17": {
         "zh": "(內心)那個眼鏡男...他看起來很瘦弱,而且膽小。應該沒有這種力量。",
-        "direction": "[softly] [tense]"
+        "direction": "[tense] [shaken]"
       },
       "19": {
         "zh": "(內心)那兩個男大學生...其中一個看起來比較瘦弱,不像是能輕易制伏成年女性的體格。",
-        "direction": "[softly] [tense]"
+        "direction": "[tense] [shaken]"
       },
       "21": {
         "zh": "(內心)但那個沉穩的大叔...他體格健壯,而且看起來很有力量。還有那個看起來像運動社團的男大學生,他也有足夠的體力。",
-        "direction": "[softly] [tense]"
+        "direction": "[tense] [uneasy]"
       },
       "23": {
         "zh": "(內心)但這些都只是猜測。更重要的是...還有那些我們完全不了解的「第三方」。殺死小林先生的那個用劍的人,很可能就在附近。",
-        "direction": "[softly] [tense]"
+        "direction": "[urgent] [alarmed]"
       },
       "25": {
         "zh": "(站起身,深吸一口氣)至少...讓她安息吧。",
-        "direction": "[sad] [softly]"
+        "direction": "[choked up] [sorrowful]"
       },
       "31": {
         "zh": "(低聲)你的孩子們...我一定會找到他們。我向你保證。",
-        "direction": "[low voice] [determined]"
+        "direction": "[choked up] [fierce]"
       },
       "36": {
         "zh": "(喘息)必須...休息一下...",
-        "direction": "[breathless] [tired]"
+        "direction": "[panting] [exhausted]"
       },
       "39": {
         "zh": "(皺眉)那是什麼?",
-        "direction": "[cautiously]"
+        "direction": "[alarmed] [tense]"
+      },
+      "42": {
+        "zh": "(撿起手機)這個...我好像在哪裡見過。",
+        "direction": "[uneasy] [shaken]"
+      },
+      "44": {
+        "zh": "(放下手機,拿起冊子)這是...日記?還是素描本?",
+        "direction": "[uneasy] [tense]"
       }
     },
     "b1b_b2a_b3a_actFinal": {
@@ -185,33 +198,33 @@
       },
       "22": {
         "zh": "(瞳孔收縮)這是...",
-        "direction": "[gasps] [surprised]"
+        "direction": "[sharp gasp] [stunned]"
       },
       "25": {
         "zh": "(顫抖著,低聲)我的名字...為什麼我排在第一個?",
-        "direction": "[trembling voice] [low voice]"
+        "direction": "[shaken] [trembling voice]"
       },
       "27": {
         "zh": "(內心,震驚)寫下這個計畫的人...從一開始就知道我們會登上那輛列車?",
-        "direction": "[softly] [shocked]"
+        "direction": "[stunned] [shaken]"
       },
       "32": {
         "zh": "(驚恐,內心)我的名字...被劃掉了?這是說...我也會死?",
-        "direction": "[softly] [terrified] [trembling voice]"
+        "direction": "[terrified] [voice breaking]"
       },
       "42": {
         "zh": "(喘息)這到底...",
-        "direction": "[breathless]"
+        "direction": "[panting] [overwhelmed]"
       },
       "57": {
         "zh": "(眼睛睜大,無法出聲)",
-        "direction": "[gasps]",
-        "text": "かはっ……"
+        "direction": "[agonized] [sharp gasp]",
+        "text": "ぐあっ……！"
       },
       "62": {
         "zh": "(想要說話,但只能發出微弱的氣音)",
-        "direction": "[raspy] [weakly]",
-        "text": "……あ……っ"
+        "direction": "[choking] [dying breath]",
+        "text": "……あ……っ……"
       }
     }
   }

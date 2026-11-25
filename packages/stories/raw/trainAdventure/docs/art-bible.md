@@ -462,7 +462,7 @@ Line numbers count every `**X**：` line in the act from 1. Only Li Jie is in vi
 | b1b_b2a_act12_door_open (L59) | He pulls the beam away and opens the door | medium-wide, eye level, from inside | Li Jie from behind in the doorway |
 | b1b_b2a_act12_leaving (L62) | He walks into the night; the door swings behind him | wide, side-on, from the clearing edge | Li Jie tiny at the right, the cabin door ajar |
 | b1b_b2a_act13_footprints (L1) | Outside the cabin: the rows of prints and the extra woman's row | medium-wide, low, from the porch steps | Li Jie crouched, the prints in the earth |
-| b1b_b2a_act13_bush (L9) | The two rows run on side by side past the thicket | medium, side-on | Li Jie crouched at the bushes, two rows of prints |
+| b1b_b2a_act13_bush (L9) | The larger row comes out of the thicket, the two run on side by side | medium, side-on | Li Jie crouched at the bushes, two rows of prints |
 | b1b_b2a_act13_suspects (L19) | Who could it be: the uncle, the glasses, the students | close-up, slightly low | Li Jie thinking, prints soft below |
 | b1b_b2a_act13_unease (L27) | The blurred figure, the man in black | wide, low, from behind | Li Jie small, staring into the black forest |
 | b1b_b2a_act13_following (L34) | He follows the prints for half an hour | wide, high, from behind and above | Li Jie small between huge trunks |

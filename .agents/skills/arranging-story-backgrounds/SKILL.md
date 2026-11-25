@@ -22,31 +22,34 @@ These are Hapadona's calls for any story whose backgrounds include the cast (`tr
 5. **Show only what the text has shown, when it shows it.** Cue each image on the line where its event happens. The headlights appear when the glow is first described, not during the announcement before it. Don't draw an action the text doesn't describe: the intercom argument is pointing and a raised hand, not a wrist grab.
 6. **Show only who the beat needs.** Use the full cast only for establishing and group shots. Groups sit apart, with empty seats between them, so the train feels near-empty and lonely.
 7. **No exterior shots of the vehicle.** Show the outside world through windows and open doors, and make it match the act (black windows in the tunnel, the platform right beside the train at a station).
-8. **Portraits are transparent cut-outs**, and their faces and outfits are what every background must match.
+8. **Portraits are transparent cut-outs**, and their faces and outfits are what every background must match. They stop at the chest or waist, so the art bible's Outfits table and one full-body image per character (front and back) fix the trousers, skirts and shoes.
 9. **Review before showing.** Check every image zoomed in and the whole set side by side for consistency before asking for approval, and fix drift rather than re-rolling a whole image.
 
 ## Where things live
 
 - **Prompts**: ` ```bg ` blocks in the act markdown and `### Portrait Prompts` in `docs/characters.md`. Put each `bg` block right before the first line of the beat it shows; keys are `<dir>/<sceneId>_sK`, numbered by block order within the scene file (`_root/act1_s0` for a root act, `branch_1b/b1b_act4_s0` for a scene in a subdirectory), so inserting an unnamed block renumbers the ones after it. Once a scene's images exist, give every added block a name on the fence (` ```bg platform_students ` → `_root/act1_platform_students`) so the existing keys stay put, and show an existing image again with a block whose body is `reuse <key>` instead of generating a near-copy. `bun compile:stories` extracts them into `packages/stories/src/generated/<rawDir>/image-assets.json` (`portraits[]` and `backgrounds[]`, each with a `key`, a `path` and a `prompt`). Edit the raw source and recompile. Don't edit only the generated JSON: the next compile overwrites it. See the `orchestrating-stories` skill.
-- **Art bible**: `packages/stories/raw/<rawDir>/docs/art-bible.md`. One file that is the single source of truth for the set, the seating plan, the camera angles, the window views and the shot list. Every prompt must agree with it.
-- **Files**: save each image at the `path` its manifest entry gives, under `packages/assets/media/` (for example `<storyId>/backgrounds/_root/act1_s0.png` or `<storyId>/backgrounds/branch_1b/b1b_act4_s0.png`). Portraits are `.../characters/<id>/base.png` (transparent), and the empty set reference images go in `.../backgrounds/_reference/`.
+- **Art bible**: `packages/stories/raw/<rawDir>/docs/art-bible.md`. One file that is the single source of truth for the set, the seating plan, the outfits, the camera angles, the window views and the shot list. Every prompt must agree with it.
+- **Files**: save each image at the `path` its manifest entry gives, under `packages/assets/media/` (for example `<storyId>/backgrounds/_root/act1_s0.png` or `<storyId>/backgrounds/branch_1b/b1b_act4_s0.png`). Portraits are `.../characters/<id>/base.png` (transparent), and the reference images (the empty sets and the full-body `outfit_<characterId>.png` images) go in `.../backgrounds/_reference/`.
 - **Delivery**: media under `packages/assets/media/` is gitignored, so commit it with `git add -f`. Merging the PR publishes the art to R2 and makes it live through the `Visual Release` workflow (see Generated Asset Delivery in `CLAUDE.md`); wiring it into the reader is separate work. Once the cast-inclusive release is active on R2, add the story's id to `CAST_INCLUSIVE_BACKGROUND_STORY_IDS` in `packages/stories/src/story-metadata.ts` so the reader doesn't draw the speaker's portrait over a background that already shows them. The flag covers the whole story, so scenes still on character-free art lose their portraits too.
 
 ## Workflow
 
 ### 1. Write the art bible first
 
-It needs five parts:
+It needs six parts:
 
 1. **Cast**: the exact count and names. "Exactly N passengers, no extras inside the train" stops the model inventing passengers. If a location outside the set has bystanders the text describes (the platform's commuters), say how many and how they look (small, far off, faceless).
 2. **The set**: one paragraph per location that every prompt in that location reuses word for word (materials, colours, fixtures, doors, no ads or text).
 3. **Seating plan**: who sits where, group by group (see Seating below).
-4. **Camera angles**: a small fixed set, each with its own empty reference image, plus the seat order as it appears on screen from each angle (a view from the far end flips left and right).
-5. **Window views per act**: what shows outside, per act, so the same window never changes meaning.
+4. **Outfits**: one row per cast member, head to toe (top and hair, bottoms and shoes, anything carried). Portraits stop at the chest or waist, so without this table every prompt invents the legs and the lower half drifts from shot to shot (Asuka's jeans turned into a skirt).
+5. **Camera angles**: a small fixed set, each with its own empty reference image, plus the seat order as it appears on screen from each angle (a view from the far end flips left and right).
+6. **Window views per act**: what shows outside, per act, so the same window never changes meaning.
 
 ### 2. Make the empty references and get them approved
 
 For each location, generate the set with **no people** from each fixed angle, first one from that location's master, then the others with the master as a reference so the design is identical. Check every one against the master (seat fabric, poles, straps, ceiling, floor, doors, end walls) before any scene is generated. Get the person who owns the look to approve them. A wrong reference poisons every scene.
+
+Shots that can show legs or feet also need a **full-body image** per character: one opaque 1536x1024 image, the front view on the left and the back view on the right, on a plain light-grey backdrop. Make it from the portrait (image 1, "recreate image 1 exactly, extend to a full-length standing figure, change nothing above the waist") plus the character's Outfits row; the face follows the portrait. Approve these like the set references.
 
 ### 3. Write the shot list
 
@@ -67,16 +70,16 @@ A near-empty last train is the model that works. People in a group sit side by s
 
 ### 5. Write each prompt
 
-Same skeleton every time, in this order: the set sentence from the art bible, the camera and distance, the window view for the act, the people with a one-line look each (hair, outfit, props) in order of position, what each is doing, the empty-seat statement, and the closing "only the people named here are in view, no other passengers, no text, no logo, 16:9" (outside the set, name any bystanders the art bible allows). The look lines must match the portraits.
+Same skeleton every time, in this order: the set sentence from the art bible, the camera and distance, the window view for the act, the people with a one-line look each (hair, outfit, props, and the bottoms and shoes whenever legs or feet can show) in order of position, what each is doing, the empty-seat statement, and the closing "only the people named here are in view, no other passengers, no text, no logo, 16:9" (outside the set, name any bystanders the art bible allows). The look lines must match the portraits and the Outfits table.
 
 ### 6. Generate
 
 Generate with Codex (`codex exec` and its built-in image tool) on the machine that has it, never with Python or PIL placeholders; the `generating-images-with-cli` skill covers the mechanics where it is installed. For backgrounds:
 
-- **References**: attach the empty set reference **first** and only the portraits of the people named in that shot. Tell the model the reference fixes the set's **design only**, and that the camera angle and distance must follow the prompt, not the reference. Without that line a "close-up" comes back as another wide shot.
-- **Prepare references**: flatten transparent portraits onto a neutral grey, resize portraits to about 384x576 and set references to about 836x470. Smaller references keep runs fast and stable.
+- **References**: attach the empty set reference **first** (where a location has none, the approved shot the art bible names instead), then one image for each person named in that shot: their portrait, or their full-body image instead whenever the shot can show legs or feet (it has the same face and upper body, so never send both). Tell the model the set reference fixes the set's **design only**, that the camera angle and distance must follow the prompt, not the reference, and that the people images fix faces and outfits only: the expression, pose and what each person holds or carries come from the prompt. Without the camera line a "close-up" comes back as another wide shot.
+- **Prepare references**: flatten transparent portraits onto a neutral grey, resize portraits to about 384x576 and set references to about 836x470. Full-body images are already opaque; shrink them the same way, but keep both views readable. Smaller references keep runs fast and stable.
 - **Output**: opaque 16:9 PNG (Codex returned 1672x941), the same size for the whole set.
-- **Parallelism**: three or four runs at once. The image tool may refuse more than about five referenced images in one call and then retry with fewer, so a crowded shot can silently lose references. If faces drift, check the log.
+- **Parallelism**: three or four runs at once. The image tool may refuse more than about five referenced images in one call and then retry with fewer, so a crowded shot can silently lose references. A full-body image counts as one, which leaves about four people next to the set reference: send the people nearest the camera and give everyone else's bottoms and shoes in words from the Outfits table. If faces drift, check the log.
 - **Quota**: the image allowance is limited and varies. We hit it after about ten images in one session and ran about twenty in another without hitting it. The error carries `resets_at` (and `usage_limit_reached`). Stop, push what passed, and say when it resets. Don't retry in a loop, and stop any runs already queued so they don't keep failing.
 
 ### 7. Review every image, zoomed in
@@ -102,7 +105,7 @@ Across the set, on the contact sheet:
 
 ### 8. Fix, don't re-roll
 
-Pass the **current image first** and say "recreate image 1 exactly, change only X", then list X. Name positions as they appear on screen. Allow two retries per defect, then accept it and record it. A full re-roll changes everything you had already approved.
+Pass the **approved image first** and say "recreate image 1 exactly, change only X", then list X. Name positions as they appear on screen. Every pass redraws the whole frame and softens it (act3_s4 visibly lost sharpness over three chained passes), so each retry starts again from the untouched approved image, never from the previous retry. Allow two retries per defect, then accept it and record it. If a redraw fixes the defect but softens the frame, composite it over just the changed area of the original with a feathered mask instead of keeping the whole redraw. A full re-roll changes everything you had already approved.
 
 ## Failure modes we hit
 
@@ -116,6 +119,8 @@ Pass the **current image first** and say "recreate image 1 exactly, change only 
 | Full moon where the story has crescents, or a moon in a forest-only window | Describe the moon as a thin sickle, say the disc is dark, and say "no moon" for windows that shouldn't have one.             |
 | Close-up comes back as a wide shot                                         | Add "the camera angle and distance follow the prompt, not the reference".                                                    |
 | A support character who looks like the lead                                | Give each a clear marker (glasses, hairstyle) and put both portraits in the references.                                      |
+| Trousers, skirt or shoes invented or changed between shots                 | Send the person's full-body image and name the bottoms and shoes from the Outfits table. A portrait stops at the chest.      |
+| A laughing face, a phone or a bag copied from a reference into the shot    | State the expression and what hands hold, and say "no bag, no strap" where the beat has none. References carry their own.    |
 | The set's end wall or doors drift                                          | Describe the end wall in the set sentence and in the check list.                                                             |
 | Outside view of the vehicle never matches                                  | Don't draw one. Use windows and open doors.                                                                                  |
 
@@ -123,4 +128,5 @@ Pass the **current image first** and say "recreate image 1 exactly, change only 
 
 - Commit images with `git add -f`. Push in batches (for example every four images) so a reviewer can look as you go.
 - Keep the art bible and the shot list in step with the final images. If a prompt change was needed to get a good result, put it back into the raw source so a regenerate gives the same result.
+- When a character's look changes, change it in one PR everywhere it lives: the `base` portrait prompt in `docs/characters.md` and the portrait itself, the Outfits row and the character's full-body image, and every `bg` prompt that names the old clothes, then redraw the shots that show them. The portrait prompt covers the upper body only; the Outfits row is the head-to-toe source.
 - Portraits are generated on a plain backdrop and cut out to transparent PNG (1024x1536 RGBA) with `rembg` using the `birefnet-general` model; `isnet-anime` leaves dark clothing semi-transparent.

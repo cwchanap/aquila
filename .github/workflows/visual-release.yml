@@ -191,6 +191,8 @@ jobs:
             --source-root packages/assets/media \
             --destination r2 \
             --json > .tmp/publish.json
+          # Keep the publish report for the summary even if a later step fails.
+          cp .tmp/publish.json .tmp/report.json
           release=$(jq -r .releaseId .tmp/publish.json)
           sha=$(jq -r .manifestSha256 .tmp/publish.json)
           # Check the CDN serves the new release before anything points at it.

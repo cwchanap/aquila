@@ -28,9 +28,9 @@
     {
       "key": "station-chime",
       "type": "sfx",
-      "prompt": "Soft two-note descending chime that comes before a station announcement, from a ceiling speaker, slight echo under a steel roof at night, one-shot",
-      "durationMs": 3000,
-      "notes": "Introduces the unvoiced PA line right after it. No voice in the sound."
+      "prompt": "Short soft two-note descending chime that comes before a station announcement, from a ceiling speaker, decaying promptly with only a slight echo under a steel roof at night, no spoken words, one-shot",
+      "durationMs": 2000,
+      "notes": "Introduces the voiced PA line that follows it (the announcement voice is already cast). Keep it short and promptly decaying, with no spoken content, so a fast advance does not overlap the spoken announcement; check the transition and voice balance when it is generated."
     },
     {
       "key": "train-arrival",

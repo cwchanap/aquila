@@ -90,7 +90,7 @@ Per shot:
 
 - the **framing** matches the prompt (angle and distance, not just the people);
 - **exactly the named people**, no extras, including reflections in black windows (outside the set, only the bystanders the art bible allows);
-- every face and outfit matches its portrait, and similar characters stay distinct (two dark-haired young men; make sure the one with glasses has them);
+- every face and outfit matches its portrait, the bottoms and shoes match the Outfits table whenever legs or feet show, and similar characters stay distinct (two dark-haired young men; make sure the one with glasses has them);
 - the **order** along each bench is as written (for the people the shot list puts in frame), and each group is separated by clear empty seats;
 - the set matches the reference (fabric, poles, straps, ceiling, doors, end wall);
 - the **window view** is right for the act and no window shows the wrong world;
@@ -111,7 +111,7 @@ Pass the **approved image first** and say "recreate image 1 exactly, change only
 
 | Symptom                                                                    | Fix                                                                                                                          |
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Group order reversed (students, couple, family)                            | State the order near to far **and** on-screen left to right, with each person's look. Recreate with the current image first. |
+| Group order reversed (students, couple, family)                            | State the order near to far **and** on-screen left to right, with each person's look. Recreate from the approved image first. |
 | People packed together, groups touching                                    | Add "at least three empty cushions between every pair of groups" and say it once more at the end of the prompt.              |
 | A named person missing, or a duplicate                                     | Spell out the headcount per bench and name the missing person with their look.                                               |
 | Ghost figures in window reflections                                        | Say "the window glass shows no reflections of people". Asking for the cast's reflections paints see-through doubles.         |

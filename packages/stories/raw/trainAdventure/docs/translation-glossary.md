@@ -435,8 +435,9 @@ Used before a character is named. All are registered as aliases in
   "Auntie" and "magic" lines of actFinal and actEpilogue.
 - **Numbers** stay exactly as zh even where they do not add up: 7 vs 8 who got
   off at Jakkai, Li Jie's 15 vs ISPA's 16 passengers, Emi missing 38 years yet
-  "one of the sixteen", act 29 saying Ailaru killed the black-sword man. Do not
-  fix them; report them.
+  "one of the sixteen". Do not fix them; report them. In act 29, Li Jie reports
+  Lila's account that Ailaru died defending the village; the black-sword man's
+  subsequent whereabouts and fate remain unconfirmed.
 - **ISPA** is "the agency" / 組織 to its people. Kosuke calls his soldier 小林
   (Kobayashi) in act 29 — no relation to the Kobayashi family; his label stays
   Soldier / 兵士. The cover story (hospital treatment, memory loss) recurs in

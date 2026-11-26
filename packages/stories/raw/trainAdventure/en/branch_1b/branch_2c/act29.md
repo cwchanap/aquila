@@ -44,9 +44,9 @@
 
 **Shimizu Kosuke**: Something that dangerous... Then how did you get away from him?
 
-**Li Jie**: We met the elves. Their leader, Ailaru, protected us.
+**Li Jie**: The elves helped us later on, and we stayed in their village.
 
-**Li Jie**: In the end... Ailaru gave his own life to bring the black-sword man down.
+**Li Jie**: Lila told us their leader, Ailaru, died defending the village. As for the black-sword man... we don't know what happened to him.
 
 **Narrator**: A flicker of sorrow passed through Li Jie's eyes.
 

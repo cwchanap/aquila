@@ -490,24 +490,51 @@ describe('normalizeAudioAsset leveling', () => {
         expect(levelFilter(fixture)).toBe(`volume=8.00dB,${limiter}`);
     });
 
+    it('falls back to the peak when a clip just over 0.4 s decodes too short to measure', async () => {
+        // A 380 ms tone encoded as MP3 probes at 418 ms, but loudnorm only
+        // sees the decoded 380 ms and reports -inf. The sound is not silent.
+        const fixture = successfulRunner({
+            sourceDuration: '0.418',
+            duration: '0.418',
+            lufs: '-inf',
+            peakDb: '-18.5',
+        });
+
+        await normalizeAudioAsset(
+            { ...source, plannedDurationMs: 418 },
+            fixture.run
+        );
+
+        const measured = fixture.calls.filter(
+            call => call.executable === 'ffmpeg' && call.args.at(-1) === '-'
+        );
+        expect(
+            measured.map(call => call.args[call.args.indexOf('-af') + 1])
+        ).toEqual(['loudnorm=print_format=json', 'volumedetect']);
+        expect(levelFilter(fixture)).toBe(`volume=6.50dB,${limiter}`);
+    });
+
     it('rejects a silent source', async () => {
-        const silentLong = successfulRunner({ lufs: '-inf' });
+        // ffmpeg reports digital silence as -inf LUFS and -91 dB peak.
+        const silentLong = successfulRunner({ lufs: '-inf', peakDb: '-91.0' });
         const silentShort = successfulRunner({
+            sourceDuration: '0.300',
+            peakDb: '-91.0',
+        });
+        const noReport = successfulRunner({
             sourceDuration: '0.300',
             peakDb: undefined,
         });
 
-        await expect(
-            normalizeAudioAsset(source, silentLong.run)
-        ).rejects.toMatchObject({ name: 'PublisherError', code: 'source' });
-        await expect(
-            normalizeAudioAsset(
-                { ...source, plannedDurationMs: 300 },
-                silentShort.run
-            )
-        ).rejects.toMatchObject({ name: 'PublisherError', code: 'source' });
-        expect(silentLong.encodeCall()).toBeUndefined();
-        expect(silentShort.encodeCall()).toBeUndefined();
+        for (const fixture of [silentLong, silentShort, noReport]) {
+            await expect(
+                normalizeAudioAsset(
+                    { ...source, plannedDurationMs: 300 },
+                    fixture.run
+                )
+            ).rejects.toMatchObject({ name: 'PublisherError', code: 'source' });
+            expect(fixture.encodeCall()).toBeUndefined();
+        }
     });
 
     it('fails clearly when the loudness report cannot be read', async () => {

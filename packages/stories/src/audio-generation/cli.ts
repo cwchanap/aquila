@@ -61,7 +61,7 @@ const REPO_ROOT = resolve(
 );
 const DEFAULT_MEDIA_ROOT = join(REPO_ROOT, 'packages', 'assets', 'media');
 
-const USAGE = `Usage: audio:generate generate --story <raw folder> (--missing | --key <key> ...) [options]
+const USAGE = `Usage: bun --filter @aquila/stories audio:generate --story <raw folder> (--missing | --key <key> ...) [options]
 
   --missing           make every key of the plan that has no file yet
   --key <key>         make (or redo) exactly these keys; repeat for several

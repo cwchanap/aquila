@@ -4,6 +4,10 @@
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Three-quarter diagonal view, medium shot: the camera stands in the aisle near the door end and looks diagonally down the LEFT bench, which recedes into depth. In the foreground Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) sits in the end seat against the partition, drawing quietly with her earphones in; beside her Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) has his head tipped back against the window, eyes closed, worn out. Beyond them the bench runs away empty for several seats, and Yamamoto (late-40s man, grey hair, olive-khaki chore jacket worn open over a cream henley, no tie, dark brown chinos, dark brown lace-up shoes) is small and slightly out of focus further down. Through the windows above, blurred neon signs and apartment lights stream past as streaks of light. Calm, sleepy late-night ride. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```bgm
+late-night-calm
+```
+
 ```sfx
 train-clatter
 ```

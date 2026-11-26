@@ -88,8 +88,9 @@
     {
       "key": "train-brakes",
       "type": "sfx",
-      "prompt": "Commuter train braking to a slow smooth stop: a long fading pneumatic brake hiss, wheels easing from rumble to a soft grind and a last settling creak, then stillness, inside a carriage, one-shot",
-      "durationMs": 8000
+      "prompt": "Commuter train braking to a slow smooth stop: a fading pneumatic brake hiss, wheels easing from rumble to a soft grind and a last settling creak, then a full second of stillness at the end, inside a carriage, one-shot",
+      "durationMs": 5000,
+      "notes": "Short and silent by the end: the silence beat follows within a few lines and sound effects are not stopped by the music stop."
     },
     {
       "key": "cold-wind",

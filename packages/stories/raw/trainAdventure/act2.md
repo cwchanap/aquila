@@ -4,6 +4,10 @@
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Three-quarter diagonal view, medium shot: the camera stands in the aisle near the door end and looks diagonally down the LEFT bench, which recedes into depth. In the foreground Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, worn sketchbook) sits in the end seat against the partition, drawing quietly with her earphones in; beside her Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) has his head tipped back against the window, eyes closed, worn out. Beyond them the bench runs away empty for several seats, and Yamamoto (late-40s man, grey hair, olive-khaki chore jacket worn open over a cream henley, no tie, dark brown chinos, dark brown lace-up shoes) is small and slightly out of focus further down. Through the windows above, blurred neon signs and apartment lights stream past as streaks of light. Calm, sleepy late-night ride. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```sfx
+train-clatter
+```
+
 **旁白**：列車平穩地行駛著，車輪與軌道的撞擊聲形成催眠般的韻律——咔噠、咔噠、咔噠。窗外的城市燈火匯成流動的光河，霓虹招牌、路燈、公寓窗戶的暖光，全都化作模糊的光點。
 
 **旁白**：車廂內，除了那四個大學生偶爾的笑鬧聲，大部分乘客都在閉目養神或滑著手機。有人戴著耳機，頭輕輕搖晃；有人靠著窗戶，半夢半醒。一切都是如此平凡，如此令人安心。
@@ -30,6 +34,10 @@ reuse _root/act2_s0
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Close-up, side view: Li Jie (28-year-old man, dark suit jacket, loosened tie, backpack) sits with his head resting back against the window, eyes closed, face tired and slack. The window behind him has turned pitch black because the train is in a tunnel, and the glass acts as a dark mirror faintly reflecting his face and the lit carriage. At the left edge of the frame, Emi's chestnut hair and beige sleeve are just visible beside him. Shallow depth of field, cold white carriage light. Only the people named here are in view, with empty seats between groups and no other passengers, muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```sfx
+tunnel-entry
+```
+
 **旁白**：就在這時，列車前方出現了隧道的入口——一個巨大的、漆黑的洞口，像一張沉默的巨口。列車毫不遲疑地駛了進去。
 
 **旁白**：車廂內的燈光自動亮起，發出淡淡的白光。窗外瞬間被純粹的黑暗吞噬。玻璃變成了一面鏡子，映照出乘客們模糊的倒影——疲憊的臉、空洞的眼神。
@@ -52,7 +60,15 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **旁白**：他沒有睜開眼，只是調整了一下姿勢,繼續閉目養神。又過了五分鐘。
 
+```sfx
+train-clatter
+```
+
 **旁白**：車廂內恆定的空調聲，以及列車碾過鐵軌的節奏性轟鳴，此刻不再讓人安心。反而像是一種無限循環的詛咒。那聲音太過規律，太過單調，彷彿時間已經停止流動。
+
+```bgm
+creeping-unease
+```
 
 **旁白**：李杰心中的違和感越來越強烈，像是有什麼冰冷的東西爬上了他的脊椎。他終於睜開了眼，拿出手機，想確認一下時間和路線。
 
@@ -223,6 +239,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **旁白**：它不是城市夜晚那種熟悉的、溫暖的橘黃色光輝。不是路燈的白光。不是霓虹燈的繽紛色彩。而是一種⋯⋯冰冷的、深邃的、詭異的藍黑色光暈。
 
 **旁白**：像一片沒有星辰的夜空，帶著一股萬物死寂的氣息，正沉默地、耐心地等待著他們。
+
+```sfx
+uncanny-drone
+```
 
 **旁白**：光芒越來越近，越來越亮。但車廂內，卻越來越安靜。所有人的笑容都凝固了，取而代之的是一種原始的、本能的恐懼。
 

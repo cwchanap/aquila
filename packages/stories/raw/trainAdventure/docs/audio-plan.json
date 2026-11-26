@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "key": "late-night-calm",
+      "type": "bgm",
+      "prompt": "Instrumental late-night city calm, slow sparse electric piano and a soft airy synth pad, quiet and weary with a touch of loneliness, no drums, no climax, seamless loop",
+      "durationMs": 90000,
+      "loop": true,
+      "notes": "Act 1 opening bed under the platform and the boarding."
+    },
+    {
+      "key": "creeping-unease",
+      "type": "bgm",
+      "prompt": "Instrumental creeping unease, low sustained drone with a slow-pulsing sub bass and sparse thin dissonant high harmonics, no melody, no percussion, restrained and uneasy without a dramatic climax, seamless loop",
+      "durationMs": 90000,
+      "loop": true,
+      "notes": "Starts once the tunnel is clearly too long and keeps playing through the panic after the light. Quieter than a chase cue: it sits under voiced lines."
+    },
+    {
+      "key": "lonely-dread",
+      "type": "bgm",
+      "prompt": "Instrumental lonely dread on a cold empty shore, hollow wind-like pad with distant sparse bell-like tones and long reverb, very slow, hushed and eerie but not frightening, no percussion, seamless loop",
+      "durationMs": 90000,
+      "loop": true,
+      "notes": "Plays after the doors open at the sea station, until the end of act 3."
+    },
+    {
+      "key": "station-chime",
+      "type": "sfx",
+      "prompt": "Soft two-note descending chime that comes before a station announcement, from a ceiling speaker, slight echo under a steel roof at night, one-shot",
+      "durationMs": 3000,
+      "notes": "Introduces the unvoiced PA line right after it. No voice in the sound."
+    },
+    {
+      "key": "train-arrival",
+      "type": "sfx",
+      "prompt": "Commuter train rolling out of a tunnel into a station at night and braking: a rising rumble of wheels on rails, a thin metal squeal on the slow-down, a long brake air hiss, distant then close, open air, one-shot",
+      "durationMs": 9000,
+      "notes": "Ends on the brake hiss so the next line's door sound can follow cleanly."
+    },
+    {
+      "key": "train-doors-open",
+      "type": "sfx",
+      "prompt": "Commuter train doors opening with a pneumatic hiss and a soft electric motor glide, a brief rush of air, close, at the doorway, one-shot",
+      "durationMs": 2500,
+      "notes": "Reused when the doors open at the sea station in dead silence; no chime, no voice."
+    },
+    {
+      "key": "train-doors-close",
+      "type": "sfx",
+      "prompt": "Commuter train doors closing: a short pneumatic hiss, a heavy dull thud as the rubber seals meet, then a small jolt as the train begins to roll, close, inside the carriage, no chime, no voice, one-shot",
+      "durationMs": 3500
+    },
+    {
+      "key": "lights-flicker",
+      "type": "sfx",
+      "prompt": "Fluorescent ceiling lights flickering once inside a commuter carriage: a brief electrical buzz, two quick stuttering clicks and a soft return hum, one-shot",
+      "durationMs": 1800
+    },
+    {
+      "key": "train-clatter",
+      "type": "sfx",
+      "prompt": "Steady rhythmic clack-clack of train wheels over rail joints at cruising speed with a low air-conditioning hum underneath, muffled and monotonous, inside a commuter carriage, no voices, one-shot",
+      "durationMs": 12000,
+      "notes": "Used twice in act 2: first as a sleepy lullaby, then when the same rhythm turns oppressive. Keep it unvarying; fade out over the last second."
+    },
+    {
+      "key": "tunnel-entry",
+      "type": "sfx",
+      "prompt": "Commuter train plunging into a long tunnel: a roar of wind and wheels that sharpens as it enters, then deepens into a muffled enclosed rumble, inside a carriage, one-shot",
+      "durationMs": 6000
+    },
+    {
+      "key": "uncanny-drone",
+      "type": "sfx",
+      "prompt": "Slow rising low drone with a faint thin metallic shimmer, a held unsettling tone that swells and then thins out to near silence, no melody, no rhythm, hushed carriage space, one-shot",
+      "durationMs": 10000,
+      "notes": "A voiced line follows this one, so the tail must be almost silent by the end."
+    },
+    {
+      "key": "light-curtain",
+      "type": "sfx",
+      "prompt": "A low swelling whoosh that crests with a shimmering glass-harmonic sweep and a deep muffled pressure thump at the crossing point, then the rumble of wheels drops away into hush, one-shot",
+      "durationMs": 6000,
+      "notes": "The train crosses into the other world; the wheel rumble does not return afterwards."
+    },
+    {
+      "key": "train-brakes",
+      "type": "sfx",
+      "prompt": "Commuter train braking to a slow smooth stop: a long fading pneumatic brake hiss, wheels easing from rumble to a soft grind and a last settling creak, then stillness, inside a carriage, one-shot",
+      "durationMs": 8000
+    },
+    {
+      "key": "cold-wind",
+      "type": "sfx",
+      "prompt": "Cold night wind gusting in through open train doors: a steady low airy rush with a faint whistle at the door frame, hanging straps tapping softly, a wide open space beyond, one-shot",
+      "durationMs": 8000,
+      "notes": "Used when the doors open and again at the end of act 3; keep it a single gust that dies away."
+    }
+  ]
+}

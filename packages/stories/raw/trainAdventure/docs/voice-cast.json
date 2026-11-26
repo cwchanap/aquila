@@ -88,6 +88,150 @@
     }
   },
   "lineDirections": {
+    "act3": {
+      "13": {
+        "zh": "一⋯⋯一定是某種宣傳活動⋯⋯對，是利用大氣反射原理製造的海市蜃樓⋯⋯全息投影⋯⋯",
+        "direction": "[nervous] [stammering]"
+      }
+    },
+    "b1a_act5": {
+      "38": {
+        "zh": "(猛然轉頭，內心)這是...車門的聲音！",
+        "direction": "[startled] [alarmed]"
+      },
+      "40": {
+        "zh": "(驚叫)門...門關了！",
+        "direction": "[shouting] [alarmed]"
+      }
+    },
+    "b1a_act6": {
+      "4": {
+        "zh": "(情緒崩潰，帶著哭腔指著李杰)都是你！如果你不帶頭下車，我們現在就已經在回家的路上了！",
+        "direction": "[crying] [angry]"
+      },
+      "41": {
+        "zh": "(突然大喊)等...等等我！你們別丟下我一個人！",
+        "direction": "[shouting] [panicked]"
+      }
+    },
+    "b1a_b2a_b3a_act12": {
+      "11": {
+        "zh": "(看到血跡,臉色更加蒼白) 血...是血...眼鏡男...是不是被...被野獸襲擊了?森林裡...會不會有...很可怕的動物?",
+        "direction": "[frightened] [trembling voice]"
+      }
+    },
+    "b1a_b2a_b3a_act13": {
+      "8": {
+        "zh": "(也跟著喊,聲音有些顫抖) 有人在嗎——?",
+        "direction": "[shouting] [trembling voice]"
+      }
+    },
+    "b1b_act6": {
+      "32": {
+        "zh": "(第一個崩潰,聲音因恐懼而顫抖)幽⋯⋯幽冥⋯⋯之都?這是什麼鬼地方?",
+        "direction": "[terrified] [trembling voice]"
+      },
+      "33": {
+        "zh": "(哭腔)這不是回家的路⋯⋯我們回不去了⋯⋯嗚嗚嗚⋯⋯",
+        "direction": "[sobbing]"
+      },
+      "35": {
+        "zh": "(臉色慘白,驚慌失措地大叫)完了!我們完了!這是地獄的入口嗎?我們會被鬼抓走的!我不想死啊!",
+        "direction": "[screaming] [panicked]"
+      },
+      "38": {
+        "zh": "(也哭了起來)我們⋯⋯我們真的回不去了嗎?",
+        "direction": "[crying]"
+      }
+    },
+    "b1b_act7": {
+      "5": {
+        "zh": "(憤怒地大吼)都是你這種膽小鬼!剛才在「寂海」站屁都不敢放一個!現在就知道鬼吼鬼叫!",
+        "direction": "[shouting] [furious]"
+      },
+      "8": {
+        "zh": "(將家人護在身後,憤怒地回擊)你吼什麼!孩子害怕哭一下怎麼了?你有時間在這裡亂罵人,不如想想怎麼離開這裡!",
+        "direction": "[shouting] [angry]"
+      },
+      "65": {
+        "zh": "(哭著說)他們吵得很兇,然後就開始推來推去⋯⋯媽媽也在哭⋯⋯",
+        "direction": "[crying]"
+      }
+    },
+    "b1b_act8": {
+      "10": {
+        "zh": "(聲音嘶啞,絕望地喊)等等⋯⋯等等啊⋯⋯",
+        "direction": "[desperate] [crying out]"
+      },
+      "12": {
+        "zh": "(哭著撲向母親)媽媽!",
+        "direction": "[crying]"
+      },
+      "18": {
+        "zh": "(泣不成聲)你爸爸⋯⋯你爸爸他⋯⋯",
+        "direction": "[sobbing]"
+      },
+      "34": {
+        "zh": "(哭泣)就像之前一樣,門突然就關了⋯⋯我的丈夫還在車上⋯⋯",
+        "direction": "[crying]"
+      }
+    },
+    "b1b_b2a_act11": {
+      "22": {
+        "zh": "(緩緩放下手,低聲)死了⋯⋯",
+        "direction": "[shaken] [horrified]"
+      },
+      "48": {
+        "zh": "(跪下,翻過身體)小林先生!",
+        "direction": "[shouting] [desperate]"
+      },
+      "54": {
+        "zh": "(顫抖著伸手觸碰傷口邊緣)這是⋯⋯劍傷?",
+        "direction": "[trembling voice] [horrified]"
+      },
+      "58": {
+        "zh": "(內心,震驚)這是⋯⋯被謀殺的。而且兇手用的是劍⋯⋯",
+        "direction": "[shocked] [shaken]"
+      },
+      "68": {
+        "zh": "(內心)如果連小林先生這樣一個成年男性都能被輕易殺害⋯⋯那留在小屋裡的小林智子和孩子們⋯⋯",
+        "direction": "[alarmed] [fearful]"
+      },
+      "70": {
+        "zh": "(猛然站起,驚恐)他們有危險!",
+        "direction": "[panicked] [shouting]"
+      }
+    },
+    "b1b_b2a_act12": {
+      "10": {
+        "zh": "(大喊)小林女士!",
+        "direction": "[shouting] [desperate]"
+      }
+    },
+    "b1b_b2a_act13": {
+      "45": {
+        "zh": "(心中一緊)小林女士!",
+        "direction": "[shouting] [desperate]"
+      },
+      "59": {
+        "zh": "(緩緩收回手)死了⋯⋯",
+        "direction": "[shaken] [horrified]"
+      }
+    },
+    "b1b_b2a_act14": {
+      "22": {
+        "zh": "(內心,震驚)這個尺寸⋯⋯和我追蹤過來的那行女性腳印一樣!",
+        "direction": "[shocked] [alarmed]"
+      },
+      "36": {
+        "zh": "(低聲)至少⋯⋯讓你安息吧。",
+        "direction": "[choked up] [sorrowful]"
+      },
+      "40": {
+        "zh": "(對著墳墓)對不起⋯⋯",
+        "direction": "[voice breaking] [anguished]"
+      }
+    },
     "b1a_b2a_act8": {
       "10": {
         "zh": "(朝著前方的濃霧大喊)大叔！你們在哪裡？",

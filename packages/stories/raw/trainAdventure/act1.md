@@ -4,6 +4,10 @@
 the same late-night Shinjuku Chuo Line platform as the reference image: steel canopy roof with lattice girders and rows of white fluorescent tubes, square brushed-steel pillars, glossy light-grey tiled floor, yellow tactile strip along the platform edge, tracks running into a black tunnel mouth at the far end, a black departure board with glowing amber bars and no readable characters, silver metal benches against a low back wall with a steel railing, the Tokyo night city with lit office towers beyond; no advertisements. Camera: a wide establishing shot at standing eye level over Li Jie's shoulder, looking down the platform toward the tunnel. In the left foreground Li Jie (28-year-old man, short black hair, dark suit jacket, a black backpack strap over his shoulder) is seen from behind, standing behind the yellow line. In the middle ground the four university students stand in a loose circle near the yellow line, laughing, from left to right: Kenta (messy light-brown hair, black-and-grey track jacket over a graphic tee), Asuka (high brown ponytail, denim jacket), Misaki (dark chin-length bob, lavender cardigan, lilac floral skirt, cream shoulder bag), Takumi (short black hair, black knit sweater). Saito Ren (young man, short black hair, rimless glasses, navy blazer over a plain white tee, dark trousers) is not part of their circle: he stands alone a few metres further down the platform toward the tunnel, just behind the yellow strip, smaller in the middle distance, with clear empty floor between him and the students, looking down at his phone and glancing sideways at them. On the left, at the end of a silver bench against the low back wall, Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones) sketches alone in a worn sketchbook; just beyond her bench, in the shadow of a square steel pillar, Ling Mo (black hooded sweatshirt, hood pulled low over the face) leans motionless. A few late-night commuters stand far behind, small, out of focus, with no visible faces, never in front of the cast. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```bgm
+late-night-calm
+```
+
 **旁白**：深夜，新宿車站的中央線月台。電子顯示板在黑夜中閃爍著冷白色的光芒，數字跳動間透出一種機械式的冷漠。午夜十一點五十分——最後一班往高尾方向的列車，即將進站。
 
 **旁白**：月台上的空氣厚重而黏膩，混雜著居酒屋飄散出的酒精味、便利店炸雞的油膩香氣。週末的狂歡正在落幕，人群三三兩兩地散落在長椅與立柱之間。
@@ -172,6 +176,10 @@ ling_mo.watcher
 reuse _root/act1_s0
 ```
 
+```sfx
+station-chime
+```
+
 **旁白**：這時，月台的廣播響起，打斷了李杰的思緒。
 
 **廣播聲**：往高尾方向的末班車即將進站，請各位乘客退到黃線後方等候。
@@ -180,7 +188,15 @@ reuse _root/act1_s0
 the same late-night Shinjuku Chuo Line platform as the reference image: steel canopy roof with lattice girders and rows of white fluorescent tubes, square brushed-steel pillars, glossy light-grey tiled floor, yellow tactile strip along the platform edge, tracks running into a black tunnel mouth at the far end, a black departure board with glowing amber bars and no readable characters, silver metal benches against a low back wall with a steel railing, the Tokyo night city with lit office towers beyond; no advertisements. Camera: low, near the platform edge, looking straight down the length of the tracks and the platform toward the black tunnel mouth at the far end, the yellow tactile strip running away from the camera like a guide line. Inside the darkness of the tunnel mouth, two bright white headlights have just broken through, their glare blooming in a soft halo, light spilling forward along the rails and glinting on the steel; no train body is visible, only the lights in the dark. The departure board glows above. A few late-night commuters far down the platform step back behind the yellow line as small dark silhouettes with no visible faces. No train carriages, no train front. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```sfx
+train-arrival
+```
+
 **旁白**：遠處的隧道口開始透出微弱的光芒。列車的頭燈劃破黑暗，伴隨著逐漸清晰的軌道摩擦聲，一節節銀白色的車廂緩緩駛入月台。冰冷的金屬車身反射著月台的燈光，像一條冰冷的銀蛇。
+
+```sfx
+train-doors-open
+```
 
 **旁白**：列車平穩地停下，車門發出「嘶」的一聲打開。冷氣從車廂內湧出，帶來一股混合著消毒水與陳舊座椅味道的氣息。等待的人群開始緩緩移動，一個接一個地走進車廂。
 
@@ -202,6 +218,10 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **廣播聲**：車門即將關閉，請注意。
 
+```sfx
+train-doors-close
+```
+
 **旁白**：車門緩緩合攏，發出沉悶的「咔嚓」聲，像某種儀式的完成。列車輕輕震動了一下，開始緩緩啟動。窗外的城市燈火開始向後倒退，霓虹燈的光影在玻璃上一閃而過，漸漸變得模糊、遙遠。
 
 **李杰**：(內心)又是一個平凡的夜晚⋯⋯又是一段平凡的旅程。明天醒來，一切照舊。
@@ -209,5 +229,9 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 **旁白**：此刻的他還無法想像，這輛將他帶離熟悉城市的列車，將會把他帶往一個怎樣的命運。而那些此刻看似平凡的乘客們——那個安靜的女孩、那四個青春洋溢的大學生、那個故作深沉的膽小眼鏡男，還有那個神秘的黑衣男。
 
 **旁白**：他們即將一同經歷一場，超越所有人理解的旅程。
+
+```sfx
+lights-flicker
+```
 
 **旁白**：車廂內的燈光微微閃爍了一下，隨後恢復正常。列車駛入了黑暗的隧道，窗外的世界徹底被吞沒。只剩下車輪與軌道摩擦的聲音，在寂靜中無止盡地迴響。

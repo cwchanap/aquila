@@ -4,6 +4,10 @@
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Medium shot from behind, straight on toward the RIGHT wall: the camera stands in the aisle behind the four university students and looks straight at the windows above their bench. The students have scrambled onto their knees on the bench and press close to the glass with their backs to the camera, from left to right: Takumi (short black hair, black knit sweater), Misaki (dark chin-length bob, lavender cardigan, lilac floral skirt), Asuka (high brown ponytail, denim jacket), and Kenta (messy light-brown hair, black-and-grey track jacket), Kenta pointing up at the sky. Their silhouettes are dark against the huge windows, which show a vast mirror-still black sea under two violet crescent moons, one large and one small, each a thin sickle with its disc dark, with strange stars between them in an odd slowly rotating pattern; cold violet light spills into the carriage. The frame holds their whole seven-seat bench section between two curved grey partitions, with only two silver poles standing at the seat front edge, none in the middle of the group: Takumi kneels against the left partition, and in the right-most seat against the right partition Saito Ren (young man, short black hair, rimless glasses, navy blazer over a plain white tee) sits facing the camera, frozen and pale, gripping his knees, his head turned up over his shoulder toward the window, with two empty seats between him and Kenta. Nobody else is in view, and the window glass shows no reflections of people and no glare. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text, no logo
 ```
 
+```sfx
+light-curtain
+```
+
 **旁白**：列車穿過了那片詭異的藍黑色光幕。瞬間，一切都變了。車廂內的震動忽然變得極其輕微，列車彷彿漂浮在看不見的軌道上。
 
 **旁白**：刺眼的光芒褪去。一個絕對不應存在的，卻又無比真實的世界，展現在所有乘客眼前。
@@ -82,13 +86,25 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 
 **旁白**：這句話讓混亂的車廂暫時安靜下來。
 
+```sfx
+train-brakes
+```
+
 **旁白**：車站很小，只有一個簡陋的月台和一座破舊的候車亭。列車緩緩駛入，最終完美地停靠在月台旁。
 
 **旁白**：月台上，立著一塊被海風嚴重侵蝕的站牌。上面用古老字體寫著兩個字——「寂海」。
 
 **李杰**：(內心)寂海⋯⋯
 
+```bgm
+stop
+```
+
 **旁白**：車廂內，所有人都屏住了呼吸，等待著廣播。但是——只有死一樣的寂靜。
+
+```sfx
+train-doors-open
+```
 
 **旁白**：在令人窒息的沉默中，車門發出「嘶」的一聲輕響。車門緩緩向兩側滑開。
 
@@ -96,7 +112,15 @@ the same Chuo Line commuter carriage as the reference image: side-facing navy pa
 the same Chuo Line commuter carriage as the reference image: side-facing navy patterned bench seats split by silver stanchion poles, silver grab rails with white triangular hand straps, flat white LED ceiling panels, large rectangular windows above the benches, light-grey floor; the benches come in seven-seat sections, each ending in a curved grey partition panel, with a sliding door with yellow edging between sections, and no seat ever extends in front of a door; each seven-seat section has exactly two silver stanchion poles rising from the front lip of the seats, one between the 2nd and 3rd seats and one between the 5th and 6th seats counted from either partition, splitting it 2-3-2, plus the grab bar on each partition; every pole runs straight down past the seat front to a small round flange on the floor, with no hook, bend or stub; no pole is out in the aisle, behind the seats against the windows or in front of the glass; no advertisements. Camera in the aisle at standing eye level, facing a LEFT-side sliding door straight on; the door, near the end of the carriage, stands slid fully open in the left third of the frame, with only a short stretch of wall to its left. Through the opening, right outside: a small abandoned rural station on the forest side of the train: a short platform of cracked grey-white stone slabs with moss in the cracks, level with the carriage floor; along the far side of the platform stands a real single-storey wooden station house, several times the size of a shelter and long enough to hold rows of benches inside, with a low tiled roof whose deep eaves overhang the platform, dark weathered wooden plank walls full of cracks and mould stains, glassless window openings, and a wide open doorway onto pitch darkness inside; a faded, weather-worn timetable board hangs beside the doorway with no readable writing; a few old paper lanterns hang unlit from the eaves, swaying in the wind; a weathered wooden station sign on two posts stands on the platform, bearing the two large characters 寂海 in an old-fashioned font with a line of tiny worn-away marks beneath them that cannot be read; behind the station house rises a wall of towering, dense, dark forest, and a narrow dirt path leads into the trees only from the right-hand end of the platform, seen facing the station house, with no path at the left-hand end; no lights and nobody on the platform. No moon in view; cold violet moonlight. The windows above the bench show the same dark forest behind the platform. Cold wind blows in and stirs the hanging straps. Right of the door, behind the curved grey partition, Emi (young woman, long chestnut hair, beige cotton dress, white wired earphones, plain white canvas sneakers) sits frozen in the end seat, hugging herself, and beside her Li Jie (28-year-old man, short black hair, dark suit jacket, loosened navy tie, white shirt, black backpack) sits forward on the edge of his seat; both stare at the open door. In the right third of the frame Yamamoto (late-40s man, short grey-streaked hair, no glasses, olive-khaki chore jacket worn open over a cream henley, no tie, dark brown chinos, dark brown lace-up shoes) stands in the aisle a step back from the doorway, hesitant, staring out. Nobody moves. Only the people named here are in view; the window glass shows only the dark forest outside, with no reflections of people and no glare. Muted cold palette, moody cinematic visual-novel background art, 16:9, no text except the two characters 寂海 on the station sign, no logo
 ```
 
+```sfx
+cold-wind
+```
+
 **旁白**：一股冰冷的空氣從外面灌了進來——帶著濃郁的鹹味和陌生草木的氣息。月台外，是一片深不見底的黑暗。沒有燈光。沒有人影。
+
+```bgm
+lonely-dread
+```
 
 **旁白**：只有那兩輪紫色的殘月，還有那片死寂的黑色海洋，靜靜地注視著他們。
 
@@ -130,6 +154,14 @@ reuse _root/act3_s4
 
 **李杰**：(內心)留下，是待在這失控的鐵盒裡；出去，是踏入一個無法理解的世界⋯⋯我們⋯⋯到底該怎麼辦？
 
+```sfx
+cold-wind
+```
+
 **旁白**：冰冷的風持續從敞開的車門吹進來。兩輪紫月靜靜地掛在天空中，像是在等待著他們的決定。
+
+```bgm
+stop
+```
 
 **旁白**：時間彷彿凝固了。而選擇的時刻，終將到來。

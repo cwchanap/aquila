@@ -1,7 +1,6 @@
 import {
     compareQualifiedAssetIds,
     isSafeLogicalKey,
-    isSha256,
     isStoryId,
     type PublicationTarget,
 } from '@aquila/stories/runtime-assets';
@@ -17,22 +16,16 @@ import {
     type AudioPublicationPlan,
 } from './audio-publication-plan';
 import { buildPreparedAudioRelease } from './audio-runtime-release';
-import { sourceArchiveCandidates, type AudioSourcePlan } from './audio-source';
+import type { AudioSourcePlan } from './audio-source';
 import { verifyStoredAudioRelease } from './audio-candidate-verifier';
 import { PublisherError } from './errors';
-import {
-    inspectImmutableCandidate,
-    publishImmutableCandidate,
-    type PlannedImmutableCandidate,
-} from './immutable-candidate';
-import { sha256Bytes } from './hash';
+import { publishImmutableCandidate } from './immutable-candidate';
 import { type ProgressSink, type PublisherReportV1 } from './report';
 import type { DeliveryStore } from './stores/delivery-store';
 import type { PublisherActionV1 } from './types';
 
 export interface PublishAudioReleaseOptions {
     readonly store: DeliveryStore;
-    readonly sourceStore: DeliveryStore;
     readonly storyId: string;
     readonly target: PublicationTarget;
     readonly sourcePlan: AudioSourcePlan;
@@ -76,16 +69,8 @@ function validateSourcePlan(
         if (!isSafeLogicalKey(source.key)) {
             throw inputError('Audio source plan contains an unsafe cue key');
         }
-        if (!isSha256(source.sourceSha256)) {
-            throw inputError(
-                'Audio source plan contains an invalid source digest'
-            );
-        }
-        if (sha256Bytes(source.sourceBytes) !== source.sourceSha256) {
-            throw inputError('Audio source bytes do not match their digest');
-        }
-        if (source.receiptBytes.byteLength === 0) {
-            throw inputError('Audio source plan contains an empty receipt');
+        if (source.sourceBytes.byteLength === 0) {
+            throw inputError('Audio source plan contains an empty sound file');
         }
     }
 }
@@ -110,27 +95,6 @@ export async function normalizeAudioSourcePlan(
         );
     }
     return normalized;
-}
-
-async function inspectArchive(
-    sourcePlan: AudioSourcePlan,
-    sourceStore: DeliveryStore
-): Promise<readonly PlannedImmutableCandidate[]> {
-    const candidates = sourceArchiveCandidates(sourcePlan);
-    const plans: PlannedImmutableCandidate[] = [];
-    for (const candidate of candidates) {
-        plans.push(await inspectImmutableCandidate(sourceStore, candidate));
-    }
-    return plans;
-}
-
-async function publishArchive(
-    candidates: readonly PlannedImmutableCandidate[],
-    sourceStore: DeliveryStore
-): Promise<void> {
-    for (const candidate of candidates) {
-        await publishImmutableCandidate(sourceStore, candidate);
-    }
 }
 
 async function publishObjects(
@@ -229,37 +193,12 @@ export async function publishAudioRelease(
         coverage: options.sourcePlan.coverage,
     });
 
-    const archivePlans = await inspectArchive(
-        options.sourcePlan,
-        options.sourceStore
-    );
-    progress(options.progress, {
-        stage: 'inspect',
-        completed: archivePlans.length,
-        total: archivePlans.length,
-        message: 'inspected audio archive candidates',
-    });
-
-    // Preflight the delivery destination before mutating the source bucket:
-    // buildAudioPublicationPlan inspects delivery objects/manifest and reads
-    // the advisory pointer, either of which can fail on a conflicting or
-    // malformed destination. Running this read-only inspection before the
-    // archive write ensures a destination already known to be unusable does
-    // not cause source-bucket mutations before the command fails. Write
-    // ordering is unchanged — source archives are still written before any
-    // delivery object.
+    // Inspect the delivery destination before writing to it: it can fail on a
+    // conflicting or malformed destination, and nothing is mutated yet.
     const plan = await buildAudioPublicationPlan({
         store: options.store,
         preparedRelease,
         progress: options.progress,
-    });
-
-    await publishArchive(archivePlans, options.sourceStore);
-    progress(options.progress, {
-        stage: 'upload',
-        completed: archivePlans.length,
-        total: archivePlans.length,
-        message: 'archived audio sources',
     });
 
     const objectResults = await publishObjects(plan, options.store);

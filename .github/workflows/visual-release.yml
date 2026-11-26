@@ -1,10 +1,11 @@
 name: Visual Release
 
-# Publishes a story's backgrounds and portraits to the R2 delivery bucket and
-# makes that release live. Generated media is served from the CDN, never from
-# the Vercel bundle, so merging an art PR to main is what puts the new art in
-# the reader. Run it by hand to go live before a merge (Vercel previews read
-# the production release too) or to roll back.
+# Publishes a story's backgrounds and portraits, or its sound effects and
+# music, to the R2 delivery bucket and makes that release live. Generated media
+# is served from the CDN, never from the Vercel bundle, so merging an art or
+# sound PR to main is what puts it in the reader. Run it by hand to go live
+# before a merge (Vercel previews read the production release too) or to roll
+# back. Art and sound are two separate releases of the same story.
 #
 # The Seventh Mirror is left out: it follows the per-environment preview
 # pointers and goes through the Visual Novel Release Gate instead.
@@ -15,10 +16,17 @@ on:
       - 'packages/assets/media/*/backgrounds/**'
       - 'packages/assets/media/*/characters/**'
       - '!packages/assets/media/*/backgrounds/_reference/**'
+      - 'packages/assets/media/*/sfx/**'
+      - 'packages/assets/media/*/bgm/**'
   workflow_dispatch:
     inputs:
+      media:
+        description: Which release to publish or roll back
+        type: choice
+        options: [visual, audio]
+        default: visual
       action:
-        description: publish releases the art on the selected branch; rollback returns to an earlier release
+        description: publish releases the art or sound on the selected branch; rollback returns to an earlier release
         type: choice
         options: [publish, rollback]
         default: publish
@@ -45,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      stories: ${{ steps.pick.outputs.stories }}
+      releases: ${{ steps.pick.outputs.releases }}
     steps:
       # A push can carry many commits (Rebase and merge) and many files, so
       # diff the commit before the push against the pushed one with git. Trees
@@ -59,12 +67,13 @@ jobs:
           sparse-checkout: .github
           fetch-depth: 1
 
-      - name: Pick the stories to release
+      - name: Pick the releases to publish
         id: pick
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_STORY: ${{ inputs.story }}
+          INPUT_MEDIA: ${{ inputs.media }}
           BEFORE_SHA: ${{ github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
@@ -73,38 +82,50 @@ jobs:
               echo 'The Seventh Mirror goes through the Visual Novel Release Gate, not this workflow' >&2
               exit 1
             fi
-            echo "stories=$(jq -cn --arg story "$INPUT_STORY" '[$story]')" >> "$GITHUB_OUTPUT"
+            echo "releases=$(jq -cn --arg story "$INPUT_STORY" --arg media "$INPUT_MEDIA" '[{story: $story, media: $media}]')" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git fetch --no-tags --depth=1 --filter=blob:none origin "$BEFORE_SHA"
           # --no-renames lists both the old and the new path of a moved file.
           changed=$(git diff --no-renames --name-only "$BEFORE_SHA" "$HEAD_SHA" -- packages/assets/media)
-          stories=$(printf '%s\n' "$changed" \
+          art=$(printf '%s\n' "$changed" \
             | grep -v '/backgrounds/_reference/' \
             | sed -nE 's#^packages/assets/media/([^/]+)/(backgrounds|characters)/.*#\1#p' \
             | sort -u \
             | grep -vx the_seventh_mirror || true)
-          echo "Stories with changed art: ${stories:-none}"
-          echo "stories=$(printf '%s' "$stories" | jq -Rsc 'split("\n") | map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+          sound=$(printf '%s\n' "$changed" \
+            | sed -nE 's#^packages/assets/media/([^/]+)/(sfx|bgm)/.*#\1#p' \
+            | sort -u \
+            | grep -vx the_seventh_mirror || true)
+          echo "Stories with changed art: ${art:-none}"
+          echo "Stories with changed sound: ${sound:-none}"
+          releases=$(jq -cn --arg art "$art" --arg sound "$sound" '
+            ($art | split("\n") | map(select(length > 0) | {story: ., media: "visual"}))
+            + ($sound | split("\n") | map(select(length > 0) | {story: ., media: "audio"}))')
+          echo "releases=$releases" >> "$GITHUB_OUTPUT"
 
   release:
     needs: stories
-    if: needs.stories.outputs.stories != '[]'
+    if: needs.stories.outputs.releases != '[]'
+    name: release ${{ matrix.release.media }} ${{ matrix.release.story }}
     runs-on: ubuntu-latest
     # Encoding takes 5 to 8 seconds per image on four cores, so a full
-    # train_adventure release is 15 to 25 minutes.
+    # train_adventure art release is 15 to 25 minutes. A sound release is a few
+    # dozen short files and takes a couple of minutes.
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        story: ${{ fromJSON(needs.stories.outputs.stories) }}
-    # One run per story at a time. A queued run is only replaced by a newer
-    # run for the same story, and that run publishes all of main's art.
+        release: ${{ fromJSON(needs.stories.outputs.releases) }}
+    # One run per story and release kind at a time. A queued run is only
+    # replaced by a newer run for the same story and kind, and that run
+    # publishes all of main's art (or sound).
     concurrency:
-      group: visual-release-${{ matrix.story }}
+      group: visual-release-${{ matrix.release.story }}-${{ matrix.release.media }}
       cancel-in-progress: false
     env:
-      STORY: ${{ matrix.story }}
+      STORY: ${{ matrix.release.story }}
+      MEDIA: ${{ matrix.release.media }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -123,8 +144,13 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # The sound encoder needs ffmpeg and ffprobe.
+      - name: Install ffmpeg
+        if: env.MEDIA == 'audio'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
       - name: Publish and activate
-        if: inputs.action != 'rollback'
+        if: inputs.action != 'rollback' && env.MEDIA == 'visual'
         shell: bash
         env:
           R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
@@ -140,6 +166,46 @@ jobs:
             --json > .tmp/report.json
           jq -r .manifestSha256 .tmp/report.json > .tmp/manifest-sha256
 
+      # Sound publishes first and goes live in a second step; the report keeps
+      # the publish counts and warnings (cues that have no sound file yet).
+      - name: Publish and activate sound
+        if: inputs.action != 'rollback' && env.MEDIA == 'audio'
+        shell: bash
+        env:
+          R2_RELEASE_ACCESS_KEY_ID: ${{ secrets.R2_RELEASE_ACCESS_KEY_ID }}
+          R2_RELEASE_SECRET_ACCESS_KEY: ${{ secrets.R2_RELEASE_SECRET_ACCESS_KEY }}
+        run: |
+          mkdir -p .tmp
+          config=$(grep -lF "storyId: '$STORY'" packages/stories/raw/*/compiler.config.ts | head -n 1 || true)
+          if [[ -z "$config" ]]; then
+            echo "No raw story folder has storyId $STORY" >&2
+            exit 1
+          fi
+          folder=$(basename "$(dirname "$config")")
+          cli=packages/infra-cloudflare/src/publisher/cli.ts
+          bun "$cli" publish \
+            --media audio \
+            --story "$STORY" \
+            --story-folder "$folder" \
+            --environment production \
+            --source-root packages/assets/media \
+            --destination r2 \
+            --json > .tmp/publish.json
+          release=$(jq -r .releaseId .tmp/publish.json)
+          sha=$(jq -r .manifestSha256 .tmp/publish.json)
+          bun "$cli" activate \
+            --media audio \
+            --story "$STORY" \
+            --environment production \
+            --release "$release" \
+            --expect-manifest-sha256 "$sha" \
+            --confirm-production "$STORY" \
+            --destination r2 \
+            --json > .tmp/activate.json
+          jq -s '.[0] + {counts: .[1].counts, warnings: .[1].warnings}' \
+            .tmp/activate.json .tmp/publish.json > .tmp/report.json
+          echo "$sha" > .tmp/manifest-sha256
+
       - name: Roll back
         if: inputs.action == 'rollback'
         shell: bash
@@ -154,6 +220,7 @@ jobs:
             exit 1
           fi
           bun packages/infra-cloudflare/src/publisher/cli.ts releases \
+            --media "$MEDIA" \
             --story "$STORY" \
             --environment production \
             --destination r2 \
@@ -166,6 +233,7 @@ jobs:
             exit 1
           fi
           bun packages/infra-cloudflare/src/publisher/cli.ts rollback \
+            --media "$MEDIA" \
             --story "$STORY" \
             --environment production \
             --release "$RELEASE_ID" \
@@ -178,6 +246,7 @@ jobs:
         shell: bash
         run: |
           bun packages/infra-cloudflare/src/verify.ts \
+            --media "$MEDIA" \
             --story "$STORY" \
             --environment production \
             --expect-manifest-sha256 "$(cat .tmp/manifest-sha256)" \
@@ -192,7 +261,7 @@ jobs:
             exit 0
           fi
           jq -r --arg commit "$(git rev-parse --short HEAD)" '
-            "### \(.storyId): \(.command) \(.status)",
+            "### \(.storyId) \(.media // "visual"): \(.command) \(.status)",
             "",
             "| | |",
             "|---|---|",
@@ -201,12 +270,17 @@ jobs:
             "| Live release | `\(.pointer.afterReleaseId // "unknown")` |",
             "| Manifest sha256 | `\(.manifestSha256 // "none")` |",
             "| Live before | `\(.pointer.beforeReleaseId // "none")` |",
-            "| Objects created / reused | \(.counts.objectsCreated // 0) / \(.counts.objectsReused // 0) |"
+            "| Objects created / reused | \(.counts.objectsCreated // 0) / \(.counts.objectsReused // 0) |",
+            (if (.warnings // []) | length > 0 then
+              "",
+              "Warnings:",
+              (.warnings[] | "- \(.code): \(.message)\(if .count then " (\(.count): \((.sampleIdentities // []) | join(", ")))" else "" end)")
+            else empty end)
           ' .tmp/report.json >> "$GITHUB_STEP_SUMMARY"
           before=$(jq -r '.pointer.beforeReleaseId // empty' .tmp/report.json)
           if [[ -n "$before" && "$(jq -r '.pointer.changed // false' .tmp/report.json)" == "true" ]]; then
             {
               echo
-              echo "To undo, run this workflow with action \`rollback\`, story \`$STORY\` and release id \`$before\`."
+              echo "To undo, run this workflow with action \`rollback\`, media \`$MEDIA\`, story \`$STORY\` and release id \`$before\`."
             } >> "$GITHUB_STEP_SUMMARY"
           fi

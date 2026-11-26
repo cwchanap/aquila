@@ -2,7 +2,6 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { loadAudioPlan } from '../../audio-plan-loader';
 import {
-    audioGenerationSpecSha256,
     buildAudioGenerationSpec,
     buildAudioGenerationSpecSet,
     estimateScheduledAudioCostUsd,
@@ -48,7 +47,7 @@ describe('audio generation spec', () => {
             durationMs: 90_000,
             provider: 'elevenlabs',
             modelId: 'music_v2',
-            outputFormat: 'auto',
+            outputFormat: 'mp3_44100_128',
             loopIntent: true,
             forceInstrumental: true,
         });
@@ -89,19 +88,6 @@ describe('audio generation spec', () => {
         const plan = loadAudioPlan(rawDir);
         expect(plan).toBeDefined();
         expect(buildAudioGenerationSpecSet(plan!.assets).issues).toEqual([]);
-    });
-
-    it('hashes every paid input', () => {
-        const spec = buildAudioGenerationSpec({
-            key: 'impact',
-            type: 'sfx',
-            prompt: 'Muted impact',
-            durationMs: 900,
-        });
-        expect(audioGenerationSpecSha256(spec)).toMatch(/^[a-f0-9]{64}$/);
-        expect(
-            audioGenerationSpecSha256({ ...spec, promptInfluence: 0.5 })
-        ).not.toBe(audioGenerationSpecSha256(spec));
     });
 
     it('estimates over the repeated scheduled list, not unique keys', () => {

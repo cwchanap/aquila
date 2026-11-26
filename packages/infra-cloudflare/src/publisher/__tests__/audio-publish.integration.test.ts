@@ -31,20 +31,13 @@ afterEach(async () => {
 });
 
 function sourcePlan(): AudioSourcePlan {
-    const sourceBytes = Uint8Array.from([1, 2, 3, 4]);
     const source: PreparedAudioSource = {
         type: 'sfx',
         key: 'door-open',
         plannedDurationMs: 1_000,
         loop: false,
-        candidateId: 'candidate-1',
-        sourceSha256: sha256Bytes(sourceBytes),
-        sourceBytes,
-        sourceFilename: 'door.wav',
-        sourceMediaType: 'audio/wav',
-        receiptBytes: new TextEncoder().encode(
-            '{"candidateId":"candidate-1"}\n'
-        ),
+        sourceBytes: Uint8Array.from([1, 2, 3, 4]),
+        sourceFilename: 'door-open.mp3',
     };
     return {
         storyId: STORY_ID,
@@ -57,19 +50,24 @@ function sourcePlan(): AudioSourcePlan {
                 disposition: 'included',
             },
         ],
-        unusedPlanKeys: [],
-        selectedUnusedKeys: [],
         diagnostics: [],
     };
 }
 
-function emptySourcePlan(): AudioSourcePlan {
+/** A story whose cues have no sound file yet: nothing to encode. */
+function silentSourcePlan(): AudioSourcePlan {
     return {
         storyId: STORY_ID,
         sources: [],
-        coverage: [],
-        unusedPlanKeys: [],
-        selectedUnusedKeys: [],
+        coverage: [
+            {
+                type: 'sfx',
+                key: 'door-open',
+                usageCount: 1,
+                disposition: 'omitted',
+                reason: 'no sound file committed yet',
+            },
+        ],
         diagnostics: [],
     };
 }
@@ -84,10 +82,18 @@ function audioProcessRunner(
             return { exitCode: 0, stdout: new Uint8Array(), stderr: '' };
         }
         if (executable === 'ffmpeg') {
-            timeline.push('process:ffmpeg:normalize');
             const outputPath = args.at(-1);
             if (outputPath === undefined)
                 throw new Error('missing output path');
+            if (outputPath === '-') {
+                timeline.push('process:ffmpeg:measure');
+                return {
+                    exitCode: 0,
+                    stdout: new Uint8Array(),
+                    stderr: `[Parsed_loudnorm_0 @ 0x1]\n${JSON.stringify({ input_i: '-24.0' })}`,
+                };
+            }
+            timeline.push('process:ffmpeg:normalize');
             await writeFile(outputPath, normalizedBytes);
             return { exitCode: 0, stdout: new Uint8Array(), stderr: '' };
         }
@@ -127,8 +133,6 @@ class RecordingStore implements DeliveryStore {
 
     constructor(
         private readonly base: DeliveryStore,
-        private readonly label: 'source' | 'delivery',
-        private readonly failFirstImmutable = false,
         private readonly timeline: string[] = []
     ) {}
 
@@ -138,41 +142,38 @@ class RecordingStore implements DeliveryStore {
     }
 
     stat(key: string): Promise<StoredObjectMetadata | null> {
-        this.record(`${this.label}:stat:${key}`);
+        this.record(`delivery:stat:${key}`);
         return this.base.stat(key);
     }
 
     async read(key: string): Promise<StoredObject> {
-        this.record(`${this.label}:read:${key}`);
+        this.record(`delivery:read:${key}`);
         return this.base.read(key);
     }
 
     async createImmutable(request: ImmutableCreateRequest) {
-        this.record(`${this.label}:create:${request.key}`);
+        this.record(`delivery:create:${request.key}`);
         this.immutableRequests.push({
             ...request,
             bytes: Uint8Array.from(request.bytes),
         });
-        if (this.failFirstImmutable) {
-            throw new Error('source archive unavailable');
-        }
         return this.base.createImmutable(request);
     }
 
     inspectPointer(key: string): Promise<PointerSnapshot> {
-        this.record(`${this.label}:inspect-pointer:${key}`);
+        this.record(`delivery:inspect-pointer:${key}`);
         return this.base.inspectPointer(key);
     }
 
     readPointer(key: string): Promise<PointerSnapshot> {
-        this.record(`${this.label}:read-pointer:${key}`);
+        this.record(`delivery:read-pointer:${key}`);
         return this.base.readPointer(key);
     }
 
     async compareAndSwapPointer(
         request: PointerWriteRequest
     ): Promise<{ status: 'written' | 'precondition-failed'; etag?: string }> {
-        this.record(`${this.label}:cas:${request.key}`);
+        this.record(`delivery:cas:${request.key}`);
         this.pointerRequests.push({
             ...request,
             bytes: Uint8Array.from(request.bytes),
@@ -193,35 +194,17 @@ class RecordingStore implements DeliveryStore {
     }
 }
 
-async function stores(
-    options: { failArchive?: boolean; timeline?: string[] } = {}
-) {
-    const sourceRoot = await mkdtemp(join(tmpdir(), 'aquila-audio-source-'));
-    const deliveryRoot = await mkdtemp(
-        join(tmpdir(), 'aquila-audio-delivery-')
-    );
-    roots.push(sourceRoot, deliveryRoot);
-    return {
-        source: new RecordingStore(
-            new LocalDeliveryStore(sourceRoot),
-            'source',
-            options.failArchive ?? false,
-            options.timeline
-        ),
-        delivery: new RecordingStore(
-            new LocalDeliveryStore(deliveryRoot),
-            'delivery',
-            false,
-            options.timeline
-        ),
-    };
+async function deliveryStore(timeline: string[] = []) {
+    const root = await mkdtemp(join(tmpdir(), 'aquila-audio-delivery-'));
+    roots.push(root);
+    return new RecordingStore(new LocalDeliveryStore(root), timeline);
 }
 
 describe('publishAudioRelease', () => {
     it.each(['ffmpeg', 'ffprobe'] as const)(
         'fails before writes when %s is unavailable',
         async missingExecutable => {
-            const { source, delivery } = await stores();
+            const delivery = await deliveryStore();
             const unavailable: AudioProcessRunner = async executable => ({
                 exitCode: executable === missingExecutable ? 127 : 0,
                 stdout: new Uint8Array(),
@@ -232,29 +215,26 @@ describe('publishAudioRelease', () => {
             await expect(
                 publishAudioRelease({
                     store: delivery,
-                    sourceStore: source,
                     storyId: STORY_ID,
                     target: TARGET,
-                    sourcePlan: emptySourcePlan(),
+                    sourcePlan: silentSourcePlan(),
                     run: unavailable,
                 })
             ).rejects.toMatchObject({ code: 'configuration' });
 
-            expect(source.immutableRequests).toEqual([]);
             expect(delivery.immutableRequests).toEqual([]);
             expect(delivery.pointerRequests).toEqual([]);
         }
     );
 
-    it('archives every source candidate before creating public delivery objects', async () => {
+    it('levels, uploads the objects, then the manifest, verifies, and never activates', async () => {
         const timeline: string[] = [];
-        const { source, delivery } = await stores({ timeline });
+        const delivery = await deliveryStore(timeline);
         const normalizedBytes = Uint8Array.from([9, 8, 7]);
         const events: string[] = [];
 
         const report = await publishAudioRelease({
             store: delivery,
-            sourceStore: source,
             storyId: STORY_ID,
             target: TARGET,
             sourcePlan: sourcePlan(),
@@ -266,54 +246,7 @@ describe('publishAudioRelease', () => {
             },
         });
 
-        const archiveReadback = timeline.findIndex(
-            event =>
-                event ===
-                'source:read:audio/approved/example_story/sfx/door-open/' +
-                    `${sha256Bytes(Uint8Array.from([1, 2, 3, 4]))}/source.wav`
-        );
-        const publicCreate = timeline.findIndex(event =>
-            event.startsWith('delivery:create:vn/objects/')
-        );
-        const manifestCreate = timeline.findIndex(
-            event =>
-                event.includes('/runtime-manifest.json') &&
-                event.startsWith('delivery:create:')
-        );
-        const publicReadback = timeline.findIndex(
-            (event, index) =>
-                index > publicCreate &&
-                event.startsWith('delivery:read:vn/objects/')
-        );
-        const validation = events.indexOf(
-            'input:validated audio publish inputs'
-        );
-        const normalization = events.indexOf('encode:normalized audio sources');
-        const archiveInspection = events.indexOf(
-            'inspect:inspected audio archive candidates'
-        );
-        const archiveUpload = events.indexOf('upload:archived audio sources');
-        const deepVerification = events.indexOf(
-            'verify:deep-verified audio release'
-        );
-
-        expect(archiveReadback).toBeGreaterThanOrEqual(0);
-        expect(publicCreate).toBeGreaterThan(archiveReadback);
-        expect(publicReadback).toBeGreaterThan(publicCreate);
-        expect(manifestCreate).toBeGreaterThan(publicReadback);
-        expect(validation).toBeGreaterThanOrEqual(0);
-        expect(normalization).toBeGreaterThan(validation);
-        expect(archiveInspection).toBeGreaterThan(normalization);
-        expect(archiveUpload).toBeGreaterThan(archiveInspection);
-        expect(deepVerification).toBeGreaterThan(archiveUpload);
-
-        const sourceHash = sha256Bytes(Uint8Array.from([1, 2, 3, 4]));
-        const archivePrefix = `audio/approved/${STORY_ID}/sfx/door-open/${sourceHash}`;
-        const sourceKey = `${archivePrefix}/source.wav`;
-        const receiptKey = `${archivePrefix}/receipt.json`;
-        const objectKey = delivery.immutableRequests.find(request =>
-            request.key.startsWith('vn/objects/')
-        )!.key;
+        const objectKey = getAudioObjectPath(sha256Bytes(normalizedBytes));
         const manifestKey = delivery.immutableRequests.find(request =>
             request.key.endsWith('/runtime-manifest.json')
         )!.key;
@@ -322,21 +255,13 @@ describe('publishAudioRelease', () => {
             'process:ffprobe:availability',
             'progress:input:validated audio publish inputs',
             'process:ffprobe:source',
+            'process:ffmpeg:measure',
             'process:ffmpeg:normalize',
             'process:ffprobe:runtime',
             'progress:encode:normalized audio sources',
-            `source:stat:${sourceKey}`,
-            `source:stat:${receiptKey}`,
-            'progress:inspect:inspected audio archive candidates',
-            'progress:input:prepared audio release inputs',
             `delivery:stat:${objectKey}`,
             `delivery:stat:${manifestKey}`,
             `delivery:inspect-pointer:vn/audio/stories/${STORY_ID}/current.json`,
-            `source:create:${sourceKey}`,
-            `source:read:${sourceKey}`,
-            `source:create:${receiptKey}`,
-            `source:read:${receiptKey}`,
-            'progress:upload:archived audio sources',
             `delivery:create:${objectKey}`,
             `delivery:read:${objectKey}`,
             'progress:upload:published audio objects',
@@ -357,10 +282,10 @@ describe('publishAudioRelease', () => {
             ).toBeGreaterThanOrEqual(0);
             cursor = index + 1;
         }
-        expect(source.immutableRequests).toHaveLength(2);
         expect(delivery.immutableRequests).toHaveLength(2);
         expect(delivery.pointerRequests).toEqual([]);
         expect(events.at(-1)).toBe('verify:deep-verified audio release');
+        expect(events.some(event => event.includes('activation'))).toBe(false);
         expect(report).toMatchObject({
             command: 'publish',
             status: 'success',
@@ -368,84 +293,82 @@ describe('publishAudioRelease', () => {
             pointer: { changed: false },
         });
         expect(report.pointer?.afterReleaseId).toBeUndefined();
-
-        const archivedSource = await source.read(
-            source.immutableRequests[0]!.key
-        );
-        const archivedReceipt = await source.read(
-            source.immutableRequests[1]!.key
-        );
-        expect(Uint8Array.from(archivedSource.bytes)).toEqual(
-            Uint8Array.from([1, 2, 3, 4])
-        );
-        expect(Uint8Array.from(archivedReceipt.bytes)).toEqual(
-            new TextEncoder().encode('{"candidateId":"candidate-1"}\n')
-        );
-        expect(
-            delivery.immutableRequests.map(request => request.key)
-        ).not.toContain(source.immutableRequests[0]!.key);
-        expect(
-            delivery.immutableRequests.map(request => request.key)
-        ).not.toContain(source.immutableRequests[1]!.key);
-        expect(events.some(event => event.includes('activation'))).toBe(false);
     });
 
-    it('fails archive-first without delivery writes or pointer calls', async () => {
-        const { source, delivery } = await stores({ failArchive: true });
+    it('publishes a release for a story whose cues have no sound files yet', async () => {
+        const delivery = await deliveryStore();
+
+        const report = await publishAudioRelease({
+            store: delivery,
+            storyId: STORY_ID,
+            target: TARGET,
+            sourcePlan: silentSourcePlan(),
+            run: audioProcessRunner(Uint8Array.from([9, 8, 7])),
+        });
+
+        // Only the manifest: no sound object exists to upload.
+        expect(delivery.immutableRequests.map(request => request.key)).toEqual([
+            expect.stringMatching(/\/runtime-manifest\.json$/),
+        ]);
+        expect(report).toMatchObject({ command: 'publish', media: 'audio' });
+    });
+
+    it('reuses the objects and manifest of an identical second publish', async () => {
+        const delivery = await deliveryStore();
+        const run = audioProcessRunner(Uint8Array.from([9, 8, 7]));
+        const publish = () =>
+            publishAudioRelease({
+                store: delivery,
+                storyId: STORY_ID,
+                target: TARGET,
+                sourcePlan: sourcePlan(),
+                run,
+            });
+
+        await publish();
+        const second = await publish();
+
+        expect(second.status).toBe('no-op');
+        expect(second.counts).toMatchObject({
+            objectsCreated: 0,
+            manifestsCreated: 0,
+        });
+    });
+
+    it('rejects an empty sound file and duplicate cues before touching the store', async () => {
+        const delivery = await deliveryStore();
+        const plan = sourcePlan();
+        const [source] = plan.sources;
 
         await expect(
             publishAudioRelease({
                 store: delivery,
-                sourceStore: source,
                 storyId: STORY_ID,
                 target: TARGET,
-                sourcePlan: sourcePlan(),
+                sourcePlan: {
+                    ...plan,
+                    sources: [{ ...source!, sourceBytes: new Uint8Array() }],
+                },
                 run: audioProcessRunner(Uint8Array.from([9, 8, 7])),
             })
-        ).rejects.toMatchObject({ code: 'storage' });
+        ).rejects.toMatchObject({ code: 'input' });
+        await expect(
+            publishAudioRelease({
+                store: delivery,
+                storyId: STORY_ID,
+                target: TARGET,
+                sourcePlan: { ...plan, sources: [source!, source!] },
+                run: audioProcessRunner(Uint8Array.from([9, 8, 7])),
+            })
+        ).rejects.toMatchObject({ code: 'input' });
 
-        expect(delivery.immutableRequests).toEqual([]);
-        expect(delivery.pointerRequests).toEqual([]);
-        // Delivery read-only inspection (stat, inspectPointer) is allowed —
-        // it happens before the archive write by design. But no delivery
-        // writes or pointer mutations may occur.
-        expect(
-            delivery.events.filter(event =>
-                event.startsWith('delivery:create:')
-            )
-        ).toEqual([]);
-        expect(
-            delivery.events.filter(event => event.startsWith('delivery:cas:'))
-        ).toEqual([]);
+        expect(delivery.events).toEqual([]);
     });
 
-    it('reads exact archived source and receipt bytes from the private store', async () => {
-        const { source, delivery } = await stores();
-        await publishAudioRelease({
-            store: delivery,
-            sourceStore: source,
-            storyId: STORY_ID,
-            target: TARGET,
-            sourcePlan: sourcePlan(),
-            run: audioProcessRunner(Uint8Array.from([9, 8, 7])),
-        });
-
-        for (const request of source.immutableRequests) {
-            const stored = await source.read(request.key);
-            expect(Uint8Array.from(stored.bytes)).toEqual(request.bytes);
-            expect(stored.contentType).toBe(request.contentType);
-            expect(stored.cacheControl).toBe('private, max-age=0, no-store');
-        }
-        expect(
-            getAudioObjectPath(sha256Bytes(Uint8Array.from([9, 8, 7])))
-        ).toBe(delivery.immutableRequests[0]!.key);
-    });
-
-    it('discovers a malformed advisory pointer before any source-bucket mutation', async () => {
-        const { source, delivery } = await stores();
+    it('discovers a malformed advisory pointer before writing anything', async () => {
+        const delivery = await deliveryStore();
         // Poison the advisory pointer: it exists but carries a conflicting
-        // content type, so advisoryPointerState must reject it during the
-        // delivery preflight — before publishArchive writes anything.
+        // content type, so the preflight must reject it before any write.
         const conflictingPointerDelivery: DeliveryStore = {
             stat: (key: string) => delivery.stat(key),
             read: (key: string) => delivery.read(key),
@@ -473,7 +396,6 @@ describe('publishAudioRelease', () => {
         await expect(
             publishAudioRelease({
                 store: conflictingPointerDelivery,
-                sourceStore: source,
                 storyId: STORY_ID,
                 target: TARGET,
                 sourcePlan: sourcePlan(),
@@ -481,10 +403,6 @@ describe('publishAudioRelease', () => {
             })
         ).rejects.toMatchObject({ code: 'integrity' });
 
-        // The destination was known to be unusable before any source write.
-        expect(source.immutableRequests).toEqual([]);
-        expect(
-            source.events.filter(event => event.startsWith('source:create:'))
-        ).toEqual([]);
+        expect(delivery.immutableRequests).toEqual([]);
     });
 });

@@ -1,6 +1,4 @@
-import { createHash } from 'node:crypto';
 import type { AudioPlanAsset } from '../audio-plan';
-import { canonicalJson, type JsonValue } from '../runtime-assets';
 
 const SFX_MIN_DURATION_MS = 500;
 const SFX_MAX_DURATION_MS = 30_000;
@@ -33,14 +31,13 @@ type CurrentBgmAudioGenerationSpec = {
     readonly durationMs: number;
     readonly provider: 'elevenlabs';
     readonly modelId: 'music_v2';
-    readonly outputFormat: 'auto';
+    readonly outputFormat: 'mp3_44100_128';
     readonly loopIntent: true;
     readonly forceInstrumental: true;
 };
 
 export type CurrentAudioGenerationSpec =
-    | CurrentSfxAudioGenerationSpec
-    | CurrentBgmAudioGenerationSpec;
+    CurrentSfxAudioGenerationSpec | CurrentBgmAudioGenerationSpec;
 
 export interface AudioGenerationSpecIssue {
     readonly key: string;
@@ -52,32 +49,6 @@ export interface AudioGenerationSpecSet {
     readonly specs: readonly CurrentAudioGenerationSpec[];
     readonly issues: readonly AudioGenerationSpecIssue[];
 }
-
-export type AudioGenerationSpecForHash =
-    | {
-          readonly schemaVersion: 1;
-          readonly key: string;
-          readonly type: 'sfx';
-          readonly prompt: string;
-          readonly durationMs: number;
-          readonly provider: string;
-          readonly modelId: string;
-          readonly outputFormat: string;
-          readonly loop: boolean;
-          readonly promptInfluence: number;
-      }
-    | {
-          readonly schemaVersion: 1;
-          readonly key: string;
-          readonly type: 'bgm';
-          readonly prompt: string;
-          readonly durationMs: number;
-          readonly provider: string;
-          readonly modelId: string;
-          readonly outputFormat: string;
-          readonly loopIntent: boolean;
-          readonly forceInstrumental: boolean;
-      };
 
 function assertDurationInRange(
     asset: AudioPlanAsset,
@@ -152,7 +123,7 @@ export function buildAudioGenerationSpec(
         durationMs: asset.durationMs,
         provider: 'elevenlabs',
         modelId: 'music_v2',
-        outputFormat: 'auto',
+        outputFormat: 'mp3_44100_128',
         loopIntent: asset.loop,
         forceInstrumental: true,
     };
@@ -177,14 +148,6 @@ export function buildAudioGenerationSpecSet(
     }
 
     return { specs, issues };
-}
-
-export function audioGenerationSpecSha256(
-    spec: AudioGenerationSpecForHash
-): string {
-    return createHash('sha256')
-        .update(canonicalJson(spec as unknown as JsonValue))
-        .digest('hex');
 }
 
 export function estimateScheduledAudioCostUsd(

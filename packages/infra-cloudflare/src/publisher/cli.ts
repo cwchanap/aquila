@@ -1,4 +1,4 @@
-import { access, realpath } from 'node:fs/promises';
+import { realpath } from 'node:fs/promises';
 import { basename, dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, type ParseArgsConfig } from 'node:util';
@@ -67,10 +67,7 @@ interface BaseParsedCommand {
     readonly expectedManifestSha256?: ManifestByteSha256;
     readonly releasePlanPath?: string;
     readonly sourceRoot?: string;
-    readonly sourceStore?: DeliveryStore;
     readonly storyFolder?: string;
-    readonly generationRoot?: string;
-    readonly omissionsPath?: string;
     readonly audioProcessRunner?: AudioProcessRunner;
     readonly noActivate?: boolean;
     readonly reactivate?: boolean;
@@ -89,9 +86,7 @@ export interface AssetsCliDependencies {
     repositoryRoot: string;
     environment: Readonly<Record<string, string | undefined>>;
     createLocalStore: (root: string) => DeliveryStore | Promise<DeliveryStore>;
-    createR2Store: (options?: {
-        readonly bucket?: 'delivery' | 'source';
-    }) => DeliveryStore | Promise<DeliveryStore>;
+    createR2Store: () => DeliveryStore | Promise<DeliveryStore>;
     audioProcessRunner?: AudioProcessRunner;
     runCommand: AssetsCommandRunner;
     stdout: WritableStream;
@@ -131,8 +126,6 @@ const planOptions = {
     plan: { type: 'string' },
     'source-root': { type: 'string' },
     'story-folder': { type: 'string' },
-    'generation-root': { type: 'string' },
-    omissions: { type: 'string' },
 } as const satisfies OptionSchema;
 
 const publishOptions = {
@@ -280,9 +273,9 @@ function assertMediaMatrix(
                 'Audio publish does not accept pointer-control flags'
             );
         }
-        if (values.plan !== undefined || values['source-root'] !== undefined) {
+        if (values.plan !== undefined) {
             throw configurationError(
-                'Audio publication does not accept visual source or plan inputs'
+                'Audio publication does not accept a release plan'
             );
         }
         return;
@@ -290,15 +283,6 @@ function assertMediaMatrix(
     if (storyFolder !== undefined) {
         throw configurationError(
             '--story-folder is valid only for audio plan or publish'
-        );
-    }
-    if (
-        media === 'visual' &&
-        (values['generation-root'] !== undefined ||
-            values.omissions !== undefined)
-    ) {
-        throw configurationError(
-            'Audio generation inputs require --media audio'
         );
     }
 }
@@ -402,8 +386,7 @@ async function assertDestinationPathSafety(
     repositoryRoot: string,
     destinationRoot: string,
     sourceRoot: string | undefined,
-    releasePlanPath: string | undefined,
-    additionalInputPaths: readonly string[] = []
+    releasePlanPath: string | undefined
 ): Promise<void> {
     const canonicalRepository = await canonicalPath(repositoryRoot);
     const canonicalDestination = await canonicalPath(destinationRoot);
@@ -435,17 +418,6 @@ async function assertDestinationPathSafety(
             );
         }
     }
-    for (const inputPath of additionalInputPaths) {
-        const canonicalInput = await canonicalPath(inputPath);
-        if (
-            pathContains(canonicalInput, canonicalDestination) ||
-            pathContains(canonicalDestination, canonicalInput)
-        ) {
-            throw configurationError(
-                'Local destination and audio input path must not overlap'
-            );
-        }
-    }
 }
 
 async function parseDestination(
@@ -454,9 +426,7 @@ async function parseDestination(
     sourceRoot: string | undefined,
     releasePlanPath: string | undefined,
     environment: Readonly<Record<string, string | undefined>>,
-    media: PublisherMedia,
-    command: PublisherCommandName,
-    additionalInputPaths: readonly string[] = []
+    media: PublisherMedia
 ): Promise<PublicationDestination> {
     const selected = values.destination ?? 'local';
     const root = values['destination-root'];
@@ -473,27 +443,16 @@ async function parseDestination(
             await assertDestinationPathSafety(
                 repositoryRoot,
                 resolvedRoot,
-                undefined,
-                undefined,
-                additionalInputPaths
+                sourceRoot,
+                undefined
             );
         }
         await assertDestinationPathSafety(
             repositoryRoot,
             deliveryRoot,
-            media === 'visual' ? sourceRoot : undefined,
-            media === 'visual' ? releasePlanPath : undefined,
-            additionalInputPaths
+            sourceRoot,
+            media === 'visual' ? releasePlanPath : undefined
         );
-        if (media === 'audio' && command === 'publish') {
-            await assertDestinationPathSafety(
-                repositoryRoot,
-                join(resolvedRoot, 'source'),
-                undefined,
-                undefined,
-                additionalInputPaths
-            );
-        }
         return { kind: 'local', root: resolvedRoot };
     }
     if (selected !== 'r2') {
@@ -647,27 +606,6 @@ function baseCommand(
             : envSourceRoot !== undefined
               ? resolve(dependencies.repositoryRoot, envSourceRoot)
               : undefined;
-    const explicitGenerationRoot =
-        values['generation-root'] === undefined
-            ? undefined
-            : String(values['generation-root']);
-    const generationRoot =
-        media === 'audio' && (command === 'plan' || command === 'publish')
-            ? resolve(
-                  dependencies.repositoryRoot,
-                  explicitGenerationRoot ??
-                      dependencies.environment.AQUILA_AUDIO_GENERATION_ROOT ??
-                      '.tmp/audio-generation'
-              )
-            : undefined;
-    const explicitOmissionsPath =
-        values.omissions === undefined ? undefined : String(values.omissions);
-    const omissionsPath =
-        media === 'audio' && (command === 'plan' || command === 'publish')
-            ? explicitOmissionsPath === undefined
-                ? undefined
-                : resolve(dependencies.repositoryRoot, explicitOmissionsPath)
-            : undefined;
     return {
         command,
         media,
@@ -678,8 +616,6 @@ function baseCommand(
         ...(releasePlanPath === undefined ? {} : { releasePlanPath }),
         ...(sourceRoot === undefined ? {} : { sourceRoot }),
         ...(storyFolder === undefined ? {} : { storyFolder }),
-        ...(generationRoot === undefined ? {} : { generationRoot }),
-        ...(omissionsPath === undefined ? {} : { omissionsPath }),
         ...(releaseId === undefined ? {} : { releaseId }),
         ...(expectedManifestSha256 === undefined
             ? {}
@@ -708,19 +644,7 @@ async function createStore(
                 : destination.root
         );
     }
-    return media === 'audio'
-        ? dependencies.createR2Store({ bucket: 'delivery' })
-        : dependencies.createR2Store();
-}
-
-async function createAudioSourceStore(
-    destination: PublicationDestination,
-    dependencies: AssetsCliDependencies
-): Promise<DeliveryStore> {
-    if (destination.kind === 'local') {
-        return dependencies.createLocalStore(join(destination.root, 'source'));
-    }
-    return dependencies.createR2Store({ bucket: 'source' });
+    return dependencies.createR2Store();
 }
 
 function emptyCounts(pointerWritten = false): PublisherReportV1['counts'] {
@@ -841,6 +765,10 @@ export function buildReleaseListReport(
     };
 }
 
+function defaultMediaRoot(command: ParsedAssetsCommand): string {
+    return resolve(command.repositoryRoot, 'packages/assets/media');
+}
+
 async function runCommandServices(
     command: ParsedAssetsCommand
 ): Promise<PublisherReportV1> {
@@ -850,10 +778,7 @@ async function runCommandServices(
                 const sourcePlan = await prepareAudioSources({
                     storyFolder: command.storyFolder!,
                     expectedStoryId: command.storyId,
-                    generationRoot: command.generationRoot!,
-                    ...(command.omissionsPath === undefined
-                        ? {}
-                        : { omissionsPath: command.omissionsPath }),
+                    mediaRoot: command.sourceRoot ?? defaultMediaRoot(command),
                 });
                 const durationWarnings: AudioDurationWarning[] = [];
                 const assets = await normalizeAudioSourcePlan(sourcePlan, {
@@ -895,23 +820,14 @@ async function runCommandServices(
             ).report;
         case 'publish': {
             if (command.media === 'audio') {
-                if (command.sourceStore === undefined) {
-                    throw configurationError(
-                        'Audio publish requires a source archive store'
-                    );
-                }
                 const sourcePlan = await prepareAudioSources({
                     storyFolder: command.storyFolder!,
                     expectedStoryId: command.storyId,
-                    generationRoot: command.generationRoot!,
-                    ...(command.omissionsPath === undefined
-                        ? {}
-                        : { omissionsPath: command.omissionsPath }),
+                    mediaRoot: command.sourceRoot ?? defaultMediaRoot(command),
                 });
                 const durationWarnings: AudioDurationWarning[] = [];
                 const publishReport = await publishAudioRelease({
                     store: command.store,
-                    sourceStore: command.sourceStore,
                     storyId: command.storyId,
                     target: command.target,
                     sourcePlan,
@@ -1123,8 +1039,7 @@ const defaultDependencies: AssetsCliDependencies = {
     repositoryRoot: defaultRepositoryRoot,
     environment: process.env,
     createLocalStore: root => new LocalDeliveryStore(root),
-    createR2Store: options =>
-        R2DeliveryStore.createFromEnvironment({ bucket: options?.bucket }),
+    createR2Store: () => R2DeliveryStore.createFromEnvironment(),
     runCommand: runCommandServices,
     stdout: process.stdout,
     stderr: process.stderr,
@@ -1196,31 +1111,6 @@ function emitReport(
     else dependencies.stderr.write(renderHumanReport(report));
 }
 
-async function optionalAudioOmissionsPath(
-    repositoryRoot: string,
-    storyFolder: string,
-    explicitPath: string | undefined
-): Promise<string | undefined> {
-    if (explicitPath !== undefined) return explicitPath;
-    const defaultPath = resolve(
-        repositoryRoot,
-        'packages/stories/raw',
-        storyFolder,
-        'docs/audio-omissions.json'
-    );
-    try {
-        await access(defaultPath);
-        return defaultPath;
-    } catch (error) {
-        const code =
-            typeof error === 'object' && error !== null && 'code' in error
-                ? (error as { code?: unknown }).code
-                : undefined;
-        if (code === 'ENOENT' || code === 'ENOTDIR') return undefined;
-        throw configurationError('Unable to inspect audio omissions path');
-    }
-}
-
 export async function runAssetsCli(
     argv: readonly string[],
     overrides: Partial<AssetsCliDependencies> = {}
@@ -1261,20 +1151,6 @@ export async function runAssetsCli(
         storyId = parsed.storyId;
         target = parsed.target;
         media = parsed.media;
-        const optionalOmissionsPath =
-            parsed.media === 'audio' && parsed.storyFolder !== undefined
-                ? await optionalAudioOmissionsPath(
-                      dependencies.repositoryRoot,
-                      parsed.storyFolder,
-                      parsed.omissionsPath
-                  )
-                : parsed.omissionsPath;
-        // Only add an own omissionsPath when a defined path exists, so
-        // downstream spreads never observe omissionsPath: undefined.
-        const parsedWithOmissions =
-            optionalOmissionsPath === undefined
-                ? parsed
-                : { ...parsed, omissionsPath: optionalOmissionsPath };
         const hasPublicationInputs =
             command === 'plan' || command === 'publish';
         // parsed.sourceRoot already folds in the AQUILA_ASSET_SOURCE_ROOT env
@@ -1283,47 +1159,28 @@ export async function runAssetsCli(
         // resolves it against repositoryRoot, matching resolveSourceRoot's
         // default. parsed.releasePlanPath is canonical when explicit; without
         // it the plan is derived and there is no plan file to protect.
-        const sourceRootForSafety =
-            hasPublicationInputs && media === 'visual'
-                ? (parsedWithOmissions.sourceRoot ?? 'packages/assets/media')
-                : undefined;
+        const sourceRootForSafety = hasPublicationInputs
+            ? (parsed.sourceRoot ?? 'packages/assets/media')
+            : undefined;
         const planPathForSafety =
             hasPublicationInputs && media === 'visual'
-                ? parsedWithOmissions.releasePlanPath
+                ? parsed.releasePlanPath
                 : undefined;
-        const additionalInputPaths =
-            media === 'audio' &&
-            parsedWithOmissions.generationRoot !== undefined
-                ? [
-                      parsedWithOmissions.generationRoot,
-                      ...(parsedWithOmissions.omissionsPath === undefined
-                          ? []
-                          : [parsedWithOmissions.omissionsPath]),
-                  ]
-                : [];
         const destination = await parseDestination(
             values,
             dependencies.repositoryRoot,
             sourceRootForSafety,
             planPathForSafety,
             dependencies.environment,
-            media,
-            command,
-            additionalInputPaths
+            media
         );
         store = await createStore(destination, dependencies, media);
         stores.add(store);
-        const sourceStore =
-            media === 'audio' && command === 'publish'
-                ? await createAudioSourceStore(destination, dependencies)
-                : undefined;
-        if (sourceStore !== undefined) stores.add(sourceStore);
         const progress = createHumanProgressSink(dependencies.stderr);
         finalReport = await dependencies.runCommand({
-            ...parsedWithOmissions,
+            ...parsed,
             destination,
             store,
-            ...(sourceStore === undefined ? {} : { sourceStore }),
             ...(dependencies.audioProcessRunner === undefined
                 ? {}
                 : { audioProcessRunner: dependencies.audioProcessRunner }),

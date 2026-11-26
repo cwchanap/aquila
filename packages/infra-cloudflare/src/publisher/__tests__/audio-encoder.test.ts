@@ -31,10 +31,33 @@ function sourceProbe(duration = '1.250') {
     });
 }
 
+function loudnormReport(inputLufs: string) {
+    return [
+        '[Parsed_loudnorm_0 @ 0x1] ',
+        JSON.stringify({
+            input_i: inputLufs,
+            input_tp: '-1.00',
+            input_lra: '2.00',
+            input_thresh: '-40.00',
+        }),
+    ].join('\n');
+}
+
+function volumedetectReport(peakDb: string | undefined) {
+    return peakDb === undefined
+        ? '[Parsed_volumedetect_0 @ 0x1] n_samples: 0'
+        : `[Parsed_volumedetect_0 @ 0x1] max_volume: ${peakDb} dB`;
+}
+
 function successfulRunner(
     options: {
         readonly duration?: string;
         readonly sourceDuration?: string;
+        /** What loudnorm reports as the source's integrated loudness. */
+        readonly lufs?: string;
+        /** What volumedetect reports as the source's peak (short clips). */
+        readonly peakDb?: string | undefined;
+        readonly rawLoudnessReport?: string;
     } = {}
 ) {
     const calls: Array<{
@@ -42,12 +65,23 @@ function successfulRunner(
         args: readonly string[];
     }> = [];
     const outputBytes = Uint8Array.from([9, 8, 7, 6]);
+    const peakDb = 'peakDb' in options ? options.peakDb : '-20.0';
     const run: AudioProcessRunner = async (executable, args) => {
         calls.push({ executable, args: [...args] });
         if (executable === 'ffmpeg') {
             const outputPath = args.at(-1);
             if (outputPath === undefined)
                 throw new Error('missing output path');
+            if (outputPath === '-') {
+                // A loudness measurement: nothing is written, the report is
+                // on stderr.
+                const stderr =
+                    options.rawLoudnessReport ??
+                    (args.includes('volumedetect')
+                        ? volumedetectReport(peakDb)
+                        : loudnormReport(options.lufs ?? '-24.0'));
+                return { exitCode: 0, stdout: new Uint8Array(), stderr };
+            }
             await writeFile(outputPath, outputBytes);
             return { exitCode: 0, stdout: new Uint8Array(), stderr: '' };
         }
@@ -65,7 +99,15 @@ function successfulRunner(
             stderr: '',
         };
     };
-    return { calls, outputBytes, run };
+    const encodeCall = () =>
+        calls.find(
+            call => call.executable === 'ffmpeg' && call.args.at(-1) !== '-'
+        );
+    const measureCall = () =>
+        calls.find(
+            call => call.executable === 'ffmpeg' && call.args.at(-1) === '-'
+        );
+    return { calls, outputBytes, run, encodeCall, measureCall };
 }
 
 const source = {
@@ -83,9 +125,9 @@ describe('normalizeAudioAsset', () => {
 
         const result = await normalizeAudioAsset(source, fixture.run);
 
-        const ffmpeg = fixture.calls.find(call => call.executable === 'ffmpeg');
+        const ffmpeg = fixture.encodeCall();
         expect(ffmpeg).toBeDefined();
-        expect(ffmpeg?.args).toHaveLength(24);
+        expect(ffmpeg?.args).toHaveLength(26);
         expect(ffmpeg?.args.slice(0, 8)).toEqual([
             '-nostdin',
             '-hide_banner',
@@ -97,7 +139,11 @@ describe('normalizeAudioAsset', () => {
             expect.stringMatching(/source\.wav$/),
         ]);
         expect(ffmpeg?.args.slice(8, 10)).toEqual(['-map', '0:a:0']);
-        expect(ffmpeg?.args.slice(10)).toEqual([
+        expect(ffmpeg?.args.slice(10, 12)).toEqual([
+            '-af',
+            'volume=0.00dB,alimiter=limit=-3dB:level=disabled',
+        ]);
+        expect(ffmpeg?.args.slice(12)).toEqual([
             '-vn',
             '-map_metadata',
             '-1',
@@ -134,6 +180,7 @@ describe('normalizeAudioAsset', () => {
         expect(fixture.calls.map(call => call.executable)).toEqual([
             'ffprobe',
             'ffmpeg',
+            'ffmpeg',
             'ffprobe',
         ]);
         expect(fixture.calls[0]?.args).toContain('-select_streams');
@@ -144,10 +191,10 @@ describe('normalizeAudioAsset', () => {
             'file',
             expect.stringMatching(/source\.wav$/),
         ]);
-        expect(fixture.calls[2]?.args).toContain(
+        expect(fixture.calls[3]?.args).toContain(
             'stream=codec_type,codec_name,sample_rate,bit_rate,duration'
         );
-        expect(fixture.calls[2]?.args).not.toContain('-nostdin');
+        expect(fixture.calls[3]?.args).not.toContain('-nostdin');
     });
 
     it.each(['.wav', '.mp3', '.ogg', '.m4a', '.flac'] as const)(
@@ -172,13 +219,13 @@ describe('normalizeAudioAsset', () => {
                     new RegExp(`source\\.${extension.slice(1)}$`)
                 ),
             ]);
-            const ffmpeg = fixture.calls.find(
+            for (const ffmpeg of fixture.calls.filter(
                 call => call.executable === 'ffmpeg'
-            );
-            const inputIndex = ffmpeg?.args.indexOf('-i');
-            expect(inputIndex).toBe(6);
-            expect(ffmpeg?.args[inputIndex! - 2]).toBe('-protocol_whitelist');
-            expect(ffmpeg?.args[inputIndex! - 1]).toBe('file');
+            )) {
+                const inputIndex = ffmpeg.args.indexOf('-i');
+                expect(ffmpeg.args[inputIndex - 2]).toBe('-protocol_whitelist');
+                expect(ffmpeg.args[inputIndex - 1]).toBe('file');
+            }
         }
     );
 
@@ -384,5 +431,91 @@ describe('normalizeAudioAsset', () => {
         });
 
         expect(warnings).toEqual([]);
+    });
+});
+
+describe('normalizeAudioAsset leveling', () => {
+    const limiter = 'alimiter=limit=-3dB:level=disabled';
+
+    function levelFilter(fixture: ReturnType<typeof successfulRunner>) {
+        const args = fixture.encodeCall()?.args ?? [];
+        return args[args.indexOf('-af') + 1];
+    }
+
+    it('brings an sfx to -24 LUFS with one gain and a -3 dBTP ceiling', async () => {
+        const fixture = successfulRunner({ lufs: '-30.0' });
+
+        await normalizeAudioAsset(source, fixture.run);
+
+        expect(fixture.measureCall()?.args).toContain(
+            'loudnorm=print_format=json'
+        );
+        expect(levelFilter(fixture)).toBe(`volume=6.00dB,${limiter}`);
+    });
+
+    it('brings a bgm to -30 LUFS, quieter than the sfx', async () => {
+        const fixture = successfulRunner({
+            lufs: '-20.0',
+            sourceDuration: '60.000',
+            duration: '60.000',
+        });
+
+        await normalizeAudioAsset(
+            {
+                ...source,
+                type: 'bgm',
+                key: 'night-loop',
+                loop: true,
+                plannedDurationMs: 60_000,
+            },
+            fixture.run
+        );
+
+        expect(levelFilter(fixture)).toBe(`volume=-10.00dB,${limiter}`);
+    });
+
+    it('levels a clip under 0.4 s by its peak instead of its loudness', async () => {
+        const fixture = successfulRunner({
+            sourceDuration: '0.300',
+            duration: '0.300',
+            peakDb: '-20.0',
+        });
+
+        await normalizeAudioAsset(
+            { ...source, plannedDurationMs: 300 },
+            fixture.run
+        );
+
+        expect(fixture.measureCall()?.args).toContain('volumedetect');
+        expect(levelFilter(fixture)).toBe(`volume=8.00dB,${limiter}`);
+    });
+
+    it('rejects a silent source', async () => {
+        const silentLong = successfulRunner({ lufs: '-inf' });
+        const silentShort = successfulRunner({
+            sourceDuration: '0.300',
+            peakDb: undefined,
+        });
+
+        await expect(
+            normalizeAudioAsset(source, silentLong.run)
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'source' });
+        await expect(
+            normalizeAudioAsset(
+                { ...source, plannedDurationMs: 300 },
+                silentShort.run
+            )
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'source' });
+        expect(silentLong.encodeCall()).toBeUndefined();
+        expect(silentShort.encodeCall()).toBeUndefined();
+    });
+
+    it('fails clearly when the loudness report cannot be read', async () => {
+        const fixture = successfulRunner({ rawLoudnessReport: 'no report' });
+
+        await expect(
+            normalizeAudioAsset(source, fixture.run)
+        ).rejects.toMatchObject({ name: 'PublisherError', code: 'encoding' });
+        expect(fixture.encodeCall()).toBeUndefined();
     });
 });

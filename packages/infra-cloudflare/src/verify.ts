@@ -13,7 +13,6 @@ import {
     getReleaseManifestPath,
     isPreviewId,
     isReleaseId,
-    isSafeRelativePath,
     isSha256,
     isStoryId,
     parseAudioActiveReleasePointer,
@@ -156,8 +155,7 @@ function delay(milliseconds: number): Promise<void> {
 }
 
 type RequestOutcome =
-    | { ok: true; response: Response }
-    | { ok: false; detail: string };
+    { ok: true; response: Response } | { ok: false; detail: string };
 
 /**
  * Indirection so tests can substitute a fake `fetch` and exercise `runChecks`
@@ -417,7 +415,6 @@ export type PublicVerifyInput = {
     releaseId?: string; // candidate mode when present
     expectedManifestSha256?: ManifestByteSha256;
     media?: VerifyMedia;
-    archiveProbeKeys?: readonly string[];
 };
 
 export type PublicVerifyOptions = {
@@ -1262,42 +1259,13 @@ async function runChecksForManifest(
     if (cacheProbePath !== null) {
         results.push(await checkCacheHit(base, cacheProbePath, fetchImpl));
     }
-    if (media === 'visual') {
-        results.push(
-            await checkSourceKeyAbsentFromDelivery(
-                base,
-                SOURCE_PROBE_KEY,
-                fetchImpl
-            )
-        );
-    } else {
-        const probeKeys = input.archiveProbeKeys ?? [];
-        // An all-omitted release archives no private sources, so there are no
-        // archive keys to prove absent from the delivery bucket. cacheProbePath
-        // is null only when the audio manifest declared zero assets; in that
-        // case skip the probe-key requirement rather than hard-failing an empty
-        // release that the omission contract permits.
-        if (cacheProbePath === null) {
-            // No objects and no private sources — nothing to probe.
-        } else if (probeKeys.length === 0) {
-            results.push({
-                name: 'archive key absent from delivery bucket',
-                ok: false,
-                detail: 'no archive probe key was configured; pass --archive-probe-key so private audio sources can be proven absent from the delivery bucket',
-            });
-        }
-        for (const key of probeKeys) {
-            const sourceCheck = await checkSourceKeyAbsentFromDelivery(
-                base,
-                key,
-                fetchImpl
-            );
-            results.push({
-                ...sourceCheck,
-                name: `archive key absent from delivery bucket: ${key}`,
-            });
-        }
-    }
+    results.push(
+        await checkSourceKeyAbsentFromDelivery(
+            base,
+            SOURCE_PROBE_KEY,
+            fetchImpl
+        )
+    );
     results.push(
         checkForbiddenKeys(
             [...resolved.documents, { label: 'manifest', body: manifest.body }],
@@ -1367,7 +1335,6 @@ export type VerifyCliArgs = {
     storyId: string;
     target: PublicationTarget;
     media: VerifyMedia;
-    archiveProbeKeys?: readonly string[];
     releaseId?: string; // candidate mode when present
     expectedManifestSha256?: ManifestByteSha256;
     assetBaseUrl?: string;
@@ -1379,7 +1346,6 @@ const VERIFY_OPTIONS = {
     environment: { type: 'string' },
     'preview-id': { type: 'string' },
     media: { type: 'string' },
-    'archive-probe-key': { type: 'string', multiple: true },
     release: { type: 'string' },
     'expect-manifest-sha256': { type: 'string' },
     'asset-base-url': { type: 'string' },
@@ -1399,21 +1365,6 @@ export function parseVerifyArgs(argv: string[]): VerifyCliArgs {
         typeof values.media === 'string' ? values.media : 'visual';
     if (mediaValue !== 'visual' && mediaValue !== 'audio') {
         throw new Error('--media must be visual or audio');
-    }
-    const archiveProbeValues = values['archive-probe-key'];
-    const archiveProbeKeys =
-        archiveProbeValues === undefined
-            ? []
-            : Array.isArray(archiveProbeValues)
-              ? archiveProbeValues
-              : [archiveProbeValues];
-    for (const key of archiveProbeKeys) {
-        if (!isSafeRelativePath(key)) {
-            throw new Error(`Invalid archive probe key: ${key}`);
-        }
-    }
-    if (mediaValue === 'visual' && archiveProbeKeys.length > 0) {
-        throw new Error('--archive-probe-key requires --media audio');
     }
     const storyId = typeof values.story === 'string' ? values.story : STORY_ID;
     if (!isStoryId(storyId)) {
@@ -1467,7 +1418,6 @@ export function parseVerifyArgs(argv: string[]): VerifyCliArgs {
         storyId,
         target,
         media: mediaValue,
-        ...(archiveProbeKeys.length > 0 ? { archiveProbeKeys } : {}),
         ...(releaseId !== undefined ? { releaseId } : {}),
         ...(expectedManifestSha256 !== undefined
             ? {
@@ -1569,9 +1519,6 @@ async function main(): Promise<void> {
             assetBaseUrl: new URL(base),
             browserOrigin: new URL(ORIGIN),
             ...(args.media === 'audio' ? { media: 'audio' as const } : {}),
-            ...(args.media === 'audio' && args.archiveProbeKeys !== undefined
-                ? { archiveProbeKeys: args.archiveProbeKeys }
-                : {}),
             ...(args.releaseId !== undefined
                 ? { releaseId: args.releaseId }
                 : {}),

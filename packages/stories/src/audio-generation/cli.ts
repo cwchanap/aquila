@@ -1,23 +1,30 @@
+import { existsSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import type { AudioPlanAsset } from '../audio-plan';
+import { loadAudioPlan } from '../audio-plan-loader';
+import { loadStoryCompilerConfig, STORIES_RAW_ROOT } from '../compiler/config';
 import {
     createElevenLabsAudioProvider,
     ElevenLabsProviderError,
     type AudioGenerationProvider,
 } from './elevenlabs';
 import {
-    AudioGenerationConfigurationError,
-    AudioGenerationInputError,
-    loadAudioGenerationStoryContext,
-    planAudioGeneration,
-    runAudioGeneration,
-    type AudioGenerationPlan,
-    type AudioGenerationRunResult,
-    type AudioGenerationStoryContext,
-} from './run';
-import { selectAudioCandidate, type AudioSelectionFileV1 } from './select';
-import { LocalAudioGenerationStore } from './store';
+    buildAudioGenerationSpec,
+    estimateScheduledAudioCostUsd,
+    type CurrentAudioGenerationSpec,
+} from './spec';
+
+/**
+ * Makes the sounds of a story's audio plan with ElevenLabs and writes each one
+ * where the publisher reads it: `packages/assets/media/<storyId>/<sfx|bgm>/<key>.mp3`.
+ * Git is the review store: listen to a take, keep it by committing it, redo it
+ * by generating the key again. Sound effects can also be made with the
+ * ElevenLabs connector and saved to the same folder; the music needs this CLI
+ * (the connector has no music model) and an `ELEVENLABS_API_KEY`.
+ */
 
 export type AudioGenerationErrorCode = 'configuration' | 'input' | 'provider';
 
@@ -39,123 +46,52 @@ export function audioGenerationExitCode(error: unknown): number {
     return 3;
 }
 
-export interface AudioGenerationCliIO {
-    readonly stdout: { write(chunk: string): void };
-    readonly stderr: { write(chunk: string): void };
-    readonly exit?: (code: number) => void;
-    readonly storeRoot?: string;
+export interface AudioGenerationCliIo {
+    readonly stdout: { write(chunk: string): unknown };
+    readonly stderr: { write(chunk: string): unknown };
     readonly env?: NodeJS.ProcessEnv;
-    readonly apiKey?: string;
-    readonly providerFactory?: () => AudioGenerationProvider;
-    readonly loadStoryContext?: (
-        storyFolder: string
-    ) => Promise<AudioGenerationStoryContext>;
+    readonly provider?: AudioGenerationProvider;
+    readonly rawRoot?: string;
+    readonly mediaRoot?: string;
 }
-
-interface GenerateArguments {
-    readonly story: string;
-    readonly keys?: readonly string[];
-    readonly missing: boolean;
-    readonly candidateCount: number;
-    readonly maxRequests?: number;
-    readonly dryRun: boolean;
-}
-
-interface SelectArguments {
-    readonly story: string;
-    readonly key: string;
-    readonly candidateId: string;
-}
-
-interface GenerateOutcome {
-    readonly report: Record<string, unknown>;
-    readonly error?: AudioGenerationError;
-}
-
-const NOOP_PROVIDER: AudioGenerationProvider = {
-    async generate() {
-        throw new Error('The provider cannot be used during a dry run');
-    },
-};
 
 const REPO_ROOT = resolve(
     dirname(fileURLToPath(import.meta.url)),
     '../../../..'
 );
-const DEFAULT_STORE_ROOT = join(REPO_ROOT, '.tmp', 'audio-generation');
+const DEFAULT_MEDIA_ROOT = join(REPO_ROOT, 'packages', 'assets', 'media');
 
-function defaultIo(): AudioGenerationCliIO {
-    return {
-        stdout: process.stdout,
-        stderr: process.stderr,
-        storeRoot: DEFAULT_STORE_ROOT,
-        env: process.env,
-    };
-}
+const USAGE = `Usage: audio:generate generate --story <raw folder> (--missing | --key <key> ...) [options]
+
+  --missing           make every key of the plan that has no file yet
+  --key <key>         make (or redo) exactly these keys; repeat for several
+  --out <dir>         write <dir>/<sfx|bgm>/<key>.mp3 instead of the story's media folder
+  --max-requests <n>  paid requests allowed in this run (required unless --dry-run)
+  --dry-run           list what would be made and the estimated cost, call nothing
+
+Needs ELEVENLABS_API_KEY.`;
 
 function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
-function configurationError(
-    message: string,
-    cause?: unknown
-): AudioGenerationError {
+function configurationError(message: string, cause?: unknown) {
     return new AudioGenerationError('configuration', message, cause);
 }
 
-function inputError(message: string, cause?: unknown): AudioGenerationError {
+function inputError(message: string, cause?: unknown) {
     return new AudioGenerationError('input', message, cause);
 }
 
-function providerError(message: string, cause?: unknown): AudioGenerationError {
-    return new AudioGenerationError('provider', message, cause);
+interface GenerateArguments {
+    readonly story: string;
+    readonly keys: readonly string[] | undefined;
+    readonly out: string | undefined;
+    readonly maxRequests: number | undefined;
+    readonly dryRun: boolean;
 }
 
-function parseInteger(
-    value: unknown,
-    option: string,
-    minimum: number,
-    maximum: number
-): number | undefined {
-    if (value === undefined) return undefined;
-    if (typeof value !== 'string' || !/^\d+$/.test(value)) {
-        throw configurationError(
-            `--${option} must be an integer from ${minimum} through ${maximum}`
-        );
-    }
-    const parsed = Number(value);
-    if (!Number.isSafeInteger(parsed) || parsed < minimum || parsed > maximum) {
-        throw configurationError(
-            `--${option} must be an integer from ${minimum} through ${maximum}`
-        );
-    }
-    return parsed;
-}
-
-function requiredString(
-    values: Record<string, unknown>,
-    option: string
-): string {
-    const value = values[option];
-    if (typeof value !== 'string' || value.length === 0) {
-        throw configurationError(`--${option} is required`);
-    }
-    return value;
-}
-
-function parsePositionals(
-    positionals: readonly string[],
-    command: 'generate' | 'select'
-): void {
-    if (positionals.length !== 1 || positionals[0] !== command) {
-        throw configurationError(
-            `Usage: ${command} must be the first and only positional argument`
-        );
-    }
-}
-
-function parseGenerateArguments(argv: readonly string[]): GenerateArguments {
+function parseArguments(argv: readonly string[]): GenerateArguments {
     let parsed: ReturnType<typeof parseArgs>;
     try {
         parsed = parseArgs({
@@ -166,7 +102,7 @@ function parseGenerateArguments(argv: readonly string[]): GenerateArguments {
                 story: { type: 'string' },
                 key: { type: 'string', multiple: true },
                 missing: { type: 'boolean' },
-                'candidate-count': { type: 'string' },
+                out: { type: 'string' },
                 'max-requests': { type: 'string' },
                 'dry-run': { type: 'boolean' },
             },
@@ -174,350 +110,152 @@ function parseGenerateArguments(argv: readonly string[]): GenerateArguments {
     } catch (error) {
         throw configurationError(errorMessage(error), error);
     }
-
-    parsePositionals(parsed.positionals, 'generate');
+    if (
+        parsed.positionals.length !== 1 ||
+        parsed.positionals[0] !== 'generate'
+    ) {
+        throw configurationError(USAGE);
+    }
     const values = parsed.values as Record<string, unknown>;
-    const story = requiredString(values, 'story');
-    const rawKeys = values.key;
-    const keys =
-        rawKeys === undefined
-            ? undefined
-            : Array.isArray(rawKeys)
-              ? rawKeys
-              : [rawKeys];
-    if (keys?.some(key => typeof key !== 'string' || key.length === 0)) {
-        throw configurationError('--key must not be empty');
+    const story = values.story;
+    if (typeof story !== 'string' || story.length === 0) {
+        throw configurationError('--story is required');
     }
-
-    const missing = values.missing === true;
-    if (missing === (keys !== undefined)) {
-        throw configurationError(
-            'Choose exactly one audio target mode: --key or --missing'
-        );
+    const keys = Array.isArray(values.key)
+        ? (values.key as string[])
+        : undefined;
+    if ((values.missing === true) === (keys !== undefined)) {
+        throw configurationError('Choose exactly one of --missing or --key');
     }
-
     const dryRun = values['dry-run'] === true;
-    const candidateCount =
-        parseInteger(values['candidate-count'], 'candidate-count', 1, 4) ?? 1;
-    const maxRequests = parseInteger(
-        values['max-requests'],
-        'max-requests',
-        1,
-        100
-    );
+    let maxRequests: number | undefined;
+    const rawMax = values['max-requests'];
+    if (rawMax !== undefined) {
+        if (typeof rawMax !== 'string' || !/^\d+$/.test(rawMax)) {
+            throw configurationError('--max-requests must be a whole number');
+        }
+        maxRequests = Number(rawMax);
+    }
     if (!dryRun && maxRequests === undefined) {
         throw configurationError(
             '--max-requests is required for paid audio generation'
         );
     }
-
     return {
         story,
-        keys: keys as string[] | undefined,
-        missing,
-        candidateCount,
+        keys,
+        out: typeof values.out === 'string' ? values.out : undefined,
         maxRequests,
         dryRun,
     };
 }
 
-function parseSelectArguments(argv: readonly string[]): SelectArguments {
-    let parsed: ReturnType<typeof parseArgs>;
-    try {
-        parsed = parseArgs({
-            args: [...argv],
-            allowPositionals: true,
-            strict: true,
-            options: {
-                story: { type: 'string' },
-                key: { type: 'string' },
-                candidate: { type: 'string' },
-            },
-        });
-    } catch (error) {
-        throw configurationError(errorMessage(error), error);
-    }
-
-    parsePositionals(parsed.positionals, 'select');
-    const values = parsed.values as Record<string, unknown>;
-    return {
-        story: requiredString(values, 'story'),
-        key: requiredString(values, 'key'),
-        candidateId: requiredString(values, 'candidate'),
-    };
+function outputPath(
+    root: string,
+    asset: Pick<AudioPlanAsset, 'type' | 'key'>
+): string {
+    return join(root, asset.type, `${asset.key}.mp3`);
 }
 
-function parseCommand(argv: readonly string[]): 'generate' | 'select' {
-    const command = argv[0];
-    if (command === 'generate' || command === 'select') return command;
-    throw configurationError('Expected command generate or select');
-}
-
-function isNodeIoError(error: unknown): boolean {
-    if (
-        error instanceof AudioGenerationConfigurationError ||
-        error instanceof AudioGenerationInputError
-    ) {
-        return false;
-    }
-    return (
-        typeof error === 'object' &&
-        error !== null &&
-        'code' in error &&
-        typeof error.code === 'string'
-    );
-}
-
-function makeStore(
-    context: AudioGenerationStoryContext,
-    io: AudioGenerationCliIO
-): LocalAudioGenerationStore {
-    return new LocalAudioGenerationStore({
-        root: join(io.storeRoot ?? DEFAULT_STORE_ROOT, context.storyFolder),
-        storyId: context.storyId,
-    });
-}
-
-function assetSummary(context: AudioGenerationStoryContext) {
-    const sfx = context.plan.assets.filter(asset => asset.type === 'sfx');
-    const bgm = context.plan.assets.filter(asset => asset.type === 'bgm');
-    return {
-        assetCount: context.plan.assets.length,
-        sfx: {
-            count: sfx.length,
-            intendedDurationMs: sfx.reduce(
-                (total, asset) => total + asset.durationMs,
-                0
-            ),
-        },
-        bgm: {
-            count: bgm.length,
-            intendedDurationMs: bgm.reduce(
-                (total, asset) => total + asset.durationMs,
-                0
-            ),
-        },
-    };
-}
-
-function generateReport(
-    context: AudioGenerationStoryContext,
-    plan: AudioGenerationPlan,
-    result?: AudioGenerationRunResult
-): Record<string, unknown> {
-    return {
-        ...assetSummary(context),
-        ...plan,
-        ...(result === undefined ? {} : result),
-    };
-}
-
-function progressStore(
-    store: LocalAudioGenerationStore,
-    stderr: { write(chunk: string): void }
-): LocalAudioGenerationStore {
-    const progress = Object.create(store) as LocalAudioGenerationStore;
-    progress.nextCandidateId = async (key: string) => {
-        const candidateId = await store.nextCandidateId(key);
-        stderr.write(`generating ${candidateId} for ${key}\n`);
-        return candidateId;
-    };
-    return progress;
-}
-
-async function generate(
-    args: GenerateArguments,
-    io: AudioGenerationCliIO
-): Promise<GenerateOutcome> {
-    let context: AudioGenerationStoryContext;
-    try {
-        context = await (
-            io.loadStoryContext ?? loadAudioGenerationStoryContext
-        )(args.story);
-    } catch (error) {
-        if (error instanceof AudioGenerationError) throw error;
-        if (error instanceof AudioGenerationConfigurationError) {
-            throw configurationError(error.message, error);
-        }
-        if (error instanceof AudioGenerationInputError) {
-            throw inputError(error.message, error);
-        }
-        if (isNodeIoError(error)) {
-            throw providerError(errorMessage(error), error);
-        }
-        throw configurationError(errorMessage(error), error);
-    }
-
-    const store = makeStore(context, io);
-    let plan: AudioGenerationPlan;
-    try {
-        plan = await planAudioGeneration({
-            context,
-            store,
-            keys: args.keys,
-            missing: args.missing,
-            candidateCount: args.candidateCount,
-            maxRequests: args.maxRequests,
-            dryRun: args.dryRun,
-        });
-    } catch (error) {
-        if (error instanceof AudioGenerationConfigurationError) {
-            throw configurationError(error.message, error);
-        }
-        if (error instanceof AudioGenerationError) throw error;
-        throw providerError(errorMessage(error), error);
-    }
-
-    const report = generateReport(context, plan);
-    if (plan.providerIssues.length > 0) {
-        return {
-            report,
-            error: inputError('Audio plan contains provider-illegal rows'),
-        };
-    }
-
-    // Provider configuration is only needed when paid work is actually
-    // scheduled. A resume run that finds every requested key already
-    // satisfied (zero scheduled requests) is an idempotent no-op and must
-    // succeed without ELEVENLABS_API_KEY.
-    const needsProvider = !args.dryRun && plan.scheduledRequests.length > 0;
-
-    let apiKey = io.apiKey ?? (io.env ?? process.env).ELEVENLABS_API_KEY;
-    if (needsProvider && !apiKey?.trim()) {
-        throw configurationError('ELEVENLABS_API_KEY is required');
-    }
-    apiKey ??= '';
-
-    const provider = args.dryRun
-        ? NOOP_PROVIDER
-        : needsProvider
-          ? (io.providerFactory ?? (() => createElevenLabsAudioProvider()))()
-          : NOOP_PROVIDER;
-    let result: AudioGenerationRunResult;
-    try {
-        result = await runAudioGeneration(plan, {
-            provider,
-            store: progressStore(store, io.stderr),
-            apiKey,
-        });
-    } catch (error) {
-        if (error instanceof AudioGenerationConfigurationError) {
-            throw configurationError(error.message, error);
-        }
-        if (error instanceof ElevenLabsProviderError) {
-            throw providerError(error.message, error);
-        }
-        if (error instanceof AudioGenerationError) throw error;
-        throw providerError(errorMessage(error), error);
-    }
-
-    return { report: generateReport(context, plan, result) };
-}
-
-async function select(
-    args: SelectArguments,
-    io: AudioGenerationCliIO
-): Promise<AudioSelectionFileV1> {
-    let context: AudioGenerationStoryContext;
-    try {
-        context = await (
-            io.loadStoryContext ?? loadAudioGenerationStoryContext
-        )(args.story);
-    } catch (error) {
-        if (error instanceof AudioGenerationError) throw error;
-        if (error instanceof AudioGenerationConfigurationError) {
-            throw configurationError(error.message, error);
-        }
-        if (error instanceof AudioGenerationInputError) {
-            throw inputError(error.message, error);
-        }
-        if (isNodeIoError(error)) {
-            throw providerError(errorMessage(error), error);
-        }
-        throw configurationError(errorMessage(error), error);
-    }
-
-    const store = makeStore(context, io);
-    try {
-        return await selectAudioCandidate(
-            store,
-            context.plan,
-            args.key,
-            args.candidateId
-        );
-    } catch (error) {
-        if (error instanceof AudioGenerationError) throw error;
-        if (isNodeIoError(error)) {
-            throw providerError(errorMessage(error), error);
-        }
-        throw inputError(errorMessage(error), error);
-    }
-}
-
-function errorDocument(error: AudioGenerationError) {
-    return {
-        error: {
-            code: error.code,
-            message: error.message,
-        },
-    };
-}
-
-function finish(
-    io: AudioGenerationCliIO,
-    code: number,
-    document: unknown,
-    error?: AudioGenerationError
-): number {
-    if (error !== undefined) io.stderr.write(`error: ${error.message}\n`);
-    io.stdout.write(`${JSON.stringify(document)}\n`);
-    io.exit?.(code);
-    return code;
-}
-
-export async function runCli(
+export async function runAudioGenerationCli(
     argv: readonly string[],
-    io: AudioGenerationCliIO = defaultIo()
-): Promise<number> {
-    try {
-        const command = parseCommand(argv);
-        if (command === 'generate') {
-            const outcome = await generate(parseGenerateArguments(argv), io);
-            if (outcome.error !== undefined) {
-                return finish(
-                    io,
-                    audioGenerationExitCode(outcome.error),
-                    { ...outcome.report, ...errorDocument(outcome.error) },
-                    outcome.error
-                );
-            }
-            return finish(io, 0, outcome.report);
-        }
-
-        const selection = await select(parseSelectArguments(argv), io);
-        return finish(io, 0, selection);
-    } catch (cause) {
-        const error =
-            cause instanceof AudioGenerationError
-                ? cause
-                : providerError(errorMessage(cause), cause);
-        return finish(
-            io,
-            audioGenerationExitCode(error),
-            errorDocument(error),
-            error
-        );
-    }
-}
-
-if ((import.meta as ImportMeta & { main?: boolean }).main) {
-    void runCli(process.argv.slice(2), {
+    io: AudioGenerationCliIo = {
         stdout: process.stdout,
         stderr: process.stderr,
-        storeRoot: DEFAULT_STORE_ROOT,
-        env: process.env,
-        exit: code => {
-            process.exitCode = code;
-        },
-    });
+    }
+): Promise<number> {
+    try {
+        const args = parseArguments(argv);
+        const rawDir = join(io.rawRoot ?? STORIES_RAW_ROOT, args.story);
+        if (!existsSync(join(rawDir, 'compiler.config.ts'))) {
+            throw inputError(`Unknown story folder "${args.story}"`);
+        }
+        const plan = loadAudioPlan(rawDir);
+        if (plan === undefined) {
+            throw inputError(`${args.story} has no docs/audio-plan.json`);
+        }
+        const { storyId } = await loadStoryCompilerConfig(rawDir);
+        const outRoot = args.out
+            ? resolve(args.out)
+            : join(io.mediaRoot ?? DEFAULT_MEDIA_ROOT, storyId);
+
+        let targets: readonly AudioPlanAsset[];
+        if (args.keys !== undefined) {
+            targets = args.keys.map(key => {
+                const asset = plan.assets.find(item => item.key === key);
+                if (asset === undefined) {
+                    throw inputError(`"${key}" is not in the audio plan`);
+                }
+                return asset;
+            });
+        } else {
+            targets = plan.assets.filter(
+                asset => !existsSync(outputPath(outRoot, asset))
+            );
+        }
+        if (targets.length === 0) {
+            io.stdout.write('Nothing to make: every key already has a file\n');
+            return 0;
+        }
+
+        let specs: readonly CurrentAudioGenerationSpec[];
+        try {
+            specs = targets.map(asset => buildAudioGenerationSpec(asset));
+        } catch (error) {
+            throw inputError(errorMessage(error), error);
+        }
+        const cost = estimateScheduledAudioCostUsd(specs).toFixed(2);
+        io.stdout.write(
+            `${specs.length} sound(s), about $${cost}:\n${specs
+                .map(spec => `  ${spec.type} ${spec.key} ${spec.durationMs}ms`)
+                .join('\n')}\n`
+        );
+        if (args.dryRun) return 0;
+
+        if (specs.length > (args.maxRequests ?? 0)) {
+            throw configurationError(
+                `${specs.length} requests needed but --max-requests is ${args.maxRequests}`
+            );
+        }
+        const apiKey = (io.env ?? process.env).ELEVENLABS_API_KEY;
+        if (!apiKey) throw configurationError('ELEVENLABS_API_KEY is required');
+
+        const provider = io.provider ?? createElevenLabsAudioProvider();
+        for (const spec of specs) {
+            let generated;
+            try {
+                generated = await provider.generate(spec, apiKey);
+            } catch (error) {
+                throw new AudioGenerationError(
+                    'provider',
+                    `${spec.key}: ${errorMessage(error)}`,
+                    error
+                );
+            }
+            if (generated.format !== 'mp3') {
+                throw new AudioGenerationError(
+                    'provider',
+                    `${spec.key}: expected an mp3, got ${generated.mediaType}`
+                );
+            }
+            const path = outputPath(outRoot, spec);
+            await mkdir(dirname(path), { recursive: true });
+            await writeFile(path, generated.bytes);
+            const cost = generated.providerMetadata['character-cost'];
+            io.stdout.write(
+                `wrote ${path}${cost === undefined ? '' : ` (cost ${cost})`}\n`
+            );
+        }
+        return 0;
+    } catch (error) {
+        io.stderr.write(
+            `${error instanceof ElevenLabsProviderError ? 'provider: ' : ''}${errorMessage(error)}\n`
+        );
+        return audioGenerationExitCode(error);
+    }
+}
+
+/* v8 ignore next 4 */
+if ((import.meta as ImportMeta & { main?: boolean }).main === true) {
+    process.exitCode = await runAudioGenerationCli(process.argv.slice(2));
 }

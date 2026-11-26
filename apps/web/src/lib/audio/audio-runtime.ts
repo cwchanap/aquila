@@ -14,10 +14,9 @@ import { resolveLocalBgmUrl } from './bgm-catalog';
 import { resolveLocalSfxUrl } from './sfx-catalog';
 import {
     readAssetSourceConfigFromEnv,
-    resolveAssetSource,
     type AssetSourceConfig,
 } from '../visual-assets/asset-source-config';
-import { REMOTE_ASSET_STORY_ID } from '../visual-assets/source-factory';
+import { getAssetResolverSource } from '../visual-assets/source-factory';
 import type { RuntimeReleaseIdentity } from '../visual-assets/types';
 import {
     loadValidatedRelease,
@@ -41,9 +40,7 @@ export type AudioCueResolution =
     | {
           status: 'unavailable';
           reason:
-              | 'release-not-loaded'
-              | 'cue-not-in-release'
-              | 'local-cue-missing';
+              'release-not-loaded' | 'cue-not-in-release' | 'local-cue-missing';
       };
 
 export interface AudioReaderRuntime {
@@ -57,7 +54,7 @@ export type AudioReaderRuntimeOptions = {
     fetchImpl?: typeof fetch;
 };
 
-type AudioSource = ReturnType<typeof resolveAssetSource>;
+type AudioSource = NonNullable<ReturnType<typeof getAssetResolverSource>>;
 
 function qualifiedAudioIdentity(type: AudioAssetType, key: string): string {
     return `${type}:${key}`;
@@ -217,20 +214,18 @@ class SessionAudioRuntime implements AudioReaderRuntime {
     }
 }
 
+/**
+ * Sound follows the same story gate as the art: the production release for the
+ * short stories and the Platform, in every environment, previews included; the
+ * per-environment pointers for The Seventh Mirror. Anything else is silent.
+ */
 function runtimeSource(
     storyId: string,
     origin: string,
     config: AssetSourceConfig
 ): AudioSource | null {
     try {
-        const source = resolveAssetSource(storyId, origin, config);
-        if (
-            source.environment !== 'local' &&
-            storyId !== REMOTE_ASSET_STORY_ID
-        ) {
-            return null;
-        }
-        return source;
+        return getAssetResolverSource(storyId, origin, config);
     } catch (error) {
         logger.warn('Visual-novel audio unavailable', {
             storyId,

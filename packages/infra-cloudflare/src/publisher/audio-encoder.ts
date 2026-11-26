@@ -89,6 +89,19 @@ const RUNTIME_PROBE_ARGS = (path: string): readonly string[] => [
     path,
 ];
 
+/**
+ * Every file is leveled to one integrated loudness (EBU R128) per kind, so no
+ * effect or track plays louder than the Japanese dub (-20 LUFS, see
+ * `VOICE_MASTERING`): effects sit about 4 dB under it and music 10 dB under.
+ * Changing a target changes the released bytes, so a new release follows.
+ */
+const TARGET_LUFS = { sfx: -24, bgm: -30 } as const;
+/** Loudness gating needs about 400 ms of sound, so a shorter clip (a click, a
+ *  chime tap) cannot be measured in LUFS and is leveled by its peak instead. */
+const SHORT_CLIP_MS = 400;
+const SHORT_CLIP_PEAK_DB = -12;
+/** Catches the few peaks a gain would push into clipping. */
+const PEAK_LIMITER = 'alimiter=limit=-3dB:level=disabled';
 const SOURCE_DURATION_DRIFT_TOLERANCE_MS = 25;
 const SFX_MAX_DURATION_MS = 30_000;
 const BGM_MAX_DURATION_MS = 600_000;
@@ -473,6 +486,82 @@ function assertSourcePolicy(source: AudioSourceForNormalization): void {
     }
 }
 
+async function measureWithFilter(
+    run: AudioProcessRunner,
+    inputPath: string,
+    filter: string
+): Promise<string> {
+    const result = await runProcess(
+        run,
+        'ffmpeg',
+        [
+            '-nostdin',
+            '-hide_banner',
+            '-nostats',
+            '-protocol_whitelist',
+            'file',
+            '-i',
+            inputPath,
+            '-map',
+            '0:a:0',
+            '-af',
+            filter,
+            '-f',
+            'null',
+            '-',
+        ],
+        'encoding',
+        'Audio loudness measurement failed',
+        'encode'
+    );
+    return result.stderr;
+}
+
+function silentSourceError(): PublisherError {
+    return new PublisherError('source', 'Audio source is silent', {
+        context: { stage: 'source' },
+    });
+}
+
+/** The one gain that brings the source to its kind's loudness target. */
+async function levelingFilter(
+    run: AudioProcessRunner,
+    inputPath: string,
+    source: AudioSourceForNormalization,
+    sourceDurationMs: number
+): Promise<string> {
+    let gainDb: number;
+    if (sourceDurationMs < SHORT_CLIP_MS) {
+        const report = await measureWithFilter(run, inputPath, 'volumedetect');
+        const peak = /max_volume:\s*(-?\d+(?:\.\d+)?) dB/.exec(report)?.[1];
+        if (peak === undefined) throw silentSourceError();
+        gainDb = SHORT_CLIP_PEAK_DB - Number(peak);
+    } else {
+        const report = await measureWithFilter(
+            run,
+            inputPath,
+            'loudnorm=print_format=json'
+        );
+        let measured: number;
+        try {
+            const json = JSON.parse(report.slice(report.lastIndexOf('{'))) as {
+                input_i: string;
+            };
+            measured = Number(json.input_i);
+        } catch (cause) {
+            throw new PublisherError(
+                'encoding',
+                'Audio loudness measurement returned no result',
+                { context: { stage: 'encode' }, cause }
+            );
+        }
+        // Digital silence measures as -inf.
+        if (!Number.isFinite(measured)) throw silentSourceError();
+        gainDb = TARGET_LUFS[source.type] - measured;
+    }
+    return `volume=${gainDb.toFixed(2)}dB,${PEAK_LIMITER}`;
+}
+
 function normalizeOptions(
     options: AudioProcessRunner | NormalizeAudioAssetOptions | undefined
 ): NormalizeAudioAssetOptions {
@@ -507,6 +596,12 @@ export async function normalizeAudioAsset(
             );
         }
 
+        const levelFilter = await levelingFilter(
+            run,
+            inputPath,
+            source,
+            sourceDurationMs
+        );
         await runProcess(
             run,
             'ffmpeg',
@@ -521,6 +616,8 @@ export async function normalizeAudioAsset(
                 inputPath,
                 '-map',
                 '0:a:0',
+                '-af',
+                levelFilter,
                 '-vn',
                 '-map_metadata',
                 '-1',

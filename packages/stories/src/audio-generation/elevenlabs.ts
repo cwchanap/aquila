@@ -1,9 +1,17 @@
 import type { CurrentAudioGenerationSpec } from './spec';
-import type { GeneratedAudioCandidate } from './store';
+
+export interface GeneratedAudio {
+    readonly bytes: Uint8Array;
+    readonly mediaType: string;
+    readonly format: string;
+    /** Provider response headers worth reporting, such as `character-cost`. */
+    readonly providerMetadata: Record<string, string>;
+}
 
 const SFX_URL =
     'https://api.elevenlabs.io/v1/sound-generation?output_format=mp3_44100_128';
-const BGM_URL = 'https://api.elevenlabs.io/v1/music?output_format=auto';
+const BGM_URL =
+    'https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128';
 const RETRY_DELAYS_MS = [1_000, 2_000] as const;
 const DEFAULT_REQUEST_TIMEOUT_MS = 300_000;
 const APPROVED_RESPONSE_HEADERS = [
@@ -18,7 +26,7 @@ export interface AudioGenerationProvider {
     generate(
         spec: CurrentAudioGenerationSpec,
         apiKey: string
-    ): Promise<GeneratedAudioCandidate>;
+    ): Promise<GeneratedAudio>;
 }
 
 export type ElevenLabsProviderErrorKind =
@@ -210,8 +218,6 @@ export function createElevenLabsAudioProvider(
                                 response.headers,
                                 apiKey
                             ),
-                            intendedDurationMs: spec.durationMs,
-                            actualDurationMs: null,
                         };
                     }
 

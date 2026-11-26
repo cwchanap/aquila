@@ -1672,10 +1672,7 @@ describe('verifyPublicRelease audio', () => {
         }
     });
 
-    function audioInput(
-        release: AudioReleaseFixture,
-        archiveProbeKeys: readonly string[] = []
-    ) {
+    function audioInput(release: AudioReleaseFixture) {
         const pointer = JSON.parse(release.pointerText) as {
             releaseId: string;
             manifestSha256: string;
@@ -1685,21 +1682,16 @@ describe('verifyPublicRelease audio', () => {
             target: AUDIO_TARGET,
             assetBaseUrl: new URL(BASE),
             media: 'audio' as const,
-            archiveProbeKeys,
             releaseId: undefined,
             expectedManifestSha256:
                 pointer.manifestSha256 as ManifestByteSha256,
         };
     }
 
-    it('verifies active audio pointers, manifests, unique MP3s, and archive 404 probes', async () => {
+    it('verifies active audio pointers, manifests, unique MP3s, and the source key 404 probe', async () => {
         const release = buildValidAudioRelease();
         const requests: string[] = [];
-        const archiveKeys = [
-            'audio/approved/source.mp3',
-            'audio/approved/receipt.json',
-        ];
-        const input = audioInput(release, archiveKeys);
+        const input = audioInput(release);
         const result = await verifyPublicRelease(input, {
             fetch: makeAudioFetch(release, {}, requests),
         });
@@ -1720,9 +1712,7 @@ describe('verifyPublicRelease audio', () => {
                 names(result.results)[`mp3 ${object.label} object checksum`]
             ).toBe(true);
         }
-        expect(
-            resultNames.filter(name => name.includes('archive key absent'))
-        ).toHaveLength(archiveKeys.length);
+        expect(resultNames).toContain('source key absent from delivery bucket');
         expect(
             result.results.filter(check => !check.ok && !check.warning)
         ).toEqual([]);
@@ -1747,7 +1737,6 @@ describe('verifyPublicRelease audio', () => {
                 releaseId: pointer.releaseId,
                 expectedManifestSha256:
                     pointer.manifestSha256 as ManifestByteSha256,
-                archiveProbeKeys: ['audio/approved/source.mp3'],
             },
             { fetch: makeAudioFetch(release, {}, requests) }
         );
@@ -1904,46 +1893,26 @@ describe('verifyPublicRelease audio', () => {
         expect(names(result.results)[`mp3 ${object.label} range`]).toBe(false);
     });
 
-    it('rejects a 403 archive probe response', async () => {
+    it('rejects a 403 source key probe response', async () => {
         const release = buildValidAudioRelease();
-        const archiveKey = 'audio/approved/source.mp3';
-        const result = await verifyPublicRelease(
-            audioInput(release, [archiveKey]),
-            {
-                fetch: makeAudioFetch(release, {
-                    archiveStatuses: { [archiveKey]: 403 },
-                }),
-            }
-        );
-
-        expect(result.status).toBe('failed');
-        expect(
-            names(result.results)[
-                `archive key absent from delivery bucket: ${archiveKey}`
-            ]
-        ).toBe(false);
-    });
-
-    it('fails an audio run that configures no archive probe key', async () => {
-        const release = buildValidAudioRelease();
-        const { archiveProbeKeys, ...input } = audioInput(release);
-        expect(archiveProbeKeys).toEqual([]);
-
-        const result = await verifyPublicRelease(input, {
-            fetch: makeAudioFetch(release, {}, []),
+        const sourceKey =
+            'the_seventh_mirror/backgrounds/chapter_1/ch1_act2_s0.png';
+        const result = await verifyPublicRelease(audioInput(release), {
+            fetch: makeAudioFetch(release, {
+                archiveStatuses: { [sourceKey]: 403 },
+            }),
         });
 
         expect(result.status).toBe('failed');
         expect(
-            names(result.results)['archive key absent from delivery bucket']
+            names(result.results)['source key absent from delivery bucket']
         ).toBe(false);
     });
 
-    it('verifies an all-omitted audio release with zero assets and no archive probe keys', async () => {
-        // An all-omitted release (every compiler-used cue explicitly omitted)
-        // produces a manifest with zero assets. The omission contract permits
-        // this, and the verifier must accept it — no MP3/Range/cache checks
-        // and no archive probe key requirement.
+    it('verifies an all-omitted audio release with zero assets', async () => {
+        // An all-omitted release (every used cue still lacks a sound file)
+        // produces a manifest with zero assets. Publishing allows this, so the
+        // verifier must accept it — no MP3/Range/cache checks.
         const manifestObj = {
             schemaVersion: 1 as const,
             storyId: STORY_ID,
@@ -2060,7 +2029,7 @@ describe('parseVerifyArgs', () => {
         ).toThrow(/must use https/);
     });
 
-    it('parses audio media and repeatable archive probe keys', () => {
+    it('parses audio media', () => {
         const args = parseVerifyArgs([
             '--media',
             'audio',
@@ -2070,17 +2039,9 @@ describe('parseVerifyArgs', () => {
             'preview',
             '--preview-id',
             'hpa-609-smoke',
-            '--archive-probe-key',
-            'audio/approved/source.mp3',
-            '--archive-probe-key',
-            'audio/approved/receipt.json',
         ]);
 
         expect(args.media).toBe('audio');
-        expect(args.archiveProbeKeys).toEqual([
-            'audio/approved/source.mp3',
-            'audio/approved/receipt.json',
-        ]);
     });
 
     it('accepts audio production and candidate verification modes', () => {
@@ -2102,32 +2063,10 @@ describe('parseVerifyArgs', () => {
         ).toBe('audio');
     });
 
-    it('rejects archive probe keys for visual media', () => {
-        expect(() =>
-            parseVerifyArgs([
-                '--media',
-                'visual',
-                '--archive-probe-key',
-                'audio/approved/source.mp3',
-            ])
-        ).toThrow(/--archive-probe-key requires --media audio/);
-    });
-
     it('rejects an invalid media selector', () => {
         expect(() => parseVerifyArgs(['--media', 'video'])).toThrow(
             /--media must be visual or audio/
         );
-    });
-
-    it.each([
-        '../source.mp3',
-        '/absolute/source.mp3',
-        'source\\private.mp3',
-        'audio//source.mp3',
-    ])('rejects an unsafe archive probe key: %s', key => {
-        expect(() =>
-            parseVerifyArgs(['--media', 'audio', '--archive-probe-key', key])
-        ).toThrow(/archive probe key/i);
     });
 });
 

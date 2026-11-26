@@ -4,6 +4,7 @@ import {
     canonicalJson,
     getAudioReleaseManifestPath,
     parseRuntimeAudioManifest,
+    type PublicationTarget,
     type RuntimeAudioAssetV1,
     type RuntimeAudioManifestV1,
 } from '@aquila/stories/runtime-assets';
@@ -58,6 +59,7 @@ function makeAudioReleaseFixture(
         storyId?: string;
         publishedAt?: string;
         assets?: readonly RuntimeAudioAssetV1[];
+        target?: PublicationTarget;
     } = {}
 ): AudioReleaseFixture {
     const storyId = options.storyId ?? STORY_ID;
@@ -75,7 +77,10 @@ function makeAudioReleaseFixture(
     const releaseId = `sha256-${digest(canonicalAudioReleaseContent(draft))}`;
     const manifest = parseRuntimeAudioManifest({ ...draft, releaseId });
     const manifestText = `${canonicalJson(manifest as never)}\n`;
-    const target = { kind: 'preview' as const, previewId: 'preview-610' };
+    const target: PublicationTarget = options.target ?? {
+        kind: 'preview',
+        previewId: 'preview-610',
+    };
     const pointer = {
         schemaVersion: 1 as const,
         storyId,
@@ -125,7 +130,7 @@ describe('AudioReaderRuntime', () => {
     it('uses local fixtures without a release fetch', async () => {
         const fetchImpl = vi.fn();
         const runtime = createAudioRuntime(
-            'train_adventure',
+            STORY_ID,
             ORIGIN,
             {},
             { fetchImpl: fetchImpl as unknown as typeof fetch }
@@ -153,7 +158,7 @@ describe('AudioReaderRuntime', () => {
         });
     });
 
-    it('allows the remote story and rejects another story', () => {
+    it('allows The Seventh Mirror and stories outside both lists get no sound', () => {
         const fixture = makeAudioReleaseFixture();
         expect(
             createAudioRuntime(REMOTE_ASSET_STORY_ID, ORIGIN, REMOTE_CONFIG, {
@@ -161,10 +166,55 @@ describe('AudioReaderRuntime', () => {
             })
         ).not.toBeNull();
         expect(
-            createAudioRuntime('train_adventure', ORIGIN, REMOTE_CONFIG, {
-                fetchImpl: fixture.fetch,
-            })
+            createAudioRuntime(
+                'dont_save_me_before_midnight',
+                ORIGIN,
+                REMOTE_CONFIG,
+                { fetchImpl: fixture.fetch }
+            )
         ).toBeNull();
+    });
+
+    it.each([
+        'train_adventure',
+        'elevator_game',
+        'demon_lord_is_hiring',
+        'three_am_laundromat',
+        'day_4012',
+        'one_pot_before_dawn',
+    ])(
+        'reads the production release of %s even in a preview environment',
+        async storyId => {
+            const fixture = makeAudioReleaseFixture({
+                storyId,
+                target: { kind: 'production' },
+                assets: [audioAsset('sfx', 'door-open')],
+            });
+            const runtime = createAudioRuntime(storyId, ORIGIN, REMOTE_CONFIG, {
+                fetchImpl: fixture.fetch,
+            })!;
+
+            await expect(runtime.loadActiveRelease()).resolves.toMatchObject({
+                assetEnvironment: 'production',
+                previewId: null,
+                releaseId: fixture.releaseId,
+            });
+            expect(runtime.resolve('sfx', 'door-open')).toMatchObject({
+                status: 'resolved',
+                url: expect.stringContaining('https://assets.example.test/'),
+            });
+            const fetched = (
+                fixture.fetch as ReturnType<typeof vi.fn>
+            ).mock.calls.map(call => String(call[0]));
+            expect(fetched[0]).toBe(
+                `https://assets.example.test/vn/audio/stories/${storyId}/current.json`
+            );
+            expect(fetched.join(' ')).not.toContain('preview-610');
+        }
+    );
+
+    it('gives a production-release story no sound without an asset host', () => {
+        expect(createAudioRuntime('train_adventure', ORIGIN, {})).toBeNull();
     });
 
     it('reports release-not-loaded before accepting a remote release', () => {
@@ -178,7 +228,7 @@ describe('AudioReaderRuntime', () => {
     });
 
     it('reports local-cue-missing for an unknown local fixture key', () => {
-        const runtime = createAudioRuntime('train_adventure', ORIGIN, {})!;
+        const runtime = createAudioRuntime(STORY_ID, ORIGIN, {})!;
 
         expect(runtime.resolve('sfx', 'not-a-local-cue')).toEqual({
             status: 'unavailable',

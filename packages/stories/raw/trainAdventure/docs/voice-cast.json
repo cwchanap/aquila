@@ -98,6 +98,12 @@
         "direction": "[shouting] [trembling voice]"
       }
     },
+    "b1b_act4": {
+      "26": {
+        "zh": "(喃喃自語)等等!",
+        "direction": "[shouting] [urgent]"
+      }
+    },
     "b1b_b2a_b3a_act15": {
       "12": {
         "zh": "(喘著氣)先補充一些補給...",

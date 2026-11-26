@@ -102,6 +102,10 @@
       "26": {
         "zh": "(喃喃自語)等等!",
         "direction": "[shouting] [urgent]"
+      },
+      "33": {
+        "zh": "(用力拍打車門)該死⋯⋯",
+        "direction": "[angry] [shouting]"
       }
     },
     "b1b_b2a_b3a_act15": {

@@ -105,13 +105,13 @@ Across the set, on the contact sheet:
 
 ### 8. Fix, don't re-roll
 
-Pass the **approved image first** and say "recreate image 1 exactly, change only X", then list X. Name positions as they appear on screen. Every pass redraws the whole frame and softens it (act3_s4 visibly lost sharpness over three chained passes), so each retry starts again from the untouched approved image, never from the previous retry. Allow two retries per defect, then accept it and record it. If a redraw fixes the defect but softens the frame, composite it over just the changed area of the original with a feathered mask instead of keeping the whole redraw. A full re-roll changes everything you had already approved.
+Pass the **image being fixed first** (the approved image, or the first render of a shot that has none yet) and say "recreate image 1 exactly, change only X", then list X. Name positions as they appear on screen. Every pass redraws the whole frame and softens it (act3_s4 visibly lost sharpness over three chained passes), so each retry starts again from that untouched image, never from the previous retry. Allow two retries per defect, then accept it and record it. If a redraw fixes the defect but softens the frame, composite it over just the changed area of the original with a feathered mask instead of keeping the whole redraw. A full re-roll changes everything you had already approved.
 
 ## Failure modes we hit
 
 | Symptom                                                                    | Fix                                                                                                                          |
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Group order reversed (students, couple, family)                            | State the order near to far **and** on-screen left to right, with each person's look. Recreate from the approved image.      |
+| Group order reversed (students, couple, family)                            | State the order near to far **and** on-screen left to right, with each person's look. Recreate from the untouched first render. |
 | People packed together, groups touching                                    | Add "at least three empty cushions between every pair of groups" and say it once more at the end of the prompt.              |
 | A named person missing, or a duplicate                                     | Spell out the headcount per bench and name the missing person with their look.                                               |
 | Ghost figures in window reflections                                        | Say "the window glass shows no reflections of people". Asking for the cast's reflections paints see-through doubles.         |

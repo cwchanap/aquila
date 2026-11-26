@@ -90,7 +90,7 @@ Per shot:
 
 - the **framing** matches the prompt (angle and distance, not just the people);
 - **exactly the named people**, no extras, including reflections in black windows (outside the set, only the bystanders the art bible allows);
-- every face matches its portrait, the outfit and the bottoms and shoes match the Outfits table whenever legs or feet show (or the scene's documented clothing state where the art bible gives one), and similar characters stay distinct (two dark-haired young men; make sure the one with glasses has them);
+- every face matches its portrait, every garment in view matches the Outfits table (the bottoms and shoes too whenever legs or feet show), or the scene's documented clothing state where the art bible gives one, and similar characters stay distinct (two dark-haired young men; make sure the one with glasses has them);
 - the **order** along each bench is as written (for the people the shot list puts in frame), and each group is separated by clear empty seats;
 - the set matches the reference (fabric, poles, straps, ceiling, doors, end wall);
 - the **window view** is right for the act and no window shows the wrong world;

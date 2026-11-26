@@ -119,7 +119,7 @@ const DIAGNOSTIC_CODES = new Set([
     'coverage/no-artwork',
     'pointer-invalid',
     'audio/plan-unused',
-    'audio/selected-unused',
+    'audio/missing-sound',
     'audio/duration-drift',
 ]);
 const ACTION_KINDS = new Set<PublisherActionV1['kind']>([
@@ -225,8 +225,8 @@ function safeDiagnosticMessage(
     if (code === 'audio/plan-unused') {
         return 'Audio plan contains cues not used by the story';
     }
-    if (code === 'audio/selected-unused') {
-        return 'Audio selection contains cues not used by the story';
+    if (code === 'audio/missing-sound') {
+        return 'Audio cues used by the story have no sound file yet';
     }
     if (code === 'audio/duration-drift') {
         return 'Normalized audio duration differs materially from the planned duration';

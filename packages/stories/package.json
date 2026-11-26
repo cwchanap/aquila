@@ -10,7 +10,6 @@
     "./async": "./src/async/index.ts",
     "./async/testing": "./src/async/testing.ts",
     "./catalog": "./src/catalog.ts",
-    "./audio-generation": "./src/audio-generation/index.ts",
     "./audio-publishing": "./src/audio-publishing.ts",
     "./runtime-assets": "./src/runtime-assets/index.ts",
     "./generated/trainAdventure/characters": "./src/generated/trainAdventure/characters.ts",
@@ -33,7 +32,6 @@
     "compile": "bun src/compiler/cli.ts",
     "audio:report": "bun src/compiler/cli.ts --report",
     "audio:generate": "bun src/audio-generation/cli.ts generate",
-    "audio:select": "bun src/audio-generation/cli.ts select",
     "voice:generate": "bun src/compiler/cli.ts --quiet && bun src/voice/cli.ts generate",
     "voice:check": "bun src/compiler/cli.ts --quiet && bun src/voice/cli.ts check"
   },

@@ -96,8 +96,6 @@ describe('ElevenLabs audio provider', () => {
             bytes: SFX_BYTES,
             mediaType: 'audio/mpeg',
             format: 'mp3',
-            intendedDurationMs: 2_200,
-            actualDurationMs: null,
             providerMetadata: {
                 'content-type': 'audio/mpeg',
                 'content-length': String(SFX_BYTES.byteLength),
@@ -122,7 +120,7 @@ describe('ElevenLabs audio provider', () => {
         const generated = await provider.generate(bgmSpec(), 'test-secret');
 
         expect(fetchMock).toHaveBeenCalledWith(
-            'https://api.elevenlabs.io/v1/music?output_format=auto',
+            'https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128',
             expect.objectContaining({
                 method: 'POST',
                 headers: expect.objectContaining({
@@ -143,8 +141,6 @@ describe('ElevenLabs audio provider', () => {
             bytes: BGM_BYTES,
             mediaType: 'audio/mpeg',
             format: 'mp3',
-            intendedDurationMs: 90_000,
-            actualDurationMs: null,
             providerMetadata: {
                 'content-type': 'audio/mpeg',
                 'content-length': String(BGM_BYTES.byteLength),

@@ -115,6 +115,10 @@ Audio rules:
 - **Recurring identities stay consistent** — the same object, location, or motif always uses the same cue key.
 - **Plot-essential information must remain understandable when muted** — never make required story information audio-only.
 - **Undefined needed cue**: flag it to the orchestrator to add to the plan instead of inventing a key.
+- **One-shot SFX, looping BGM**: every SFX is a single short sound that plays once (a footstep is one step, not a walking loop; no ambience loops). Only BGM loops, so a BGM plan row carries `loop: true`.
+- **Name the sound, not the scene**: a key says what is heard (`door-open`, `train-arrives`), so the same sound reuses the same key across scenes.
+- **Cues can come before sounds**: a sound lives at `packages/assets/media/<storyId>/sfx/<key>.mp3` or `bgm/<key>.mp3` (see `CLAUDE.md`). A cue with no file yet is not an error: the release warns and plays silence, so write the cues first and add the sounds in a later PR.
+- **Sound is Visual mode only**: text mode is silent, so never rely on a sound to carry the story.
 
 **Expression override tags** — put a `[key]` between the bold name and the colon to override the portrait for that line:
 

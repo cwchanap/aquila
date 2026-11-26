@@ -54,21 +54,26 @@ coverage/
 # which runs on every `bun install` (root postinstall) and before web dev/build
 packages/stories/src/generated/
 
-# interrupted audio-generation CLI test fixtures created under packages/stories/raw/
-packages/stories/raw/audio-generation-cli-*/
-
 # asset generation job output (jobs.json, validation.json, gallery.html)
 packages/assets/generation/
 
 # generated story media (backgrounds, portraits) — not committed; already-tracked
 # files (e.g. the_seventh_mirror) remain tracked. Each story's covers/cover.png is
-# the exception: it is the committed source that media:sync publishes to R2.
+# an exception: it is the committed source that media:sync publishes to R2.
 packages/assets/media/*
 !packages/assets/media/*/
 packages/assets/media/*/*
 !packages/assets/media/*/covers/
 packages/assets/media/*/covers/*
 !packages/assets/media/*/covers/cover.png
+# Chosen sounds are committed too: sfx/<key>.mp3 and bgm/<key>.mp3 are what the
+# Visual Release workflow publishes to R2 when they change.
+!packages/assets/media/*/sfx/
+packages/assets/media/*/sfx/*
+!packages/assets/media/*/sfx/*.mp3
+!packages/assets/media/*/bgm/
+packages/assets/media/*/bgm/*
+!packages/assets/media/*/bgm/*.mp3
 
 # asset publisher local-store sidecars and transaction markers
 .publisher-metadata/

@@ -679,7 +679,7 @@ describe('assets CLI command schemas and confirmation matrix', () => {
         );
     });
 
-    it('uses separate local delivery and source roots for audio publish', async () => {
+    it('keeps the local audio delivery store under a delivery folder', async () => {
         const runCommand = vi.fn(async parsed => report(parsed.command));
         const test = harness(runCommand);
 
@@ -703,17 +703,13 @@ describe('assets CLI command schemas and confirmation matrix', () => {
         );
 
         expect(exit).toBe(0);
-        expect(test.localFactory).toHaveBeenNthCalledWith(
-            1,
+        expect(test.localFactory).toHaveBeenCalledTimes(1);
+        expect(test.localFactory).toHaveBeenCalledWith(
             '/tmp/aquila-audio-publish/delivery'
-        );
-        expect(test.localFactory).toHaveBeenNthCalledWith(
-            2,
-            '/tmp/aquila-audio-publish/source'
         );
     });
 
-    it('uses the shared release credentials for both R2 audio stores', async () => {
+    it('uses the shared release credentials for the R2 audio store', async () => {
         const runCommand = vi.fn(async parsed => report(parsed.command));
         const test = harness(runCommand);
         test.dependencies.environment = {
@@ -740,9 +736,7 @@ describe('assets CLI command schemas and confirmation matrix', () => {
             test.dependencies
         );
         expect(planExit).toBe(0);
-        expect(test.r2Factory).toHaveBeenNthCalledWith(1, {
-            bucket: 'delivery',
-        });
+        expect(test.r2Factory).toHaveBeenCalledTimes(1);
 
         const publishExit = await runAssetsCli(
             [
@@ -763,12 +757,7 @@ describe('assets CLI command schemas and confirmation matrix', () => {
             test.dependencies
         );
         expect(publishExit).toBe(0);
-        expect(test.r2Factory).toHaveBeenNthCalledWith(2, {
-            bucket: 'delivery',
-        });
-        expect(test.r2Factory).toHaveBeenNthCalledWith(3, {
-            bucket: 'source',
-        });
+        expect(test.r2Factory).toHaveBeenCalledTimes(2);
     });
 
     it('rejects R2 audio publish without release credentials before constructing stores', async () => {
@@ -799,31 +788,31 @@ describe('assets CLI command schemas and confirmation matrix', () => {
     });
 
     it.each([
-        ['generation-root-inside-destination', 'generation-under-destination'],
-        ['destination-inside-generation-root', 'destination-under-generation'],
+        ['source-root-inside-destination', 'source-under-destination'],
+        ['destination-inside-source-root', 'destination-under-source'],
     ] as const)(
-        'rejects audio local destination overlap with HPA-608 generation root (%s) before writes',
+        'rejects audio local destination overlap with the sound source root (%s) before writes',
         async (_name, layout) => {
             const root = await mkdtemp(
                 join(tmpdir(), 'aquila-audio-cli-safety-')
             );
             try {
                 const repositoryRoot = join(root, 'repo');
-                // generation-under-destination: destination at root/destination
-                // with the generation root nested beneath it.
-                // destination-under-generation: generation root at
-                // root/generation with the destination nested beneath it.
+                // source-under-destination: destination at root/destination
+                // with the source root nested beneath it.
+                // destination-under-source: source root at root/source with
+                // the destination nested beneath it.
                 const destinationRoot =
-                    layout === 'generation-under-destination'
+                    layout === 'source-under-destination'
                         ? join(root, 'destination')
-                        : join(root, 'generation', 'destination');
-                const generationRoot =
-                    layout === 'generation-under-destination'
-                        ? join(destinationRoot, 'generation')
-                        : join(root, 'generation');
+                        : join(root, 'source', 'destination');
+                const sourceRoot =
+                    layout === 'source-under-destination'
+                        ? join(destinationRoot, 'source')
+                        : join(root, 'source');
                 await mkdir(repositoryRoot, { recursive: true });
                 await mkdir(destinationRoot, { recursive: true });
-                await mkdir(generationRoot, { recursive: true });
+                await mkdir(sourceRoot, { recursive: true });
 
                 const runCommand = vi.fn(async parsed =>
                     report(parsed.command)
@@ -846,8 +835,8 @@ describe('assets CLI command schemas and confirmation matrix', () => {
                         'gate-123',
                         '--destination-root',
                         destinationRoot,
-                        '--generation-root',
-                        generationRoot,
+                        '--source-root',
+                        sourceRoot,
                     ],
                     test.dependencies
                 );

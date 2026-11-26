@@ -96,10 +96,14 @@ const RUNTIME_PROBE_ARGS = (path: string): readonly string[] => [
  * Changing a target changes the released bytes, so a new release follows.
  */
 const TARGET_LUFS = { sfx: -24, bgm: -30 } as const;
-/** Loudness gating needs about 400 ms of sound, so a shorter clip (a click, a
- *  chime tap) cannot be measured in LUFS and is leveled by its peak instead. */
+/** Loudness gating needs about 400 ms of decoded sound, so a shorter clip (a
+ *  click, a chime tap) cannot be measured in LUFS and is leveled by its peak
+ *  instead. A clip just over the line can still come back unmeasurable (an MP3
+ *  probes longer than it decodes), and falls back to its peak the same way. */
 const SHORT_CLIP_MS = 400;
 const SHORT_CLIP_PEAK_DB = -12;
+/** ffmpeg's volumedetect reports digital silence as -91 dB. */
+const SILENCE_PEAK_DB = -90;
 /** Catches the few peaks a gain would push into clipping. */
 const PEAK_LIMITER = 'alimiter=limit=-3dB:level=disabled';
 const SOURCE_DURATION_DRIFT_TOLERANCE_MS = 25;
@@ -523,6 +527,48 @@ function silentSourceError(): PublisherError {
     });
 }
 
+async function peakGainDb(
+    run: AudioProcessRunner,
+    inputPath: string
+): Promise<number> {
+    const report = await measureWithFilter(run, inputPath, 'volumedetect');
+    const peak = /max_volume:\s*(-?\d+(?:\.\d+)?) dB/.exec(report)?.[1];
+    if (peak === undefined || Number(peak) <= SILENCE_PEAK_DB) {
+        throw silentSourceError();
+    }
+    return SHORT_CLIP_PEAK_DB - Number(peak);
+}
+
+/** Integrated loudness gain, or null when there is too little decoded sound
+ *  to measure (loudnorm reports -inf). */
+async function loudnessGainDb(
+    run: AudioProcessRunner,
+    inputPath: string,
+    source: AudioSourceForNormalization
+): Promise<number | null> {
+    const report = await measureWithFilter(
+        run,
+        inputPath,
+        'loudnorm=print_format=json'
+    );
+    let measured: number;
+    try {
+        const json = JSON.parse(report.slice(report.lastIndexOf('{'))) as {
+            input_i: string;
+        };
+        measured = Number(json.input_i);
+    } catch (cause) {
+        throw new PublisherError(
+            'encoding',
+            'Audio loudness measurement returned no result',
+            { context: { stage: 'encode' }, cause }
+        );
+    }
+    return Number.isFinite(measured)
+        ? TARGET_LUFS[source.type] - measured
+        : null;
+}
+
 /** The one gain that brings the source to its kind's loudness target. */
 async function levelingFilter(
     run: AudioProcessRunner,
@@ -530,35 +576,11 @@ async function levelingFilter(
     source: AudioSourceForNormalization,
     sourceDurationMs: number
 ): Promise<string> {
-    let gainDb: number;
-    if (sourceDurationMs < SHORT_CLIP_MS) {
-        const report = await measureWithFilter(run, inputPath, 'volumedetect');
-        const peak = /max_volume:\s*(-?\d+(?:\.\d+)?) dB/.exec(report)?.[1];
-        if (peak === undefined) throw silentSourceError();
-        gainDb = SHORT_CLIP_PEAK_DB - Number(peak);
-    } else {
-        const report = await measureWithFilter(
-            run,
-            inputPath,
-            'loudnorm=print_format=json'
-        );
-        let measured: number;
-        try {
-            const json = JSON.parse(report.slice(report.lastIndexOf('{'))) as {
-                input_i: string;
-            };
-            measured = Number(json.input_i);
-        } catch (cause) {
-            throw new PublisherError(
-                'encoding',
-                'Audio loudness measurement returned no result',
-                { context: { stage: 'encode' }, cause }
-            );
-        }
-        // Digital silence measures as -inf.
-        if (!Number.isFinite(measured)) throw silentSourceError();
-        gainDb = TARGET_LUFS[source.type] - measured;
-    }
+    const gainDb =
+        (sourceDurationMs < SHORT_CLIP_MS
+            ? null
+            : await loudnessGainDb(run, inputPath, source)) ??
+        (await peakGainDb(run, inputPath));
     return `volume=${gainDb.toFixed(2)}dB,${PEAK_LIMITER}`;
 }
 

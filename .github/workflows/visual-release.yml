@@ -166,7 +166,7 @@ jobs:
             --json > .tmp/report.json
           jq -r .manifestSha256 .tmp/report.json > .tmp/manifest-sha256
 
-      # Sound publishes first and goes live in a second step; the report keeps
+      # Sound publishes, is checked on the CDN, then goes live; the report keeps
       # the publish counts and warnings (cues that have no sound file yet).
       - name: Publish and activate sound
         if: inputs.action != 'rollback' && env.MEDIA == 'audio'
@@ -193,6 +193,14 @@ jobs:
             --json > .tmp/publish.json
           release=$(jq -r .releaseId .tmp/publish.json)
           sha=$(jq -r .manifestSha256 .tmp/publish.json)
+          # Check the CDN serves the new release before anything points at it.
+          bun packages/infra-cloudflare/src/verify.ts \
+            --media audio \
+            --story "$STORY" \
+            --environment production \
+            --release "$release" \
+            --expect-manifest-sha256 "$sha" \
+            --asset-base-url "$ASSET_BASE_URL"
           bun "$cli" activate \
             --media audio \
             --story "$STORY" \

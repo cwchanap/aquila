@@ -111,7 +111,7 @@ Pass the **approved image first** and say "recreate image 1 exactly, change only
 
 | Symptom                                                                    | Fix                                                                                                                          |
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Group order reversed (students, couple, family)                            | State the order near to far **and** on-screen left to right, with each person's look. Recreate from the approved image first. |
+| Group order reversed (students, couple, family)                            | State the order near to far **and** on-screen left to right, with each person's look. Recreate from the approved image.      |
 | People packed together, groups touching                                    | Add "at least three empty cushions between every pair of groups" and say it once more at the end of the prompt.              |
 | A named person missing, or a duplicate                                     | Spell out the headcount per bench and name the missing person with their look.                                               |
 | Ghost figures in window reflections                                        | Say "the window glass shows no reflections of people". Asking for the cast's reflections paints see-through doubles.         |

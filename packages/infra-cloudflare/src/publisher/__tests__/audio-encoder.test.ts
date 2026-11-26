@@ -141,7 +141,7 @@ describe('normalizeAudioAsset', () => {
         expect(ffmpeg?.args.slice(8, 10)).toEqual(['-map', '0:a:0']);
         expect(ffmpeg?.args.slice(10, 12)).toEqual([
             '-af',
-            'volume=0.00dB,alimiter=limit=-3dB:level=disabled',
+            'volume=0.00dB,alimiter=limit=-3dB:level=disabled:latency=1',
         ]);
         expect(ffmpeg?.args.slice(12)).toEqual([
             '-vn',
@@ -435,14 +435,14 @@ describe('normalizeAudioAsset', () => {
 });
 
 describe('normalizeAudioAsset leveling', () => {
-    const limiter = 'alimiter=limit=-3dB:level=disabled';
+    const limiter = 'alimiter=limit=-3dB:level=disabled:latency=1';
 
     function levelFilter(fixture: ReturnType<typeof successfulRunner>) {
         const args = fixture.encodeCall()?.args ?? [];
         return args[args.indexOf('-af') + 1];
     }
 
-    it('brings an sfx to -24 LUFS with one gain and a -3 dBTP ceiling', async () => {
+    it('brings an sfx to -24 LUFS with one gain and a -3 dB peak limiter', async () => {
         const fixture = successfulRunner({ lufs: '-30.0' });
 
         await normalizeAudioAsset(source, fixture.run);

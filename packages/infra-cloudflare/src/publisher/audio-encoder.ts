@@ -104,8 +104,11 @@ const SHORT_CLIP_MS = 400;
 const SHORT_CLIP_PEAK_DB = -12;
 /** ffmpeg's volumedetect reports digital silence as -91 dB. */
 const SILENCE_PEAK_DB = -90;
-/** Catches the few peaks a gain would push into clipping. */
-const PEAK_LIMITER = 'alimiter=limit=-3dB:level=disabled';
+/** Catches the few peaks a gain would push into clipping. `latency=1` shifts
+ *  the output back by the limiter's 5 ms lookahead; without it the sound starts
+ *  with silence and its end is cut off, which breaks a seamless music loop even
+ *  when the limiter never reduces gain. */
+const PEAK_LIMITER = 'alimiter=limit=-3dB:level=disabled:latency=1';
 const SOURCE_DURATION_DRIFT_TOLERANCE_MS = 25;
 const SFX_MAX_DURATION_MS = 30_000;
 const BGM_MAX_DURATION_MS = 600_000;

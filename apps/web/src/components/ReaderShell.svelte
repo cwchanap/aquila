@@ -683,16 +683,12 @@
         voiceLoadedStoryId = null;
       }
       void voicePlayer.load(loadingStoryId).then(ready => {
-        if (ready && !destroyed) voiceLoadedStoryId = loadingStoryId;
+        // Only the story still on screen may publish readiness.
+        if (!ready || destroyed || storyId !== loadingStoryId) return;
+        voiceLoadedStoryId = loadingStoryId;
         // Speak the line on screen: it may have tried before the index
         // arrived, or Voice / Visual mode was just turned back on.
-        if (
-          ready &&
-          !destroyed &&
-          storyId === loadingStoryId &&
-          readerMode === 'visual' &&
-          voiceEnabled
-        ) {
+        if (readerMode === 'visual' && voiceEnabled) {
           voicePlayer.play(currentSceneId, dialogueIndex);
         }
       });

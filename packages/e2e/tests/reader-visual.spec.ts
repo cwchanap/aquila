@@ -599,6 +599,116 @@ test.describe('Visual novel reader', () => {
         await expectCanonicalVisualLine(page, 7);
     });
 
+    test('hides the dialogue box to show the CG and restores it without advancing', async ({
+        page,
+    }) => {
+        const visual = new VisualReaderPage(page);
+        await visual.goto(7);
+        await expectCanonicalVisualLine(page, 7);
+
+        const content = page.getByTestId('visual-reader-content');
+        const hide = page.getByRole('button', { name: 'Hide dialogue box' });
+        const show = page.getByRole('button', { name: 'Show dialogue box' });
+        await expect(content).toBeVisible();
+
+        await hide.click();
+        await expect(content).toBeHidden();
+        await expect(show).toBeVisible();
+        await expect(visual.activeBackground).toBeAttached();
+        const viewport = page.viewportSize();
+        const showBox = await show.boundingBox();
+        expect(showBox, 'Show is measurable').not.toBe(null);
+        if (viewport && showBox) {
+            expect(showBox.x + showBox.width).toBeLessThanOrEqual(
+                viewport.width + 1
+            );
+            expect(showBox.y + showBox.height).toBeLessThanOrEqual(
+                viewport.height + 1
+            );
+        }
+
+        // A tap on the bare CG brings the box back; it must not advance.
+        await visual.root.click();
+        await expect(content).toBeVisible();
+        await expectCanonicalVisualLine(page, 7);
+
+        // The next tap advances as usual.
+        await visual.root.click();
+        await expectCanonicalVisualLine(page, 8);
+
+        await page.keyboard.press('h');
+        await expect(content).toBeHidden();
+        await page.keyboard.press('h');
+        await expect(content).toBeVisible();
+        await expectCanonicalVisualLine(page, 8);
+    });
+
+    test('closes the Acts panel when hiding the box so it can be restored', async ({
+        page,
+    }, testInfo) => {
+        // The open panel covers the box on phone widths, so keep the
+        // panel-then-hide path on desktop Chromium.
+        test.skip(testInfo.project.name !== 'chromium');
+        const visual = new VisualReaderPage(page);
+        await visual.goto(7);
+        await expectCanonicalVisualLine(page, 7);
+
+        const content = page.getByTestId('visual-reader-content');
+        await page.getByRole('button', { name: 'Open acts panel' }).click();
+        await expect(
+            page.getByRole('button', { name: 'Close acts panel' })
+        ).toBeVisible();
+
+        await page.getByRole('button', { name: 'Hide dialogue box' }).click();
+        await expect(content).toBeHidden();
+        // The hidden panel no longer owns the overlay.
+        await expect(visual.settingsButton).toBeEnabled();
+
+        await visual.root.click();
+        await expect(content).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Open acts panel' })
+        ).toBeVisible();
+        await expectCanonicalVisualLine(page, 7);
+    });
+
+    test('keeps the hide button, Continue and the page counter apart on a 320px phone', async ({
+        page,
+    }, testInfo) => {
+        test.skip(testInfo.project.name !== 'chromium');
+        await page.setViewportSize({ width: 320, height: 568 });
+        const visual = new VisualReaderPage(page);
+        await visual.goto(7);
+        await expectCanonicalVisualLine(page, 7);
+        await expect(
+            page.getByTestId('visual-typewriter-cursor')
+        ).not.toBeAttached();
+
+        const hide = await page
+            .getByRole('button', { name: 'Hide dialogue box' })
+            .boundingBox();
+        const history = await page
+            .getByRole('button', { name: 'Open history' })
+            .boundingBox();
+        const next = await visual.dialogueFooter
+            .getByRole('button', { name: 'Continue' })
+            .boundingBox();
+        const counter = await visual.dialogueFooter
+            .locator('.progress')
+            .boundingBox();
+        const text = await visual.dialogueBody
+            .locator('.dialogue-text')
+            .boundingBox();
+        expect(hide && history && next && counter && text).toBeTruthy();
+        if (!hide || !history || !next || !counter || !text) return;
+
+        expect(boxesOverlap(hide, history), 'Hide clears History').toBe(false);
+        expect(boxesOverlap(hide, text), 'Hide clears the text').toBe(false);
+        expect(boxesOverlap(next, counter), 'Continue clears the counter').toBe(
+            false
+        );
+    });
+
     test('keeps Train Adventure choices usable without a visual release', async ({
         page,
     }) => {

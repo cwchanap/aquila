@@ -285,6 +285,8 @@
     "historyTitle": "履歴",
     "openHistory": "履歴を開く",
     "closeHistory": "履歴を閉じる",
+    "hideDialogue": "メッセージウィンドウを隠す",
+    "showDialogue": "メッセージウィンドウを表示",
     "dialogueBodyLabel": "セリフ",
     "openMenu": "メニューを開く",
     "closeMenu": "メニューを閉じる",

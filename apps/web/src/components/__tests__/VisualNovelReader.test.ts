@@ -39,6 +39,8 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             historyTitle: 'History',
             openHistory: 'Open history',
             closeHistory: 'Close history',
+            hideDialogue: 'Hide dialogue box',
+            showDialogue: 'Show dialogue box',
             dialogueBodyLabel: 'Dialogue content',
             tapToContinue: 'Tap to continue',
             lineProgress: 'Line {current} of {total}',
@@ -1347,5 +1349,192 @@ describe('VisualNovelReader stage directions', () => {
         expect(typed).not.toHaveTextContent('(');
         await vi.runAllTimersAsync();
         expect(typed).toHaveTextContent(/^又是一個喧鬧的夜晚。$/);
+    });
+});
+
+describe('VisualNovelReader dialogue box toggle', () => {
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    async function tapReader(target: Element): Promise<void> {
+        const point = {
+            button: 0,
+            pointerType: 'touch',
+            isPrimary: true,
+            pointerId: 1,
+            clientX: 100,
+            clientY: 200,
+        };
+        await fireEvent.pointerDown(target, point);
+        await fireEvent.pointerUp(target, point);
+    }
+
+    it('hides the dialogue box and acts rail behind a show button', async () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        const content = screen.getByTestId('visual-reader-content');
+
+        expect(content).not.toHaveAttribute('hidden');
+        expect(
+            screen.queryByRole('button', { name: 'Show dialogue box' })
+        ).not.toBeInTheDocument();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Hide dialogue box' })
+        );
+
+        expect(content).toHaveAttribute('hidden');
+        expect(
+            screen.queryByRole('button', { name: 'Hide dialogue box' })
+        ).not.toBeInTheDocument();
+        // The art stays mounted behind the hidden box.
+        expect(screen.getByTestId('visual-portrait-right')).toBeInTheDocument();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Show dialogue box' })
+        );
+
+        expect(content).not.toHaveAttribute('hidden');
+        expect(
+            screen.queryByRole('button', { name: 'Show dialogue box' })
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('First visual line.')).toBeInTheDocument();
+    });
+
+    it('moves focus between the hide and show buttons', async () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+
+        const hide = screen.getByRole('button', { name: 'Hide dialogue box' });
+        hide.focus();
+        await fireEvent.click(hide);
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Show dialogue box' })
+            ).toHaveFocus()
+        );
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Show dialogue box' })
+        );
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Hide dialogue box' })
+            ).toHaveFocus()
+        );
+    });
+
+    it('restores the box on a tap instead of advancing the line', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Hide dialogue box' })
+        );
+
+        await tapReader(screen.getByTestId('visual-novel-reader'));
+
+        expect(screen.getByTestId('visual-reader-content')).not.toHaveAttribute(
+            'hidden'
+        );
+        expect(onIndexChange).not.toHaveBeenCalled();
+
+        await tapReader(screen.getByTestId('visual-dialogue-body'));
+        expect(onIndexChange).toHaveBeenCalledWith(1);
+    });
+
+    it('restores the box on Enter instead of advancing the line', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Hide dialogue box' })
+        );
+
+        await fireEvent.keyDown(screen.getByTestId('visual-novel-reader'), {
+            key: 'Enter',
+        });
+
+        expect(screen.getByTestId('visual-reader-content')).not.toHaveAttribute(
+            'hidden'
+        );
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
+    it('toggles with the H key', async () => {
+        setReducedMotion(false);
+        const { onIndexChange } = renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        const content = screen.getByTestId('visual-reader-content');
+        const root = screen.getByTestId('visual-novel-reader');
+
+        await fireEvent.keyDown(root, { key: 'h' });
+        expect(content).toHaveAttribute('hidden');
+
+        await fireEvent.keyDown(root, { key: 'H' });
+        expect(content).not.toHaveAttribute('hidden');
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
+    it('ignores H with a modifier, in a text field, or while History is open', async () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        const content = screen.getByTestId('visual-reader-content');
+        const root = screen.getByTestId('visual-novel-reader');
+
+        await fireEvent.keyDown(root, { key: 'h', ctrlKey: true });
+        expect(content).not.toHaveAttribute('hidden');
+
+        const field = document.createElement('input');
+        document.body.appendChild(field);
+        await fireEvent.keyDown(field, { key: 'h' });
+        expect(content).not.toHaveAttribute('hidden');
+        field.remove();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        await fireEvent.keyDown(screen.getByRole('dialog'), { key: 'h' });
+        expect(content).not.toHaveAttribute('hidden');
+    });
+
+    it('does nothing while the shell disables interaction', async () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false, interactionDisabled: true });
+        await vi.runAllTimersAsync();
+
+        await fireEvent.keyDown(screen.getByTestId('visual-novel-reader'), {
+            key: 'h',
+        });
+
+        expect(screen.getByTestId('visual-reader-content')).not.toHaveAttribute(
+            'hidden'
+        );
+    });
+
+    it('shows the box again when the scene changes', async () => {
+        setReducedMotion(false);
+        const { rerender } = renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Hide dialogue box' })
+        );
+        expect(screen.getByTestId('visual-reader-content')).toHaveAttribute(
+            'hidden'
+        );
+
+        await rerender({
+            currentSceneId: 'b1a_act2',
+            dialogue: [{ dialogue: 'Next scene line.' }],
+            dialogueIndex: 0,
+        });
+
+        expect(screen.getByTestId('visual-reader-content')).not.toHaveAttribute(
+            'hidden'
+        );
     });
 });

@@ -23,6 +23,7 @@
     VisualSnapshot,
     VisualStateController,
   } from '@/lib/visual-assets';
+  import { Eye, EyeOff } from 'lucide-svelte';
   import { onDestroy, onMount, tick, untrack } from 'svelte';
 
   type Props = {
@@ -111,6 +112,10 @@
   let actPanelOpen = $state(false);
   let historyButton: HTMLElement | null = $state(null);
   let dialogueBody: globalThis.HTMLDivElement | null = $state(null);
+  // Hides the dialogue box and acts rail so the full CG shows. Not persisted.
+  let dialogueHidden = $state(false);
+  let hideButton: HTMLElement | null = $state(null);
+  let showButton: HTMLElement | null = $state(null);
 
   // Dark glassmorphism control styling for the dialogue-box buttons, inlined
   // so it applies through Button.svelte (scoped CSS cannot reach a child
@@ -262,6 +267,7 @@
       typingText = '';
       backlogOpen = false;
       actPanelOpen = false;
+      dialogueHidden = false;
 
       if (
         dialogue.length > 0 &&
@@ -288,8 +294,24 @@
     lastIndex = dialogueIndex;
   });
 
+  async function setDialogueHidden(hidden: boolean): Promise<void> {
+    // The control that was just used disappears with its panel, so hand focus
+    // to the one that takes its place.
+    const hadFocus =
+      document.activeElement === (hidden ? hideButton : showButton);
+    dialogueHidden = hidden;
+    if (!hadFocus) return;
+    await tick();
+    (hidden ? showButton : hideButton)?.focus();
+  }
+
   function advance(): void {
     if (interactionDisabled || backlogOpen || actPanelOpen) return;
+    // A tap or Enter on the bare CG brings the box back instead of advancing.
+    if (dialogueHidden) {
+      void setDialogueHidden(false);
+      return;
+    }
     const decision = getReaderAdvanceDecision({
       isTyping,
       index: dialogueIndex,
@@ -323,6 +345,20 @@
       )
     ) {
       // Keep native scrolling available without letting the reader advance.
+      return;
+    }
+    if (event.key === 'h' || event.key === 'H') {
+      const target = event.target;
+      if (
+        backlogOpen ||
+        actPanelOpen ||
+        (target instanceof globalThis.Element &&
+          target.closest('input,select,textarea,[contenteditable]'))
+      ) {
+        return;
+      }
+      event.preventDefault();
+      void setDialogueHidden(!dialogueHidden);
       return;
     }
     if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -470,6 +506,7 @@
   <div
     data-testid="visual-reader-content"
     class="visual-reader-content"
+    hidden={dialogueHidden}
     inert={backlogOpen}
   >
     <aside class="act-panel" data-reader-interactive>
@@ -551,6 +588,18 @@
       </div>
 
       <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
+        <Button
+          bind:element={hideButton}
+          variant="menu"
+          className="hide-control w-11 min-w-11 shrink-0 rounded-full {controlBase} px-0"
+          data-reader-interactive
+          aria-label={t.reader.hideDialogue}
+          aria-keyshortcuts="h"
+          title="{t.reader.hideDialogue} (H)"
+          onclick={() => setDialogueHidden(true)}
+        >
+          <EyeOff size={20} class="mx-auto" aria-hidden="true" />
+        </Button>
         <div class="action-slot">
           {#if isTyping || advanceLabel}
             <Button
@@ -570,6 +619,22 @@
       </footer>
     </section>
   </div>
+
+  {#if dialogueHidden}
+    <Button
+      bind:element={showButton}
+      variant="menu"
+      className="show-control absolute z-20 w-11 min-w-11 rounded-full opacity-70 hover:opacity-100 focus:opacity-100 {controlBase} px-0"
+      style="right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom));"
+      data-reader-interactive
+      aria-label={t.reader.showDialogue}
+      aria-keyshortcuts="h"
+      title="{t.reader.showDialogue} (H)"
+      onclick={() => setDialogueHidden(false)}
+    >
+      <Eye size={20} class="mx-auto" aria-hidden="true" />
+    </Button>
+  {/if}
 
   {#if backlogOpen}
     <VisualBacklog
@@ -657,6 +722,11 @@
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
     padding-left: max(1rem, env(safe-area-inset-left));
     box-sizing: border-box;
+  }
+
+  /* The author's display:grid would otherwise override the hidden attribute. */
+  .visual-reader-content[hidden] {
+    display: none;
   }
 
   /* Room for the second-language line under the main one. */

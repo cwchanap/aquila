@@ -282,6 +282,26 @@ describe('VisualBacklog voice replay', () => {
         );
     });
 
+    it('tells screen readers which line each replay button plays', () => {
+        render(VisualBacklog, {
+            props: {
+                lines: voicedLines,
+                voice: voiceWith(['act1:1', 'act2:0']),
+                onClose: vi.fn(),
+            },
+        });
+
+        const [second, third] = screen.getAllByRole('button', {
+            name: 'Play voice',
+        });
+        const described = (button: HTMLElement) =>
+            document.getElementById(
+                button.getAttribute('aria-describedby') ?? ''
+            );
+        expect(described(second)).toHaveTextContent('Second');
+        expect(described(third)).toHaveTextContent('Third');
+    });
+
     it('plays the take for the line it sits on', async () => {
         const voice = voiceWith(['act1:1', 'act2:0']);
         render(VisualBacklog, {

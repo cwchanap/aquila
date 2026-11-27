@@ -103,6 +103,7 @@
                 type="button"
                 class="replay"
                 aria-label={t.reader.replayVoice}
+                aria-describedby={`history-line-${index}`}
                 data-reader-interactive
                 onclick={() => voice?.play(voicedAt.sceneId, voicedAt.index)}
               >
@@ -111,7 +112,7 @@
             {/if}
           </div>
         {/if}
-        <p lang={textLang}><RubyText text={text.dialogue} ruby={text.ruby} show={furigana} /></p>
+        <p id={`history-line-${index}`} lang={textLang}><RubyText text={text.dialogue} ruby={text.ruby} show={furigana} /></p>
         {#if second}
           <p class="second-text" lang={secondLang}>
             <RubyText text={second.dialogue} ruby={second.ruby} show={furigana} />

@@ -19,6 +19,9 @@ export interface VoicePlayer {
     /** Stop the current line and speak this one, if it has voice. Voice is
      *  keyed by position, so it plays whatever language the text is in. */
     play(sceneId: string, dialogueIndex: number): void;
+    /** Whether the loaded index has a take for this line. False until
+     *  `load` has resolved. */
+    has(sceneId: string, dialogueIndex: number): boolean;
     /** Retry a line the browser blocked before the reader's first gesture. */
     resume(): void;
     stop(): void;
@@ -115,6 +118,9 @@ export function createVoicePlayer(
             } catch {
                 current = null;
             }
+        },
+        has(sceneId, dialogueIndex) {
+            return Boolean(scenes[sceneId]?.[dialogueIndex]);
         },
         resume() {
             if (disposed || !blocked || !current) return;

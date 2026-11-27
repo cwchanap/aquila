@@ -41,6 +41,7 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
             closeHistory: 'Close history',
             hideDialogue: 'Hide dialogue box',
             showDialogue: 'Show dialogue box',
+            replayVoice: 'Play voice',
             dialogueBodyLabel: 'Dialogue content',
             tapToContinue: 'Tap to continue',
             lineProgress: 'Line {current} of {total}',
@@ -1205,6 +1206,48 @@ describe('VisualNovelReader second language', () => {
         );
         expect(within(history).getByText('二行目。')).toBeInTheDocument();
         expect(within(history).queryByText('三行目。')).not.toBeInTheDocument();
+    });
+});
+
+describe('VisualNovelReader voice replay', () => {
+    it('replays a voiced line from the History panel', async () => {
+        setReducedMotion(true);
+        const voice = {
+            has: vi.fn((sceneId: string, index: number) => index === 0),
+            play: vi.fn(),
+        };
+        renderReader({
+            dialogueIndex: 1,
+            isInitialMount: false,
+            historyVoice: voice,
+            historyLines: [
+                {
+                    characterName: 'Narrator',
+                    text: 'First line.',
+                    sceneId: 'b1a_act1',
+                    index: 0,
+                },
+                {
+                    characterName: 'Narrator',
+                    text: 'Second line.',
+                    sceneId: 'b1a_act1',
+                    index: 1,
+                },
+            ],
+        });
+        await vi.runAllTimersAsync();
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+
+        const history = screen.getByRole('dialog');
+        const replay = within(history).getByRole('button', {
+            name: 'Play voice',
+        });
+        await fireEvent.click(replay);
+
+        expect(voice.play).toHaveBeenCalledOnce();
+        expect(voice.play).toHaveBeenCalledWith('b1a_act1', 0);
     });
 });
 

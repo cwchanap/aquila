@@ -21,6 +21,9 @@ export type HistoryLine = {
     secondText?: string;
     secondRuby?: RubySpan[];
     separator?: string;
+    /** Where the line sits in its story, so history can replay its voice. */
+    sceneId?: string;
+    index?: number;
 };
 
 export function updateReaderHistory(
@@ -55,7 +58,8 @@ export function sceneHistoryLines(
     lastIndex: number,
     t: Translations,
     secondDialogue: readonly DialogueEntry[] | null = null,
-    separator?: string
+    separator?: string,
+    sceneId?: string
 ): HistoryLine[] {
     return dialogue.slice(0, lastIndex + 1).map((entry, index) => ({
         characterName: resolveCharacterName(entry, t),
@@ -64,6 +68,7 @@ export function sceneHistoryLines(
         secondText: secondDialogue?.[index]?.dialogue,
         secondRuby: secondDialogue?.[index]?.ruby,
         ...(index === 0 && separator ? { separator } : {}),
+        ...(sceneId ? { sceneId, index } : {}),
     }));
 }
 
@@ -90,7 +95,8 @@ export function buildHistoryLines(
             lastIndex,
             t,
             alignSecondDialogue(dialogue, second?.[sceneId]),
-            label
+            label,
+            sceneId
         );
     });
 }

@@ -326,6 +326,12 @@
   );
   let voiceEnabled = $state(readVoiceEnabled());
   const voicePlayer = createVoicePlayer();
+  // The story whose voice index has loaded. History only offers a replay
+  // once it knows which lines have a take.
+  let voiceLoadedStoryId = $state<string | null>(null);
+  let historyVoice = $derived(
+    voiceEnabled && voiceLoadedStoryId === storyId ? voicePlayer : null
+  );
   let selectedBgmKey: string | null = null;
   let bgmActivated = false;
   let visualRuntime: VisualReaderRuntime | null = $state(null);
@@ -672,6 +678,7 @@
     if (readerMode === 'visual' && voiceEnabled && storyId) {
       const loadingStoryId = storyId;
       void voicePlayer.load(loadingStoryId).then(ready => {
+        if (ready && !destroyed) voiceLoadedStoryId = loadingStoryId;
         // Speak the line on screen: it may have tried before the index
         // arrived, or Voice / Visual mode was just turned back on.
         if (
@@ -1259,6 +1266,7 @@
       {#if readerMode === 'visual'}
         <VisualNovelReader
           {historyLines}
+          {historyVoice}
           {typingDelay}
           {secondDialogue}
           {textLang}

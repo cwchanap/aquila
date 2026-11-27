@@ -243,6 +243,7 @@
     "voice": "ボイス",
     "voiceOn": "オン",
     "voiceOff": "オフ",
+    "replayVoice": "ボイスを再生",
     "readingSettings": "読書設定",
     "typingSpeed": "文字表示速度",
     "typingSpeedInstant": "瞬時",

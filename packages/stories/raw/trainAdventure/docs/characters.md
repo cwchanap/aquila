@@ -314,6 +314,10 @@
 - **ID**: `ailaru`
 - **Aliases**: Ailaru, アイラル
 
+### Portrait Prompts
+
+- **base**: anime visual-novel portrait, elderly male elf who looks about eighty yet stands upright with a graceful, steady bearing, straight waist-length silver-white hair worn loose behind his shoulders, long slender pointed ears showing through the hair, fine dense wrinkles on a still handsome, refined, narrow face, gentle wise pale green eyes, a warm calm closed-mouth smile, long white robe embroidered with silver vine patterns at the collar and chest, a polished green gem pendant on his chest, soft cool silver-blue glow light, muted palette, upper-body shot, clean background
+
 ## 51. 艾莉希雅（Elysia）
 
 - **ID**: `elysia`

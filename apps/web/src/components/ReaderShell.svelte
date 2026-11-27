@@ -677,6 +677,11 @@
   $effect(() => {
     if (readerMode === 'visual' && voiceEnabled && storyId) {
       const loadingStoryId = storyId;
+      // The player drops the old story's index when another story loads, so
+      // that story's ready flag must not survive a return to it.
+      if (untrack(() => voiceLoadedStoryId) !== loadingStoryId) {
+        voiceLoadedStoryId = null;
+      }
       void voicePlayer.load(loadingStoryId).then(ready => {
         if (ready && !destroyed) voiceLoadedStoryId = loadingStoryId;
         // Speak the line on screen: it may have tried before the index

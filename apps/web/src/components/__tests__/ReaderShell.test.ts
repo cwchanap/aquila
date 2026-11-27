@@ -24,6 +24,7 @@ import {
 } from '@/lib/visual-assets';
 import { createBgmPlayer as createDefaultBgmPlayer } from '@/lib/audio/bgm-player';
 import { createSfxPlayer as createDefaultSfxPlayer } from '@/lib/audio/sfx-player';
+import { createVoicePlayer as createRealVoicePlayer } from '@/lib/audio/voice-player';
 import type {
     AudioCueResolution,
     AudioReaderRuntime,
@@ -1879,6 +1880,112 @@ describe('ReaderShell', () => {
         expect(
             screen.queryByRole('button', { name: 'Play voice' })
         ).not.toBeInTheDocument();
+    });
+
+    it('replays History lines through the real voice player', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        readerState.dialogueIndex = 2;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const audio = { play: vi.fn(() => Promise.resolve()), pause: vi.fn() };
+        const createAudio = vi.fn(() => audio);
+        const fetchImpl = vi.fn(
+            async () =>
+                new Response(
+                    JSON.stringify({
+                        schemaVersion: 2,
+                        language: 'ja',
+                        scenes: {
+                            act1: ['01fa4da79b470a', '1607a6b16ad510', null],
+                        },
+                    })
+                )
+        );
+        render(ReaderShell, {
+            props: {
+                createVoicePlayer: () =>
+                    createRealVoicePlayer({
+                        baseUrl: 'https://assets.example/vn/voice',
+                        fetchImpl,
+                        createAudio,
+                    }),
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await waitFor(() => expect(fetchImpl).toHaveBeenCalledOnce());
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        const history = screen.getByRole('dialog', { name: 'History' });
+        // Two lines have a take; the third has none.
+        const buttons = await within(history).findAllByRole('button', {
+            name: 'Play voice',
+        });
+        expect(buttons).toHaveLength(2);
+        expect(createAudio).not.toHaveBeenCalled();
+
+        await fireEvent.click(buttons[1]);
+        expect(createAudio).toHaveBeenCalledOnce();
+        expect(createAudio).toHaveBeenCalledWith(
+            'https://assets.example/vn/voice/the_seventh_mirror/1607a6b16ad510.mp3'
+        );
+        expect(audio.play).toHaveBeenCalledOnce();
+    });
+
+    it('waits for the voice index again when returning to a story', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        readerState.dialogueIndex = 2;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        let finishReturn: (ready: boolean) => void = () => {};
+        const voice = {
+            load: vi
+                .fn()
+                .mockResolvedValueOnce(true)
+                .mockResolvedValueOnce(false)
+                .mockImplementationOnce(
+                    () => new Promise<boolean>(done => (finishReturn = done))
+                ),
+            play: vi.fn(),
+            has: vi.fn(
+                (sceneId: string, index: number) =>
+                    sceneId === 'act1' && index === 1
+            ),
+            resume: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        };
+        render(ReaderShell, {
+            props: {
+                createVoicePlayer: () => voice,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+        await tick();
+
+        readerState.storyId = 'train_adventure';
+        await tick();
+        await tick();
+        readerState.storyId = 'the_seventh_mirror';
+        await tick();
+        expect(voice.load).toHaveBeenCalledTimes(3);
+
+        // The player dropped this story's index when the other one loaded,
+        // so History must not offer a replay until it is back.
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        const history = screen.getByRole('dialog', { name: 'History' });
+        expect(
+            within(history).queryByRole('button', { name: 'Play voice' })
+        ).not.toBeInTheDocument();
+
+        finishReturn(true);
+        expect(
+            await within(history).findByRole('button', { name: 'Play voice' })
+        ).toBeInTheDocument();
     });
 
     it('retries a blocked voice line on the first reader gesture', async () => {

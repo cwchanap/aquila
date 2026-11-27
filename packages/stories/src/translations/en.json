@@ -285,6 +285,8 @@
     "historyTitle": "History",
     "openHistory": "Open history",
     "closeHistory": "Close history",
+    "hideDialogue": "Hide dialogue box",
+    "showDialogue": "Show dialogue box",
     "dialogueBodyLabel": "Dialogue content",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",

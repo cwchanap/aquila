@@ -3,8 +3,10 @@
   import type { Locale } from '@aquila/stories';
   import { getTranslations } from '@aquila/stories/translations';
   import type { HistoryLine } from '@/lib/reader-history';
+  import type { VoicePlayer } from '@/lib/audio/voice-player';
   import { focusTrap } from '@/lib/focus-trap';
   import { hideStageDirections } from '@/lib/reader-stage-directions';
+  import { Volume2 } from 'lucide-svelte';
 
   let {
     lines = [],
@@ -14,6 +16,7 @@
     locale = 'en',
     onClose = () => {},
     trigger = null,
+    voice = null,
   }: {
     lines?: HistoryLine[];
     textLang?: string;
@@ -23,6 +26,8 @@
     locale?: Locale;
     onClose?: () => void;
     trigger?: HTMLElement | null;
+    /** Lets a voiced line be played again; omit it for no replay buttons. */
+    voice?: Pick<VoicePlayer, 'has' | 'play'> | null;
   } = $props();
 
   let t = $derived(getTranslations(locale));
@@ -81,10 +86,30 @@
             ruby: line.secondRuby,
           })
         : null}
+      {@const voicedAt =
+        voice &&
+        line.sceneId &&
+        line.index !== undefined &&
+        voice.has(line.sceneId, line.index)
+          ? { sceneId: line.sceneId, index: line.index }
+          : null}
       <li>
         {#if line.separator}<h3>{line.separator}</h3>{/if}
-        {#if line.characterName}
-          <p class="speaker">{line.characterName}</p>
+        {#if line.characterName || voicedAt}
+          <div class="speaker-row">
+            {#if line.characterName}<p class="speaker">{line.characterName}</p>{/if}
+            {#if voicedAt}
+              <button
+                type="button"
+                class="replay"
+                aria-label={t.reader.replayVoice}
+                data-reader-interactive
+                onclick={() => voice?.play(voicedAt.sceneId, voicedAt.index)}
+              >
+                <Volume2 size={18} aria-hidden="true" />
+              </button>
+            {/if}
+          </div>
         {/if}
         <p lang={textLang}><RubyText text={text.dialogue} ruby={text.ruby} show={furigana} /></p>
         {#if second}
@@ -169,10 +194,22 @@
     line-height: 1.65;
   }
 
-  .speaker {
+  .speaker-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     margin-bottom: 0.25rem;
+  }
+
+  .speaker {
     color: #7dd3fc;
     font-weight: 700;
+  }
+
+  button.replay {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: none;
   }
 
   .second-text {

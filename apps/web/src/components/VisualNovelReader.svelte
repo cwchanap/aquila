@@ -10,6 +10,7 @@
   import ActPanel from '@/components/ActPanel.svelte';
   import VisualBacklog from '@/components/VisualBacklog.svelte';
   import Button from '@/components/ui/Button.svelte';
+  import type { VoicePlayer } from '@/lib/audio/voice-player';
   import { resolveCharacterName } from '@/lib/character-name';
   import { sceneHistoryLines, type HistoryLine } from '@/lib/reader-history';
   import {
@@ -54,6 +55,8 @@
     visibleSceneIds?: ReadonlySet<string>;
     backUrl?: string;
     historyLines?: HistoryLine[];
+    /** Set while voice is on and loaded, so history can replay a line. */
+    historyVoice?: Pick<VoicePlayer, 'has' | 'play'> | null;
   };
 
   const emptyLayer = {
@@ -100,6 +103,7 @@
     visibleSceneIds,
     backUrl,
     historyLines,
+    historyVoice = null,
   }: Props = $props();
 
   let snapshot = $state<VisualSnapshot>(emptySnapshot);
@@ -653,6 +657,7 @@
       {furigana}
       {locale}
       trigger={historyButton}
+      voice={historyVoice}
       onClose={closeBacklog}
     />
   {/if}

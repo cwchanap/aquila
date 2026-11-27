@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     buildHistoryLines,
+    sceneHistoryLines,
     updateReaderHistory,
     type ReaderHistory,
 } from '../reader-history';
@@ -115,6 +116,31 @@ describe('session history', () => {
             getTranslations('zh')
         );
         expect(chinese.map(line => line.text)).toEqual(['你好', '你好']);
+    });
+
+    it('records the scene and position of each line so history can replay its voice', () => {
+        const t = getTranslations('en');
+        const dialogue = [{ dialogue: 'first' }, { dialogue: 'second' }];
+        const lines = buildHistoryLines(
+            [
+                { sceneId: 'act1', lastIndex: 1 },
+                { sceneId: 'act2', lastIndex: 0 },
+            ],
+            () => dialogue,
+            undefined,
+            t
+        );
+        expect(lines.map(line => [line.sceneId, line.index])).toEqual([
+            ['act1', 0],
+            ['act1', 1],
+            ['act2', 0],
+        ]);
+        // Without a scene id there is no position to replay.
+        expect(
+            sceneHistoryLines(dialogue, 1, t).every(
+                line => line.sceneId === undefined && line.index === undefined
+            )
+        ).toBe(true);
     });
 
     it('includes chapter labels for chaptered scenes and omits headings for unpatterned ids', () => {

@@ -73,6 +73,22 @@ describe('createVoicePlayer', () => {
         expect(audio.pause).toHaveBeenCalledOnce();
     });
 
+    it('reports which lines have a take once the index has loaded', async () => {
+        const fetchImpl = vi.fn(async () => indexResponse([FIRST, null]));
+        const player = createVoicePlayer({
+            createAudio: fakeAudio,
+            fetchImpl,
+        });
+
+        expect(player.has('ch1_act1', 0)).toBe(false);
+        await player.load('the_seventh_mirror');
+
+        expect(player.has('ch1_act1', 0)).toBe(true);
+        expect(player.has('ch1_act1', 1)).toBe(false);
+        expect(player.has('ch1_act1', 2)).toBe(false);
+        expect(player.has('ch1_act2', 0)).toBe(false);
+    });
+
     it('never fetches for a story without voice', async () => {
         const fetchImpl = vi.fn();
         const createAudio = vi.fn();

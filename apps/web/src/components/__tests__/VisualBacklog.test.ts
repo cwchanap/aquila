@@ -8,6 +8,7 @@ vi.mock('@aquila/stories/translations', async importOriginal => ({
         reader: {
             historyTitle: 'History',
             closeHistory: 'Close history',
+            replayVoice: 'Play voice',
             unknown: 'Unknown',
             readerMode: 'Reader mode',
             textMode: 'Text',
@@ -239,5 +240,101 @@ describe('VisualBacklog furigana', () => {
             },
         });
         expect(document.querySelector('rt')).toHaveTextContent('きょう');
+    });
+});
+
+describe('VisualBacklog voice replay', () => {
+    const voicedLines = [
+        { characterName: 'Narrator', text: 'First', sceneId: 'act1', index: 0 },
+        { characterName: 'Guide', text: 'Second', sceneId: 'act1', index: 1 },
+        { characterName: 'Guide', text: 'Third', sceneId: 'act2', index: 0 },
+    ];
+    const voiceWith = (voiced: string[]) => ({
+        has: vi.fn((sceneId: string, index: number) =>
+            voiced.includes(`${sceneId}:${index}`)
+        ),
+        play: vi.fn(),
+    });
+
+    afterEach(() => {
+        document.body.replaceChildren();
+        vi.clearAllMocks();
+    });
+
+    it('offers a replay button only on lines that have a take', () => {
+        const voice = voiceWith(['act1:1', 'act2:0']);
+        render(VisualBacklog, {
+            props: { lines: voicedLines, voice, onClose: vi.fn() },
+        });
+
+        const [second, third] = screen.getAllByRole('button', {
+            name: 'Play voice',
+        });
+        expect(
+            screen.getAllByRole('button', { name: 'Play voice' })
+        ).toHaveLength(2);
+        expect(screen.getByText('Second').closest('li')).toContainElement(
+            second
+        );
+        expect(screen.getByText('Third').closest('li')).toContainElement(third);
+        expect(screen.getByText('First').closest('li')).not.toContainElement(
+            second
+        );
+    });
+
+    it('plays the take for the line it sits on', async () => {
+        const voice = voiceWith(['act1:1', 'act2:0']);
+        render(VisualBacklog, {
+            props: { lines: voicedLines, voice, onClose: vi.fn() },
+        });
+
+        const [second, third] = screen.getAllByRole('button', {
+            name: 'Play voice',
+        });
+        await fireEvent.click(third);
+        expect(voice.play).toHaveBeenLastCalledWith('act2', 0);
+        await fireEvent.click(second);
+        expect(voice.play).toHaveBeenLastCalledWith('act1', 1);
+        expect(voice.play).toHaveBeenCalledTimes(2);
+    });
+
+    it('shows no replay buttons without voice or without a line position', () => {
+        const voice = voiceWith(['act1:0', 'act1:1', 'act2:0']);
+        const { unmount } = render(VisualBacklog, {
+            props: { lines: voicedLines, onClose: vi.fn() },
+        });
+        expect(
+            screen.queryByRole('button', { name: 'Play voice' })
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(VisualBacklog, {
+            props: { lines: threeLines, voice, onClose: vi.fn() },
+        });
+        expect(
+            screen.queryByRole('button', { name: 'Play voice' })
+        ).not.toBeInTheDocument();
+        expect(voice.has).not.toHaveBeenCalled();
+    });
+
+    it('keeps the replay button for a voiced line without a speaker name', () => {
+        render(VisualBacklog, {
+            props: {
+                lines: [
+                    {
+                        characterName: '',
+                        text: 'Hush',
+                        sceneId: 'act1',
+                        index: 0,
+                    },
+                ],
+                voice: voiceWith(['act1:0']),
+                onClose: vi.fn(),
+            },
+        });
+
+        expect(
+            screen.getByRole('button', { name: 'Play voice' })
+        ).toBeInTheDocument();
     });
 });

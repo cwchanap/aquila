@@ -99,6 +99,7 @@ const { mockGetTranslations, mockSupportsVisualMode } = vi.hoisted(() => ({
             voice: 'Voice',
             voiceOn: 'On',
             voiceOff: 'Off',
+            replayVoice: 'Play voice',
             visualStaleRelease: 'Using previously validated visuals',
             visualAssetFallback: 'Some visuals are unavailable',
             visualUnavailable: 'Visuals are unavailable',
@@ -737,6 +738,7 @@ describe('ReaderShell', () => {
         const voice = {
             load: vi.fn(async () => true),
             play: vi.fn(),
+            has: vi.fn(() => false),
             resume: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),
@@ -1619,6 +1621,7 @@ describe('ReaderShell', () => {
         const voice = {
             load: vi.fn(() => Promise.resolve(true)),
             play: vi.fn(),
+            has: vi.fn(() => false),
             resume: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),
@@ -1744,6 +1747,7 @@ describe('ReaderShell', () => {
         const voice = {
             load: vi.fn(() => Promise.resolve(true)),
             play: vi.fn(),
+            has: vi.fn(() => false),
             resume: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),
@@ -1782,6 +1786,7 @@ describe('ReaderShell', () => {
         const voice = {
             load: vi.fn(() => Promise.resolve(true)),
             play: vi.fn(),
+            has: vi.fn(() => false),
             resume: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),
@@ -1816,6 +1821,66 @@ describe('ReaderShell', () => {
         );
     });
 
+    it('replays a voiced line from History while Voice is on', async () => {
+        stubMatchMedia(false);
+        readerState.dialogue = mockDialogue;
+        readerState.dialogueIndex = 2;
+        localStorage.setItem(READER_MODE_KEY, 'visual');
+        const voice = {
+            load: vi.fn(() => Promise.resolve(true)),
+            play: vi.fn(),
+            has: vi.fn(
+                (sceneId: string, index: number) =>
+                    sceneId === 'act1' && index === 1
+            ),
+            resume: vi.fn(),
+            stop: vi.fn(),
+            dispose: vi.fn(),
+        };
+        render(ReaderShell, {
+            props: {
+                createVoicePlayer: () => voice,
+                createVisualRuntime: () => createRuntimeHarness().runtime,
+            },
+        });
+        await tick();
+        await tick();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        const history = screen.getByRole('dialog', { name: 'History' });
+        const replay = within(history).getByRole('button', {
+            name: 'Play voice',
+        });
+        expect(replay.closest('li')).toHaveTextContent('Second dialogue line.');
+        voice.play.mockClear();
+        await fireEvent.click(replay);
+        expect(voice.play).toHaveBeenCalledOnce();
+        expect(voice.play).toHaveBeenCalledWith('act1', 1);
+
+        // Voice off: History still lists the lines but offers no replay.
+        await fireEvent.click(
+            within(history).getByRole('button', { name: 'Close history' })
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open reader settings' })
+        );
+        await fireEvent.click(screen.getByRole('button', { name: 'Voice' }));
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Close reader settings' })
+        );
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open history' })
+        );
+        expect(
+            screen.getByRole('dialog', { name: 'History' })
+        ).toHaveTextContent('Second dialogue line.');
+        expect(
+            screen.queryByRole('button', { name: 'Play voice' })
+        ).not.toBeInTheDocument();
+    });
+
     it('retries a blocked voice line on the first reader gesture', async () => {
         stubMatchMedia(false);
         readerState.dialogue = mockDialogue;
@@ -1823,6 +1888,7 @@ describe('ReaderShell', () => {
         const voice = {
             load: vi.fn(() => Promise.resolve(true)),
             play: vi.fn(),
+            has: vi.fn(() => false),
             resume: vi.fn(),
             stop: vi.fn(),
             dispose: vi.fn(),

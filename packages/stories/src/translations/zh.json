@@ -243,6 +243,7 @@
     "voice": "語音",
     "voiceOn": "開啟",
     "voiceOff": "關閉",
+    "replayVoice": "播放語音",
     "readingSettings": "閱讀設定",
     "typingSpeed": "文字顯示速度",
     "typingSpeedInstant": "即時",

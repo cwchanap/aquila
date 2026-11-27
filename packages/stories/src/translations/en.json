@@ -243,6 +243,7 @@
     "voice": "Voice",
     "voiceOn": "On",
     "voiceOff": "Off",
+    "replayVoice": "Play voice",
     "readingSettings": "Reading settings",
     "typingSpeed": "Typing speed",
     "typingSpeedInstant": "Instant",

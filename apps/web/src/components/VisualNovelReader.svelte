@@ -114,6 +114,7 @@
   let dialogueBody: globalThis.HTMLDivElement | null = $state(null);
   // Hides the dialogue box and acts rail so the full CG shows. Not persisted.
   let dialogueHidden = $state(false);
+  let contentElement: globalThis.HTMLDivElement | null = $state(null);
   let hideButton: HTMLElement | null = $state(null);
   let showButton: HTMLElement | null = $state(null);
 
@@ -295,10 +296,15 @@
   });
 
   async function setDialogueHidden(hidden: boolean): Promise<void> {
-    // The control that was just used disappears with its panel, so hand focus
-    // to the one that takes its place.
-    const hadFocus =
-      document.activeElement === (hidden ? hideButton : showButton);
+    // Whatever had focus may disappear with the panel, so hand focus to the
+    // control that takes its place.
+    const active = document.activeElement;
+    const hadFocus = hidden
+      ? !!contentElement?.contains(active)
+      : active === showButton;
+    // Hiding takes the Acts panel with it. Closing it too keeps it from
+    // owning the overlay (which blocks restoring) while it is out of sight.
+    if (hidden) actPanelOpen = false;
     dialogueHidden = hidden;
     if (!hadFocus) return;
     await tick();
@@ -504,6 +510,7 @@
   />
 
   <div
+    bind:this={contentElement}
     data-testid="visual-reader-content"
     class="visual-reader-content"
     hidden={dialogueHidden}
@@ -530,16 +537,30 @@
       data-testid="visual-dialogue-box"
       aria-live="off"
     >
-      <Button
-        bind:element={historyButton}
-        variant="menu"
-        className="history-control absolute top-3 right-3 z-[1] min-w-11 w-auto rounded-full {controlBase}"
-        data-reader-interactive
-        aria-label={t.reader.openHistory}
-        onclick={() => (backlogOpen = true)}
-      >
-        {t.reader.historyTitle}
-      </Button>
+      <div class="absolute top-3 right-3 z-[1] flex items-center gap-1.5">
+        <Button
+          bind:element={hideButton}
+          variant="menu"
+          className="hide-control w-11 min-w-11 shrink-0 rounded-full {controlBase} px-0"
+          data-reader-interactive
+          aria-label={t.reader.hideDialogue}
+          aria-keyshortcuts="h"
+          title="{t.reader.hideDialogue} (H)"
+          onclick={() => setDialogueHidden(true)}
+        >
+          <EyeOff size={20} class="mx-auto" aria-hidden="true" />
+        </Button>
+        <Button
+          bind:element={historyButton}
+          variant="menu"
+          className="history-control min-w-11 w-auto rounded-full {controlBase}"
+          data-reader-interactive
+          aria-label={t.reader.openHistory}
+          onclick={() => (backlogOpen = true)}
+        >
+          {t.reader.historyTitle}
+        </Button>
+      </div>
 
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <div
@@ -588,18 +609,6 @@
       </div>
 
       <footer class="dialogue-footer" data-testid="visual-dialogue-footer">
-        <Button
-          bind:element={hideButton}
-          variant="menu"
-          className="hide-control w-11 min-w-11 shrink-0 rounded-full {controlBase} px-0"
-          data-reader-interactive
-          aria-label={t.reader.hideDialogue}
-          aria-keyshortcuts="h"
-          title="{t.reader.hideDialogue} (H)"
-          onclick={() => setDialogueHidden(true)}
-        >
-          <EyeOff size={20} class="mx-auto" aria-hidden="true" />
-        </Button>
         <div class="action-slot">
           {#if isTyping || advanceLabel}
             <Button

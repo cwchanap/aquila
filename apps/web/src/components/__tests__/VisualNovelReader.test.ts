@@ -1427,6 +1427,70 @@ describe('VisualNovelReader dialogue box toggle', () => {
         );
     });
 
+    it('hands focus to Show when H hides while the dialogue body has focus', async () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+
+        screen.getByTestId('visual-dialogue-body').focus();
+        await fireEvent.keyDown(screen.getByTestId('visual-dialogue-body'), {
+            key: 'h',
+        });
+
+        await waitFor(() =>
+            expect(
+                screen.getByRole('button', { name: 'Show dialogue box' })
+            ).toHaveFocus()
+        );
+    });
+
+    it('leaves focus alone when H hides with nothing in the box focused', async () => {
+        setReducedMotion(false);
+        renderReader({ isInitialMount: false });
+        await vi.runAllTimersAsync();
+
+        await fireEvent.keyDown(screen.getByTestId('visual-novel-reader'), {
+            key: 'h',
+        });
+        await vi.runAllTimersAsync();
+
+        expect(
+            screen.getByRole('button', { name: 'Show dialogue box' })
+        ).not.toHaveFocus();
+    });
+
+    it('closes the Acts panel when hiding so the box can still be restored', async () => {
+        setReducedMotion(false);
+        const onOverlayChange = vi.fn();
+        const { onIndexChange } = renderReader({
+            isInitialMount: false,
+            onOverlayChange,
+        });
+        await vi.runAllTimersAsync();
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        );
+        expect(onOverlayChange).toHaveBeenLastCalledWith(true);
+
+        await fireEvent.click(
+            screen.getByRole('button', { name: 'Hide dialogue box' })
+        );
+        expect(screen.getByTestId('visual-reader-content')).toHaveAttribute(
+            'hidden'
+        );
+        expect(onOverlayChange).toHaveBeenLastCalledWith(false);
+
+        await tapReader(screen.getByTestId('visual-novel-reader'));
+        expect(screen.getByTestId('visual-reader-content')).not.toHaveAttribute(
+            'hidden'
+        );
+        expect(
+            screen.getByRole('button', { name: 'Open acts panel' })
+        ).toBeInTheDocument();
+        expect(onIndexChange).not.toHaveBeenCalled();
+    });
+
     it('restores the box on a tap instead of advancing the line', async () => {
         setReducedMotion(false);
         const { onIndexChange } = renderReader({ isInitialMount: false });

@@ -380,6 +380,246 @@
         "direction": "[choking] [dying breath]",
         "text": "……あ……っ……"
       }
+    },
+    "b1b_b2a_b3b_act15": {
+      "2": {
+        "zh": "(內心,帶著一絲愧疚)對不起...在這裡,活下去才是第一要務。",
+        "direction": "[regretful] [subdued]"
+      },
+      "9": {
+        "zh": "(走到月台邊緣)至少...讓你入土為安。",
+        "direction": "[somber] [gentle]"
+      },
+      "18": {
+        "zh": "(看著這四個字,低聲重複)終焉...祭壇...",
+        "direction": "[uneasy] [murmuring]"
+      },
+      "21": {
+        "zh": "(內心)這條小徑到這裡就結束了...要前往下一站,唯一的路,就是沿著鐵軌走下去。",
+        "direction": "[resigned] [tired]"
+      },
+      "23": {
+        "zh": "(內心)應該夠撐到下一站...但還是要省著用。",
+        "direction": "[tired] [pragmatic]"
+      },
+      "36": {
+        "zh": "(內心,沉重)他們現在是死是活?",
+        "direction": "[worried] [heavy-hearted]"
+      },
+      "41": {
+        "zh": "(內心)而小林女士和孩子們...就那樣從小屋裡消失了。他們到底去了哪裡?還活著嗎?",
+        "direction": "[worried] [anxious]"
+      },
+      "43": {
+        "zh": "(內心)那個用劍殺人的兇手...會不會就是車上的某個乘客?還是說,這裡本身就存在著我們不知道的威脅?",
+        "direction": "[suspicious] [uneasy]"
+      },
+      "51": {
+        "zh": "(停下腳步,警惕地環顧四周)這裡...",
+        "direction": "[wary] [tense]"
+      },
+      "57": {
+        "zh": "(低聲,難以置信)這就是...",
+        "direction": "[stunned] [disbelieving]"
+      }
+    },
+    "b1b_b2a_b3b_act16": {
+      "3": {
+        "zh": "(低聲)這裡...真的是車站嗎?",
+        "direction": "[uneasy] [wary]"
+      },
+      "14": {
+        "zh": "(看著長廊,內心)那裡...才是這座建築的核心。",
+        "direction": "[wary] [certain]"
+      },
+      "16": {
+        "zh": "(低聲)先去月台。",
+        "direction": "[determined] [composed]"
+      },
+      "19": {
+        "zh": "(停下腳步,震驚)這是...",
+        "direction": "[shocked] [stunned]"
+      },
+      "24": {
+        "zh": "(看向遠方,輕聲)好美...",
+        "direction": "[awed] [gentle]"
+      },
+      "34": {
+        "zh": "(內心)永恆之森...還不是終點。",
+        "direction": "[uneasy] [thoughtful]"
+      },
+      "36": {
+        "zh": "(內心)那個膽小的眼鏡男,還有那個焦慮的中年女人...按照規律,應該有一人下車,一人繼續前進。",
+        "direction": "[thoughtful] [wary]"
+      },
+      "38": {
+        "zh": "(環顧月台)人呢?",
+        "direction": "[puzzled] [uneasy]"
+      },
+      "45": {
+        "zh": "(停下腳步,困惑)怎麼回事?",
+        "direction": "[confused] [uneasy]"
+      },
+      "47": {
+        "zh": "(內心)規律被打破了?還是...他們兩個都留在車上了?",
+        "direction": "[baffled] [tense]"
+      },
+      "49": {
+        "zh": "(內心)難道「永恆之森」有什麼特殊之處,讓列車的規則改變了?",
+        "direction": "[puzzled] [thoughtful]"
+      }
+    },
+    "b1b_b2a_b3b_b4a_act17": {
+      "3": {
+        "zh": "(握緊手中的劍)繼續前進。",
+        "direction": "[determined] [composed]"
+      },
+      "8": {
+        "zh": "(內心)這裡...像是某種儀式的場所。",
+        "direction": "[awed] [uneasy]"
+      },
+      "13": {
+        "zh": "(下意識地抬手遮眼)啊...",
+        "direction": "[wincing] [startled]"
+      },
+      "17": {
+        "zh": "(慢慢放下手,感受著陽光)陽光...真的是陽光...",
+        "direction": "[relieved] [moved]"
+      },
+      "23": {
+        "zh": "(低聲)活著...真好。",
+        "direction": "[relieved] [warm]"
+      },
+      "29": {
+        "zh": "(停下腳步,環顧四周)這裡...",
+        "direction": "[awed] [disbelieving]"
+      },
+      "34": {
+        "zh": "(走近,蹲下身,伸手試探)溫泉?",
+        "direction": "[curious] [surprised]"
+      },
+      "37": {
+        "zh": "(站起身,看著溫泉)在這廣闊的森林中...這簡直是奇蹟。",
+        "direction": "[amazed] [delighted]"
+      },
+      "44": {
+        "zh": "(內心)在「寂海」站下車的那些人...",
+        "direction": "[pensive] [somber]"
+      },
+      "46": {
+        "zh": "(內心)他們現在在哪裡?找到什麼線索了嗎?",
+        "direction": "[worried] [pensive]"
+      },
+      "48": {
+        "zh": "(內心)為什麼其中一個會死在通往「亡者峽谷」的小徑上?她是怎麼從一片森林跑到另一片森林的?",
+        "direction": "[puzzled] [troubled]"
+      },
+      "51": {
+        "zh": "(內心)小林先生...胸口上那道劍傷...",
+        "direction": "[troubled] [somber]"
+      },
+      "53": {
+        "zh": "(內心)而小林女士和孩子們...就那樣從小屋裡消失了。他們到底去了哪裡?還活著嗎?",
+        "direction": "[worried] [anxious]"
+      },
+      "55": {
+        "zh": "(低聲,自言自語)這一切的背後,到底有什麼關聯?",
+        "direction": "[muttering] [frustrated]"
+      },
+      "67": {
+        "zh": "(低聲,難以置信)精靈...?",
+        "direction": "[stunned] [disbelieving]"
+      }
+    },
+    "b1b_b2a_b3b_b4b_act17": {
+      "2": {
+        "zh": "(握緊手中的劍,低聲)列車早已離開,追上去也不知道要走多久...既然來到這裡,就應該弄清楚這座建築的秘密。先去看看那條長廊吧。",
+        "direction": "[resolute] [composed]"
+      },
+      "7": {
+        "zh": "(握緊劍,緩步走向長廊,低聲)好暗...",
+        "direction": "[uneasy] [wary]"
+      },
+      "14": {
+        "zh": "(停下腳步,看著前方的光)那是...",
+        "direction": "[curious] [wary]"
+      },
+      "16": {
+        "zh": "(環顧四周)這裡是...",
+        "direction": "[bewildered] [wary]"
+      },
+      "21": {
+        "zh": "(看著三條路,皺眉)三條路...該選哪一條?",
+        "direction": "[uncertain] [pondering]"
+      },
+      "23": {
+        "zh": "(內心)先往下看看。通常重要的東西都藏在最深處。",
+        "direction": "[thoughtful] [determined]"
+      },
+      "29": {
+        "zh": "(喘著氣,低聲)到底...還要多深...",
+        "direction": "[panting] [weary]"
+      },
+      "35": {
+        "zh": "(放慢腳步,看著浮雕)這些圖案...好像某種宗教儀式...",
+        "direction": "[wary] [thoughtful]"
+      },
+      "37": {
+        "zh": "(停在門前,仰頭)好壯觀...",
+        "direction": "[awed] [breathless]"
+      },
+      "40": {
+        "zh": "(震驚地)這是...",
+        "direction": "[shocked] [stunned]"
+      },
+      "43": {
+        "zh": "(緩步走進,低聲)這裡...到底是什麼地方?",
+        "direction": "[uneasy] [bewildered]"
+      },
+      "46": {
+        "zh": "(停下腳步,警戒地握緊劍)有人...",
+        "direction": "[alarmed] [wary]"
+      },
+      "49": {
+        "zh": "(低聲)喂...你還好嗎?",
+        "direction": "[concerned] [tentative]"
+      },
+      "51": {
+        "zh": "(內心獨白)那扇門後面...會通往哪裡?但還是先看看這個人是什麼情況吧。",
+        "direction": "[thoughtful] [cautious]"
+      },
+      "54": {
+        "zh": "(仔細觀察,低聲)他...看起來像是在睡覺。喂,醒醒!",
+        "direction": "[puzzled] [urgent]"
+      },
+      "56": {
+        "zh": "(更大聲)喂!你聽得到嗎?醒醒!",
+        "direction": "[shouting] [urgent]"
+      },
+      "58": {
+        "zh": "(皺眉,放開男子)怎麼回事...完全叫不醒...也許我可以把他移開,看看祭壇下面有沒有什麼線索?",
+        "direction": "[frustrated] [puzzled]"
+      },
+      "60": {
+        "zh": "(咬牙,用力)起來...",
+        "direction": "[straining] [grunting]"
+      },
+      "62": {
+        "zh": "(更加用力,手臂青筋暴起)什麼...",
+        "direction": "[straining] [alarmed]"
+      },
+      "64": {
+        "zh": "(放開手,喘著氣,困惑)怎麼可能...他明明看起來很輕...叫不醒...也移不動...",
+        "direction": "[panting] [bewildered]"
+      },
+      "67": {
+        "zh": "(深吸一口氣)在這裡繼續耗著也沒有用...看來得回去探索其他兩條路了。",
+        "direction": "[sighs] [resigned]"
+      },
+      "74": {
+        "zh": "(握緊劍,看著兩條路)接下來...該往哪邊走?",
+        "direction": "[pondering] [uncertain]"
+      }
     }
   }
 }

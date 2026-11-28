@@ -1,5 +1,9 @@
 # 第十九幕：湖畔星語
 
+```bg
+reuse branch_1a/branch_2a/branch_3a/b1a_b2a_b3a_act18_tent_done
+```
+
 **旁白**：搭好帳篷後，兩人都累得癱坐在草地上。但經歷了這麼多事情，李杰反而睡不著。他看著眼前平靜的湖面，心中五味雜陳。
 
 **李杰**：(輕聲) 清水，妳累嗎？要不要先進去休息？
@@ -7,6 +11,10 @@
 **清水恵美**：(搖搖頭) 我...我也睡不著...李杰先生，可以陪我坐一會兒嗎？
 
 **李杰**：(點點頭，在她身旁坐下) 好。
+
+```bg side_by_side
+the sacred lake 銀月湖 (Silver Moon Lake), a still mountain lake lying in a quiet valley like one huge mirror, its surface reflecting the two faint thin sickle moons (the large one on the left) and the stars of a deep violet night sky so exactly that sky and water look alike, the water a dreamy silver-blue that glimmers as if set with countless tiny stars; many glowing flowers like water lilies float on the water, swaying gently with its ripples, each giving off a soft silver light; around the lake an open meadow of soft grass tinted silver-blue by the glow and moving in a light breeze, and at the meadow's edge a dense forest of tall, straight, clean trees casting deep shadows, with no mist or fog anywhere; on the near shore among a few trees stand five or six small plain hunters' huts of dark weathered timber with mossy shingle roofs and small dim warm windows, one of them larger than the rest, easy to miss at a distance; a pure, calm, holy, unspoiled place; no fires, no signposts, no fences, no jetties, no boats, no text. Camera: a wide shot at eye level from behind and a little to the side, as Li Jie (28-year-old man, short black hair, no glasses, in a simple ankle-length white elf robe of soft linen with a loose cloth belt and a thin line of silver thread at the collar, no jacket, no tie), and Emi (young woman, long chestnut hair, no glasses, no earphones, in the same simple ankle-length white elf robe with a loose cloth belt and a thin line of silver thread at the collar), sit side by side on the soft grass at the water's edge at the lower left, seen from behind, a respectful gap between them, their knees drawn up, looking out over the lake that mirrors the two moons and the stars; glowing flowers drift on the water; behind them at the far left the small canvas tent stands under its few trees, and far along the shore a few elf tents show tiny warm points of light. Only these two people in view. Soft silver-blue palette with deep violet-black shadows, serene fantasy visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
 
 **旁白**：兩人並肩坐在湖邊的草地上，看著眼前寧靜的景色。銀月湖的湖面如同一面巨大的鏡子，完美地倒映著天空中的雙月和閃爍的星辰。湖水呈現出夢幻般的銀藍色，在月光的照耀下輕輕波動，泛起一圈圈漣漪。
 
@@ -34,6 +42,10 @@
 
 **李杰**：說起來...清水，之前妳提到過...想和「他」一起去看海。那個人...是妳的男朋友嗎？
 
+```bg memory
+the sacred lake 銀月湖 (Silver Moon Lake), a still mountain lake lying in a quiet valley like one huge mirror, its surface reflecting the two faint thin sickle moons (the large one on the left) and the stars of a deep violet night sky so exactly that sky and water look alike, the water a dreamy silver-blue that glimmers as if set with countless tiny stars; many glowing flowers like water lilies float on the water, swaying gently with its ripples, each giving off a soft silver light; around the lake an open meadow of soft grass tinted silver-blue by the glow and moving in a light breeze, and at the meadow's edge a dense forest of tall, straight, clean trees casting deep shadows, with no mist or fog anywhere; on the near shore among a few trees stand five or six small plain hunters' huts of dark weathered timber with mossy shingle roofs and small dim warm windows, one of them larger than the rest, easy to miss at a distance; a pure, calm, holy, unspoiled place; no fires, no signposts, no fences, no jetties, no boats, no text. Camera: a medium close-up, eye level, three-quarter front, from the lake side. Emi (young woman, long chestnut hair, no glasses, no earphones, in the same simple ankle-length white elf robe with a loose cloth belt and a thin line of silver thread at the collar) sits on the grass in sharp focus with her knees drawn up under the robe, her face lowered a little and turned aside, a soft complicated expression, a flicker of surprise and sorrow that settles into a fond, faraway smile, her eyes shining, lit silver-blue by the lake. At the right edge, soft, Li Jie's shoulder and half his face (28-year-old man, short black hair, no glasses, in a simple ankle-length white elf robe of soft linen with a loose cloth belt and a thin line of silver thread at the collar, no jacket, no tie) turned toward her, gentle and curious, not smiling. Only these two in view. Soft silver-blue palette with deep violet-black shadows, serene fantasy visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **旁白**：恵美的身體微微一震，轉頭看向李杰。她的眼神中閃過一絲複雜的情緒——驚訝、悲傷，還有一絲難以察覺的猶豫。但很快，她低下頭，聲音變得柔和而憂傷。
 
 **清水恵美**：(點點頭，聲音輕柔) 嗯...是的。他叫...他叫翔。高山翔。我們從高中就在一起了。
@@ -54,6 +66,10 @@
 
 **旁白**：恵美沉默了幾秒，眼神有些閃爍，似乎在猶豫該怎麼開口。她深吸了一口氣，聲音比剛才平靜了一些，但帶著一絲壓抑。
 
+```bg accident
+the sacred lake 銀月湖 (Silver Moon Lake), a still mountain lake lying in a quiet valley like one huge mirror, its surface reflecting the two faint thin sickle moons (the large one on the left) and the stars of a deep violet night sky so exactly that sky and water look alike, the water a dreamy silver-blue that glimmers as if set with countless tiny stars; many glowing flowers like water lilies float on the water, swaying gently with its ripples, each giving off a soft silver light; around the lake an open meadow of soft grass tinted silver-blue by the glow and moving in a light breeze, and at the meadow's edge a dense forest of tall, straight, clean trees casting deep shadows, with no mist or fog anywhere; on the near shore among a few trees stand five or six small plain hunters' huts of dark weathered timber with mossy shingle roofs and small dim warm windows, one of them larger than the rest, easy to miss at a distance; a pure, calm, holy, unspoiled place; no fires, no signposts, no fences, no jetties, no boats, no text. Camera: a medium close-up, slightly high, side-on, focused on Emi's lowered face and her hands. Emi (young woman, long chestnut hair, no glasses, no earphones, in the same simple ankle-length white elf robe with a loose cloth belt and a thin line of silver thread at the collar) sits on the grass, her head bowed so her hair half hides her face, both hands clenched in the folds of her robe at her knees, her knuckles pale, her eyes fixed on the water, a stiff, blank composure, her eyes reddening but dry. At the right edge, soft, Li Jie's shoulder and half his face (28-year-old man, short black hair, no glasses, in a simple ankle-length white elf robe of soft linen with a loose cloth belt and a thin line of silver thread at the collar, no jacket, no tie), frozen in shock, looking at her. Only these two in view. Soft silver-blue palette with deep violet-black shadows, serene fantasy visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **清水恵美**：(低著頭，聲音有些僵硬) 但是...兩年前...他出了車禍...
 
 **旁白**：李杰的表情凝固了。他沒想到會聽到這樣的答案。
@@ -70,6 +86,10 @@
 
 **李杰**：(伸手輕輕拍了拍她的肩膀) 清水...這太...這對妳來說一定很痛苦...
 
+```bg tears
+the sacred lake 銀月湖 (Silver Moon Lake), a still mountain lake lying in a quiet valley like one huge mirror, its surface reflecting the two faint thin sickle moons (the large one on the left) and the stars of a deep violet night sky so exactly that sky and water look alike, the water a dreamy silver-blue that glimmers as if set with countless tiny stars; many glowing flowers like water lilies float on the water, swaying gently with its ripples, each giving off a soft silver light; around the lake an open meadow of soft grass tinted silver-blue by the glow and moving in a light breeze, and at the meadow's edge a dense forest of tall, straight, clean trees casting deep shadows, with no mist or fog anywhere; on the near shore among a few trees stand five or six small plain hunters' huts of dark weathered timber with mossy shingle roofs and small dim warm windows, one of them larger than the rest, easy to miss at a distance; a pure, calm, holy, unspoiled place; no fires, no signposts, no fences, no jetties, no boats, no text. Camera: a close-up, eye level, three-quarter front. Emi (young woman, long chestnut hair, no glasses, no earphones, in the same simple ankle-length white elf robe with a loose cloth belt and a thin line of silver thread at the collar), has turned toward Li Jie, who is out of frame at the right, her face in sharp focus, tears slowly running down her cheeks, quiet and steady, her lips pressed together, a tired, long-practised sadness rather than a breakdown, the silver light of the lake glinting on the wet tears; at the lower right, soft, Li Jie's hand rests lightly on her shoulder, his sleeve and hand only, his face out of frame. Only Emi in sharp focus. Soft silver-blue palette with deep violet-black shadows, serene fantasy visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **清水恵美**：(終於轉頭看向他，眼淚慢慢滑落，但聲音還算平穩) 一開始...一開始很難接受。但是現在...已經習慣了。我只是...只是希望他能醒來...
 
 **旁白**：她的眼淚流得很安靜，不像是崩潰，更像是一種習慣性的悲傷。李杰看著她，心中湧起一股強烈的心疼，但同時也有一絲說不清的感覺——她的反應，似乎和他想象中不太一樣。
@@ -79,6 +99,10 @@
 **李杰**：(輕聲) 妳能堅持這麼久...真的很不容易。他一定...一定能感受到妳的陪伴。
 
 **清水恵美**：(擦了擦眼淚，勉強笑了笑) 謝謝你...李杰先生...其實...其實我也不知道他能不能感受到...但我還是想...想繼續等他...
+
+```bg lean_sleep
+the sacred lake 銀月湖 (Silver Moon Lake), a still mountain lake lying in a quiet valley like one huge mirror, its surface reflecting the two faint thin sickle moons (the large one on the left) and the stars of a deep violet night sky so exactly that sky and water look alike, the water a dreamy silver-blue that glimmers as if set with countless tiny stars; many glowing flowers like water lilies float on the water, swaying gently with its ripples, each giving off a soft silver light; around the lake an open meadow of soft grass tinted silver-blue by the glow and moving in a light breeze, and at the meadow's edge a dense forest of tall, straight, clean trees casting deep shadows, with no mist or fog anywhere; on the near shore among a few trees stand five or six small plain hunters' huts of dark weathered timber with mossy shingle roofs and small dim warm windows, one of them larger than the rest, easy to miss at a distance; a pure, calm, holy, unspoiled place; no fires, no signposts, no fences, no jetties, no boats, no text. Camera: a medium two-shot at eye level, side-on, the lake behind them. Emi (young woman, long chestnut hair, no glasses, no earphones, in the same simple ankle-length white elf robe with a loose cloth belt and a thin line of silver thread at the collar) leans her head on Li Jie's shoulder with her eyes closed and wet lashes, her lips slightly parted, a peaceful, tear-streaked face, asleep or nearly; Li Jie (28-year-old man, short black hair, no glasses, in a simple ankle-length white elf robe of soft linen with a loose cloth belt and a thin line of silver thread at the collar, no jacket, no tie), sits very still and stiff, looking down at her with a flustered, tender, guilty look, a faint blush, not smiling, his hands held awkwardly at his sides. Moonlight silvers her hair. Only these two in view. Soft silver-blue palette with deep violet-black shadows, serene fantasy visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
 
 **旁白**：她說完這句話後，將頭輕輕地靠在李杰的肩膀上。這個動作來得很自然，但李杰的身體還是僵了一下。他能感受到她肩膀輕微的顫抖，能感受到她壓抑的呼吸聲。
 
@@ -100,6 +124,10 @@
 
 **旁白**：他深吸了一口氣，努力讓自己平靜下來。他小心翼翼地調整姿勢，盡量不吵醒恵美。就這樣又坐了一會兒，確定她睡得很沉後，他才緩緩地移動。
 
+```bg carry
+a small plain old canvas tent pitched on soft grass at the edge of 銀月湖 (Silver Moon Lake): weathered off-white canvas on a simple ridge pole, barely two metres wide, a little crooked and patched, taut guy ropes and wooden pegs, a closed front flap; a few tall straight trees stand close behind it for shelter and the still lake beside it mirrors the two faint thin sickle moons (the large one on the left) and carries a few floating silver glowing flowers; the meadow of soft grass tinted silver-blue by the glow, the clean forest at its edge, no mist; a few other tents and the hunters' huts far along the shore; no fires, no signposts, no fences, no text. Camera: a medium-wide shot at eye level from the front and slightly low, as Li Jie walks across the moonlit grass toward the tent carrying Emi asleep in his arms. Li Jie (28-year-old man, short black hair, no glasses, in a simple ankle-length white elf robe of soft linen with a loose cloth belt and a thin line of silver thread at the collar, no jacket, no tie), one arm under her knees and the other behind her back, looks ahead with careful, cautious steps; Emi (young woman, long chestnut hair, no glasses, no earphones, in the same simple ankle-length white elf robe with a loose cloth belt and a thin line of silver thread at the collar), asleep, her head against his shoulder, one arm hanging loose, her hair spilling, her white canvas sneakers on her dangling feet. The small tent stands ahead of him at the right under its few trees, the lake glimmering behind with the two moons reflected. Only these two people in view. Soft silver-blue palette with deep violet-black shadows, serene fantasy visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
+
 **旁白**：李杰輕輕地扶住恵美的肩膀，然後慢慢地站起身。恵美的頭離開了他的肩膀，身體開始傾斜。李杰連忙伸手托住她，將她橫抱起來。
 
 **旁白**：恵美的身體很輕，李杰幾乎沒費什麼力氣就抱起了她。她在李杰的懷中動了動，發出一聲輕輕的呢喃，嘴角似乎還帶著一絲淡淡的微笑，然後又沉沉地睡去。李杰的心再次漏跳了一拍。
@@ -109,6 +137,10 @@
 **旁白**：李杰彎腰進入帳篷，將恵美輕輕地放在鋪好的毯子上。她的身體碰到柔軟的毯子後，輕輕地嘆了口氣，翻了個身，繼續沉睡。
 
 **旁白**：李杰拿起另一條毯子，輕輕地蓋在她身上。他看著她安詳的睡臉，忍不住又多看了幾眼，然後才輕輕地退出帳篷。
+
+```bg alone
+a small plain old canvas tent pitched on soft grass at the edge of 銀月湖 (Silver Moon Lake): weathered off-white canvas on a simple ridge pole, barely two metres wide, a little crooked and patched, taut guy ropes and wooden pegs, a closed front flap; a few tall straight trees stand close behind it for shelter and the still lake beside it mirrors the two faint thin sickle moons (the large one on the left) and carries a few floating silver glowing flowers; the meadow of soft grass tinted silver-blue by the glow, the clean forest at its edge, no mist; a few other tents and the hunters' huts far along the shore; no fires, no signposts, no fences, no text. Camera: a wide shot from behind and slightly above, at the lake's edge. Li Jie (28-year-old man, short black hair, no glasses, in a simple ankle-length white elf robe of soft linen with a loose cloth belt and a thin line of silver thread at the collar, no jacket, no tie), small at the lower centre, sits alone on the grass at the water's edge with his knees drawn up and his arms resting on them, his head tipped back, looking up at the two faint thin sickle moons and the stars, which the still lake mirrors; the small canvas tent stands behind him at the left under its few trees, its flap closed. Emi is inside the tent and not in view. Only Li Jie in view. Soft silver-blue palette with deep violet-black shadows, serene fantasy visual-novel background art with crisp, clean line art, 16:9, no text, no logo
+```
 
 **旁白**：走出帳篷後，李杰重新坐回湖邊。他抬頭看著天空中的雙月和星辰，心中五味雜陳。今晚發生的事情太多了——火災、逃難、銀月湖、還有恵美的故事。
 
